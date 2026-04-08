@@ -1,0 +1,26 @@
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.approveBtn {
+  background: var(--success-bg) !important;
+  color: var(--success) !important;
+  font-weight: 600;
+  padding: 6px 12px;
+  gap: 6px;
+
+  &:hover {
+    opacity: 0.8;
+    background: var(--success-bg) !important;
+    color: var(--success) !important;
+  }
+}

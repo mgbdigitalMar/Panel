@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&display=swap');
+
+/* ─── Light Theme ─────────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg:         #F5F5F5;
+  --card:       #FFFFFF;
+  --sidebar:    #FFFFFF;
+  --border:     #E4E4E7;
+
+  /* Text */
+  --text:       #18181B;
+  --text-sec:   #52525B;
+  --text-mut:   #A1A1AA;
+
+  /* Accent (Violet) */
+  --accent:     #7C3AED;
+  --accent-hover:#6D28D9;
+  --accent-bg:  #EDE9FE;
+  --accent-rgb: 124, 58, 237;
+
+  /* Semantic */
+  --success:    #059669;
+  --success-bg: #ECFDF5;
+  --warning:    #D97706;
+  --warning-bg: #FFFBEB;
+  --danger:     #DC2626;
+  --danger-bg:  #FEF2F2;
+
+  /* Inputs */
+  --input:        #FFFFFF;
+  --input-border: #D4D4D8;
+  --input-focus:  #7C3AED;
+
+  /* Nav active */
+  --nav:    #7C3AED;
+  --nav-bg: #EDE9FE;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow:    0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 20px 40px -8px rgb(0 0 0 / 0.15);
+
+  /* Radius */
+  --radius-sm:  4px;
+  --radius:     8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-full:9999px;
+
+  /* Typography */
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Inter', sans-serif;
+
+  /* Sidebar width */
+  --sidebar-w: 256px;
+}
+
+/* ─── Dark Theme (Mid-dark, NOT pitch black) ──────────────── */
+[data-theme='dark'] {
+  /* Backgrounds — slate family, comfortable mid-tones */
+  --bg:      #111118;
+  --card:    #18181F;
+  --sidebar: #111118;
+  --border:  #2A2A35;
+
+  /* Text */
+  --text:     #FAFAFA;
+  --text-sec: #A1A1AA;
+  --text-mut: #52525B;
+
+  /* Accent (Violet) */
+  --accent:      #8B5CF6;
+  --accent-hover:#A78BFA;
+  --accent-bg:   rgba(139, 92, 246, 0.15);
+  --accent-rgb:  139, 92, 246;
+
+  /* Semantic */
+  --success:    #10B981;
+  --success-bg: rgba(16, 185, 129, 0.12);
+  --warning:    #F59E0B;
+  --warning-bg: rgba(245, 158, 11, 0.12);
+  --danger:     #EF4444;
+  --danger-bg:  rgba(239, 68, 68, 0.12);
+
+  /* Inputs */
+  --input:        #111118;
+  --input-border: #2A2A35;
+  --input-focus:  #8B5CF6;
+
+  /* Nav active */
+  --nav:    #8B5CF6;
+  --nav-bg: rgba(139, 92, 246, 0.15);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow:    0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.6), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 20px 40px -8px rgb(0 0 0 / 0.7);
+}

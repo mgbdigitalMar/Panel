@@ -1,0 +1,200 @@
+.container {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 400px;
+}
+
+.logoContainer {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.logoRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.logoIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+}
+
+.logoText {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 26px;
+  color: var(--text);
+  letter-spacing: -0.04em;
+}
+
+.subtitle {
+  color: var(--text-mut);
+  margin: 0;
+  font-size: 13px;
+}
+
+.loginCard {
+  padding: 28px;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.welcomeTitle {
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--text);
+  margin: 0 0 4px;
+  letter-spacing: -0.03em;
+}
+
+.welcomeText {
+  color: var(--text-mut);
+  margin: 0 0 24px;
+  font-size: 13px;
+}
+
+.inputGroup {
+  margin-bottom: 14px;
+}
+
+.passwordWrapper {
+  position: relative;
+  margin-top: 5px;
+}
+
+.eyeButton {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-mut);
+  display: flex;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s;
+
+  &:hover { color: var(--text); }
+}
+
+.errorBox {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  padding: 9px 12px;
+  margin-bottom: 14px;
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.actionButton {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.helpText {
+  text-align: center;
+  color: var(--text-mut);
+  font-size: 12px;
+  margin-top: 20px;
+  margin-bottom: 0;
+}
+
+.demoCard {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.demoTitle {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-sec);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.demoList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.demoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 7px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  gap: 8px;
+
+  &:hover {
+    background: var(--bg);
+    border-color: var(--border);
+  }
+}
+
+.demoRowLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.demoBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.demoEmail {
+  font-size: 11px;
+  color: var(--text-sec);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.demoPass {
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
