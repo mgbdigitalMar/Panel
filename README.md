@@ -1,7 +1,5 @@
 # 🏢 Margube Panel Admin
 
-![Screenshot](https://via.placeholder.com/1200x600/1e293b/ffffff?text=Margube+Panel)
-
 **Panel administrativo moderno para Margube** - Gestión completa de empleados, reservas de salas/vehículos, solicitudes y dashboard realtime.
 
 [![Vite](https://img.shields.io/badge/Vite-646cff?style=flat&logo=vite)](https://vite.dev/)
