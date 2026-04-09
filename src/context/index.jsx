@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '../utils/supabase'
+import bcrypt from 'bcryptjs'
 
 // ─── THEME CONTEXT ────────────────────────────────────────────
 export const ThemeCtx = createContext()
@@ -243,10 +244,24 @@ export function AuthProvider({ children, navigate }) {
 
   // ── Login ─────────────────────────────────────────────────
   const login = async (email, pass) => {
-    const { data: profileRow, error } = await supabase.rpc('login_with_profile', { p_email: email, p_password: pass })
+    // Buscamos el perfil por correo
+    const { data: profileRow, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', email)
+      .single()
     
     if (error || !profileRow) {
       console.error('Auth error:', error?.message || 'Invalid credentials')
+      return { ok: false, msg: 'Email o contraseña incorrectos. Verifica tus credenciales.' }
+    }
+
+    // Verificamos si la contraseña coincide con el hash almacenado
+    const isValid = profileRow.password_hash 
+      ? bcrypt.compareSync(pass, profileRow.password_hash)
+      : false;
+
+    if (!isValid) {
       return { ok: false, msg: 'Email o contraseña incorrectos. Verifica tus credenciales.' }
     }
 

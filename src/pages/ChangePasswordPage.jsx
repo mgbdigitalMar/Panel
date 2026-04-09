@@ -6,6 +6,7 @@ import styles from './LoginPage.module.scss';
 import inputStyles from '../components/ui/Input/Input.module.scss';
 import clsx from 'clsx';
 import { supabase } from '../utils/supabase';
+import bcrypt from 'bcryptjs';
 
 export default function ChangePasswordPage() {
   const { user, setCurrentUser, setNeedsOnboarding } = useAuth();
@@ -29,11 +30,15 @@ export default function ChangePasswordPage() {
     }
     setLoading(true);
 
-    // Update password via Custom RPC
-    const { error } = await supabase.rpc('update_profile_password', {
-      p_profile_id: user.id,
-      p_new_password: newPass
-    });
+    // Generar el Hash desde el cliente
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(newPass, salt);
+
+    // Guardar el hash modificado localmente directo en la columna de la base de datos
+    const { error } = await supabase
+      .from('profiles')
+      .update({ password_hash: hash, first_login: false })
+      .eq('id', user.id);
     
     if (error) { setErr('Error al guardar: ' + error.message); setLoading(false); return; }
 
