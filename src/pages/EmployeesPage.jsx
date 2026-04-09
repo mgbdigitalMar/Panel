@@ -103,7 +103,7 @@ export default function EmployeesPage() {
                   <p className={styles.empDept}>{emp.dept}</p>
                 </div>
                 <div className={styles.empMeta}>
-                  <span className={styles.metaItem}>{emp.phone}</span>
+                <span className={styles.metaItem}>{emp.phone || '---'}</span>
                   <Badge status={emp.role} />
                 </div>
                 {canEdit && (
@@ -138,7 +138,7 @@ export default function EmployeesPage() {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  {['Empleado', 'Departamento', 'Cargo', 'Modo trabajo', 'Rol', 'Teléfono'].map(h => <th key={h}>{h}</th>)}
+                {['Empleado', 'Departamento', 'Cargo', 'Modo trabajo', 'Rol', 'DNI'].map(h => <th key={h}>{h}</th>)}
                 </tr>
               </thead>
               <tbody>
@@ -170,7 +170,7 @@ export default function EmployeesPage() {
                         )}
                       </td>
                       <td><Badge status={emp.role} /></td>
-                      <td style={{ color: 'var(--text-mut)', fontSize: 13 }}>{emp.phone}</td>
+                      <td style={{ color: 'var(--text-mut)', fontSize: 13 }}>{emp.phone || '---'}</td>
                     </tr>
                   );
                 })}

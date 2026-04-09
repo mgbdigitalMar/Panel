@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth, useApp } from '../context';
+import { useAuth, useApp, useTheme } from '../context';
 import { Card, Button } from '../components/ui';
 import { KeyRound, Eye, EyeOff, Bell } from 'lucide-react';
 import styles from './LoginPage.module.scss';
@@ -11,6 +11,7 @@ import bcrypt from 'bcryptjs';
 export default function ChangePasswordPage() {
   const { user, setCurrentUser, setNeedsOnboarding } = useAuth();
   const { navigate } = useApp();
+  const { theme } = useTheme();
 
   const [newPass, setNewPass]   = useState('');
   const [confirm, setConfirm]   = useState('');
@@ -52,13 +53,7 @@ export default function ChangePasswordPage() {
     <div className={styles.container}>
       <div className={styles.wrapper}>
         <div className={styles.logoContainer} style={{ marginBottom: 32 }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: 20, background: 'var(--accent-bg)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
-            color: 'var(--accent)'
-          }}>
-            <KeyRound size={28} />
-          </div>
+          <img src={theme === 'dark' ? '/src/assets/logos/logo-white.png' : '/src/assets/logos/logo-color.png'} alt="Margube" style={{ width: '200px', height: 'auto', margin: '0 auto 24px', display: 'block' }} />
           <h1 className={styles.welcomeTitle} style={{ fontSize: 24, marginBottom: 8 }}>
             Primer acceso
           </h1>

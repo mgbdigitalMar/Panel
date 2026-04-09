@@ -75,8 +75,7 @@ export default function Layout({ children }) {
   const sidebarContent = (
     <div className={styles.sidebarInner}>
       <div className={styles.logoArea}>
-        <div className={styles.logoIcon}>M</div>
-        <span className={styles.logoText}>margube</span>
+{theme === 'dark' ? <img src="/src/assets/logos/logo-white.png" alt="Margube" style={{ width: '160px', height: 'auto' }} /> : <img src="/src/assets/logos/logo-color.png" alt="Margube" style={{ width: '160px', height: 'auto' }} />}
       </div>
 
       <nav className={styles.navGroup} style={{ flex: 1 }}>
@@ -118,8 +117,10 @@ export default function Layout({ children }) {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className={styles.mobileBackdrop} onClick={() => setSideOpen(false)} />
             <motion.aside
-              initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              initial={{ x: '-100%', scale: 0.95 }} 
+              animate={{ x: 0, scale: 1 }} 
+              exit={{ x: '-100%', scale: 0.95 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350, bounce: 0.1 }}
               className={styles.sidebarMobileContent}
             >
               {sidebarContent}
@@ -156,7 +157,7 @@ export default function Layout({ children }) {
               <button onClick={() => setNotiMenu(v => !v)} className={clsx(styles.iconBtn, styles.bellBtn)}>
                 <Bell size={17} />
                 {unreadCount > 0 && (
-                  <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className={styles.badge}>
+              <motion.span initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} className={styles.badge}>
                     {unreadCount}
                   </motion.span>
                 )}
@@ -164,11 +165,13 @@ export default function Layout({ children }) {
 
               <AnimatePresence>
                 {notiMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.12 }}
-                    className={clsx(styles.dropdown, styles.notiDropdown)}
-                  >
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }} 
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.95 }} 
+                  transition={{ duration: 0.15, type: 'spring', bounce: 0.2 }}
+                  className={clsx(styles.dropdown, styles.notiDropdown)}
+                >
                     <div className={styles.dropdownHeader}>
                       <p>Notificaciones</p>
                       {unreadCount > 0 && (
@@ -223,10 +226,10 @@ export default function Layout({ children }) {
           <AnimatePresence mode="wait">
             <motion.div
               key={page}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18 }}
+              initial={{ opacity: 0, y: 20, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.97 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             >
               {children}
             </motion.div>

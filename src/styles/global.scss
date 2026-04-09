@@ -63,5 +63,28 @@ img, svg { display: block; }
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+  box-shadow: var(--accent-glow);
   border-radius: var(--radius-sm);
+}
+
+/* Logo animation */
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-4px) rotate(2deg); }
+}
+
+.logoImg, .logoArea img {
+  animation: logoFloat 3s ease-in-out infinite;
+  transition: filter 0.3s ease;
+}
+
+.logoImg:hover, .logoArea img:hover {
+  animation-play-state: paused;
+  filter: drop-shadow(0 4px 12px rgba(34,81,255,0.3));
+}
+
+/* Button enhancements */
+button:not([class*="iconBtn"]):hover {
+  box-shadow: var(--accent-glow), var(--shadow-md);
+  transform: translateY(-1px);
 }

@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { useAuth } from '../context';
+import { useAuth, useTheme } from '../context';
 import { Card, Button, Input } from '../components/ui';
 import { Eye, EyeOff } from 'lucide-react';
 import styles from './LoginPage.module.scss';
 import clsx from 'clsx';
-import inputStyles from '../components/ui/Input/Input.module.scss'; // For the password input base
+import inputStyles from '../components/ui/Input/Input.module.scss';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const { theme } = useTheme();
   
   const [email, setEmail]       = useState('');
   const [pass, setPass]         = useState('');
@@ -34,10 +35,7 @@ export default function LoginPage() {
       <div className={styles.wrapper}>
         {/* Logo */}
         <div className={styles.logoContainer}>
-          <div className={styles.logoRow}>
-            <div className={styles.logoIcon}>M</div>
-            <span className={styles.logoText}>margube</span>
-          </div>
+          <img src={theme === 'dark' ? '/src/assets/logos/logo-white.png' : '/src/assets/logos/logo-color.png'} alt="Margube" className={styles.logoImg} style={{ width: '200px', height: 'auto', margin: '0 auto 16px', display: 'block' }} />
           <p className={styles.subtitle}>Intranet corporativa — Acceso privado</p>
         </div>
 
@@ -95,36 +93,6 @@ export default function LoginPage() {
             ¿Problemas de acceso? Contacta con RRHH o Administración
           </p>
         </Card>
-
-        {/* Demo credentials — click to auto-fill */}
-        <div className={styles.demoCard}>
-          <p className={styles.demoTitle}>🔑 Accesos de prueba <span style={{ color: 'var(--text-mut)', fontWeight: 400 }}>(clic para rellenar)</span></p>
-          <div className={styles.demoList}>
-            {[
-              { label: 'Admin',        email: 'carlos.ruiz@margube.com',   pass: 'Margube2024!', badge: 'admin'    },
-              { label: 'RRHH',         email: 'laura.gomez@margube.com',   pass: 'Pass1234!',    badge: 'employee' },
-              { label: 'Tecnología',   email: 'miguel.torres@margube.com', pass: 'Temp0001!',    badge: '1er acceso' },
-              { label: 'Marketing',    email: 'ana.fernandez@margube.com', pass: 'Temp0002!',    badge: '1er acceso' },
-              { label: 'Ventas',       email: 'pedro.lopez@margube.com',   pass: 'Temp0003!',    badge: 'employee' },
-              { label: 'Finanzas',     email: 'elena.martin@margube.com',  pass: 'Temp0004!',    badge: 'employee' },
-            ].map(u => (
-              <button
-                key={u.email}
-                className={styles.demoRow}
-                onClick={() => { setEmail(u.email); setPass(u.pass); setErr(''); }}
-              >
-                <div className={styles.demoRowLeft}>
-                  <span className={styles.demoBadge} style={{
-                    background: u.badge === 'admin' ? 'var(--accent-bg)' : u.badge === '1er acceso' ? 'var(--warning-bg)' : 'var(--success-bg)',
-                    color:      u.badge === 'admin' ? 'var(--accent)'   : u.badge === '1er acceso' ? 'var(--warning)' : 'var(--success)',
-                  }}>{u.label}</span>
-                  <span className={styles.demoEmail}>{u.email}</span>
-                </div>
-                <code className={styles.demoPass}>{u.pass}</code>
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );

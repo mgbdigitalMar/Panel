@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 /* ─── Light Theme ─────────────────────────────────────────── */
 :root {
@@ -13,11 +13,13 @@
   --text-sec:   #52525B;
   --text-mut:   #A1A1AA;
 
-  /* Accent (Violet) */
-  --accent:     #7C3AED;
-  --accent-hover:#6D28D9;
-  --accent-bg:  #EDE9FE;
-  --accent-rgb: 124, 58, 237;
+  /* Accent (Blue from guide) */
+  --accent:       #2251FF;
+  --accent-hover: #0F3ACB;
+  --accent-fg:    #FFFFFF;
+--accent-bg:    rgba(34, 81, 255, 0.25);
+  --accent-glow:  0 0 0 4px rgba(34, 81, 255, 0.5);
+  --accent-rgb:   34, 81, 255;
 
   /* Semantic */
   --success:    #059669;
@@ -30,11 +32,12 @@
   /* Inputs */
   --input:        #FFFFFF;
   --input-border: #D4D4D8;
-  --input-focus:  #7C3AED;
+  --input-focus:  #2251FF;
 
   /* Nav active */
-  --nav:    #7C3AED;
-  --nav-bg: #EDE9FE;
+  --nav:      #2251FF;
+--nav-bg:   #D6E6FF;
+  --nav-glow: rgba(34, 81, 255, 0.35);
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
@@ -43,16 +46,16 @@
   --shadow-lg: 0 20px 40px -8px rgb(0 0 0 / 0.15);
 
   /* Radius */
-  --radius-sm:  4px;
-  --radius:     8px;
+  --radius-sm:  6px;
+  --radius:     16px;
   --radius-md:  12px;
   --radius-lg:  16px;
   --radius-xl:  24px;
   --radius-full:9999px;
 
   /* Typography */
-  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-heading: 'Inter', sans-serif;
+  --font-body:    'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Poppins', sans-serif;
 
   /* Sidebar width */
   --sidebar-w: 256px;
@@ -71,11 +74,12 @@
   --text-sec: #A1A1AA;
   --text-mut: #52525B;
 
-  /* Accent (Violet) */
-  --accent:      #8B5CF6;
-  --accent-hover:#A78BFA;
-  --accent-bg:   rgba(139, 92, 246, 0.15);
-  --accent-rgb:  139, 92, 246;
+  /* Accent (Blue from guide) */
+  --accent:       #2251FF;
+  --accent-hover: #1e3ed8;
+--accent-bg:    rgba(34, 81, 255, 0.3);
+  --accent-glow:  0 0 0 4px rgba(34, 81, 255, 0.6);
+  --accent-rgb:   34, 81, 255;
 
   /* Semantic */
   --success:    #10B981;
@@ -88,11 +92,12 @@
   /* Inputs */
   --input:        #111118;
   --input-border: #2A2A35;
-  --input-focus:  #8B5CF6;
+  --input-focus:  #2251FF;
 
   /* Nav active */
-  --nav:    #8B5CF6;
-  --nav-bg: rgba(139, 92, 246, 0.15);
+  --nav:      #2251FF;
+--nav-bg:   rgba(34, 81, 255, 0.3);
+  --nav-glow: rgba(34, 81, 255, 0.4);
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);

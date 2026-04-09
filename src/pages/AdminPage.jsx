@@ -44,24 +44,30 @@ export default function AdminPage() {
   const depts = [...new Set(employees.map(e => e.dept))];
 
   const handleSaveEmployee = async () => {
-    if (!form.name || !form.email || !form.password) return;
+    if (!form.name || !form.email) return;
+    if (!form.password && !editEmp) return alert('Contraseña requerida para nuevos empleados');
     
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(form.password, salt);
     const avatar = form.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
     if (editEmp) {
-      const { data, error } = await supabase.from('profiles').update({
+      const updateData = {
         name: form.name,
         email: form.email,
-        password_hash: hash,
         role: form.role,
         department: form.dept,
         position: form.position,
         phone: form.phone,
         birthdate: form.birthdate || null,
         avatar_initials: avatar
-      }).eq('id', editEmp.id).select().single();
+      };
+      if (form.password) {
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(form.password, salt);
+        updateData.password_hash = hash;
+      }
+      const { data, error } = await supabase.from('profiles').update(updateData).eq('id', editEmp.id).select().single();
       
       if (!error && data) {
          setEmployees(employees.map(e => e.id === editEmp.id ? { ...e, ...form, avatar } : e));
@@ -91,7 +97,7 @@ export default function AdminPage() {
 
   const handleEdit = emp => { 
     setEditEmp(emp); 
-    setForm({ name: emp.name, email: emp.email, password: emp.password, role: emp.role, dept: emp.dept, position: emp.position, phone: emp.phone, birthdate: emp.birthdate }); 
+    setForm({ name: emp.name, email: emp.email, password: '', role: emp.role, dept: emp.dept, position: emp.position, phone: emp.phone, birthdate: emp.birthdate }); 
     setShowModal(true); 
   };
   
@@ -297,7 +303,7 @@ export default function AdminPage() {
             options={DEPARTMENTS} 
           />
           <Input label="Cargo / Posición" value={form.position} onChange={v => setForm({ ...form, position: v })} />
-          <Input label="Teléfono" value={form.phone} onChange={v => setForm({ ...form, phone: v })} />
+          <Input label="DNI" value={form.phone} onChange={v => setForm({ ...form, phone: v })} />
           <Input label="Fecha nacimiento" value={form.birthdate} onChange={v => setForm({ ...form, birthdate: v })} type="date" />
           <div className={styles.fullWidth}>
             <Select 
