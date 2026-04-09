@@ -216,50 +216,57 @@ export function AuthProvider({ children, navigate }) {
 
   // ── Session restore on mount ──────────────────────────────
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const profile = await loadProfile(session.user)
-        if (profile) {
-          setUser(profile)
-          await loadAllEmployees()
-          if (profile.firstLogin === true || profile.firstLogin === 'true') navigate('changePassword')
-          else navigate('dashboard')
+    const restoreSession = async () => {
+      try {
+        const stored = localStorage.getItem('margube_session')
+        if (stored) {
+          const profileId = JSON.parse(stored).id
+          const { data, error } = await supabase.from('profiles').select('*').eq('id', profileId).single()
+          if (!error && data) {
+            const mapped = mapProfile(data)
+            setUser(mapped)
+            await loadAllEmployees()
+            if (mapped.firstLogin === true || mapped.firstLogin === 'true') navigate('changePassword')
+            else navigate('dashboard')
+          } else {
+            localStorage.removeItem('margube_session')
+          }
         }
+      } catch (e) {
+        console.error('Error restoring session:', e)
+      } finally {
+        setAuthLoading(false)
       }
-      setAuthLoading(false)
-    })
-
-    // Listen for sign-in / sign-out events
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
-        setUser(null)
-        setEmployeesState([])
-        navigate('login')
-      }
-    })
-    return () => subscription.unsubscribe()
+    }
+    restoreSession()
   }, [])
 
   // ── Login ─────────────────────────────────────────────────
   const login = async (email, pass) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass })
-    if (error) {
-      console.error('Auth error:', error)
-      return { ok: false, msg: error.message }
+    const { data: profileRow, error } = await supabase.rpc('login_with_profile', { p_email: email, p_password: pass })
+    
+    if (error || !profileRow) {
+      console.error('Auth error:', error?.message || 'Invalid credentials')
+      return { ok: false, msg: 'Email o contraseña incorrectos. Verifica tus credenciales.' }
     }
-    const profile = await loadProfile(data.user)
-    if (!profile) return { ok: false, msg: 'Perfil no encontrado. Ejecuta el seed SQL en Supabase.' }
-    setUser(profile)
+
+    const mapped = mapProfile(profileRow)
+    setUser(mapped)
+    // Guardamos evidencia de conexión activa localmente
+    localStorage.setItem('margube_session', JSON.stringify({ id: mapped.id }))
+    
     await loadAllEmployees()
-    if (profile.firstLogin === true || profile.firstLogin === 'true') navigate('changePassword')
+    if (mapped.firstLogin === true || mapped.firstLogin === 'true') navigate('changePassword')
     else navigate('dashboard')
+    
     return { ok: true }
   }
 
   // ── Logout ────────────────────────────────────────────────
   const logout = async () => {
-    await supabase.auth.signOut()
+    localStorage.removeItem('margube_session')
     setUser(null)
+    setEmployeesState([])
     setNeedsOnboarding(false)
     navigate('login')
   }

@@ -29,11 +29,15 @@ export default function ChangePasswordPage() {
     }
     setLoading(true);
 
-    // Update password in Supabase Auth
-    const { error } = await supabase.auth.updateUser({ password: newPass });
+    // Update password via Custom RPC
+    const { error } = await supabase.rpc('update_profile_password', {
+      p_profile_id: user.id,
+      p_new_password: newPass
+    });
+    
     if (error) { setErr('Error al guardar: ' + error.message); setLoading(false); return; }
 
-    // Mark first_login = false in profiles table
+    // Mark first_login = false in internal state
     await setCurrentUser({ ...user, firstLogin: false });
     setNeedsOnboarding(true);
     navigate('dashboard');
