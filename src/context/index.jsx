@@ -316,13 +316,14 @@ export function AuthProvider({ children, navigate }) {
       const checkIdle = () => {
         const inactive = Date.now() - lastActivity > IDLE_TIMEOUT;
         if (inactive) {
+          console.log('Idle timeout - logging out');
           logout();
         }
       };
       interval = setInterval(checkIdle, 5000); // Check every 5s
     }
     return () => clearInterval(interval);
-  }, [user, lastActivity, logout])
+  }, [user, lastActivity])
 
   // ── Login ─────────────────────────────────────────────────
   const login = async (email, pass) => {
