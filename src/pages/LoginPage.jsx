@@ -22,9 +22,9 @@ export default function LoginPage() {
     }
     setLoading(true); 
     setErr('');
-    const ok = await login(email, pass);
-    if (!ok) { 
-      setErr('Email o contraseña incorrectos. Verifica tus credenciales.'); 
+    const res = await login(email, pass);
+    if (!res.ok) { 
+      setErr(res.msg ? `Error: ${res.msg}` : 'Email o contraseña incorrectos. Verifica tus credenciales.'); 
       setLoading(false); 
     }
   };

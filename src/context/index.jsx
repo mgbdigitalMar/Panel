@@ -222,7 +222,7 @@ export function AuthProvider({ children, navigate }) {
         if (profile) {
           setUser(profile)
           await loadAllEmployees()
-          if (profile.firstLogin) navigate('changePassword')
+          if (profile.firstLogin === true || profile.firstLogin === 'true') navigate('changePassword')
           else navigate('dashboard')
         }
       }
@@ -251,7 +251,7 @@ export function AuthProvider({ children, navigate }) {
     if (!profile) return { ok: false, msg: 'Perfil no encontrado. Ejecuta el seed SQL en Supabase.' }
     setUser(profile)
     await loadAllEmployees()
-    if (profile.firstLogin) navigate('changePassword')
+    if (profile.firstLogin === true || profile.firstLogin === 'true') navigate('changePassword')
     else navigate('dashboard')
     return { ok: true }
   }
