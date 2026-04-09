@@ -33,7 +33,8 @@ export default function AdminPage() {
   const [resType, setResType]     = useState('room');
 
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '' });
-  const [resForm, setResForm] = useState({ name: '', capacity: '', floor: '', model: '', plate: '', year: '', type: 'Turismo' });
+  const [resForm, setResForm] = useState({ id: null, name: '', capacity: '', floor: '', equipment: '', model: '', plate: '', year: '', type: 'Turismo' });
+  const [editingRes, setEditingRes] = useState(false);
 
 
 
@@ -228,7 +229,12 @@ export default function AdminPage() {
       {tab === 'rooms' && (
         <>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-            <Button icon={Plus} onClick={() => { setResType('room'); setResForm({ name: '', capacity: '', floor: '' }); setShowResModal(true); }}>
+            <Button icon={Plus} onClick={() => { 
+              setResType('room'); 
+              setResForm({ id: null, name: '', capacity: '', floor: '', equipment: '' }); 
+              setEditingRes(false);
+              setShowResModal(true); 
+            }}>
               Nueva sala
             </Button>
           </div>
@@ -239,12 +245,28 @@ export default function AdminPage() {
                   <div className={styles.resourceIcon} style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
                     <Building size={22} />
                   </div>
-                  <button className={clsx(styles.actionBtn, styles.delete)} onClick={async () => {
-                    const { error } = await supabase.from('rooms').delete().eq('id', room.id);
-                    if (!error) refresh();
-                  }}>
-                    <Trash2 size={14} />
-                  </button>
+                  <div className={clsx(styles.actionsCell)} style={{ marginLeft: 'auto', gap: 4 }}>
+                    <button className={clsx(styles.actionBtn, styles.edit)} onClick={() => {
+                      setResType('room');
+                      setResForm({ 
+                        id: room.id, 
+                        name: room.name, 
+                        capacity: room.capacity, 
+                        floor: room.floor, 
+                        equipment: (room.equipment || []).join(', ') 
+                      });
+                      setEditingRes(true);
+                      setShowResModal(true);
+                    }} title="Editar">
+                      <Edit2 size={14} />
+                    </button>
+                    <button className={clsx(styles.actionBtn, styles.delete)} onClick={async () => {
+                      const { error } = await supabase.from('rooms').delete().eq('id', room.id);
+                      if (!error) refresh();
+                    }}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
                 <h4 className={styles.resourceTitle}>{room.name}</h4>
                 <p className={styles.resourceMeta}>Planta {room.floor} · Capacidad: {room.capacity} personas</p>
@@ -261,7 +283,12 @@ export default function AdminPage() {
       {tab === 'vehicles' && (
         <>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-            <Button icon={Plus} onClick={() => { setResType('vehicle'); setResForm({ model: '', plate: '', year: '', type: 'Turismo' }); setShowResModal(true); }}>
+            <Button icon={Plus} onClick={() => { 
+              setResType('vehicle'); 
+              setResForm({ id: null, model: '', plate: '', year: '', type: 'Turismo' }); 
+              setEditingRes(false);
+              setShowResModal(true); 
+            }}>
               Nuevo vehículo
             </Button>
           </div>
@@ -272,12 +299,28 @@ export default function AdminPage() {
                   <div className={styles.resourceIcon} style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>
                     <Car size={22} />
                   </div>
-                  <button className={clsx(styles.actionBtn, styles.delete)} onClick={async () => {
-                    const { error } = await supabase.from('vehicles').delete().eq('id', v.id);
-                    if (!error) refresh();
-                  }}>
-                    <Trash2 size={14} />
-                  </button>
+                  <div className={clsx(styles.actionsCell)} style={{ marginLeft: 'auto', gap: 4 }}>
+                    <button className={clsx(styles.actionBtn, styles.edit)} onClick={() => {
+                      setResType('vehicle');
+                      setResForm({ 
+                        id: v.id,
+                        model: v.model, 
+                        plate: v.plate, 
+                        year: v.year || '', 
+                        type: v.type 
+                      });
+                      setEditingRes(true);
+                      setShowResModal(true);
+                    }} title="Editar">
+                      <Edit2 size={14} />
+                    </button>
+                    <button className={clsx(styles.actionBtn, styles.delete)} onClick={async () => {
+                      const { error } = await supabase.from('vehicles').delete().eq('id', v.id);
+                      if (!error) refresh();
+                    }}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
                 <h4 className={styles.resourceTitle}>{v.model}</h4>
                 <p className={styles.resourceMeta}>Matrícula: <strong>{v.plate}</strong></p>
@@ -326,14 +369,20 @@ export default function AdminPage() {
       </Modal>
 
       {/* Resources modal */}
-      <Modal open={showResModal} onClose={() => setShowResModal(false)} title={resType === 'room' ? 'Nueva sala' : 'Nuevo vehículo'}>
-        {resType === 'room' ? (
+      <Modal open={showResModal} onClose={() => { setShowResModal(false); setEditingRes(false); }} title={editingRes ? 'Editar' : 'Nuevo ' + (resType === 'room' ? 'sala' : 'vehículo')}>
+{resType === 'room' ? (
           <>
             <Input label="Nombre de la sala" value={resForm.name} onChange={v => setResForm({ ...resForm, name: v })} required />
             <div className={styles.modalGrid} style={{ marginTop: 16 }}>
               <Input label="Capacidad (personas)" value={resForm.capacity} onChange={v => setResForm({ ...resForm, capacity: v })} type="number" required />
               <Input label="Planta" value={resForm.floor} onChange={v => setResForm({ ...resForm, floor: v })} type="number" required />
             </div>
+            <Input 
+              label="Equipamiento (separado por comas)" 
+              value={resForm.equipment} 
+              onChange={v => setResForm({ ...resForm, equipment: v })} 
+              placeholder="Proyector, TV, Videoconferencia, Pizarra digital, Audio..."
+            />
           </>
         ) : (
           <>
@@ -353,31 +402,51 @@ export default function AdminPage() {
         <div className={styles.modalActions}>
           <Button variant="ghost" onClick={() => setShowResModal(false)}>Cancelar</Button>
           <Button onClick={async () => {
+            const equipmentArray = resForm.equipment.split(',').map(item => item.trim()).filter(Boolean);
             if (resType === 'room') {
-               const { data, error } = await supabase.from('rooms').insert([{ 
+              if (editingRes && resForm.id) {
+                // Update room
+                const { error } = await supabase.from('rooms').update({ 
                   name: resForm.name, 
                   capacity: parseInt(resForm.capacity), 
                   floor: parseInt(resForm.floor), 
-                  equipment: [] 
-               }]).select().single();
-               if (!error && data) {
-                 refresh();
-                 // Keep local optimistic update for delete
-               }
+                  equipment: equipmentArray.length ? equipmentArray : []
+                }).eq('id', resForm.id);
+              } else {
+                // Create room
+                const { data, error } = await supabase.from('rooms').insert([{ 
+                  name: resForm.name, 
+                  capacity: parseInt(resForm.capacity), 
+                  floor: parseInt(resForm.floor), 
+                  equipment: equipmentArray.length ? equipmentArray : [] 
+                }]).select().single();
+              }
+              if (!error) refresh();
             } else {
-               const { data, error } = await supabase.from('vehicles').insert([{ 
+              if (editingRes && resForm.id) {
+                // Update vehicle
+                const { error } = await supabase.from('vehicles').update({ 
+                  model: resForm.model, 
+                  plate: resForm.plate, 
+                  year: parseInt(resForm.year) || null, 
+                  type: resForm.type 
+                }).eq('id', resForm.id);
+              } else {
+                // Create vehicle
+                const { data, error } = await supabase.from('vehicles').insert([{ 
                   model: resForm.model, 
                   plate: resForm.plate, 
                   year: parseInt(resForm.year), 
                   type: resForm.type 
-               }]).select().single();
-               if (!error && data) {
-                 refresh();
-                 // Keep local optimistic update for delete
-               }
+                }]).select().single();
+              }
+              if (!error) refresh();
             }
             setShowResModal(false);
-          }}>Crear</Button>
+            setEditingRes(false);
+          }}>
+            {editingRes ? 'Actualizar' : 'Crear'}
+          </Button>
         </div>
       </Modal>
     </div>
