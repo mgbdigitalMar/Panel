@@ -27,7 +27,7 @@ export default function Layout({ children }) {
   const { user, logout, needsOnboarding } = useAuth();
   const { theme, toggle } = useTheme();
   const { page, navigate } = useApp();
-  const { requests, reservations, readIds, markRead, markAllRead, density, toggleDensity } = useData();
+  const { requests, reservations, readIds, markRead, markAllRead, density, toggleDensity, liveNotifs = [] } = useData();
 
   const [sideOpen, setSideOpen] = useState(false);
   const [notiMenu, setNotiMenu] = useState(false);
@@ -232,6 +232,38 @@ export default function Layout({ children }) {
             </motion.div>
           </AnimatePresence>
         </main>
+      </div>
+
+      {/* ── Live Toast Notifications ─────────────────────────────── */}
+      <div style={{ position: 'fixed', bottom: 24, right: 24, display: 'flex', flexDirection: 'column', gap: 10, zIndex: 9999, pointerEvents: 'none' }}>
+        <AnimatePresence>
+          {liveNotifs.map(n => (
+            <motion.div
+              key={n.id}
+              initial={{ opacity: 0, y: 40, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 60, scale: 0.9 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 300 }}
+              style={{
+                background: 'var(--card)',
+                border: '1px solid var(--border)',
+                borderLeft: '3px solid var(--accent)',
+                borderRadius: 'var(--radius)',
+                padding: '14px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+                minWidth: 300,
+                maxWidth: 380,
+                pointerEvents: 'all',
+              }}
+            >
+              <span style={{ fontSize: 22, lineHeight: 1 }}>{n.icon}</span>
+              <span style={{ color: 'var(--text)', fontWeight: 600, fontSize: 14, flex: 1 }}>{n.msg}</span>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
       <AnimatePresence>

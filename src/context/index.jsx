@@ -26,6 +26,7 @@ export function DataProvider({ children }) {
   const [vehicles, setVehicles]            = useState([])
   const [loadingData, setLoadingData]      = useState(true)
   const [readIds, setReadIds]              = useState(new Set())
+  const [liveNotifs, setLiveNotifs]        = useState([])  // Real-time toasts
   const [density, setDensity]              = useState(
     () => localStorage.getItem('margube-density') || 'normal'
   )
@@ -94,6 +95,47 @@ export function DataProvider({ children }) {
   useEffect(() => {
     Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles()])
       .finally(() => setLoadingData(false))
+
+    // ── Supabase Realtime subscriptions ─────────────────────
+    const pushNotif = (icon, msg) => {
+      const id = Date.now()
+      setLiveNotifs(prev => [{ id, icon, msg }, ...prev.slice(0, 4)])
+      // Auto-dismiss after 6 s
+      setTimeout(() => setLiveNotifs(prev => prev.filter(n => n.id !== id)), 6000)
+    }
+
+    const requestChannel = supabase
+      .channel('realtime-requests')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'requests' }, () => {
+        fetchRequests()
+        pushNotif('📋', 'Nueva solicitud recibida')
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'requests' }, (payload) => {
+        fetchRequests()
+        const s = payload.new.status
+        if (s === 'approved') pushNotif('✅', 'Una solicitud ha sido aprobada')
+        else if (s === 'rejected') pushNotif('❌', 'Una solicitud ha sido rechazada')
+      })
+      .subscribe()
+
+    const reservationChannel = supabase
+      .channel('realtime-reservations')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reservations' }, () => {
+        fetchReservations()
+        pushNotif('📅', 'Nueva reserva pendiente de revisión')
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'reservations' }, (payload) => {
+        fetchReservations()
+        const s = payload.new.status
+        if (s === 'confirmed') pushNotif('✅', 'Tu reserva ha sido confirmada')
+        else if (s === 'cancelled') pushNotif('❌', 'Tu reserva ha sido cancelada')
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(requestChannel)
+      supabase.removeChannel(reservationChannel)
+    }
   }, [])
 
   // ── Write helpers ─────────────────────────────────────────
@@ -163,6 +205,7 @@ export function DataProvider({ children }) {
       createReservation, updateReservationStatus, deleteReservation,
       readIds, markRead, markAllRead,
       density, toggleDensity,
+      liveNotifs,
       refresh: () => Promise.all([fetchRequests(), fetchReservations()]),
     }}>
       {children}

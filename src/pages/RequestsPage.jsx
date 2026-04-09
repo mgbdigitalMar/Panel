@@ -8,11 +8,12 @@ import adminStyles from './AdminPage.module.scss'; // Reuse tab / table styles f
 
 export default function RequestsPage() {
   const { user } = useAuth();
-  const { requests, setRequests } = useData();
+  const { requests, createRequest, updateRequestStatus } = useData();
   
   const [tab, setTab]             = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [reqType, setReqType]     = useState('vacation');
+  const [loading, setLoading]     = useState(false);
   const [form, setForm]           = useState({ startDate: '', endDate: '', reason: '', item: '', amount: '' });
 
   const filtered =
@@ -20,21 +21,23 @@ export default function RequestsPage() {
     tab === 'mine'     ? requests.filter(r => r.employeeId === user.id) :
     requests.filter(r => r.type === tab);
 
-  const handleCreate = () => {
-    const base = { id: Date.now(), employeeId: user.id, employeeName: user.name, status: 'pending', createdAt: new Date().toISOString().split('T')[0] };
-    let newReq;
+  const handleCreate = async () => {
+    setLoading(true);
+    let payload;
     if (reqType === 'vacation') {
-      const days = Math.ceil((new Date(form.endDate) - new Date(form.startDate)) / (1000 * 60 * 60 * 24));
-      newReq = { ...base, type: 'vacation', startDate: form.startDate, endDate: form.endDate, days, reason: form.reason };
+      payload = { type: 'vacation', start_date: form.startDate, end_date: form.endDate, reason: form.reason };
     } else {
-      newReq = { ...base, type: 'purchase', item: form.item, amount: parseFloat(form.amount) || 0, reason: form.reason };
+      payload = { type: 'purchase', item: form.item, amount: parseFloat(form.amount) || 0, reason: form.reason };
     }
-    setRequests([newReq, ...requests]);
+    await createRequest(user.id, payload);
+    setLoading(false);
     setShowModal(false);
     setForm({ startDate: '', endDate: '', reason: '', item: '', amount: '' });
   };
 
-  const changeStatus = (id, status) => setRequests(requests.map(r => r.id === id ? { ...r, status } : r));
+  const changeStatus = async (id, status) => {
+    await updateRequestStatus(id, status, user.id);
+  };
 
   const tabBtn = (id, label) => (
     <button 
@@ -149,8 +152,8 @@ export default function RequestsPage() {
         )}
 
         <div className={adminStyles.modalActions}>
-          <Button variant="ghost" onClick={() => setShowModal(false)}>Cancelar</Button>
-          <Button onClick={handleCreate}>Enviar solicitud</Button>
+          <Button variant="ghost" onClick={() => setShowModal(false)} disabled={loading}>Cancelar</Button>
+          <Button onClick={handleCreate} disabled={loading}>{loading ? 'Enviando...' : 'Enviar solicitud'}</Button>
         </div>
       </Modal>
     </div>

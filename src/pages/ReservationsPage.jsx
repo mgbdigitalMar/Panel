@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useAuth, useData } from '../context';
-import { MOCK_ROOMS, MOCK_VEHICLES } from '../data/mockData';
 import { Badge, Modal, Select, Input, Textarea, Button, Card } from '../components/ui';
-import { Building, Car, Check, X, Plus, CalendarDays } from 'lucide-react';
+import { Building, Car, Check, X, Plus } from 'lucide-react';
 import adminStyles from './AdminPage.module.scss';
 import clsx from 'clsx';
 import reqStyles from './RequestsPage.module.scss';
@@ -10,33 +9,36 @@ import ReservationsCalendar from './ReservationsCalendar';
 
 export default function ReservationsPage() {
   const { user } = useAuth();
-  const { reservations, setReservations } = useData();
+  const { reservations, rooms, vehicles, createReservation, updateReservationStatus, deleteReservation } = useData();
 
-  const [tab, setTab]         = useState('all');
+  const [tab, setTab]           = useState('all');
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ type: 'room', resourceId: '', date: '', timeStart: '', timeEnd: '', purpose: '' });
+  const [loading, setLoading]   = useState(false);
+  const [form, setForm]         = useState({ type: 'room', resourceId: '', date: '', timeStart: '', timeEnd: '', purpose: '' });
 
-  const filtered = tab === 'all' ? reservations : reservations.filter(r => r.type === tab);
+  const filtered = tab === 'all' ? reservations : tab === 'mine' ? reservations.filter(r => r.employeeId === user.id) : reservations.filter(r => r.type === tab);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!form.resourceId || !form.date || !form.timeStart || !form.timeEnd || !form.purpose) return;
-    const resources = form.type === 'room' ? MOCK_ROOMS : MOCK_VEHICLES;
-    const res = resources.find(r => r.id === parseInt(form.resourceId));
-    const newR = {
-      id: Date.now(), type: form.type,
-      resourceId: parseInt(form.resourceId),
-      resourceName: form.type === 'room' ? res.name : `${res.model} ${res.plate}`,
-      employeeId: user.id, employeeName: user.name,
-      date: form.date, timeStart: form.timeStart, timeEnd: form.timeEnd,
-      purpose: form.purpose, status: 'pending',
+    setLoading(true);
+    const payload = {
+      type: form.type,
+      [form.type === 'room' ? 'room_id' : 'vehicle_id']: parseInt(form.resourceId),
+      date: form.date,
+      time_start: form.timeStart,
+      time_end: form.timeEnd,
+      purpose: form.purpose,
+      status: 'pending',
     };
-    setReservations([newR, ...reservations]);
+    await createReservation(user.id, payload);
+    setLoading(false);
     setShowModal(false);
     setForm({ type: 'room', resourceId: '', date: '', timeStart: '', timeEnd: '', purpose: '' });
   };
 
-  const handleDelete  = id => setReservations(reservations.filter(r => r.id !== id));
-  const handleApprove = id => setReservations(reservations.map(r => r.id === id ? { ...r, status: 'confirmed' } : r));
+  const handleDelete  = async (id) => { await deleteReservation(id); };
+  const handleApprove = async (id) => { await updateReservationStatus(id, 'confirmed', user.id); };
+  const handleReject  = async (id) => { await updateReservationStatus(id, 'cancelled', user.id); };
 
   const tabBtn = (id, label) => (
     <button 
@@ -71,7 +73,7 @@ export default function ReservationsPage() {
         <div style={{ marginBottom: 24 }}>
           <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', margin: '0 0 16px' }}>Salas disponibles</h3>
           <div className={adminStyles.grid}>
-            {MOCK_ROOMS.map(room => (
+            {rooms.map(room => (
               <Card key={room.id} className={adminStyles.resourceCard}>
                 <div className={adminStyles.resourceHeader}>
                   <div className={adminStyles.resourceIcon} style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
@@ -82,7 +84,7 @@ export default function ReservationsPage() {
                 <h4 className={adminStyles.resourceTitle}>{room.name}</h4>
                 <p className={adminStyles.resourceMeta}>Planta {room.floor} · {room.capacity} personas</p>
                 <div className={adminStyles.tagList}>
-                  {room.equipment.map(eq => (
+                  {(room.equipment || []).map(eq => (
                     <span key={eq} className={adminStyles.tag}>{eq}</span>
                   ))}
                 </div>
@@ -97,7 +99,7 @@ export default function ReservationsPage() {
         <div style={{ marginBottom: 24 }}>
           <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', margin: '0 0 16px' }}>Vehículos de empresa</h3>
           <div className={adminStyles.grid}>
-            {MOCK_VEHICLES.map(v => (
+            {vehicles.map(v => (
               <Card key={v.id} className={adminStyles.resourceCard}>
                 <div className={adminStyles.resourceHeader}>
                   <div className={adminStyles.resourceIcon} style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>
@@ -147,12 +149,17 @@ export default function ReservationsPage() {
                     <td>
                       <div className={adminStyles.actionsCell} style={{ gap: 4 }}>
                         {user.role === 'admin' && r.status === 'pending' && (
-                          <button className={clsx(adminStyles.actionBtn, reqStyles.approveBtn)} onClick={() => handleApprove(r.id)} style={{ padding: '6px' }}>
-                            <Check size={14} />
-                          </button>
+                          <>
+                            <button className={clsx(adminStyles.actionBtn, reqStyles.approveBtn)} onClick={() => handleApprove(r.id)} title="Aprobar" style={{ padding: '6px' }}>
+                              <Check size={14} />
+                            </button>
+                            <button className={clsx(adminStyles.actionBtn, adminStyles.delete)} onClick={() => handleReject(r.id)} title="Rechazar" style={{ padding: '6px' }}>
+                              <X size={14} />
+                            </button>
+                          </>
                         )}
-                        {(user.role === 'admin' || r.employeeId === user.id) && (
-                          <button className={clsx(adminStyles.actionBtn, adminStyles.delete)} onClick={() => handleDelete(r.id)} style={{ padding: '6px' }}>
+                        {(user.role === 'admin' || r.employeeId === user.id) && r.status !== 'pending' && (
+                          <button className={clsx(adminStyles.actionBtn, adminStyles.delete)} onClick={() => handleDelete(r.id)} title="Eliminar" style={{ padding: '6px' }}>
                             <X size={14} />
                           </button>
                         )}
@@ -176,8 +183,8 @@ export default function ReservationsPage() {
           options={[
             { value: '', label: 'Selecciona un recurso...' },
             ...(form.type === 'room'
-              ? MOCK_ROOMS.map(r => ({ value: r.id, label: `${r.name} (${r.capacity}p)` }))
-              : MOCK_VEHICLES.map(v => ({ value: v.id, label: `${v.model} - ${v.plate}` }))),
+              ? rooms.map(r => ({ value: r.id, label: `${r.name} (${r.capacity}p)` }))
+              : vehicles.map(v => ({ value: v.id, label: `${v.model} - ${v.plate}` }))),
           ]} 
         />
         <Input label="Fecha" value={form.date} onChange={v => setForm({ ...form, date: v })} type="date" required />
@@ -187,8 +194,8 @@ export default function ReservationsPage() {
         </div>
         <Textarea label="Propósito / motivo" value={form.purpose} onChange={v => setForm({ ...form, purpose: v })} placeholder="Describe el propósito de la reserva..." />
         <div className={adminStyles.modalActions}>
-          <Button variant="ghost" onClick={() => setShowModal(false)}>Cancelar</Button>
-          <Button onClick={handleCreate}>Crear reserva</Button>
+          <Button variant="ghost" onClick={() => setShowModal(false)} disabled={loading}>Cancelar</Button>
+          <Button onClick={handleCreate} disabled={loading}>{loading ? 'Guardando...' : 'Crear reserva'}</Button>
         </div>
       </Modal>
     </div>

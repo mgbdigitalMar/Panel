@@ -5,6 +5,20 @@ import { Avatar, Badge, Modal, Input, Select, Button, Card } from '../components
 import { Search, Plus, Edit2, Trash2, Eye, EyeOff, Building, Car } from 'lucide-react';
 import styles from './AdminPage.module.scss';
 import clsx from 'clsx';
+import bcrypt from 'bcryptjs';
+import { supabase } from '../utils/supabase';
+
+const DEPARTMENTS = [
+  { value: 'Administración - RRHH', label: 'Administración - RRHH' },
+  { value: 'Comercial - HEF', label: 'Comercial - HEF' },
+  { value: 'Formación', label: 'Formación' },
+  { value: 'Verificación (CAE)', label: 'Verificación (CAE)' },
+  { value: 'Planificación', label: 'Planificación' },
+  { value: 'Técnico', label: 'Técnico' },
+  { value: 'Comunicación - marketing', label: 'Comunicación - marketing' },
+  { value: 'Marketing - diseño', label: 'Marketing - diseño' },
+  { value: 'Sin asignar', label: 'Sin asignar' },
+];
 
 export default function AdminPage() {
   const { employees, setEmployees } = useAuth();
@@ -14,13 +28,27 @@ export default function AdminPage() {
   const [editEmp, setEditEmp]     = useState(null);
   const [showPassFor, setShowPassFor] = useState(null);
   const [search, setSearch]       = useState('');
-  const [rooms, setRooms]         = useState(MOCK_ROOMS);
-  const [vehicles, setVehicles]   = useState(MOCK_VEHICLES);
+  const [rooms, setRooms]         = useState([]);
+  const [vehicles, setVehicles]   = useState([]);
   const [showResModal, setShowResModal] = useState(false);
   const [resType, setResType]     = useState('room');
 
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '' });
   const [resForm, setResForm] = useState({ name: '', capacity: '', floor: '', model: '', plate: '', year: '', type: 'Turismo' });
+
+  import('react').then(({ useEffect }) => {
+    useEffect(() => {
+      const load = async () => {
+        const [{data: r}, {data: v}] = await Promise.all([
+          supabase.from('rooms').select('*').order('id'),
+          supabase.from('vehicles').select('*').order('id')
+        ]);
+        if(r) setRooms(r);
+        if(v) setVehicles(v);
+      };
+      load();
+    }, []);
+  });
 
   const filtered = employees.filter(e =>
     e.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -28,17 +56,50 @@ export default function AdminPage() {
   );
   const depts = [...new Set(employees.map(e => e.dept))];
 
-  const handleSaveEmployee = () => {
+  const handleSaveEmployee = async () => {
     if (!form.name || !form.email || !form.password) return;
+    
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(form.password, salt);
+    const avatar = form.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
     if (editEmp) {
-      setEmployees(employees.map(e => e.id === editEmp.id ? { ...e, ...form } : e));
+      const { data, error } = await supabase.from('profiles').update({
+        name: form.name,
+        email: form.email,
+        password_hash: hash,
+        role: form.role,
+        department: form.dept,
+        position: form.position,
+        phone: form.phone,
+        birthdate: form.birthdate || null,
+        avatar_initials: avatar
+      }).eq('id', editEmp.id).select().single();
+      
+      if (!error && data) {
+         setEmployees(employees.map(e => e.id === editEmp.id ? { ...e, ...form, avatar } : e));
+      } else { console.error("Error al actualizar", error); return; }
     } else {
-      const avatar = form.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-      setEmployees([...employees, { id: Date.now(), ...form, avatar, joinDate: new Date().toISOString().split('T')[0], firstLogin: true }]);
+      const { data, error } = await supabase.from('profiles').insert([{
+        name: form.name,
+        email: form.email,
+        password_hash: hash,
+        role: form.role,
+        department: form.dept,
+        position: form.position,
+        phone: form.phone,
+        birthdate: form.birthdate || null,
+        first_login: true,
+        avatar_initials: avatar
+      }]).select().single();
+
+      if (!error && data) {
+         setEmployees([...employees, { id: data.id, ...form, avatar, joinDate: data.join_date, firstLogin: true }]);
+      } else { console.error("Error al crear empleado", error); return; }
     }
     setShowModal(false);
     setEditEmp(null);
-    setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '' });
+    setForm({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '' });
   };
 
   const handleEdit = emp => { 
@@ -47,7 +108,10 @@ export default function AdminPage() {
     setShowModal(true); 
   };
   
-  const handleDelete = id => setEmployees(employees.filter(e => e.id !== id));
+  const handleDelete = async (id) => {
+    const { error } = await supabase.from('profiles').delete().eq('id', id);
+    if (!error) setEmployees(employees.filter(e => e.id !== id));
+  };
 
   const tabBtn = (id, label) => (
     <button 
@@ -182,7 +246,10 @@ export default function AdminPage() {
                   <div className={styles.resourceIcon} style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
                     <Building size={22} />
                   </div>
-                  <button className={clsx(styles.actionBtn, styles.delete)} onClick={() => setRooms(rooms.filter(r => r.id !== room.id))}>
+                  <button className={clsx(styles.actionBtn, styles.delete)} onClick={async () => {
+                    const { error } = await supabase.from('rooms').delete().eq('id', room.id);
+                    if (!error) setRooms(rooms.filter(r => r.id !== room.id));
+                  }}>
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -212,7 +279,10 @@ export default function AdminPage() {
                   <div className={styles.resourceIcon} style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>
                     <Car size={22} />
                   </div>
-                  <button className={clsx(styles.actionBtn, styles.delete)} onClick={() => setVehicles(vehicles.filter(vh => vh.id !== v.id))}>
+                  <button className={clsx(styles.actionBtn, styles.delete)} onClick={async () => {
+                    const { error } = await supabase.from('vehicles').delete().eq('id', v.id);
+                    if (!error) setVehicles(vehicles.filter(vh => vh.id !== v.id));
+                  }}>
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -233,7 +303,12 @@ export default function AdminPage() {
           </div>
           <Input label="Email corporativo" value={form.email} onChange={v => setForm({ ...form, email: v })} type="email" required />
           <Input label="Contraseña inicial" value={form.password} onChange={v => setForm({ ...form, password: v })} required />
-          <Input label="Departamento" value={form.dept} onChange={v => setForm({ ...form, dept: v })} />
+          <Select 
+            label="Departamento" 
+            value={form.dept} 
+            onChange={v => setForm({ ...form, dept: v })}
+            options={DEPARTMENTS} 
+          />
           <Input label="Cargo / Posición" value={form.position} onChange={v => setForm({ ...form, position: v })} />
           <Input label="Teléfono" value={form.phone} onChange={v => setForm({ ...form, phone: v })} />
           <Input label="Fecha nacimiento" value={form.birthdate} onChange={v => setForm({ ...form, birthdate: v })} type="date" />
@@ -284,11 +359,23 @@ export default function AdminPage() {
         )}
         <div className={styles.modalActions}>
           <Button variant="ghost" onClick={() => setShowResModal(false)}>Cancelar</Button>
-          <Button onClick={() => {
+          <Button onClick={async () => {
             if (resType === 'room') {
-              setRooms([...rooms, { id: Date.now(), name: resForm.name, capacity: parseInt(resForm.capacity), floor: parseInt(resForm.floor), equipment: [] }]);
+               const { data, error } = await supabase.from('rooms').insert([{ 
+                  name: resForm.name, 
+                  capacity: parseInt(resForm.capacity), 
+                  floor: parseInt(resForm.floor), 
+                  equipment: [] 
+               }]).select().single();
+               if (!error && data) setRooms([...rooms, data]);
             } else {
-              setVehicles([...vehicles, { id: Date.now(), model: resForm.model, plate: resForm.plate, year: parseInt(resForm.year), type: resForm.type }]);
+               const { data, error } = await supabase.from('vehicles').insert([{ 
+                  model: resForm.model, 
+                  plate: resForm.plate, 
+                  year: parseInt(resForm.year), 
+                  type: resForm.type 
+               }]).select().single();
+               if (!error && data) setVehicles([...vehicles, data]);
             }
             setShowResModal(false);
           }}>Crear</Button>
