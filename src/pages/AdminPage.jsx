@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth, useData } from '../context';
 import { MOCK_ROOMS, MOCK_VEHICLES } from '../data/mockData';
 import { Avatar, Badge, Modal, Input, Select, Button, Card } from '../components/ui';
@@ -28,19 +28,14 @@ export default function AdminPage() {
   const [editEmp, setEditEmp]     = useState(null);
   const [showPassFor, setShowPassFor] = useState(null);
   const [search, setSearch]       = useState('');
-  const [rooms, setRooms]         = useState([]);
-  const [vehicles, setVehicles]   = useState([]);
+  const { refresh } = useData();
   const [showResModal, setShowResModal] = useState(false);
   const [resType, setResType]     = useState('room');
 
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '' });
   const [resForm, setResForm] = useState({ name: '', capacity: '', floor: '', model: '', plate: '', year: '', type: 'Turismo' });
 
-  const { refresh: refreshData } = useData();
-  
-  useEffect(() => {
-    refreshData();
-  }, []);
+
 
   const filtered = employees.filter(e =>
     e.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -359,7 +354,11 @@ export default function AdminPage() {
                   floor: parseInt(resForm.floor), 
                   equipment: [] 
                }]).select().single();
-               if (!error && data) setRooms([...rooms, data]);
+               if (!error && data) {
+                 refreshData();
+                 // Keep local optimistic update
+                 setRooms(prev => [...prev, data]);
+               }
             } else {
                const { data, error } = await supabase.from('vehicles').insert([{ 
                   model: resForm.model, 
@@ -367,7 +366,11 @@ export default function AdminPage() {
                   year: parseInt(resForm.year), 
                   type: resForm.type 
                }]).select().single();
-               if (!error && data) setVehicles([...vehicles, data]);
+               if (!error && data) {
+                 refreshData();
+                 // Keep local optimistic update
+                 setVehicles(prev => [...prev, data]);
+               }
             }
             setShowResModal(false);
           }}>Crear</Button>
