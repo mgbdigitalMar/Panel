@@ -132,9 +132,29 @@ export function DataProvider({ children }) {
       })
       .subscribe()
 
+    // Rooms realtime
+    const roomChannel = supabase
+      .channel('realtime-rooms')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'rooms' }, () => {
+        fetchRooms()
+        pushNotif('🏢', 'Nueva sala disponible')
+      })
+      .subscribe()
+
+    // Vehicles realtime  
+    const vehicleChannel = supabase
+      .channel('realtime-vehicles')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'vehicles' }, () => {
+        fetchVehicles()
+        pushNotif('🚗', 'Nuevo vehículo disponible')
+      })
+      .subscribe()
+
     return () => {
       supabase.removeChannel(requestChannel)
       supabase.removeChannel(reservationChannel)
+      supabase.removeChannel(roomChannel)
+      supabase.removeChannel(vehicleChannel)
     }
   }, [])
 
@@ -206,7 +226,7 @@ export function DataProvider({ children }) {
       readIds, markRead, markAllRead,
       density, toggleDensity,
       liveNotifs,
-      refresh: () => Promise.all([fetchRequests(), fetchReservations()]),
+      refresh: () => Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles()]),
     }}>
       {children}
     </DataCtx.Provider>

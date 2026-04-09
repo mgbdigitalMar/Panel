@@ -1,1 +1,38 @@
-1. [x] Edit package.json: Update @vitejs/plugin-react to ^5.1.4.\n2. [x] Clean: Delete node_modules and package-lock.json.\n3. [x] npm install and test: Run npm install, npm run build.\n4. [x] Update TODO.md: Mark steps complete.\n5. [x] Test preview: npm run preview.\n6. [x] Complete: Ready for Vercel deploy.\n\nnpm install now succeeds without peer dep errors. Build successful. Preview server running at http://localhost:4173/. Vercel deploys will now work with clean npm install.
+# Task: Complete rooms/vehicles + notifications integration
+
+## Status: Partially complete ✅
+
+### 1. [✅ COMPLETE] Supabase table saves
+
+- AdminPage: Create/delete rooms/vehicles → Supabase ✅
+
+### 2. [✅ COMPLETE] Non-admin views connected
+
+- DataCtx fetches rooms/vehicles ✅
+- ReservationsPage shows cards/selects ✅
+
+### 3. [✅ COMPLETE] Add realtime notifications
+
+- Added roomChannel/vehicleChannel in src/context/index.jsx ✅
+- Toasts for all users on new room/vehicle ✅
+
+### 4. [🔄 FIXED] Sync issue resolved
+
+**Bugfix applied**:
+
+- Expanded DataCtx.refresh() to include rooms/vehicles ✅
+- Fixed AdminPage broken dynamic useEffect → uses shared context refresh ✅
+- New resources now appear immediately in ReservationsPage cards for all users ✅
+
+**Full flow**:
+
+1. Admin creates room/vehicle → Supabase + local update ✅
+2. Realtime triggers → all sessions refresh data + toast ✅
+3. ReservationsPage cards update instantly ✅
+
+**Demo**: Refresh app → Admin create → switch to Reservations → see new card immediately + toast.
+
+## Notes
+
+- Schema matches exactly
+- No other changes needed
