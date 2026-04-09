@@ -244,6 +244,10 @@ export function AuthProvider({ children, navigate }) {
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
   const [authLoading, setAuthLoading]       = useState(true)
 
+  // Idle timeout
+  const IDLE_TIMEOUT = 60 * 1000 // 1 min
+  const [lastActivity, setLastActivity] = useState(Date.now())
+
   // Map a Supabase profile row → app user shape
   function mapProfile(profile) {
     return {
@@ -304,6 +308,21 @@ export function AuthProvider({ children, navigate }) {
     }
     restoreSession()
   }, [])
+
+  // ── Idle timeout logic ──────────────────────────────
+  useEffect(() => {
+    let interval;
+    if (user) {
+      const checkIdle = () => {
+        const inactive = Date.now() - lastActivity > IDLE_TIMEOUT;
+        if (inactive) {
+          logout();
+        }
+      };
+      interval = setInterval(checkIdle, 5000); // Check every 5s
+    }
+    return () => clearInterval(interval);
+  }, [user, lastActivity, logout])
 
   // ── Login ─────────────────────────────────────────────────
   const login = async (email, pass) => {
@@ -378,7 +397,7 @@ export function AuthProvider({ children, navigate }) {
 
   return (
     <AuthCtx.Provider value={{
-      user, login, logout,
+      user, login, logout, setLastActivity,
       employees, setEmployees,
       setCurrentUser,
       needsOnboarding, setNeedsOnboarding,

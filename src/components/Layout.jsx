@@ -27,7 +27,7 @@ const adminItems = [
 ];
 
 export default function Layout({ children }) {
-  const { user, logout, needsOnboarding } = useAuth();
+  const { user, logout, needsOnboarding, setLastActivity } = useAuth();
   const { theme, toggle } = useTheme();
   const { page, navigate } = useApp();
   const { requests, reservations, readIds, markRead, markAllRead, density, toggleDensity, liveNotifs = [] } = useData();
@@ -36,6 +36,9 @@ export default function Layout({ children }) {
   const [notiMenu, setNotiMenu] = useState(false);
   const notiMenuRef = useRef(null);
 
+  // Reset idle timer on activity
+  const resetIdle = () => setLastActivity(Date.now());
+
   useEffect(() => {
     function handleClickOutside(e) {
       if (notiMenuRef.current && !notiMenuRef.current.contains(e.target)) setNotiMenu(false);
@@ -43,6 +46,21 @@ export default function Layout({ children }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Activity listeners for idle timeout
+  useEffect(() => {
+    const handleActivity = resetIdle;
+    document.addEventListener('mousemove', handleActivity);
+    document.addEventListener('keydown', handleActivity);
+    document.addEventListener('click', handleActivity);
+    document.addEventListener('scroll', handleActivity);
+    return () => {
+      document.removeEventListener('mousemove', handleActivity);
+      document.removeEventListener('keydown', handleActivity);
+      document.removeEventListener('click', handleActivity);
+      document.removeEventListener('scroll', handleActivity);
+    };
+  }, [resetIdle]);
 
   // Notifications logic — only unread count shown in badge
   const pendingRequests = requests.filter(r =>
