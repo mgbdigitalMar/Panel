@@ -51,6 +51,24 @@
 - **UI**: Custom components (Card, Modal, Select...)
 - **State**: React Context
 
+## 🚀 Inicio Rápido
+
+```bash
+# 1. Clonar & instalar
+git clone <repo> && cd Panel
+npm install
+
+# 2. Configurar Supabase
+cp .env.example .env
+# Edit .env con tus SUPABASE_URL y SUPABASE_KEY
+
+# 3. Desarrollo local
+npm run dev
+
+# 4. Build producción
+npm run build
+```
+
 ## 🗄️ Schema Supabase
 
 ```
