@@ -252,8 +252,8 @@ export function AuthProvider({ children, navigate }) {
       .single()
     
     if (error || !profileRow) {
-      console.error('Auth error:', error?.message || 'Invalid credentials')
-      return { ok: false, msg: 'Email o contraseña incorrectos. Verifica tus credenciales.' }
+      console.error('Auth error info:', error, 'row:', profileRow)
+      return { ok: false, msg: `No se pudo obtener el perfil: ${error?.message || 'Perfil no encontrado'}` }
     }
 
     // Verificamos si la contraseña coincide con el hash almacenado
@@ -262,7 +262,10 @@ export function AuthProvider({ children, navigate }) {
       : false;
 
     if (!isValid) {
-      return { ok: false, msg: 'Email o contraseña incorrectos. Verifica tus credenciales.' }
+      if (!profileRow.password_hash) {
+        return { ok: false, msg: 'El perfil no tiene una contraseña asignada en la tabla profiles (password_hash es null).' }
+      }
+      return { ok: false, msg: 'La contraseña introducida no coincide con el hash.' }
     }
 
     const mapped = mapProfile(profileRow)
