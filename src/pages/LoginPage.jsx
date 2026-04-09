@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useAuth, useTheme } from '../context';
+import logoColor from '../assets/logos/logo-color.png';
+import logoWhite from '../assets/logos/logo-white.png';
 import { Card, Button, Input } from '../components/ui';
 import { Eye, EyeOff } from 'lucide-react';
 import styles from './LoginPage.module.scss';
@@ -35,7 +37,7 @@ export default function LoginPage() {
       <div className={styles.wrapper}>
         {/* Logo */}
         <div className={styles.logoContainer}>
-          <img src={theme === 'dark' ? '/src/assets/logos/logo-white.png' : '/src/assets/logos/logo-color.png'} alt="Margube" className={styles.logoImg} style={{ width: '200px', height: 'auto', margin: '0 auto 16px', display: 'block' }} />
+<img src={theme === 'dark' ? logoWhite : logoColor} alt="Margube" className={styles.logoImg} style={{ width: '200px', height: 'auto', margin: '0 auto 16px', display: 'block' }} />
           <p className={styles.subtitle}>Intranet corporativa — Acceso privado</p>
         </div>
 

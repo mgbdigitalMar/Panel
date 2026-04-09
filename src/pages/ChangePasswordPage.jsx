@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useAuth, useApp, useTheme } from '../context';
+import logoColor from '../assets/logos/logo-color.png';
+import logoWhite from '../assets/logos/logo-white.png';
 import { Card, Button } from '../components/ui';
 import { KeyRound, Eye, EyeOff, Bell } from 'lucide-react';
 import styles from './LoginPage.module.scss';
@@ -53,7 +55,7 @@ export default function ChangePasswordPage() {
     <div className={styles.container}>
       <div className={styles.wrapper}>
         <div className={styles.logoContainer} style={{ marginBottom: 32 }}>
-          <img src={theme === 'dark' ? '/src/assets/logos/logo-white.png' : '/src/assets/logos/logo-color.png'} alt="Margube" style={{ width: '200px', height: 'auto', margin: '0 auto 24px', display: 'block' }} />
+<img src={theme === 'dark' ? logoWhite : logoColor} alt="Margube" style={{ width: '200px', height: 'auto', margin: '0 auto 24px', display: 'block' }} />
           <h1 className={styles.welcomeTitle} style={{ fontSize: 24, marginBottom: 8 }}>
             Primer acceso
           </h1>

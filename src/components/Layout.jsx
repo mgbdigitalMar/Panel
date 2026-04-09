@@ -5,8 +5,11 @@ import clsx from 'clsx';
 import { 
   LayoutDashboard, Calendar, Inbox, Newspaper, Settings,
   LogOut, Sun, Moon, Menu, Bell, CheckCircle, Clock,
-  UsersRound, AlignJustify, List
+  UsersRound, AlignJustify, List, Globe
 } from 'lucide-react';
+
+import logoColor from '../assets/logos/logo-color.png';
+import logoWhite from '../assets/logos/logo-white.png';
 
 import { Avatar } from './ui';
 import OnboardingModal from './OnboardingModal';
@@ -75,7 +78,7 @@ export default function Layout({ children }) {
   const sidebarContent = (
     <div className={styles.sidebarInner}>
       <div className={styles.logoArea}>
-{theme === 'dark' ? <img src="/src/assets/logos/logo-white.png" alt="Margube" style={{ width: '160px', height: 'auto' }} /> : <img src="/src/assets/logos/logo-color.png" alt="Margube" style={{ width: '160px', height: 'auto' }} />}
+{theme === 'dark' ? <img src={logoWhite} alt="Margube" style={{ width: '160px', height: 'auto' }} /> : <img src={logoColor} alt="Margube" style={{ width: '160px', height: 'auto' }} />}
       </div>
 
       <nav className={styles.navGroup} style={{ flex: 1 }}>
