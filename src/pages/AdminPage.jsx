@@ -28,7 +28,7 @@ export default function AdminPage() {
   const [editEmp, setEditEmp]     = useState(null);
   const [showPassFor, setShowPassFor] = useState(null);
   const [search, setSearch]       = useState('');
-  const { refresh } = useData();
+  const { rooms, vehicles, refresh } = useData();
   const [showResModal, setShowResModal] = useState(false);
   const [resType, setResType]     = useState('room');
 
@@ -235,7 +235,7 @@ export default function AdminPage() {
                   </div>
                   <button className={clsx(styles.actionBtn, styles.delete)} onClick={async () => {
                     const { error } = await supabase.from('rooms').delete().eq('id', room.id);
-                    if (!error) setRooms(rooms.filter(r => r.id !== room.id));
+                    if (!error) refresh();
                   }}>
                     <Trash2 size={14} />
                   </button>
@@ -268,7 +268,7 @@ export default function AdminPage() {
                   </div>
                   <button className={clsx(styles.actionBtn, styles.delete)} onClick={async () => {
                     const { error } = await supabase.from('vehicles').delete().eq('id', v.id);
-                    if (!error) setVehicles(vehicles.filter(vh => vh.id !== v.id));
+                    if (!error) refresh();
                   }}>
                     <Trash2 size={14} />
                   </button>
@@ -355,9 +355,8 @@ export default function AdminPage() {
                   equipment: [] 
                }]).select().single();
                if (!error && data) {
-                 refreshData();
-                 // Keep local optimistic update
-                 setRooms(prev => [...prev, data]);
+                 refresh();
+                 // Keep local optimistic update for delete
                }
             } else {
                const { data, error } = await supabase.from('vehicles').insert([{ 
@@ -367,9 +366,8 @@ export default function AdminPage() {
                   type: resForm.type 
                }]).select().single();
                if (!error && data) {
-                 refreshData();
-                 // Keep local optimistic update
-                 setVehicles(prev => [...prev, data]);
+                 refresh();
+                 // Keep local optimistic update for delete
                }
             }
             setShowResModal(false);
