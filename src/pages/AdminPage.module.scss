@@ -8,6 +8,12 @@
   display: flex;
   gap: 8px;
   border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    gap: 4px;
+    padding-bottom: 8px;
+  }
 }
 
 .tabBtn {
@@ -23,6 +29,11 @@
 
   &:hover {
     color: var(--text);
+  }
+
+  @media (max-width: 768px) {
+    padding: 10px 14px;
+    font-size: 13px;
   }
 }
 
@@ -113,12 +124,20 @@
 
 .tableWrapper {
   overflow-x: auto;
+
+  @media (max-width: 768px) {
+    padding: 8px;
+  }
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+  }
 
   th {
     padding: 14px 16px;
@@ -129,11 +148,20 @@
     white-space: nowrap;
     border-bottom: 1px solid var(--border);
     background: var(--bg);
+
+    @media (max-width: 768px) {
+      padding: 12px 8px;
+      font-size: 11px;
+    }
   }
 
   td {
     padding: 14px 16px;
     border-bottom: 1px solid var(--border);
+
+    @media (max-width: 768px) {
+      padding: 12px 8px;
+    }
   }
 
   tr:last-child td {
@@ -192,10 +220,17 @@
 .actionsCell {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+  }
 }
 
 .actionBtn {
-  padding: 6px;
+  padding: 6px 12px;
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -203,6 +238,15 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  font-size: 13px;
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    padding: 8px 12px;
+    font-size: 12px;
+    flex: 1;
+    justify-content: center;
+  }
 
   &.edit {
     background: var(--bg);
@@ -219,12 +263,23 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 16px;
+  padding: 0;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 0 4px;
+  }
 }
 
 .resourceCard {
   padding: 24px;
+
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+  }
 }
 
 .resourceHeader {
@@ -241,6 +296,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @media (max-width: 768px) {
+    width: 42px;
+    height: 42px;
+  }
 }
 
 .resourceTitle {
@@ -279,7 +339,12 @@
 .modalGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0 16px;
+  gap: 16px 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 .fullWidth {

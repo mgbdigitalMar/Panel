@@ -15,6 +15,11 @@
   background: var(--bg);
   flex-wrap: wrap;
   gap: 12px;
+
+  @media (max-width: 768px) {
+    padding: 14px 16px;
+    gap: 8px;
+  }
 }
 
 .viewToggle {
@@ -67,9 +72,14 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
-  min-width: 180px;
+  min-width: 140px;
   text-align: center;
   letter-spacing: -0.01em;
+
+  @media (max-width: 768px) {
+    min-width: auto;
+    font-size: 13px;
+  }
 }
 
 /* ── Month grid ────────────────────────────────────────── */
@@ -80,7 +90,7 @@
 }
 
 .dayHeader {
-  padding: 10px 0;
+  padding: 12px 4px;
   text-align: center;
   font-size: 11px;
   font-weight: 600;
@@ -90,6 +100,11 @@
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   background: var(--bg);
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+    padding: 14px 2px;
+  }
 }
 
 .emptyCell {
@@ -98,6 +113,10 @@
   background: var(--bg);
   min-height: 80px;
   opacity: 0.4;
+
+  @media (max-width: 768px) {
+    min-height: 90px;
+  }
 }
 
 .dayCell {
@@ -107,6 +126,11 @@
   border-bottom: 1px solid var(--border);
   transition: background 0.15s;
   cursor: default;
+
+  @media (max-width: 768px) {
+    min-height: 90px;
+    padding: 10px;
+  }
 
   &:hover { background: var(--bg); }
 }
@@ -121,6 +145,10 @@
   font-weight: 600;
   color: var(--text-sec);
   margin-bottom: 6px;
+
+  @media (max-width: 768px) {
+    font-size: 15px;
+  }
 }
 
 .dayChips {
@@ -135,15 +163,24 @@
   gap: 4px;
   font-size: 10px;
   font-weight: 600;
-  padding: 2px 6px;
+  padding: 3px 8px;
   border-radius: 4px;
   overflow: hidden;
   white-space: nowrap;
+
+  @media (max-width: 768px) {
+    font-size: 11px;
+    padding: 4px 6px;
+  }
 
   span {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 70px;
+
+    @media (max-width: 768px) {
+      max-width: 60px;
+    }
   }
 }
 
@@ -153,6 +190,11 @@
   grid-template-columns: 54px repeat(7, 1fr);
   overflow-y: auto;
   max-height: 520px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 40px repeat(7, 1fr);
+    max-height: 480px;
+  }
 }
 
 .hourAxisEmpty {
@@ -200,6 +242,11 @@
   border-bottom: 1px solid var(--border);
   text-align: right;
   background: var(--bg);
+
+  @media (max-width: 768px) {
+    padding: 6px 4px;
+    font-size: 9px;
+  }
 }
 
 .weekCell {
@@ -211,6 +258,12 @@
   flex-direction: column;
   gap: 2px;
   transition: background 0.15s;
+
+  @media (max-width: 768px) {
+    min-height: 50px;
+    padding: 4px 2px;
+  }
+
   &:hover { background: var(--bg); }
 }
 
@@ -220,6 +273,11 @@
   padding: 3px 6px;
   font-size: 10px;
   font-weight: 600;
+
+  @media (max-width: 768px) {
+    padding: 2px 4px;
+    font-size: 9px;
+  }
 }
 
 .eventName {
