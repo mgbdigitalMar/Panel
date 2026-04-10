@@ -282,12 +282,21 @@ export function AuthProvider({ children, navigate }) {
     setEmployeesState(data.map(mapProfile))
   }
 
-  // ── Session restore on mount ──────────────────────────────
+  // ── Per-tab session + auto-logout on close ─────────────────
   useEffect(() => {
+    // Generate unique tab ID
+    const tabId = 'tab_' + Math.random().toString(36).substr(2, 9)
+    localStorage.setItem('margube_tabId', tabId)
+    
+    // Broadcast channel for cross-tab communication
+    const bc = new BroadcastChannel('margube_sessions')
+    
+    // Session restore + tab validation
     const restoreSession = async () => {
       try {
+        const storedTab = localStorage.getItem('margube_tabId')
         const stored = localStorage.getItem('margube_session')
-        if (stored) {
+        if (stored && storedTab === tabId) {
           const profileId = JSON.parse(stored).id
           const { data, error } = await supabase.from('profiles').select('*').eq('id', profileId).single()
           if (!error && data) {
@@ -297,16 +306,48 @@ export function AuthProvider({ children, navigate }) {
             if (mapped.firstLogin === true || mapped.firstLogin === 'true') navigate('changePassword')
             else navigate('dashboard')
           } else {
-            localStorage.removeItem('margube_session')
+            clearSession()
           }
         }
       } catch (e) {
         console.error('Error restoring session:', e)
+        clearSession()
       } finally {
         setAuthLoading(false)
       }
     }
+    
+    const clearSession = () => {
+      localStorage.removeItem('margube_session')
+      localStorage.removeItem('margube_tabId')
+      bc.postMessage({ type: 'logout' })
+      setUser(null)
+      navigate('login')
+    }
+    
     restoreSession()
+    
+    // Auto-logout on tab close
+    const handleBeforeUnload = () => {
+      bc.postMessage({ type: 'tab_closed', tabId })
+      localStorage.removeItem(`margube_tabId`)
+    }
+    
+    // Listen for other tabs logout/close
+    const handleBCMessage = (ev) => {
+      if (ev.data.type === 'logout' || (ev.data.type === 'tab_closed' && ev.data.tabId !== tabId)) {
+        clearSession()
+      }
+    }
+    
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    bc.addEventListener('message', handleBCMessage)
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      bc.removeEventListener('message', handleBCMessage)
+      bc.close()
+    }
   }, [])
 
   // ── Idle timeout logic ──────────────────────────────
@@ -353,8 +394,9 @@ export function AuthProvider({ children, navigate }) {
 
     const mapped = mapProfile(profileRow)
     setUser(mapped)
-    // Guardamos evidencia de conexión activa localmente
-    localStorage.setItem('margube_session', JSON.stringify({ id: mapped.id }))
+    // Guardamos evidencia de conexión activa localmente + tab ID
+    const tabId = localStorage.getItem('margube_tabId')
+    localStorage.setItem('margube_session', JSON.stringify({ id: mapped.id, tabId }))
     
     await loadAllEmployees()
     if (mapped.firstLogin === true || mapped.firstLogin === 'true') navigate('changePassword')
@@ -365,7 +407,12 @@ export function AuthProvider({ children, navigate }) {
 
   // ── Logout ────────────────────────────────────────────────
   const logout = async () => {
+    const tabId = localStorage.getItem('margube_tabId')
     localStorage.removeItem('margube_session')
+    localStorage.removeItem('margube_tabId')
+    const bc = new BroadcastChannel('margube_sessions')
+    bc.postMessage({ type: 'logout' })
+    bc.close()
     setUser(null)
     setEmployeesState([])
     setNeedsOnboarding(false)

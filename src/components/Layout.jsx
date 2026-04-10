@@ -13,6 +13,7 @@ import logoWhite from '../assets/logos/logo-white.png';
 
 import { Avatar } from './ui';
 import OnboardingModal from './OnboardingModal';
+import { Select } from './ui/Select/Select';
 import styles from './Layout.module.scss';
 
 const navItems = [
@@ -27,7 +28,7 @@ const adminItems = [
 ];
 
 export default function Layout({ children }) {
-  const { user, logout, needsOnboarding, setLastActivity } = useAuth();
+  const { user, logout, needsOnboarding, setLastActivity, setCurrentUser } = useAuth();
   const { theme, toggle } = useTheme();
   const { page, navigate } = useApp();
   const { requests, reservations, readIds, markRead, markAllRead, density, toggleDensity, liveNotifs = [] } = useData();
@@ -111,14 +112,29 @@ export default function Layout({ children }) {
 
       <div className={styles.userBottom}>
         <div className={styles.userCard}>
-          <Avatar initials={user?.avatar || '??'} size={32} />
-          <div className={styles.userInfo}>
-            <p>{user?.name}</p>
-            <p>{user?.dept}</p>
+          <div className={styles.userHeader}>
+            <Avatar initials={user?.avatar || '??'} size={32} />
+            <div className={styles.userInfo}>
+              <p>{user?.name}</p>
+              <p>{user?.dept}</p>
+            </div>
           </div>
-          <button onClick={logout} title="Cerrar sesión" className={styles.logoutBtn}>
-            <LogOut size={15} />
-          </button>
+          <div className={styles.userControls}>
+            <Select 
+              value={user?.workMode || 'office'} 
+              onChange={v => setCurrentUser({ workMode: v })} 
+              options={[
+                {value: 'office', label: '🏢 Oficina'},
+                {value: 'remote', label: '💻 Remoto'},
+                {value: 'field', label: '🌍 Externo'}
+              ]}
+              className={styles.workModeSelect}
+            />
+            <button onClick={logout} title="Cerrar sesión" className={styles.logoutBtn}>
+              <LogOut size={15} />
+            </button>
+          </div>
+
         </div>
       </div>
     </div>

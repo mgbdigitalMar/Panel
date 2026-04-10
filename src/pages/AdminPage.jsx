@@ -32,7 +32,7 @@ export default function AdminPage() {
   const [showResModal, setShowResModal] = useState(false);
   const [resType, setResType]     = useState('room');
 
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'office' });
   const [resForm, setResForm] = useState({ id: null, name: '', capacity: '', floor: '', equipment: '', model: '', plate: '', year: '', type: 'Turismo' });
   const [editingRes, setEditingRes] = useState(false);
 
@@ -61,6 +61,7 @@ export default function AdminPage() {
         position: form.position,
         phone: form.phone,
         birthdate: form.birthdate || null,
+        work_mode: form.workMode,
         avatar_initials: avatar
       };
       if (form.password) {
@@ -93,12 +94,22 @@ export default function AdminPage() {
     }
     setShowModal(false);
     setEditEmp(null);
-    setForm({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '' });
+        setForm({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'office' });
   };
 
   const handleEdit = emp => { 
     setEditEmp(emp); 
-    setForm({ name: emp.name, email: emp.email, password: '', role: emp.role, dept: emp.dept, position: emp.position, phone: emp.phone, birthdate: emp.birthdate }); 
+    setForm({ 
+      name: emp.name, 
+      email: emp.email, 
+      password: '', 
+      role: emp.role, 
+      dept: emp.dept, 
+      position: emp.position, 
+      phone: emp.phone, 
+      birthdate: emp.birthdate,
+      workMode: emp.workMode || 'office'
+    }); 
     setShowModal(true); 
   };
   
@@ -143,7 +154,7 @@ export default function AdminPage() {
               icon={Plus} 
               onClick={() => { 
                 setEditEmp(null); 
-                setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '' }); 
+                setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '', workMode: 'office' }); 
                 setShowModal(true); 
               }}
             >
@@ -349,12 +360,22 @@ export default function AdminPage() {
           <Input label="DNI" value={form.phone} onChange={v => setForm({ ...form, phone: v })} />
           <Input label="Fecha nacimiento" value={form.birthdate} onChange={v => setForm({ ...form, birthdate: v })} type="date" />
           <div className={styles.fullWidth}>
-            <Select 
-              label="Rol" 
-              value={form.role} 
-              onChange={v => setForm({ ...form, role: v })}
-              options={[{ value: 'employee', label: 'Empleado' }, { value: 'admin', label: 'Administrador' }]} 
-            />
+          <Select 
+            label="Rol" 
+            value={form.role} 
+            onChange={v => setForm({ ...form, role: v })}
+            options={[{ value: 'employee', label: 'Empleado' }, { value: 'admin', label: 'Administrador' }]} 
+          />
+          <Select 
+            label="Modo de trabajo" 
+            value={form.workMode} 
+            onChange={v => setForm({ ...form, workMode: v })}
+            options={[
+              { value: 'office', label: 'Oficina' },
+              { value: 'remote', label: 'Remoto' },
+              { value: 'field', label: 'Externo' }
+            ]} 
+          />
           </div>
         </div>
         {!editEmp && (
