@@ -213,11 +213,7 @@ const sidebarContent = (
             </h1>
           </div>
 
-          <div className={clsx(styles.headerSearch, 'hide-mobile')}>
-            <Search size={14} />
-            <input type="text" placeholder="Buscar en la plataforma..." />
-            <span className={styles.searchKbd}>⌘K</span>
-          </div>
+
 
           <div className={styles.headerRight}>
 

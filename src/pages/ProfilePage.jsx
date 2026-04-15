@@ -6,10 +6,11 @@ import styles from './ProfilePage.module.scss';
 import clsx from 'clsx';
 
 const WORK_MODES = {
-  office: { label: 'Oficina' },
-  remote: { label: 'Remoto' },
-  field: { label: 'Externo' },
+  Office: { label: 'Oficina' },
+  remoto: { label: 'Remoto' },
+  externo: { label: 'Externo' },
 };
+const DEFAULT_WORK_MODE = 'Office';
 
 export default function ProfilePage() {
   const { user, setCurrentUser } = useAuth();
@@ -17,15 +18,28 @@ export default function ProfilePage() {
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
-    workMode: user?.workMode || 'office',
+    workMode: user?.workMode || DEFAULT_WORK_MODE,
   });
   const [loading, setLoading] = useState(false);
+  const [workModeLoading, setWorkModeLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const handleWorkModeChange = (mode) => {
-    setForm({ ...form, workMode: mode });
-    setCurrentUser({ workMode: mode });
-    setMessage('Modo de trabajo actualizado.');
+const handleWorkModeChange = async (mode) => {
+    if (mode === form.workMode) return;
+    
+    setWorkModeLoading(true);
+    setMessage('');
+    try {
+      setForm({ ...form, workMode: mode });
+      await setCurrentUser({ id: user.id, workMode: mode });
+      setMessage('Modo de trabajo actualizado correctamente.');
+    } catch (error) {
+      console.error('Error updating work mode:', error);
+      setForm({ ...form, workMode: user?.workMode || DEFAULT_WORK_MODE });
+      setMessage('Error al actualizar el modo de trabajo. Intenta de nuevo.');
+    } finally {
+      setWorkModeLoading(false);
+    }
   };
 
   const handlePasswordChange = async () => {
@@ -108,6 +122,8 @@ export default function ProfilePage() {
             onChange={handleWorkModeChange}
             options={Object.entries(WORK_MODES).map(([k, m]) => ({ value: k, label: m.label }))}
             className={styles.select}
+            loading={workModeLoading}
+            disabled={workModeLoading}
           />
         </Card>
 

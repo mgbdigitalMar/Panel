@@ -265,7 +265,7 @@ export function AuthProvider({ children, navigate }) {
       avatar:     profile.avatar_initials,
       birthdate:  profile.birthdate,
       joinDate:   profile.join_date,
-      workMode:   profile.work_mode,
+      workMode:   profile.work_mode || 'Office',
       firstLogin: profile.first_login,
     }
   }
@@ -351,6 +351,28 @@ export function AuthProvider({ children, navigate }) {
       window.removeEventListener('beforeunload', handleBeforeUnload)
       bc.removeEventListener('message', handleBCMessage)
       bc.close()
+    }
+  }, [])
+
+  // ── Profiles realtime subscription ────────────────────────
+  useEffect(() => {
+    const profilesChannel = supabase
+      .channel('realtime-profiles')
+      .on('postgres_changes', 
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'profiles'
+        }, 
+        () => {
+          loadAllEmployees()
+          console.log('Profiles updated via realtime - employees refreshed')
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(profilesChannel)
     }
   }, [])
 

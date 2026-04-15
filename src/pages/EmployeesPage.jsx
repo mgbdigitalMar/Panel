@@ -7,13 +7,14 @@ import clsx from 'clsx';
 import { supabase } from '../utils/supabase';
 
 const WORK_MODES = {
-  office: { label: 'Oficina',   icon: Building2, color: 'var(--accent)',  bg: 'var(--accent-bg)'  },
-  remote: { label: 'Remoto',    icon: Home,       color: 'var(--success)', bg: 'var(--success-bg)' },
-  field:  { label: 'Externo',   icon: MapPin,     color: 'var(--warning)', bg: 'var(--warning-bg)' },
+  Office: { label: 'Oficina',   icon: Building2, color: 'var(--accent)',  bg: 'var(--accent-bg)'  },
+  remoto: { label: 'Remoto',    icon: Home,       color: 'var(--success)', bg: 'var(--success-bg)' },
+  externo:  { label: 'Externo',   icon: MapPin,     color: 'var(--warning)', bg: 'var(--warning-bg)' },
 };
 
 function WorkModeBadge({ mode }) {
-  const m = WORK_MODES[mode] || WORK_MODES.office;
+  const safeMode = mode || 'Office';
+  const m = WORK_MODES[safeMode] || WORK_MODES.Office;
   const Icon = m.icon;
   return (
     <span className={styles.workBadge} style={{ background: m.bg, color: m.color }}>
@@ -48,7 +49,7 @@ export default function EmployeesPage() {
     } catch (err) {
       console.error('Failed to update work_mode:', err);
       // Revert on error
-      setEmployees(prev => prev.map(e => e.id === empId ? { ...e, workMode: 'office' } : e));
+      setEmployees(prev => prev.map(e => e.id === empId ? { ...e, workMode: 'Office' } : e));
       alert(`Error: ${err.message}`);
     }
   };
