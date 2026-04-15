@@ -5,6 +5,11 @@
   overflow: hidden;
 }
 
+.overflowWrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
 /* ── Header ────────────────────────────────────────────── */
 .calHeader {
   display: flex;
@@ -87,6 +92,7 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   border-left: 1px solid var(--border);
+  min-width: 600px;
 }
 
 .dayHeader {
@@ -190,6 +196,7 @@
   grid-template-columns: 54px repeat(7, 1fr);
   overflow-y: auto;
   max-height: 520px;
+  min-width: 600px;
 
   @media (max-width: 768px) {
     grid-template-columns: 40px repeat(7, 1fr);

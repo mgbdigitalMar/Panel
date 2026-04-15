@@ -97,86 +97,90 @@ export default function ReservationsCalendar() {
 
       {/* Month view */}
       {viewMode === 'month' && (
-        <div className={styles.monthGrid}>
-          {DAYS_ES.map(d => <div key={d} className={styles.dayHeader}>{d}</div>)}
-          {monthMatrix.map((day, i) => {
-            if (!day) return <div key={`e-${i}`} className={styles.emptyCell} />;
-            const ds = dateString(year, month, day);
-            const dayRes = resByDay[ds] || [];
-            return (
-              <div key={ds} className={clsx(styles.dayCell, { [styles.dayCellHasRes]: dayRes.length > 0 })}>
-                <span className={styles.dayNum}>{day}</span>
-                <div className={styles.dayChips}>
-                  {dayRes.slice(0, 3).map(r => (
-                    <div
-                      key={r.id}
-                      className={styles.chip}
-                      style={{
-                        background: r.type === 'room' ? 'var(--accent-bg)' : 'var(--warning-bg)',
-                        color: r.type === 'room' ? 'var(--accent)' : 'var(--warning)',
-                      }}
-                      title={`${r.resourceName} — ${r.timeStart}–${r.timeEnd}`}
-                    >
-                      {r.type === 'room' ? <Building size={10} /> : <Car size={10} />}
-                      <span>{r.resourceName.split(' ')[1] || r.resourceName}</span>
-                    </div>
-                  ))}
-                  {dayRes.length > 3 && (
-                    <div className={styles.chip} style={{ background: 'var(--border)', color: 'var(--text-mut)' }}>
-                      +{dayRes.length - 3}
-                    </div>
-                  )}
+        <div className={styles.overflowWrapper}>
+          <div className={styles.monthGrid}>
+            {DAYS_ES.map(d => <div key={d} className={styles.dayHeader}>{d}</div>)}
+            {monthMatrix.map((day, i) => {
+              if (!day) return <div key={`e-${i}`} className={styles.emptyCell} />;
+              const ds = dateString(year, month, day);
+              const dayRes = resByDay[ds] || [];
+              return (
+                <div key={ds} className={clsx(styles.dayCell, { [styles.dayCellHasRes]: dayRes.length > 0 })}>
+                  <span className={styles.dayNum}>{day}</span>
+                  <div className={styles.dayChips}>
+                    {dayRes.slice(0, 3).map(r => (
+                      <div
+                        key={r.id}
+                        className={styles.chip}
+                        style={{
+                          background: r.type === 'room' ? 'var(--accent-bg)' : 'var(--warning-bg)',
+                          color: r.type === 'room' ? 'var(--accent)' : 'var(--warning)',
+                        }}
+                        title={`${r.resourceName} — ${r.timeStart}–${r.timeEnd}`}
+                      >
+                        {r.type === 'room' ? <Building size={10} /> : <Car size={10} />}
+                        <span>{r.resourceName.split(' ')[1] || r.resourceName}</span>
+                      </div>
+                    ))}
+                    {dayRes.length > 3 && (
+                      <div className={styles.chip} style={{ background: 'var(--border)', color: 'var(--text-mut)' }}>
+                        +{dayRes.length - 3}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
 
       {/* Week view */}
       {viewMode === 'week' && (
-        <div className={styles.weekGrid}>
-          {/* Column headers */}
-          <div className={styles.hourAxisEmpty} />
-          {weekDays.map((d, i) => (
-            <div key={i} className={styles.weekDayHeader}>
-              <span className={styles.weekDayName}>{DAYS_ES[i]}</span>
-              <span className={styles.weekDayNum}>{d.getDate()}</span>
-            </div>
-          ))}
+        <div className={styles.overflowWrapper}>
+          <div className={styles.weekGrid}>
+            {/* Column headers */}
+            <div className={styles.hourAxisEmpty} />
+            {weekDays.map((d, i) => (
+              <div key={i} className={styles.weekDayHeader}>
+                <span className={styles.weekDayName}>{DAYS_ES[i]}</span>
+                <span className={styles.weekDayNum}>{d.getDate()}</span>
+              </div>
+            ))}
 
-          {/* Hour rows */}
-          {HOURS.map(hour => (
-            <>
-              <div key={`h-${hour}`} className={styles.hourLabel}>{hour}</div>
-              {weekDays.map((d, di) => {
-                const dayRes = resByDayHour(d).filter(r => {
-                  const start = parseH(r.timeStart);
-                  const thisH = parseInt(hour);
-                  const end = parseH(r.timeEnd);
-                  return start <= thisH && thisH < end;
-                });
-                return (
-                  <div key={`${di}-${hour}`} className={styles.weekCell}>
-                    {dayRes.map(r => (
-                      <div
-                        key={r.id}
-                        className={styles.weekEvent}
-                        style={{
-                          background: r.type === 'room' ? 'var(--accent-bg)' : 'var(--warning-bg)',
-                          borderLeftColor: r.type === 'room' ? 'var(--accent)' : 'var(--warning)',
-                          color: r.type === 'room' ? 'var(--accent)' : 'var(--warning)',
-                        }}
-                        title={`${r.resourceName} — ${r.employeeName}`}
-                      >
-                        <span className={styles.eventName}>{r.resourceName.split(' ')[0]} {r.resourceName.split(' ')[1]}</span>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })}
-            </>
-          ))}
+            {/* Hour rows */}
+            {HOURS.map(hour => (
+              <React.Fragment key={`h-${hour}`}>
+                <div className={styles.hourLabel}>{hour}</div>
+                {weekDays.map((d, di) => {
+                  const dayRes = resByDayHour(d).filter(r => {
+                    const start = parseH(r.timeStart);
+                    const thisH = parseInt(hour);
+                    const end = parseH(r.timeEnd);
+                    return start <= thisH && thisH < end;
+                  });
+                  return (
+                    <div key={`${di}-${hour}`} className={styles.weekCell}>
+                      {dayRes.map(r => (
+                        <div
+                          key={r.id}
+                          className={styles.weekEvent}
+                          style={{
+                            background: r.type === 'room' ? 'var(--accent-bg)' : 'var(--warning-bg)',
+                            borderLeftColor: r.type === 'room' ? 'var(--accent)' : 'var(--warning)',
+                            color: r.type === 'room' ? 'var(--accent)' : 'var(--warning)',
+                          }}
+                          title={`${r.resourceName} — ${r.employeeName}`}
+                        >
+                          <span className={styles.eventName}>{r.resourceName.split(' ')[0]} {r.resourceName.split(' ')[1]}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+          </div>
         </div>
       )}
     </div>

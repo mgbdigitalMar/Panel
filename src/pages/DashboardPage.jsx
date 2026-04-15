@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useAuth, useApp, useData } from '../context';
 import { MOCK_NEWS } from '../data/mockData';
 import { Avatar, Badge, StatCard, Card } from '../components/ui';
@@ -58,32 +58,34 @@ export default function DashboardPage() {
   const [news] = useState(MOCK_NEWS);
 
   const today = new Date();
-  const upcomingBirthdays = employees
-    .map(e => {
-      const bd = new Date(e.birthdate);
-      const thisYear = new Date(today.getFullYear(), bd.getMonth(), bd.getDate());
-      if (thisYear < today) thisYear.setFullYear(today.getFullYear() + 1);
-      const diff = Math.ceil((thisYear - today) / (1000 * 60 * 60 * 24));
-      return { ...e, daysLeft: diff, bdDisplay: thisYear.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) };
-    })
-    .sort((a, b) => a.daysLeft - b.daysLeft)
-    .slice(0, 4);
+  const upcomingBirthdays = useMemo(() => 
+    employees
+      .map(e => {
+        const bd = new Date(e.birthdate);
+        const thisYear = new Date(today.getFullYear(), bd.getMonth(), bd.getDate());
+        if (thisYear < today) thisYear.setFullYear(today.getFullYear() + 1);
+        const diff = Math.ceil((thisYear - today) / (1000 * 60 * 60 * 24));
+        return { ...e, daysLeft: diff, bdDisplay: thisYear.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) };
+      })
+      .sort((a, b) => a.daysLeft - b.daysLeft)
+      .slice(0, 4)
+  , [employees]);
 
-  const pendingCount = requests.filter(r => r.status === 'pending').length;
-  const requestsByMonth = buildRequestsByMonth(requests);
-  const reservationsByWeek = buildReservationsByWeek(reservations);
-
-  const resourceTypePie = [
+  const pendingCount = useMemo(() => requests.filter(r => r.status === 'pending').length, [requests]);
+  const requestsByMonth = useMemo(() => buildRequestsByMonth(requests), [requests]);
+  const reservationsByWeek = useMemo(() => buildReservationsByWeek(reservations), [reservations]);
+  
+  const resourceTypePie = useMemo(() => [
     { name: 'Salas',     value: reservations.filter(r => r.type === 'room').length,    fill: CHART_COLORS.accent   },
     { name: 'Vehículos', value: reservations.filter(r => r.type === 'vehicle').length, fill: CHART_COLORS.warning  },
-  ];
+  ], [reservations, CHART_COLORS]);
 
   const hour = today.getHours();
   const greeting = hour < 13 ? 'Buenos días' : hour < 20 ? 'Buenas tardes' : 'Buenas noches';
   const emoji    = hour < 13 ? '☀️' : hour < 20 ? '🌤️' : '🌙';
   const todayStr = today.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
-  const tooltipStyle = {
+const tooltipStyle = {
     background: 'var(--card)',
     border: '1px solid var(--border)',
     borderRadius: '10px',

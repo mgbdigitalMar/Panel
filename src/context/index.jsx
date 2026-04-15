@@ -182,9 +182,12 @@ export function DataProvider({ children }) {
       employee_id: employeeId,
       ...payload,
     }]).select().single()
-    if (error) { console.error(error); return null }
+    if (error) { 
+      console.error(error); 
+      return { error: error.message || 'Failed to create reservation' }
+    }
     await fetchReservations()
-    return data
+    return { data }
   }
 
   const updateReservationStatus = async (id, status, reviewedBy) => {

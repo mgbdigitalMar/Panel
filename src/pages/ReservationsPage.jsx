@@ -13,13 +13,18 @@ export default function ReservationsPage() {
   const [tab, setTab]           = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading]   = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const [form, setForm]         = useState({ type: 'room', resourceId: '', date: '', timeStart: '', timeEnd: '', purpose: '' });
 
   const filtered = tab === 'all' ? reservations : tab === 'mine' ? reservations.filter(r => r.employeeId === user.id) : reservations.filter(r => r.type === tab);
 
   const handleCreate = async () => {
-    if (!form.resourceId || !form.date || !form.timeStart || !form.timeEnd || !form.purpose) return;
+    if (!form.resourceId || !form.date || !form.timeStart || !form.timeEnd || !form.purpose) {
+      setErrorMsg('Complete todos los campos requeridos');
+      return;
+    }
     setLoading(true);
+    setErrorMsg('');
     const payload = {
       type: form.type,
       [form.type === 'room' ? 'room_id' : 'vehicle_id']: parseInt(form.resourceId),
@@ -29,10 +34,14 @@ export default function ReservationsPage() {
       purpose: form.purpose,
       status: 'pending',
     };
-    await createReservation(user.id, payload);
+    const result = await createReservation(user.id, payload);
     setLoading(false);
-    setShowModal(false);
-    setForm({ type: 'room', resourceId: '', date: '', timeStart: '', timeEnd: '', purpose: '' });
+    if (result?.error) {
+      setErrorMsg(result.error);
+    } else {
+      setShowModal(false);
+      setForm({ type: 'room', resourceId: '', date: '', timeStart: '', timeEnd: '', purpose: '' });
+    }
   };
 
   const handleDelete  = async (id) => { await deleteReservation(id); };
@@ -191,6 +200,19 @@ export default function ReservationsPage() {
           <Input label="Hora inicio" value={form.timeStart} onChange={v => setForm({ ...form, timeStart: v })} type="time" required />
           <Input label="Hora fin"    value={form.timeEnd}   onChange={v => setForm({ ...form, timeEnd: v })}   type="time" required />
         </div>
+        {errorMsg && (
+          <div style={{ 
+            color: 'var(--danger)', 
+            background: 'var(--danger-bg)', 
+            border: '1px solid var(--danger)', 
+            borderRadius: '8px', 
+            padding: '12px', 
+            marginBottom: '16px',
+            fontSize: '14px'
+          }}>
+            {errorMsg}
+          </div>
+        )}
         <Textarea label="Propósito / motivo" value={form.purpose} onChange={v => setForm({ ...form, purpose: v })} placeholder="Describe el propósito de la reserva..." />
         <div className={styles.modalActions}>
           <Button variant="ghost" onClick={() => setShowModal(false)} disabled={loading}>Cancelar</Button>
