@@ -165,7 +165,7 @@ export default function AdminPage() {
               <table className={styles.table}>
                 <thead>
                   <tr>
-                    {['Empleado', 'Departamento', 'Cargo', 'Email', 'Contraseña', 'Rol', 'Estado', 'Acciones'].map(h => (
+                    {['Empleado', 'Departamento', 'Cargo', 'Modo trabajo', 'Email', 'Contraseña', 'Rol', 'Estado', 'Acciones'].map(h => (
                       <th key={h}>{h}</th>
                     ))}
                   </tr>
@@ -184,11 +184,19 @@ export default function AdminPage() {
                       </td>
                       <td style={{ color: 'var(--text-sec)' }}>{emp.dept}</td>
                       <td style={{ color: 'var(--text-sec)' }}>{emp.position}</td>
+                      <td><span className="work-mode-badge" style={{
+                        background: emp.workMode === 'office' ? 'var(--accent-bg)' : emp.workMode === 'remote' ? 'var(--success-bg)' : 'var(--warning-bg)',
+                        color: emp.workMode === 'office' ? 'var(--accent)' : emp.workMode === 'remote' ? 'var(--success)' : 'var(--warning)',
+                        padding: '2px 8px',
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: '12px',
+                        fontWeight: '500'
+                      }}>{emp.workMode === 'office' ? 'Oficina' : emp.workMode === 'remote' ? 'Remoto' : 'Externo'}</span></td>
                       <td style={{ color: 'var(--text-sec)' }}>{emp.email}</td>
                       <td>
                         <div className={styles.passWrapper}>
                           <span className={styles.passText}>
-                            {showPassFor === emp.id ? emp.password : '••••••••••'}
+                            {showPassFor === emp.id ? (emp.password_hash ? emp.password_hash.slice(0, 20) + '...' : 'No disponible') : '••••••••••'}
                           </span>
                           <button 
                             className={styles.iconBtn}

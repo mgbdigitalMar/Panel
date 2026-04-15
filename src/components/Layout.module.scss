@@ -161,6 +161,34 @@
   padding: 10px;
   border-radius: var(--radius);
   background: var(--bg);
+  position: relative;
+}
+
+.dropdownToggle {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-mut);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: var(--border);
+    color: var(--text);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
 }
 
 .userInfo {
@@ -178,9 +206,72 @@
   }
 
   p:last-child {
-    margin: 0;
+    margin: 0 0 8px 0;
     font-size: 11px;
     color: var(--text-mut);
+  }
+
+  .mode-select-sidebar {
+    font-size: 0.85em;
+    width: 140px !important;
+
+    select {
+      padding: 4px 8px;
+      font-size: inherit;
+    }
+  }
+}
+
+.userName {
+  font-weight: 600;
+}
+
+.userDropdown {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  box-shadow: var(--shadow-lg);
+  z-index: 300;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--bg);
+  }
+
+  svg {
+    flex-shrink: 0;
+    color: var(--text-mut);
+  }
+}
+
+.logoutDropdown {
+  margin-top: 4px;
+  color: var(--danger) !important;
+
+  &:hover {
+    background: var(--danger-bg);
+  }
+
+  svg {
+    color: var(--danger);
   }
 }
 

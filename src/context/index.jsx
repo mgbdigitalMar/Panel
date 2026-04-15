@@ -254,6 +254,7 @@ export function AuthProvider({ children, navigate }) {
       id:         profile.id,
       name:       profile.name,
       email:      profile.email,
+      password_hash: profile.password_hash,
       role:       profile.role,
       dept:       profile.department,
       phone:      profile.phone,

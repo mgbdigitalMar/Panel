@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth, useApp, useTheme } from '../context';
 import logoColor from '../assets/logos/logo-color.png';
 import logoWhite from '../assets/logos/logo-white.png';
@@ -11,7 +11,7 @@ import { supabase } from '../utils/supabase';
 import bcrypt from 'bcryptjs';
 
 export default function ChangePasswordPage() {
-  const { user, setCurrentUser, setNeedsOnboarding } = useAuth();
+  const { user, setCurrentUser, setNeedsOnboarding, setLastActivity } = useAuth();
   const { navigate } = useApp();
   const { theme } = useTheme();
 
@@ -21,6 +21,23 @@ export default function ChangePasswordPage() {
   const [showConf, setShowConf] = useState(false);
   const [err, setErr]           = useState('');
   const [loading, setLoading]   = useState(false);
+
+  // Reset idle timer on activity (prevents logout during password change)
+  const resetIdle = () => setLastActivity(Date.now());
+
+  useEffect(() => {
+    const handleActivity = resetIdle;
+    document.addEventListener('mousemove', handleActivity);
+    document.addEventListener('keydown', handleActivity);
+    document.addEventListener('click', handleActivity);
+    document.addEventListener('scroll', handleActivity);
+    return () => {
+      document.removeEventListener('mousemove', handleActivity);
+      document.removeEventListener('keydown', handleActivity);
+      document.removeEventListener('click', handleActivity);
+      document.removeEventListener('scroll', handleActivity);
+    };
+  }, [resetIdle]);
 
   const handleSave = async () => {
     if (!newPass || newPass.length < 8) { 

@@ -3,7 +3,7 @@ import { useTheme, useAuth, useApp, useData } from '../context';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import { 
-  LayoutDashboard, Calendar, Inbox, Newspaper, Settings,
+  LayoutDashboard, Calendar, Inbox, Newspaper, Settings, User,
   LogOut, Sun, Moon, Menu, Bell, CheckCircle, Clock,
   UsersRound, AlignJustify, List, Globe
 } from 'lucide-react';
@@ -13,6 +13,7 @@ import logoWhite from '../assets/logos/logo-white.png';
 
 import { Avatar } from './ui';
 import OnboardingModal from './OnboardingModal';
+import { Select } from './ui';
 import styles from './Layout.module.scss';
 
 const navItems = [
@@ -27,25 +28,31 @@ const adminItems = [
 ];
 
 export default function Layout({ children }) {
-  const { user, logout, needsOnboarding, setLastActivity } = useAuth();
+  const { user, logout, needsOnboarding, setLastActivity, setCurrentUser } = useAuth();
   const { theme, toggle } = useTheme();
   const { page, navigate } = useApp();
   const { requests, reservations, readIds, markRead, markAllRead, density, toggleDensity, liveNotifs = [] } = useData();
 
   const [sideOpen, setSideOpen] = useState(false);
   const [notiMenu, setNotiMenu] = useState(false);
+  const [userDropdown, setUserDropdown] = useState(false);
   const notiMenuRef = useRef(null);
 
   // Reset idle timer on activity
   const resetIdle = () => setLastActivity(Date.now());
 
+  const userDropdownRef = useRef(null);
+
   useEffect(() => {
     function handleClickOutside(e) {
       if (notiMenuRef.current && !notiMenuRef.current.contains(e.target)) setNotiMenu(false);
+      if (userDropdown && userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
+        setUserDropdown(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [userDropdown]);
 
   // Activity listeners for idle timeout
   useEffect(() => {
@@ -93,7 +100,13 @@ export default function Layout({ children }) {
     );
   };
 
-  const sidebarContent = (
+const WORK_MODES = {
+  office: { label: 'Oficina' },
+  remote: { label: 'Remoto' },
+  field: { label: 'Externo' },
+};
+
+const sidebarContent = (
     <div className={styles.sidebarInner}>
       <div className={styles.logoArea}>
 {theme === 'dark' ? <img src={logoWhite} alt="Margube" style={{ width: '160px', height: 'auto' }} /> : <img src={logoColor} alt="Margube" style={{ width: '160px', height: 'auto' }} />}
@@ -111,15 +124,53 @@ export default function Layout({ children }) {
 
       <div className={styles.userBottom}>
         <div className={styles.userCard}>
-          <Avatar initials={user?.avatar || '??'} size={32} />
-          <div className={styles.userInfo}>
-            <p>{user?.name}</p>
-            <p>{user?.dept}</p>
+            <Avatar initials={user?.avatar || '??'} size={32} />
+            <div className={styles.userInfo}>
+              <motion.p className={styles.userName}>{user?.name}</motion.p>
+              <p>{user?.dept}</p>
+            </div>
+            <button
+              ref={userDropdownRef}
+              className={styles.dropdownToggle}
+              onClick={(e) => {
+                e.stopPropagation();
+                setUserDropdown(prev => !prev);
+              }}
+              title="Menú de usuario"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 1.82-2.49A1.72 1.72 0 0 0 18.55 9.4h-5.43A1.72 1.72 0 0 0 11 11V8.6a1.72 1.72 0 0 0-1.4-1.68l-.14-.06A2 2 0 0 0 7.6 8a2 2 0 0 0-1.95 1.69A1.65 1.65 0 0 0 4.6 12.2 6.13 6.13 0 0 0 5 16.9v.9a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-.9a6.09 6.09 0 0 0 1.4-4Z"/>
+              </svg>
+            </button>
+            <AnimatePresence>
+              {userDropdown && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                  className={styles.userDropdown}
+                >
+                  <button onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('profile');
+                    setSideOpen(false);
+                    setUserDropdown(false);
+                  }} className={styles.dropdownItem}>
+                    <User size={16} />
+                    Perfil
+                  </button>
+                  <button onClick={(e) => {
+                    e.stopPropagation();
+                    logout();
+                  }} className={clsx(styles.dropdownItem, styles.logoutDropdown)}>
+                    <LogOut size={16} />
+                    Cerrar sesión
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          <button onClick={logout} title="Cerrar sesión" className={styles.logoutBtn}>
-            <LogOut size={15} />
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -163,10 +214,7 @@ export default function Layout({ children }) {
           </div>
 
           <div className={styles.headerRight}>
-            {/* Density toggle */}
-            <button onClick={toggleDensity} className={styles.iconBtn} title={density === 'compact' ? 'Vista normal' : 'Vista compacta'}>
-              {density === 'compact' ? <AlignJustify size={17} /> : <List size={17} />}
-            </button>
+
 
             {/* Theme */}
             <button onClick={toggle} className={styles.iconBtn}>

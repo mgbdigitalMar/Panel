@@ -10,6 +10,7 @@ import RequestsPage       from './pages/RequestsPage'
 import NewsPage           from './pages/NewsPage'
 import AdminPage          from './pages/AdminPage'
 import EmployeesPage      from './pages/EmployeesPage'
+import ProfilePage        from './pages/ProfilePage'
 
 // Loading screen while Supabase restores the session
 function LoadingScreen() {
@@ -48,6 +49,7 @@ function AppShell() {
                     {page === 'reservations' && <ReservationsPage />}
                     {page === 'requests'     && <RequestsPage />}
                     {page === 'news'         && <NewsPage />}
+                    {page === 'profile'      && <ProfilePage />}
                     {page === 'employees'    && <EmployeesPage />}
                     {page === 'admin'        && (user?.role === 'admin' ? <AdminPage /> : <DashboardPage />)}
                   </Layout>
