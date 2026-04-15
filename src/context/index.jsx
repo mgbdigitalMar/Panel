@@ -25,7 +25,13 @@ export function DataProvider({ children }) {
   const [rooms, setRooms]                  = useState([])
   const [vehicles, setVehicles]            = useState([])
   const [loadingData, setLoadingData]      = useState(true)
-  const [readIds, setReadIds]              = useState(new Set())
+const [readIds, setReadIds] = useState(() => {
+  try {
+    return new Set(JSON.parse(localStorage.getItem('margube_readNotifs') || '[]'));
+  } catch {
+    return new Set();
+  }
+})
   const [liveNotifs, setLiveNotifs]        = useState([])  // Real-time toasts
   const [density, setDensity]              = useState(
     () => localStorage.getItem('margube-density') || 'normal'
@@ -204,9 +210,23 @@ export function DataProvider({ children }) {
     await fetchReservations()
   }
 
-  // ── Notification read state ───────────────────────────────
-  const markRead    = (id)  => setReadIds(prev => new Set([...prev, id]))
-  const markAllRead = (ids) => setReadIds(prev => new Set([...prev, ...ids]))
+// ── Notification read state ───────────────────────────────
+  const markRead = (id) => setReadIds(prev => {
+    const next = new Set([...prev, id]);
+    localStorage.setItem('margube_readNotifs', JSON.stringify(Array.from(next)));
+    return next;
+  });
+
+  const markAllRead = (ids) => setReadIds(prev => {
+    const next = new Set([...prev, ...ids]);
+    localStorage.setItem('margube_readNotifs', JSON.stringify(Array.from(next)));
+    return next;
+  });
+
+  // Persist changes
+  useEffect(() => {
+    localStorage.setItem('margube_readNotifs', JSON.stringify(Array.from(readIds)));
+  }, [readIds]);
 
   // ── Density ───────────────────────────────────────────────
   const toggleDensity = () => setDensity(prev => {
@@ -436,6 +456,7 @@ export function AuthProvider({ children, navigate }) {
     const tabId = localStorage.getItem('margube_tabId')
     localStorage.removeItem('margube_session')
     localStorage.removeItem('margube_tabId')
+    localStorage.removeItem('margube_readNotifs') // Clear read notifications
     const bc = new BroadcastChannel('margube_sessions')
     bc.postMessage({ type: 'logout' })
     bc.close()
