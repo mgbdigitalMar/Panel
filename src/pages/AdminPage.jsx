@@ -7,6 +7,7 @@ import styles from './AdminPage.module.scss';
 import clsx from 'clsx';
 import bcrypt from 'bcryptjs';
 import { supabase } from '../utils/supabase';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const DEPARTMENTS = [
   { value: 'Administración - RRHH', label: 'Administración - RRHH' },
@@ -130,53 +131,73 @@ export default function AdminPage() {
 
   return (
     <div className={styles.container}>
-      {/* Tabs */}
-      <div className={styles.tabs}>
-        {tabBtn('employees', 'Empleados / Usuarios')}
-        {tabBtn('rooms', 'Salas')}
-        {tabBtn('vehicles', 'Vehículos')}
+      {/* Page Controls */}
+      <div className={styles.pageControls}>
+        <div className={styles.tabsRow}>
+          {tabBtn('employees', 'Empleados / Usuarios')}
+          {tabBtn('rooms', 'Salas')}
+          {tabBtn('vehicles', 'Vehículos')}
+        </div>
+        
+        {tab === 'employees' && (
+          <Button icon={Plus} onClick={() => { setEditEmp(null); setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '', workMode: 'office' }); setShowModal(true); }}>
+            Nuevo empleado
+          </Button>
+        )}
+        {tab === 'rooms' && (
+          <Button icon={Plus} onClick={() => { setResType('room'); setResForm({ id: null, name: '', capacity: '', floor: '', equipment: '' }); setEditingRes(false); setShowResModal(true); }}>
+            Nueva sala
+          </Button>
+        )}
+        {tab === 'vehicles' && (
+          <Button icon={Plus} onClick={() => { setResType('vehicle'); setResForm({ id: null, model: '', plate: '', year: '', type: 'Turismo' }); setEditingRes(false); setShowResModal(true); }}>
+            Nuevo vehículo
+          </Button>
+        )}
       </div>
 
       {/* ── EMPLOYEES ── */}
+      <AnimatePresence mode="wait">
       {tab === 'employees' && (
-        <>
-          <div className={styles.actionsBar}>
-            <div className={styles.searchWrapper}>
-              <Search className={styles.searchIcon} size={16} />
-              <input 
-                className={styles.searchInput}
-                value={search} 
-                onChange={e => setSearch(e.target.value)} 
-                placeholder="Buscar empleado..."
-              />
-            </div>
-            <Button 
-              icon={Plus} 
-              onClick={() => { 
-                setEditEmp(null); 
-                setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '', workMode: 'office' }); 
-                setShowModal(true); 
-              }}
-            >
-              Nuevo empleado
-            </Button>
-          </div>
-
-          <div className={styles.deptStats}>
-            {depts.map(d => (
-              <div key={d} className={styles.deptBadge}>
-                <span>{d}</span>
-                <span>{employees.filter(e => e.dept === d).length}</span>
+        <motion.div 
+          key="employees"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Card style={{ padding: 0, overflow: 'hidden' }}>
+            <div className={styles.tableHeaderSection}>
+              <div className={styles.searchWrapper}>
+                <Search className={styles.searchIcon} size={16} />
+                <input 
+                  className={styles.searchInput}
+                  value={search} 
+                  onChange={e => setSearch(e.target.value)} 
+                  placeholder="Buscar empleado por nombre o email..."
+                />
               </div>
-            ))}
-          </div>
+              <div className={styles.deptStats}>
+                {depts.slice(0, 5).map(d => (
+                  <div key={d} className={styles.deptBadge} title={d}>
+                    <span>{d.includes('-') ? d.split('-')[0].trim() : d}</span>
+                    <span>{employees.filter(e => e.dept === d).length}</span>
+                  </div>
+                ))}
+                {depts.length > 5 && (
+                  <div className={styles.deptBadge}>
+                    <span>Otros</span>
+                    <span>{employees.filter(e => !depts.slice(0,5).includes(e.dept)).length}</span>
+                  </div>
+                )}
+              </div>
+            </div>
 
-          <Card>
             <div className={styles.tableWrapper}>
               <table className={styles.table}>
                 <thead>
                   <tr>
-                    {['Empleado', 'Departamento', 'Cargo', 'Modo trabajo', 'Email', 'Contraseña', 'Rol', 'Estado', 'Acciones'].map(h => (
+                    {['Usuario', 'Puesto', 'Seguridad', 'Modalidad', 'Acciones'].map(h => (
                       <th key={h}>{h}</th>
                     ))}
                   </tr>
@@ -184,54 +205,69 @@ export default function AdminPage() {
                 <tbody>
                   {filtered.map(emp => (
                     <tr key={emp.id}>
+                      {/* 1. Usuario */}
                       <td>
                         <div className={styles.userCell}>
-                          <Avatar initials={emp.avatar} size={36} />
+                          <Avatar initials={emp.avatar} size={42} />
                           <div>
-                            <p className={styles.userName}>{emp.name}</p>
-                            <p className={styles.userPhone}>{emp.phone}</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                              <p className={styles.userName}>{emp.name}</p>
+                              {emp.role === 'admin' && <Badge status="admin" />}
+                            </div>
+                            <p className={styles.userPhone} style={{ textTransform: 'lowercase', letterSpacing: 0 }}>{emp.email}</p>
                           </div>
                         </div>
                       </td>
-                      <td style={{ color: 'var(--text-sec)' }}>{emp.dept}</td>
-                      <td style={{ color: 'var(--text-sec)' }}>{emp.position}</td>
-                      <td><span className="work-mode-badge" style={{
-                        background: emp.workMode === 'office' ? 'var(--accent-bg)' : emp.workMode === 'remote' ? 'var(--success-bg)' : 'var(--warning-bg)',
-                        color: emp.workMode === 'office' ? 'var(--accent)' : emp.workMode === 'remote' ? 'var(--success)' : 'var(--warning)',
-                        padding: '2px 8px',
-                        borderRadius: 'var(--radius-sm)',
-                        fontSize: '12px',
-                        fontWeight: '500'
-                      }}>{emp.workMode === 'office' ? 'Oficina' : emp.workMode === 'remote' ? 'Remoto' : 'Externo'}</span></td>
-                      <td style={{ color: 'var(--text-sec)' }}>{emp.email}</td>
+
+                      {/* 2. Puesto */}
                       <td>
-                        <div className={styles.passWrapper}>
-                          <span className={styles.passText}>
-                            {showPassFor === emp.id ? (emp.password_hash ? emp.password_hash.slice(0, 20) + '...' : 'No disponible') : '••••••••••'}
-                          </span>
-                          <button 
-                            className={styles.iconBtn}
-                            onClick={() => setShowPassFor(showPassFor === emp.id ? null : emp.id)}
-                          >
-                            {showPassFor === emp.id ? <EyeOff size={14} /> : <Eye size={14} />}
-                          </button>
+                        <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--text)', fontSize: 13 }}>{emp.position || 'Sin cargo'}</p>
+                        <p style={{ margin: 0, fontSize: 12, color: 'var(--text-sec)' }}>{emp.dept}</p>
+                      </td>
+
+                      {/* 3. Seguridad */}
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start' }}>
+                          <Badge 
+                            status="neutral" 
+                            label={emp.firstLogin ? 'Primer acceso pendiente' : 'Activo'} 
+                            className={emp.firstLogin ? 'variant-warning' : 'variant-success'}
+                          />
+                          <div className={styles.passWrapper}>
+                            <span className={styles.passText}>
+                              {showPassFor === emp.id ? (emp.password || 'margube2026') : '••••••••'}
+                            </span>
+                            <button className={styles.iconBtn} onClick={() => setShowPassFor(showPassFor === emp.id ? null : emp.id)} title={showPassFor === emp.id ? 'Ocultar' : 'Ver contraseña'}>
+                              {showPassFor === emp.id ? <EyeOff size={14} /> : <Eye size={14} />}
+                            </button>
+                          </div>
                         </div>
                       </td>
-                      <td><Badge status={emp.role} /></td>
+
+                      {/* 4. Modalidad */}
                       <td>
-                        <Badge 
-                          status="neutral" 
-                          label={emp.firstLogin ? '1er acceso' : 'Activo'} 
-                          className={emp.firstLogin ? 'variant-warning' : 'variant-success'}
-                        />
+                        <span className="work-mode-badge" style={{
+                          background: emp.workMode === 'office' ? 'var(--accent-bg)' : emp.workMode === 'remote' ? 'var(--success-bg)' : 'var(--warning-bg)',
+                          color: emp.workMode === 'office' ? 'var(--accent)' : emp.workMode === 'remote' ? 'var(--success)' : 'var(--warning)',
+                          padding: '4px 10px',
+                          borderRadius: 'var(--radius-full)',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          letterSpacing: '0.02em',
+                          display: 'inline-block'
+                        }}>
+                          {emp.workMode === 'office' ? 'OFICINA' : emp.workMode === 'remote' ? 'REMOTO' : 'EXTERNO'}
+                        </span>
                       </td>
+
+                      {/* 5. Acciones */}
                       <td>
                         <div className={styles.actionsCell}>
-                          <button className={clsx(styles.actionBtn, styles.edit)} onClick={() => handleEdit(emp)}>
-                            <Edit2 size={14} />
+                          <button className={clsx(styles.actionBtn, styles.edit)} onClick={() => handleEdit(emp)} title="Editar empleado">
+                            <Edit2 size={16} />
                           </button>
-                          <button className={clsx(styles.actionBtn, styles.delete)} onClick={() => handleDelete(emp.id)}>
-                            <Trash2 size={14} />
+                          <button className={clsx(styles.actionBtn, styles.delete)} onClick={() => handleDelete(emp.id)} title="Dar de baja">
+                            <Trash2 size={16} />
                           </button>
                         </div>
                       </td>
@@ -241,22 +277,19 @@ export default function AdminPage() {
               </table>
             </div>
           </Card>
-        </>
+        </motion.div>
       )}
 
       {/* ── ROOMS ── */}
       {tab === 'rooms' && (
-        <>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-            <Button icon={Plus} onClick={() => { 
-              setResType('room'); 
-              setResForm({ id: null, name: '', capacity: '', floor: '', equipment: '' }); 
-              setEditingRes(false);
-              setShowResModal(true); 
-            }}>
-              Nueva sala
-            </Button>
-          </div>
+        <motion.div 
+          key="rooms"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+        >
+
           <div className={styles.grid}>
             {rooms.map(room => (
               <Card key={room.id} className={styles.resourceCard}>
@@ -295,22 +328,19 @@ export default function AdminPage() {
               </Card>
             ))}
           </div>
-        </>
+        </motion.div>
       )}
 
       {/* ── VEHICLES ── */}
       {tab === 'vehicles' && (
-        <>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-            <Button icon={Plus} onClick={() => { 
-              setResType('vehicle'); 
-              setResForm({ id: null, model: '', plate: '', year: '', type: 'Turismo' }); 
-              setEditingRes(false);
-              setShowResModal(true); 
-            }}>
-              Nuevo vehículo
-            </Button>
-          </div>
+        <motion.div 
+          key="vehicles"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+        >
+
           <div className={styles.grid}>
             {vehicles.map(v => (
               <Card key={v.id} className={styles.resourceCard}>
@@ -347,8 +377,9 @@ export default function AdminPage() {
               </Card>
             ))}
           </div>
-        </>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Employee modal */}
       <Modal open={showModal} onClose={() => { setShowModal(false); setEditEmp(null); }} title={editEmp ? 'Editar empleado' : 'Nuevo empleado'}>

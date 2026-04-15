@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { useAuth, useData } from '../context';
 import { Badge, Modal, Select, Input, Textarea, Button, Card } from '../components/ui';
 import { Building, Car, Check, X, Plus } from 'lucide-react';
-import adminStyles from './AdminPage.module.scss';
+import styles from './ReservationsPage.module.scss';
 import clsx from 'clsx';
-import reqStyles from './RequestsPage.module.scss';
 import ReservationsCalendar from './ReservationsCalendar';
 
 export default function ReservationsPage() {
@@ -44,7 +43,7 @@ export default function ReservationsPage() {
     <button 
       key={id} 
       onClick={() => setTab(id)}
-      className={clsx(adminStyles.tabBtn, { [adminStyles.tabBtnActive]: tab === id })}
+      className={clsx(styles.tabBtn, { [styles.tabBtnActive]: tab === id })}
     >
       {label}
     </button>
@@ -53,8 +52,8 @@ export default function ReservationsPage() {
   return (
     <div>
       {/* Header */}
-      <div className={adminStyles.tabs} style={{ marginBottom: 24, justifyContent: 'space-between', border: 'none' }}>
-        <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid var(--border)' }}>
+      <div className={styles.pageControls}>
+        <div className={styles.tabsRow}>
           {tabBtn('all', 'Todas')}
           {tabBtn('room', 'Salas')}
           {tabBtn('vehicle', 'Vehículos')}
@@ -71,21 +70,21 @@ export default function ReservationsPage() {
       {/* Room cards */}
       {tab !== 'vehicle' && tab !== 'calendar' && (
         <div style={{ marginBottom: 24 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', margin: '0 0 16px' }}>Salas disponibles</h3>
-          <div className={adminStyles.grid}>
+          <h3 className={styles.sectionLabel}>Salas disponibles</h3>
+          <div className={styles.resourceGrid}>
             {rooms.map(room => (
-              <Card key={room.id} className={adminStyles.resourceCard}>
-                <div className={adminStyles.resourceHeader}>
-                  <div className={adminStyles.resourceIcon} style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
+              <Card key={room.id} className={styles.resourceCard}>
+                <div className={styles.resourceHeader}>
+                  <div className={styles.resourceIcon} style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
                     <Building size={22} />
                   </div>
                   <Badge status="neutral" label="Disponible" className="variant-success" />
                 </div>
-                <h4 className={adminStyles.resourceTitle}>{room.name}</h4>
-                <p className={adminStyles.resourceMeta}>Planta {room.floor} · {room.capacity} personas</p>
-                <div className={adminStyles.tagList}>
+                <h4 className={styles.resourceTitle}>{room.name}</h4>
+                <p className={styles.resourceMeta}>Planta {room.floor} · {room.capacity} personas</p>
+                <div className={styles.tagList}>
                   {(room.equipment || []).map(eq => (
-                    <span key={eq} className={adminStyles.tag}>{eq}</span>
+                    <span key={eq} className={styles.tag}>{eq}</span>
                   ))}
                 </div>
               </Card>
@@ -97,19 +96,19 @@ export default function ReservationsPage() {
       {/* Vehicle cards */}
       {tab !== 'room' && tab !== 'calendar' && (
         <div style={{ marginBottom: 24 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', margin: '0 0 16px' }}>Vehículos de empresa</h3>
-          <div className={adminStyles.grid}>
+          <h3 className={styles.sectionLabel}>Vehículos de empresa</h3>
+          <div className={styles.resourceGrid}>
             {vehicles.map(v => (
-              <Card key={v.id} className={adminStyles.resourceCard}>
-                <div className={adminStyles.resourceHeader}>
-                  <div className={adminStyles.resourceIcon} style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>
+              <Card key={v.id} className={styles.resourceCard}>
+                <div className={styles.resourceHeader}>
+                  <div className={styles.resourceIcon} style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>
                     <Car size={22} />
                   </div>
                   <Badge status="neutral" label="Disponible" className="variant-success" />
                 </div>
-                <h4 className={adminStyles.resourceTitle}>{v.model}</h4>
-                <p className={adminStyles.resourceMeta}>Matrícula: <strong>{v.plate}</strong></p>
-                <p className={adminStyles.resourceMeta} style={{ margin: 0 }}>{v.type} · {v.year}</p>
+                <h4 className={styles.resourceTitle}>{v.model}</h4>
+                <p className={styles.resourceMeta}>Matrícula: <strong>{v.plate}</strong></p>
+                <p className={styles.resourceMeta} style={{ margin: 0 }}>{v.type} · {v.year}</p>
               </Card>
             ))}
           </div>
@@ -119,11 +118,11 @@ export default function ReservationsPage() {
       {/* Reservations table */}
       {tab !== 'calendar' && (
         <Card>
-          <div style={{ padding: '24px 24px 0' }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>Historial de reservas</h3>
+          <div style={{ padding: '20px 24px 0' }}>
+            <h3 style={{ margin: '0 0 0', fontSize: 14, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-heading)' }}>Historial de reservas</h3>
           </div>
-          <div className={adminStyles.tableWrapper}>
-            <table className={adminStyles.table}>
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
               <thead>
                 <tr>
                   {['Recurso', 'Tipo', 'Solicitante', 'Fecha', 'Horario', 'Propósito', 'Estado', 'Acciones'].map(h => (
@@ -147,19 +146,19 @@ export default function ReservationsPage() {
                     <td style={{ color: 'var(--text-sec)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.purpose}</td>
                     <td><Badge status={r.status} /></td>
                     <td>
-                      <div className={adminStyles.actionsCell} style={{ gap: 4 }}>
+                      <div className={styles.actionsCell} style={{ gap: 4 }}>
                         {user.role === 'admin' && r.status === 'pending' && (
                           <>
-                            <button className={clsx(adminStyles.actionBtn, reqStyles.approveBtn)} onClick={() => handleApprove(r.id)} title="Aprobar" style={{ padding: '6px' }}>
+                            <button className={clsx(styles.actionBtn, styles.approveBtn)} onClick={() => handleApprove(r.id)} title="Aprobar">
                               <Check size={14} />
                             </button>
-                            <button className={clsx(adminStyles.actionBtn, adminStyles.delete)} onClick={() => handleReject(r.id)} title="Rechazar" style={{ padding: '6px' }}>
+                            <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => handleReject(r.id)} title="Rechazar">
                               <X size={14} />
                             </button>
                           </>
                         )}
                         {(user.role === 'admin' || r.employeeId === user.id) && r.status !== 'pending' && (
-                          <button className={clsx(adminStyles.actionBtn, adminStyles.delete)} onClick={() => handleDelete(r.id)} title="Eliminar" style={{ padding: '6px' }}>
+                          <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => handleDelete(r.id)} title="Eliminar">
                             <X size={14} />
                           </button>
                         )}
@@ -188,12 +187,12 @@ export default function ReservationsPage() {
           ]} 
         />
         <Input label="Fecha" value={form.date} onChange={v => setForm({ ...form, date: v })} type="date" required />
-        <div className={adminStyles.modalGrid}>
+        <div className={styles.modalGrid}>
           <Input label="Hora inicio" value={form.timeStart} onChange={v => setForm({ ...form, timeStart: v })} type="time" required />
           <Input label="Hora fin"    value={form.timeEnd}   onChange={v => setForm({ ...form, timeEnd: v })}   type="time" required />
         </div>
         <Textarea label="Propósito / motivo" value={form.purpose} onChange={v => setForm({ ...form, purpose: v })} placeholder="Describe el propósito de la reserva..." />
-        <div className={adminStyles.modalActions}>
+        <div className={styles.modalActions}>
           <Button variant="ghost" onClick={() => setShowModal(false)} disabled={loading}>Cancelar</Button>
           <Button onClick={handleCreate} disabled={loading}>{loading ? 'Guardando...' : 'Crear reserva'}</Button>
         </div>

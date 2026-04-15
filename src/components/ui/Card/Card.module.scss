@@ -6,30 +6,34 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: box-shadow 0.2s, border-color 0.2s;
+  transition: box-shadow 0.25s var(--ease-out), transform 0.2s var(--ease-out), border-color 0.2s ease;
+  position: relative;
 
   &:hover {
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-2);
   }
 }
 
 .header {
-  padding: 18px 22px;
+  padding: 18px 24px;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: var(--bg-2);
 }
 
 .title {
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text);
   letter-spacing: -0.02em;
+  font-family: var(--font-heading);
 }
 
 .content {
-  padding: 20px 22px;
+  padding: 20px 24px;
   flex: 1;
 }

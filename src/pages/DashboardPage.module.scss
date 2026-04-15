@@ -1,16 +1,124 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 22px;
 }
 
+/* ── Welcome Banner ─────────────────────────────────── */
+.welcomeBanner {
+  background: var(--gradient-banner);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 22px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+}
+
+.welcomeLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.welcomeEmoji {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.welcomeTitle {
+  margin: 0 0 3px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.03em;
+  font-family: var(--font-heading);
+}
+
+.welcomeSub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-sec);
+}
+
+.welcomeActions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.bannerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out);
+  box-shadow: var(--shadow-accent);
+
+  &:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 28px -4px rgba(var(--accent-rgb), 0.35);
+  }
+
+  &:active { transform: scale(0.97); }
+}
+
+.bannerBtnSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--bg-3);
+    border-color: var(--border-2);
+    transform: translateY(-1px);
+  }
+
+  &:active { transform: scale(0.97); }
+}
+
+/* ── KPI Cards ──────────────────────────────────────── */
 .gridCards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 14px;
 }
 
-/* ── Charts ────────────────────────────────────────────── */
+/* ── Charts ─────────────────────────────────────────── */
 .chartsRow {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
@@ -22,18 +130,21 @@
 }
 
 .chartHeader {
-  padding: 16px 20px 0;
+  padding: 18px 22px 0;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .chartTitle {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
+  margin: 0 0 2px;
+  font-size: 13.5px;
+  font-weight: 700;
   color: var(--text);
   letter-spacing: -0.02em;
+  font-family: var(--font-heading);
 }
 
 .chartSub {
@@ -41,8 +152,25 @@
   color: var(--text-mut);
 }
 
+.chartLegend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-sec);
+  flex-wrap: wrap;
+}
+
+.legendDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
 .chartBody {
-  padding: 12px 8px 16px;
+  padding: 14px 10px 16px;
 }
 
 .donutBody {
@@ -56,7 +184,7 @@
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  padding: 0 16px 12px;
+  padding: 0 20px 16px;
 }
 
 .pieLegendItem {
@@ -80,30 +208,48 @@
   flex-shrink: 0;
 }
 
-/* ── Content grid ──────────────────────────────────────── */
+/* ── Content grid ───────────────────────────────────── */
 .gridContent {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 
+/* ── Card inner padding ─────────────────────────────── */
+.cardPad {
+  padding: 20px 24px;
+}
+
 .cardHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  font-family: var(--font-heading);
 }
 
 .feedList {
   display: flex;
   flex-direction: column;
-  gap: 14px;
 }
 
 .feedItem {
   display: flex;
   gap: 12px;
   align-items: flex-start;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child { border-bottom: none; }
+  &:first-child { padding-top: 0; }
 }
 
 .feedIcon {
@@ -124,7 +270,7 @@
 .feedTitleRow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   margin-bottom: 2px;
 }
 
@@ -151,9 +297,12 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 5px 10px;
   border-radius: var(--radius-sm);
   transition: background 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 
   &:hover { background: var(--accent-bg); }
 }
@@ -161,13 +310,13 @@
 .daysChip {
   padding: 4px 10px;
   border-radius: var(--radius-full);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-/* ── Table ─────────────────────────────────────────────── */
+/* ── Table ──────────────────────────────────────────── */
 .tableWrapper { overflow-x: auto; }
 
 .table {
@@ -176,30 +325,33 @@
   font-size: 13px;
 
   th {
-    padding: 10px 14px;
+    padding: 11px 16px;
     text-align: left;
     color: var(--text-mut);
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     white-space: nowrap;
     border-bottom: 1px solid var(--border);
-    background: var(--bg);
+    background: var(--bg-2);
   }
 
   td {
-    padding: 12px 14px;
+    padding: 13px 16px;
     border-bottom: 1px solid var(--border);
     color: var(--text-sec);
     vertical-align: middle;
   }
 
   tr:last-child td { border-bottom: none; }
-  tbody tr { transition: background 0.15s; &:hover { background: var(--bg); } }
+  tbody tr {
+    transition: background 0.15s;
+    &:hover { background: var(--bg); }
+  }
 }
 
-.tdBold { color: var(--text) !important; font-weight: 500; }
+.tdBold { color: var(--text) !important; font-weight: 600; }
 
 .typeBadge {
   display: inline-flex;
@@ -209,12 +361,24 @@
   font-weight: 600;
 }
 
-/* ── Responsive ────────────────────────────────────────── */
-@media (max-width: 1100px) {
-  .chartsRow { grid-template-columns: 1fr 1fr; }
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .gridStats { grid-template-columns: repeat(2, 1fr); }
+  .chartsRow { grid-template-columns: 1fr; }
+  .gridContent { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
-  .chartsRow { grid-template-columns: 1fr; }
-  .gridContent { grid-template-columns: 1fr; }
+  .welcomeBanner { 
+    padding: 20px; 
+    flex-direction: column; 
+    align-items: flex-start;
+  }
+  .welcomeTitle { font-size: 18px; }
+  .welcomeActions { width: 100%; }
+  .bannerBtn, .bannerBtnSecondary { flex: 1; justify-content: center; }
+}
+
+@media (max-width: 480px) {
+  .gridStats { grid-template-columns: 1fr; }
 }

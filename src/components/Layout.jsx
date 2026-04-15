@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import { 
   LayoutDashboard, Calendar, Inbox, Newspaper, Settings, User,
   LogOut, Sun, Moon, Menu, Bell, CheckCircle, Clock,
-  UsersRound, AlignJustify, List, Globe
+  UsersRound, AlignJustify, List, Globe, Search
 } from 'lucide-react';
 
 import logoColor from '../assets/logos/logo-color.png';
@@ -211,6 +211,12 @@ const sidebarContent = (
             <h1 className={styles.pageTitle}>
               {[...navItems, ...adminItems].find(i => i.id === page)?.label || 'margube'}
             </h1>
+          </div>
+
+          <div className={clsx(styles.headerSearch, 'hide-mobile')}>
+            <Search size={14} />
+            <input type="text" placeholder="Buscar en la plataforma..." />
+            <span className={styles.searchKbd}>⌘K</span>
           </div>
 
           <div className={styles.headerRight}>

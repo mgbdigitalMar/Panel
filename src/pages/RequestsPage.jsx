@@ -4,7 +4,6 @@ import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard } from '.
 import { Plus, Check, X } from 'lucide-react';
 import styles from './RequestsPage.module.scss';
 import clsx from 'clsx';
-import adminStyles from './AdminPage.module.scss'; // Reuse tab / table styles from AdminPage
 
 export default function RequestsPage() {
   const { user } = useAuth();
@@ -43,17 +42,17 @@ export default function RequestsPage() {
     <button 
       key={id} 
       onClick={() => setTab(id)}
-      className={clsx(adminStyles.tabBtn, { [adminStyles.tabBtnActive]: tab === id })}
+      className={clsx(styles.tabBtn, { [styles.tabBtnActive]: tab === id })}
     >
       {label}
     </button>
   );
 
   return (
-    <div>
-      {/* Header */}
-      <div className={adminStyles.tabs} style={{ marginBottom: 24, justifyContent: 'space-between', border: 'none' }}>
-        <div style={{ display: 'flex', gap: 8, borderBottom: '1px solid var(--border)' }}>
+    <div className={styles.container}>
+      {/* Controls */}
+      <div className={styles.pageControls}>
+        <div className={styles.tabsRow}>
           {tabBtn('all', 'Todas')}
           {tabBtn('mine', 'Mis solicitudes')}
           {tabBtn('vacation', 'Vacaciones')}
@@ -64,15 +63,15 @@ export default function RequestsPage() {
 
       {/* Stats */}
       <div className={styles.statsGrid}>
-        <StatCard label="Pendientes" count={requests.filter(r => r.status === 'pending').length}  color="var(--warning)" value={requests.filter(r => r.status === 'pending').length} icon="Clock" />
-        <StatCard label="Aprobadas"  count={requests.filter(r => r.status === 'approved').length} color="var(--success)" value={requests.filter(r => r.status === 'approved').length} icon="CheckCircle" />
-        <StatCard label="Rechazadas" count={requests.filter(r => r.status === 'rejected').length} color="var(--danger)"  value={requests.filter(r => r.status === 'rejected').length} icon="XCircle" />
+        <StatCard label="Pendientes" value={requests.filter(r => r.status === 'pending').length}  color="var(--warning)" icon="Clock" sub="Esperando revisión" />
+        <StatCard label="Aprobadas"  value={requests.filter(r => r.status === 'approved').length} color="var(--success)" icon="CheckCircle" sub="Este periodo" />
+        <StatCard label="Rechazadas" value={requests.filter(r => r.status === 'rejected').length} color="var(--danger)"  icon="XCircle" sub="Sin acción" />
       </div>
 
       {/* Table */}
       <Card>
-        <div className={adminStyles.tableWrapper}>
-          <table className={adminStyles.table}>
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
             <thead>
               <tr>
                 {['Empleado', 'Tipo', 'Detalle', 'Fecha solicitud', 'Estado', user.role === 'admin' ? 'Acciones' : null].filter(Boolean).map(h => (
@@ -84,9 +83,9 @@ export default function RequestsPage() {
               {filtered.map(r => (
                 <tr key={r.id}>
                   <td>
-                    <div className={adminStyles.userCell}>
+                    <div className={styles.userCell}>
                       <Avatar initials={r.employeeName.split(' ').map(n => n[0]).join('').slice(0, 2)} size={32} />
-                      <span className={adminStyles.userName}>{r.employeeName}</span>
+                      <span className={styles.userName}>{r.employeeName}</span>
                     </div>
                   </td>
                   <td>
@@ -102,11 +101,11 @@ export default function RequestsPage() {
                   {user.role === 'admin' && (
                     <td>
                       {r.status === 'pending' && (
-                        <div className={adminStyles.actionsCell}>
-                          <button className={clsx(adminStyles.actionBtn, styles.approveBtn)} onClick={() => changeStatus(r.id, 'approved')}>
+                        <div className={styles.actionsCell}>
+                          <button className={clsx(styles.actionBtn, styles.approveBtn)} onClick={() => changeStatus(r.id, 'approved')}>
                             <Check size={14} /> Aprobar
                           </button>
-                          <button className={clsx(adminStyles.actionBtn, adminStyles.delete)} onClick={() => changeStatus(r.id, 'rejected')}>
+                          <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => changeStatus(r.id, 'rejected')}>
                             <X size={14} /> Rechazar
                           </button>
                         </div>
@@ -122,13 +121,12 @@ export default function RequestsPage() {
 
       {/* New request modal */}
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Nueva solicitud">
-        <div className={styles.typeButtons} style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-          {[{ id: 'vacation', label: 'Vacaciones' }, { id: 'purchase', label: 'Compra' }].map(rt => (
+        <div className={styles.typeButtons}>
+          {[{ id: 'vacation', label: '🌴 Vacaciones' }, { id: 'purchase', label: '🛒 Compra' }].map(rt => (
             <button 
               key={rt.id} 
               onClick={() => setReqType(rt.id)}
               className={clsx(styles.typeBtn, { [styles.typeBtnActive]: reqType === rt.id })}
-              style={{ flex: 1, padding: 10, borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: reqType === rt.id ? 'var(--nav-bg)' : 'transparent', color: reqType === rt.id ? 'var(--nav)' : 'var(--text-sec)', fontWeight: 600 }}
             >
               {rt.label}
             </button>
@@ -137,7 +135,7 @@ export default function RequestsPage() {
 
         {reqType === 'vacation' ? (
           <>
-            <div className={adminStyles.modalGrid}>
+            <div className={styles.modalGrid}>
               <Input label="Fecha inicio" value={form.startDate} onChange={v => setForm({ ...form, startDate: v })} type="date" required />
               <Input label="Fecha fin"    value={form.endDate}   onChange={v => setForm({ ...form, endDate: v })}   type="date" required />
             </div>
@@ -151,7 +149,7 @@ export default function RequestsPage() {
           </>
         )}
 
-        <div className={adminStyles.modalActions}>
+        <div className={styles.modalActions}>
           <Button variant="ghost" onClick={() => setShowModal(false)} disabled={loading}>Cancelar</Button>
           <Button onClick={handleCreate} disabled={loading}>{loading ? 'Enviando...' : 'Enviar solicitud'}</Button>
         </div>

@@ -1,11 +1,11 @@
 .statCard {
-  flex-direction: row;
-  align-items: center;
-  padding: 18px 22px;
-  gap: 16px;
+  padding: 20px 22px 22px;
+  gap: 14px;
   background: var(--card);
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
   cursor: default;
+  display: flex;
+  flex-direction: column;
 
   &:hover {
     box-shadow: var(--shadow-md);
@@ -13,10 +13,16 @@
   }
 }
 
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .iconWrapper {
-  width: 46px;
-  height: 46px;
-  border-radius: var(--radius-md);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -26,28 +32,49 @@
 .content {
   display: flex;
   flex-direction: column;
-}
-
-.label {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-mut);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  gap: 2px;
 }
 
 .value {
-  margin: 3px 0 0;
-  font-size: 26px;
-  font-weight: 700;
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
   color: var(--text);
   line-height: 1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
+  font-family: var(--font-heading);
+}
+
+.label {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-sec);
 }
 
 .sub {
-  margin: 4px 0 0;
+  margin: 3px 0 0;
   font-size: 12px;
   color: var(--text-mut);
+}
+
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.01em;
+}
+
+.trendUp {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.trendDown {
+  background: var(--danger-bg);
+  color: var(--danger);
 }
