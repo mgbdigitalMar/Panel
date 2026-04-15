@@ -35,10 +35,22 @@ export default function EmployeesPage() {
   );
 
   const handleWorkModeChange = async (empId, mode) => {
-    // Optimistic local update
-    setEmployees(employees.map(e => e.id === empId ? { ...e, workMode: mode } : e));
-    // Persist to Supabase
-    await supabase.from('profiles').update({ work_mode: mode }).eq('id', empId);
+    try {
+      // Optimistic local update
+      setEmployees(employees.map(e => e.id === empId ? { ...e, workMode: mode } : e));
+      // Persist to Supabase with confirmation
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ work_mode: mode })
+        .eq('id', empId);
+      if (error) throw error;
+      console.log('Work mode updated successfully:', data);
+    } catch (err) {
+      console.error('Failed to update work_mode:', err);
+      // Revert on error
+      setEmployees(prev => prev.map(e => e.id === empId ? { ...e, workMode: 'office' } : e));
+      alert(`Error: ${err.message}`);
+    }
   };
 
   const summary = Object.entries(WORK_MODES).map(([key, meta]) => ({
