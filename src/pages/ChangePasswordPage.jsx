@@ -20,6 +20,7 @@ export default function ChangePasswordPage() {
   const [showNew, setShowNew]   = useState(false);
   const [showConf, setShowConf] = useState(false);
   const [err, setErr]           = useState('');
+  const [success, setSuccess]   = useState('');
   const [loading, setLoading]   = useState(false);
 
   // Reset idle timer on activity (prevents logout during password change)
@@ -50,22 +51,47 @@ export default function ChangePasswordPage() {
     }
     setLoading(true);
 
-    // Generar el Hash desde el cliente
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(newPass, salt);
+    // Hasheamos la contraseña en el frontend con bcrypt (el trigger de Postgres fue eliminado).
+    // saltRounds=10 → hash $2a$10$... compatible con bcrypt.compareSync en login.
+    console.log('Hasheando contraseña con bcrypt (frontend)...');
+    const hashedPassword = await bcrypt.hash(newPass, 10);
 
-    // Guardar el hash modificado localmente directo en la columna de la base de datos
+    // Update DB con el hash bcrypt
     const { error } = await supabase
       .from('profiles')
-      .update({ password_hash: hash, first_login: false })
+      .update({ password_hash: hashedPassword, first_login: false })
       .eq('id', user.id);
-    
-    if (error) { setErr('Error al guardar: ' + error.message); setLoading(false); return; }
+  
+  if (error) { 
+    console.error('DB update error:', error);
+    setErr('Error al guardar: ' + error.message); 
+    setLoading(false); 
+    return; 
+  }
 
-    // Mark first_login = false in internal state
-    await setCurrentUser({ ...user, firstLogin: false });
-    setNeedsOnboarding(true);
+  // Verify update persisted
+  const { data: updated } = await supabase
+    .from('profiles')
+    .select('password_hash, first_login')
+    .eq('id', user.id)
+    .single();
+  
+  if (!updated || !updated.password_hash || updated.first_login !== false) {
+    console.error('Verify failed:', updated);
+    setErr('Error: Actualización no se guardó correctamente en DB.');
+    setLoading(false);
+    return;
+  }
+
+  console.log('✅ Password updated & verified');
+
+  // Update local state and navigate directly
+  await setCurrentUser({ ...user, firstLogin: false });
+  setSuccess('¡Contraseña guardada exitosamente! Iniciando sesión...');
+  setTimeout(() => {
+    setLoading(false);
     navigate('dashboard');
+  }, 1500);
   };
 
   return (
@@ -132,6 +158,21 @@ export default function ChangePasswordPage() {
           {err && (
             <div className={styles.errorBox}>
               {err}
+            </div>
+          )}
+
+          {success && (
+            <div style={{
+              background: 'var(--success-bg, rgba(16, 185, 129, 0.1))',
+              border: '1px solid var(--success, #10b981)',
+              borderRadius: 'var(--radius)',
+              padding: '10px 14px',
+              marginBottom: 20,
+              color: 'var(--success, #10b981)',
+              fontSize: 13,
+              textAlign: 'center'
+            }}>
+              {success}
             </div>
           )}
 

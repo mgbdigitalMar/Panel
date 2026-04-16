@@ -49,8 +49,6 @@ export default function AdminPage() {
     if (!form.name || !form.email) return;
     if (!form.password && !editEmp) return alert('Contraseña requerida para nuevos empleados');
     
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(form.password, salt);
     const avatar = form.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
     if (editEmp) {
@@ -66,9 +64,9 @@ export default function AdminPage() {
         avatar_initials: avatar
       };
       if (form.password) {
-        const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(form.password, salt);
-        updateData.password_hash = hash;
+        // Hash en frontend — el trigger de Postgres fue eliminado
+        updateData.password_hash = await bcrypt.hash(form.password, 10);
+        updateData.first_login = true; // Fuerza re-login con nueva contraseña
       }
       const { data, error } = await supabase.from('profiles').update(updateData).eq('id', editEmp.id).select().single();
       
@@ -76,10 +74,12 @@ export default function AdminPage() {
          setEmployees(employees.map(e => e.id === editEmp.id ? { ...e, ...form, avatar } : e));
       } else { console.error("Error al actualizar", error); return; }
     } else {
+      // Hash en frontend antes de insertar — el trigger de Postgres fue eliminado
+      const hashedPwd = await bcrypt.hash(form.password, 10);
       const { data, error } = await supabase.from('profiles').insert([{
         name: form.name,
         email: form.email,
-        password_hash: hash,
+        password_hash: hashedPwd,
         role: form.role,
         department: form.dept,
         position: form.position,

@@ -4,6 +4,8 @@ import { Input, Button, Card, Select, Badge } from '../components/ui';
 import { Save, Lock, Shield, User } from 'lucide-react';
 import styles from './ProfilePage.module.scss';
 import clsx from 'clsx';
+import { supabase } from '../utils/supabase';
+import bcrypt from 'bcryptjs';
 
 const WORK_MODES = {
   Office: { label: 'Oficina' },
@@ -42,7 +44,7 @@ const handleWorkModeChange = async (mode) => {
     }
   };
 
-  const handlePasswordChange = async () => {
+const handlePasswordChange = async () => {
     if (form.newPassword !== form.confirmPassword) {
       setMessage('Las contraseñas no coinciden.');
       return;
@@ -51,18 +53,40 @@ const handleWorkModeChange = async (mode) => {
       setMessage('La nueva contraseña debe tener al menos 6 caracteres.');
       return;
     }
+    if (!form.currentPassword) {
+      setMessage('Introduce la contraseña actual.');
+      return;
+    }
 
     setLoading(true);
     try {
-      // Use setCurrentUser con firstLogin false para trigger password update logic
-      await setCurrentUser({
-        ...user,
-        firstLogin: false,
-        // Nota: password_hash update requiere lógica en setCurrentUser o llamada directa Supabase
-      });
+      // Verify current password first
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('password_hash')
+        .eq('id', user.id)
+        .single();
+      
+      const isCurrentValid = bcrypt.compareSync(form.currentPassword, profile.password_hash);
+      if (!isCurrentValid) {
+        setMessage('Contraseña actual incorrecta.');
+        setLoading(false);
+        return;
+      }
+
+      // Hash en frontend — el trigger de Postgres fue eliminado
+      const hashedPassword = await bcrypt.hash(form.newPassword, 10);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ password_hash: hashedPassword })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
       setMessage('Contraseña actualizada correctamente. Usa la nueva en próximo login.');
       setForm({ currentPassword: '', newPassword: '', confirmPassword: '', workMode: form.workMode });
     } catch (error) {
+      console.error('Password change error:', error);
       setMessage('Error al actualizar contraseña. Verifica datos.');
     }
     setLoading(false);
