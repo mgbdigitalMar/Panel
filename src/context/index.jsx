@@ -321,7 +321,13 @@ export function AuthProvider({ children, navigate }) {
         const storedTab = localStorage.getItem('margube_tabId')
         const stored = localStorage.getItem('margube_session')
         if (stored && storedTab === tabId) {
-          const profileId = JSON.parse(stored).id
+          const sessionData = JSON.parse(stored)
+          if (Date.now() - sessionData.lastActivity > IDLE_TIMEOUT) {
+            console.log('Session stale - forcing logout')
+            clearSession()
+            return
+          }
+          const profileId = sessionData.id
           const { data, error } = await supabase.from('profiles').select('*').eq('id', profileId).single()
           if (!error && data) {
             const mapped = mapProfile(data)
@@ -396,20 +402,36 @@ export function AuthProvider({ children, navigate }) {
     }
   }, [])
 
-  // ── Idle timeout logic ──────────────────────────────
+  // ── Idle timeout logic with visibility pause ───────────────
   useEffect(() => {
     let interval;
+    let isVisible = true;
+
+    const visibilityHandler = () => {
+      isVisible = document.visibilityState === 'visible';
+      if (isVisible) {
+        setLastActivity(Date.now()); // Reset on return
+      }
+    };
+
+    document.addEventListener('visibilitychange', visibilityHandler);
+
     if (user) {
       const checkIdle = () => {
+        if (!isVisible) return; // Pause when hidden
         const inactive = Date.now() - lastActivity > IDLE_TIMEOUT;
         if (inactive) {
           console.log('Idle timeout - logging out');
           logout();
         }
       };
-      interval = setInterval(checkIdle, 5000); // Check every 5s
+      interval = setInterval(checkIdle, 5000);
     }
-    return () => clearInterval(interval);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', visibilityHandler);
+    };
   }, [user, lastActivity])
 
   // ── Login ─────────────────────────────────────────────────
@@ -465,12 +487,13 @@ export function AuthProvider({ children, navigate }) {
     setUser(mapped)
     // Guardamos evidencia de conexión activa localmente + tab ID
     const tabId = localStorage.getItem('margube_tabId')
-    localStorage.setItem('margube_session', JSON.stringify({ id: mapped.id, tabId }))
+    localStorage.setItem('margube_session', JSON.stringify({ id: mapped.id, tabId, lastActivity: Date.now() }))
     
     await loadAllEmployees()
     if (mapped.firstLogin === true || mapped.firstLogin === 'true') navigate('changePassword')
     else navigate('dashboard')
     
+    setLastActivity(Date.now())
     return { ok: true }
   }
 
