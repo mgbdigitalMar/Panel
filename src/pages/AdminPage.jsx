@@ -22,7 +22,7 @@ const DEPARTMENTS = [
 ];
 
 export default function AdminPage() {
-  const { employees, setEmployees } = useAuth();
+  const { user, employees, setEmployees } = useAuth();
   
   const [tab, setTab]             = useState('employees');
   const [showModal, setShowModal] = useState(false);
@@ -197,7 +197,7 @@ export default function AdminPage() {
               <table className={styles.table}>
                 <thead>
                   <tr>
-                    {['Usuario', 'Puesto', 'Seguridad', 'Modalidad', 'Acciones'].map(h => (
+                    {['Usuario', 'Puesto', 'Contacto', 'Modalidad', 'Acciones'].map(h => (
                       <th key={h}>{h}</th>
                     ))}
                   </tr>
@@ -214,7 +214,7 @@ export default function AdminPage() {
                               <p className={styles.userName}>{emp.name}</p>
                               {emp.role === 'admin' && <Badge status="admin" />}
                             </div>
-                            <p className={styles.userPhone} style={{ textTransform: 'lowercase', letterSpacing: 0 }}>{emp.email}</p>
+                            <p className={styles.userPhone} style={{ letterSpacing: 0 }}>{emp.phone || 'Sin teléfono'}</p>
                           </div>
                         </div>
                       </td>
@@ -225,7 +225,7 @@ export default function AdminPage() {
                         <p style={{ margin: 0, fontSize: 12, color: 'var(--text-sec)' }}>{emp.dept}</p>
                       </td>
 
-                      {/* 3. Seguridad */}
+                      {/* 3. Contacto */}
                       <td>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start' }}>
                           <Badge 
@@ -233,31 +233,57 @@ export default function AdminPage() {
                             label={emp.firstLogin ? 'Primer acceso pendiente' : 'Activo'} 
                             className={emp.firstLogin ? 'variant-warning' : 'variant-success'}
                           />
-                          <div className={styles.passWrapper}>
-                            <span className={styles.passText}>
-                              {showPassFor === emp.id ? (emp.password || 'margube2026') : '••••••••'}
-                            </span>
-                            <button className={styles.iconBtn} onClick={() => setShowPassFor(showPassFor === emp.id ? null : emp.id)} title={showPassFor === emp.id ? 'Ocultar' : 'Ver contraseña'}>
-                              {showPassFor === emp.id ? <EyeOff size={14} /> : <Eye size={14} />}
-                            </button>
-                          </div>
+                          {(() => {
+                            const mode = (emp.workMode || 'office').toLowerCase();
+                            const isExterno = mode === 'externo' || mode === 'field';
+                            const isMe = emp.id === user?.id;
+                            
+                            return isExterno ? (
+                              <a 
+                                href={`mailto:${emp.email}`} 
+                                style={{ 
+                                  color: isMe ? 'var(--accent)' : 'var(--text)', 
+                                  textDecoration: 'none',
+                                  fontWeight: 500,
+                                  fontSize: 13
+                                }}
+                              >
+                                {emp.email}
+                              </a>
+                            ) : (
+                              <span style={{ 
+                                color: isMe ? 'var(--accent)' : 'var(--text-sec)',
+                                fontSize: 13
+                              }}>
+                                {emp.email}
+                              </span>
+                            );
+                          })()}
                         </div>
                       </td>
 
                       {/* 4. Modalidad */}
                       <td>
-                        <span className="work-mode-badge" style={{
-                          background: emp.workMode === 'office' ? 'var(--accent-bg)' : emp.workMode === 'remote' ? 'var(--success-bg)' : 'var(--warning-bg)',
-                          color: emp.workMode === 'office' ? 'var(--accent)' : emp.workMode === 'remote' ? 'var(--success)' : 'var(--warning)',
-                          padding: '4px 10px',
-                          borderRadius: 'var(--radius-full)',
-                          fontSize: '11px',
-                          fontWeight: '700',
-                          letterSpacing: '0.02em',
-                          display: 'inline-block'
-                        }}>
-                          {emp.workMode === 'office' ? 'OFICINA' : emp.workMode === 'remote' ? 'REMOTO' : 'EXTERNO'}
-                        </span>
+                        {(() => {
+                          const mode = (emp.workMode || 'office').toLowerCase();
+                          const isOffice = mode === 'office' || mode === 'oficina';
+                          const isRemote = mode === 'remote' || mode === 'remoto';
+                          
+                          return (
+                            <span className="work-mode-badge" style={{
+                              background: isOffice ? 'var(--accent-bg)' : isRemote ? 'var(--success-bg)' : 'var(--warning-bg)',
+                              color: isOffice ? 'var(--accent)' : isRemote ? 'var(--success)' : 'var(--warning)',
+                              padding: '4px 10px',
+                              borderRadius: 'var(--radius-full)',
+                              fontSize: '11px',
+                              fontWeight: '700',
+                              letterSpacing: '0.02em',
+                              display: 'inline-block'
+                            }}>
+                              {isOffice ? 'OFICINA' : isRemote ? 'REMOTO' : 'EXTERNO'}
+                            </span>
+                          );
+                        })()}
                       </td>
 
                       {/* 5. Acciones */}
