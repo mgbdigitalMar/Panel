@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth, useData } from '../context';
 import { MOCK_ROOMS, MOCK_VEHICLES } from '../data/mockData';
 import { Avatar, Badge, Modal, Input, Select, Button, Card } from '../components/ui';
-import { Search, Plus, Edit2, Trash2, Eye, EyeOff, Building, Car } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, Eye, EyeOff, Building, Car, FileText, Send, Clock, CheckCircle, PenTool, Upload, X, Timer, Download } from 'lucide-react';
 import styles from './AdminPage.module.scss';
 import clsx from 'clsx';
 import bcrypt from 'bcryptjs';
@@ -23,15 +23,53 @@ const DEPARTMENTS = [
 
 export default function AdminPage() {
   const { user, employees, setEmployees } = useAuth();
+  const { rooms, vehicles, documents, sendDocument, uploadDocumentFile, hourCompensations = [], updateHourCompensationStatus, refresh } = useData();
+
+  // Admin Bolsa Horas filters
+  const [hoursFilterFrom, setHoursFilterFrom] = useState('');
+  const [hoursFilterTo,   setHoursFilterTo]   = useState('');
+  const [hoursFilterEmp,  setHoursFilterEmp]  = useState('');
+
+  const filteredHours = (hourCompensations || [])
+    .filter(h => h.type === 'bolsa')
+    .filter(h => !hoursFilterEmp || h.employeeId === hoursFilterEmp)
+    .filter(h => !hoursFilterFrom || h.date >= hoursFilterFrom)
+    .filter(h => !hoursFilterTo   || h.date <= hoursFilterTo);
+
+  const exportHoursCSV = (rows) => {
+    const headers = ['Empleado', 'Fecha', 'Motivo', 'Horas', 'Estado', 'Revisado por', 'Fecha solicitud'];
+    const lines = [
+      headers.join(';'),
+      ...rows.map(h => [
+        h.employeeName,
+        h.date,
+        `"${(h.reason || '').replace(/"/g, '""')}"`,
+        String(h.hours).replace('.', ','),
+        h.status === 'approved' ? 'Aprobada' : h.status === 'rejected' ? 'Rechazada' : 'Pendiente',
+        h.reviewerName || '—',
+        new Date(h.createdAt).toLocaleDateString('es-ES'),
+      ].join(';')),
+    ];
+    const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = `bolsa-horas-admin-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+  };
   
   const [tab, setTab]             = useState('employees');
   const [showModal, setShowModal] = useState(false);
   const [editEmp, setEditEmp]     = useState(null);
   const [showPassFor, setShowPassFor] = useState(null);
   const [search, setSearch]       = useState('');
-  const { rooms, vehicles, refresh } = useData();
   const [showResModal, setShowResModal] = useState(false);
   const [resType, setResType]     = useState('room');
+  const [showDocModal, setShowDocModal] = useState(false);
+  const [docSending, setDocSending]   = useState(false);
+  const [docForm, setDocForm] = useState({ title: '', description: '', recipientId: '' });
+  const [docFile, setDocFile] = useState(null);   // the actual File object
+  const [docDrag, setDocDrag] = useState(false);  // drag-over state
+  const fileInputRef = useRef(null);
 
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'office' });
   const [resForm, setResForm] = useState({ id: null, name: '', capacity: '', floor: '', equipment: '', model: '', plate: '', year: '', type: 'Turismo' });
@@ -129,6 +167,50 @@ export default function AdminPage() {
     </button>
   );
 
+  const [docUploadStatus, setDocUploadStatus] = useState(''); // upload feedback
+
+  const handleSendDoc = async () => {
+    if (!docForm.title || !docForm.recipientId) return;
+
+    // Validate file size (max 10 MB for base64 fallback)
+    if (docFile && docFile.size > 10 * 1024 * 1024) {
+      setDocUploadStatus('⚠️ El archivo es demasiado grande (máx. 10 MB). Configura Supabase Storage para archivos más grandes.');
+      return;
+    }
+
+    setDocSending(true);
+    setDocUploadStatus(docFile ? '⏳ Subiendo archivo...' : '');
+
+    let fileUrl = null;
+    if (docFile) {
+      fileUrl = await uploadDocumentFile(docFile);
+      if (!fileUrl) {
+        setDocUploadStatus('❌ Error al subir el archivo. Inténtalo de nuevo.');
+        setDocSending(false);
+        return;
+      }
+      setDocUploadStatus('✅ Archivo subido correctamente');
+    }
+
+    const result = await sendDocument({
+      title: docForm.title,
+      description: docForm.description,
+      fileUrl,
+      senderId: user.id,
+      recipientId: docForm.recipientId,
+    });
+
+    setDocSending(false);
+    if (result) {
+      setShowDocModal(false);
+      setDocForm({ title: '', description: '', recipientId: '' });
+      setDocFile(null);
+      setDocUploadStatus('');
+    } else {
+      setDocUploadStatus('❌ Error al guardar el documento en la base de datos.');
+    }
+  };
+
   return (
     <div className={styles.container}>
       {/* Page Controls */}
@@ -137,6 +219,8 @@ export default function AdminPage() {
           {tabBtn('employees', 'Empleados / Usuarios')}
           {tabBtn('rooms', 'Salas')}
           {tabBtn('vehicles', 'Vehículos')}
+          {tabBtn('documents', 'Documentos')}
+          {tabBtn('bolsahoras', 'Bolsa Horas')}
         </div>
         
         {tab === 'employees' && (
@@ -152,6 +236,16 @@ export default function AdminPage() {
         {tab === 'vehicles' && (
           <Button icon={Plus} onClick={() => { setResType('vehicle'); setResForm({ id: null, model: '', plate: '', year: '', type: 'Turismo' }); setEditingRes(false); setShowResModal(true); }}>
             Nuevo vehículo
+          </Button>
+        )}
+        {tab === 'documents' && (
+          <Button icon={Send} onClick={() => setShowDocModal(true)}>
+            Enviar documento
+          </Button>
+        )}
+        {tab === 'bolsahoras' && filteredHours.length > 0 && (
+          <Button icon={Download} variant="ghost" onClick={() => exportHoursCSV(filteredHours)}>
+            Descargar Excel
           </Button>
         )}
       </div>
@@ -407,6 +501,225 @@ export default function AdminPage() {
       )}
       </AnimatePresence>
 
+      {/* ── DOCUMENTS ── */}
+      <AnimatePresence mode="wait">
+      {tab === 'documents' && (
+        <motion.div
+          key="documents"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Card style={{ padding: 0, overflow: 'hidden' }}>
+            <div className={styles.tableHeaderSection} style={{ padding: '16px 20px' }}>
+              <p style={{ margin: 0, fontWeight: 600, fontSize: 15, color: 'var(--text)' }}>
+                Documentos enviados
+              </p>
+              <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-mut)' }}>
+                {(documents || []).length} documento{(documents || []).length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            {(!documents || documents.length === 0) ? (
+              <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-mut)' }}>
+                <FileText size={40} strokeWidth={1} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.35 }} />
+                <p style={{ margin: 0, fontSize: 14 }}>No se han enviado documentos todavía</p>
+              </div>
+            ) : (
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      {['Documento', 'Destinatario', 'Estado', 'Fecha', 'Acciones'].map(h => (
+                        <th key={h}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(documents || []).map(doc => (
+                      <tr key={doc.id}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 34, height: 34, borderRadius: 8, background: 'var(--accent-bg)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <FileText size={16} />
+                            </div>
+                            <div>
+                              <p style={{ margin: '0 0 2px', fontWeight: 600, fontSize: 13, color: 'var(--text)' }}>{doc.title}</p>
+                              {doc.description && (
+                                <p style={{ margin: 0, fontSize: 12, color: 'var(--text-sec)', maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.description}</p>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Avatar initials={(doc.recipientName || '?').split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()} size={28} />
+                            <span style={{ fontSize: 13, color: 'var(--text)', fontWeight: 500 }}>{doc.recipientName || '—'}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className={clsx(styles.docStatusBadge, {
+                            [styles.docStatusPending]:   doc.status === 'pending',
+                            [styles.docStatusSigned]:    doc.status === 'signed',
+                            [styles.docStatusCompleted]: doc.status === 'completed',
+                          })}>
+                            {doc.status === 'pending'   && <><Clock size={11} /> Pendiente</>}
+                            {doc.status === 'signed'    && <><PenTool size={11} /> Firmado</>}
+                            {doc.status === 'completed' && <><CheckCircle size={11} /> Completado</>}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: 13, color: 'var(--text-sec)' }}>
+                          {new Date(doc.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </td>
+                        <td>
+                          <div className={styles.actionsCell}>
+                            {doc.fileUrl && (
+                              <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
+                                className={clsx(styles.actionBtn, styles.edit)}
+                                title="Ver archivo"
+                              >
+                                <FileText size={14} />
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        </motion.div>
+      )}
+      </AnimatePresence>
+
+      {/* ── BOLSA HORAS ── */}
+      <AnimatePresence mode="wait">
+      {tab === 'bolsahoras' && (
+        <motion.div
+          key="bolsahoras"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Card style={{ padding: 0, overflow: 'hidden' }}>
+            {/* Filters */}
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-mut)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Empleado</label>
+                <select
+                  value={hoursFilterEmp}
+                  onChange={e => setHoursFilterEmp(e.target.value)}
+                  style={{ padding: '7px 10px', background: 'var(--bg)', border: '1px solid var(--input-border)', borderRadius: 'var(--radius-sm)', color: 'var(--text)', fontSize: 13, outline: 'none' }}
+                >
+                  <option value="">Todos</option>
+                  {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                </select>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-mut)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Desde</label>
+                <input type="date" value={hoursFilterFrom} onChange={e => setHoursFilterFrom(e.target.value)}
+                  style={{ padding: '7px 10px', background: 'var(--bg)', border: '1px solid var(--input-border)', borderRadius: 'var(--radius-sm)', color: 'var(--text)', fontSize: 13, outline: 'none' }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-mut)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hasta</label>
+                <input type="date" value={hoursFilterTo} onChange={e => setHoursFilterTo(e.target.value)}
+                  style={{ padding: '7px 10px', background: 'var(--bg)', border: '1px solid var(--input-border)', borderRadius: 'var(--radius-sm)', color: 'var(--text)', fontSize: 13, outline: 'none' }} />
+              </div>
+              {(hoursFilterEmp || hoursFilterFrom || hoursFilterTo) && (
+                <button
+                  onClick={() => { setHoursFilterEmp(''); setHoursFilterFrom(''); setHoursFilterTo(''); }}
+                  style={{ padding: '7px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', background: 'transparent', color: 'var(--text-sec)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Limpiar
+                </button>
+              )}
+              <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-mut)', alignSelf: 'flex-end', paddingBottom: 8 }}>
+                {filteredHours.length} solicitud{filteredHours.length !== 1 ? 'es' : ''} &bull; {filteredHours.reduce((s, h) => s + (h.status === 'approved' ? h.hours : 0), 0).toFixed(1)}h aprobadas
+              </span>
+            </div>
+
+            {filteredHours.length === 0 ? (
+              <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-mut)' }}>
+                <Timer size={40} strokeWidth={1} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.35 }} />
+                <p style={{ margin: 0, fontSize: 14 }}>No hay solicitudes de bolsa con los filtros aplicados</p>
+              </div>
+            ) : (
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      {['Empleado', 'Fecha', 'Motivo', 'Horas', 'Estado', 'Acciones'].map(h => <th key={h}>{h}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredHours.map(h => (
+                      <tr key={h.id}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Avatar initials={(h.employeeName || '?').split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()} size={30} />
+                            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{h.employeeName}</span>
+                          </div>
+                        </td>
+                        <td style={{ fontSize: 13, color: 'var(--text)', whiteSpace: 'nowrap' }}>
+                          {new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </td>
+                        <td style={{ fontSize: 13, color: 'var(--text-sec)', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {h.reason}
+                        </td>
+                        <td>
+                          <span style={{ background: 'var(--accent-bg)', color: 'var(--accent)', fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
+                            {h.hours}h
+                          </span>
+                        </td>
+                        <td>
+                          <span className={clsx(styles.docStatusBadge, {
+                            [styles.docStatusPending]:   h.status === 'pending',
+                            [styles.docStatusCompleted]: h.status === 'approved',
+                            [styles.docStatusSigned]:    h.status === 'rejected',
+                          })} style={h.status === 'rejected' ? { background: 'var(--danger-bg)', color: 'var(--danger)' } : {}}>
+                            {h.status === 'pending'  && <><Clock size={11} /> Pendiente</>}
+                            {h.status === 'approved' && <><CheckCircle size={11} /> Aprobada</>}
+                            {h.status === 'rejected' && <><X size={11} /> Rechazada</>}
+                          </span>
+                        </td>
+                        <td>
+                          {h.status === 'pending' ? (
+                            <div className={styles.actionsCell}>
+                              <button
+                                className={clsx(styles.actionBtn)}
+                                style={{ background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: 6, padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                                onClick={() => updateHourCompensationStatus(h.id, 'approved', user?.id)}
+                              >
+                                <CheckCircle size={13} /> Aprobar
+                              </button>
+                              <button
+                                className={clsx(styles.actionBtn)}
+                                style={{ background: 'var(--danger-bg)', color: 'var(--danger)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 6, padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                                onClick={() => updateHourCompensationStatus(h.id, 'rejected', user?.id)}
+                              >
+                                <X size={13} /> Rechazar
+                              </button>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: 12, color: 'var(--text-mut)' }}>
+                              {h.reviewerName ? `por ${h.reviewerName}` : '—'}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        </motion.div>
+      )}
+      </AnimatePresence>
+
       {/* Employee modal */}
       <Modal open={showModal} onClose={() => { setShowModal(false); setEditEmp(null); }} title={editEmp ? 'Editar empleado' : 'Nuevo empleado'}>
         <div className={styles.modalGrid}>
@@ -534,6 +847,112 @@ export default function AdminPage() {
             {editingRes ? 'Actualizar' : 'Crear'}
           </Button>
         </div>
+      </Modal>
+
+      {/* Send Document modal */}
+      <Modal
+        open={showDocModal}
+        onClose={() => { setShowDocModal(false); setDocForm({ title: '', description: '', recipientId: '' }); setDocFile(null); }}
+        title="Enviar documento"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <Input
+            label="Título del documento"
+            value={docForm.title}
+            onChange={v => setDocForm({ ...docForm, title: v })}
+            placeholder="Ej: Contrato 2025, NDA Proyecto X..."
+            required
+          />
+          <Input
+            label="Descripción (opcional)"
+            value={docForm.description}
+            onChange={v => setDocForm({ ...docForm, description: v })}
+            placeholder="Instrucciones o descripción breve"
+          />
+
+          {/* ── File Upload Zone ── */}
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-mut)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
+              Archivo adjunto
+            </label>
+            <div
+              className={clsx(styles.fileZone, { [styles.fileZoneDrag]: docDrag, [styles.fileZoneHasFile]: !!docFile })}
+              onDragOver={e => { e.preventDefault(); setDocDrag(true); }}
+              onDragLeave={() => setDocDrag(false)}
+              onDrop={e => {
+                e.preventDefault();
+                setDocDrag(false);
+                const f = e.dataTransfer.files[0];
+                if (f) setDocFile(f);
+              }}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.zip"
+                style={{ display: 'none' }}
+                onChange={e => { if (e.target.files[0]) setDocFile(e.target.files[0]); }}
+              />
+              {docFile ? (
+                <div className={styles.filePreview}>
+                  <FileText size={22} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p className={styles.fileName}>{docFile.name}</p>
+                    <p className={styles.fileSize}>{(docFile.size / 1024).toFixed(0)} KB</p>
+                  </div>
+                  <button
+                    className={styles.fileRemove}
+                    onClick={e => { e.stopPropagation(); setDocFile(null); }}
+                    title="Quitar archivo"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <div className={styles.filePrompt}>
+                  <Upload size={28} style={{ color: 'var(--text-mut)', marginBottom: 8 }} />
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: 'var(--text-sec)' }}>Arrastra un archivo aquí</p>
+                  <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-mut)' }}>o haz clic para seleccionar</p>
+                  <p style={{ margin: '6px 0 0', fontSize: 11, color: 'var(--text-mut)' }}>PDF, Word, Excel, imágenes, ZIP &bull; Máx 50 MB</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <Select
+            label="Destinatario"
+            value={docForm.recipientId}
+            onChange={v => setDocForm({ ...docForm, recipientId: v })}
+            options={[
+              { value: '', label: 'Seleccionar empleado...' },
+              ...employees.filter(e => e.id !== user?.id).map(e => ({ value: e.id, label: e.name }))
+            ]}
+          />
+        </div>
+        <div className={styles.modalActions}>
+          <Button variant="ghost" onClick={() => { setShowDocModal(false); setDocFile(null); setDocUploadStatus(''); }}>Cancelar</Button>
+          <Button
+            icon={Send}
+            onClick={handleSendDoc}
+            loading={docSending}
+            disabled={!docForm.title || !docForm.recipientId || docSending}
+          >
+            Enviar documento
+          </Button>
+        </div>
+        {docUploadStatus && (
+          <p style={{
+            margin: '8px 0 0',
+            fontSize: 13,
+            fontWeight: 600,
+            color: docUploadStatus.startsWith('❌') || docUploadStatus.startsWith('⚠️')
+              ? 'var(--danger)'
+              : docUploadStatus.startsWith('✅') ? 'var(--success)' : 'var(--text-sec)',
+          }}>
+            {docUploadStatus}
+          </p>
+        )}
       </Modal>
     </div>
   );

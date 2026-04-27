@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '../utils/supabase'
 import bcrypt from 'bcryptjs'
+import { MOCK_DOCUMENTS, MOCK_HOUR_COMPENSATIONS } from '../data/mockData'
 
 // ─── THEME CONTEXT ────────────────────────────────────────────
 export const ThemeCtx = createContext()
@@ -20,11 +21,13 @@ export function useTheme() { return useContext(ThemeCtx) }
 export const DataCtx = createContext()
 
 export function DataProvider({ children }) {
-  const [requests, setRequestsState]       = useState([])
+  const [requests, setRequestsState]         = useState([])
   const [reservations, setReservationsState] = useState([])
-  const [rooms, setRooms]                  = useState([])
-  const [vehicles, setVehicles]            = useState([])
-  const [loadingData, setLoadingData]      = useState(true)
+  const [rooms, setRooms]                    = useState([])
+  const [vehicles, setVehicles]              = useState([])
+  const [documents, setDocuments]            = useState([])
+  const [hourCompensations, setHourCompensations] = useState([])
+  const [loadingData, setLoadingData]        = useState(true)
 const [readIds, setReadIds] = useState(() => {
   try {
     return new Set(JSON.parse(localStorage.getItem('margube_readNotifs') || '[]'));
@@ -98,8 +101,85 @@ const [readIds, setReadIds] = useState(() => {
     setVehicles(data.map(v => ({ id: v.id, plate: v.plate, model: v.model, year: v.year, type: v.type })))
   }
 
+  async function fetchDocuments() {
+    const { data, error } = await supabase
+      .from('documents')
+      .select(`
+        id, title, description, file_url, status, created_at, updated_at,
+        sender_id, recipient_id
+      `)
+      .order('created_at', { ascending: false })
+    if (error || !data || data.length === 0) {
+      // Fallback to mock data (table may not exist yet or be empty)
+      if (error) console.error('documents:', error)
+      setDocuments(MOCK_DOCUMENTS.map(d => ({
+        id: d.id,
+        title: d.title,
+        description: d.description,
+        fileUrl: d.file_url,
+        status: d.status,
+        createdAt: d.created_at,
+        senderId: d.sender_id,
+        senderName: d.senderName,
+        recipientId: d.recipient_id,
+        recipientName: d.recipientName,
+      })))
+      return
+    }
+    setDocuments(data.map(d => ({
+      id: d.id,
+      title: d.title,
+      description: d.description,
+      fileUrl: d.file_url,
+      status: d.status,
+      createdAt: d.created_at,
+      updatedAt: d.updated_at,
+      senderId: d.sender_id,
+      senderName: null,  // resolved below if needed
+      recipientId: d.recipient_id,
+      recipientName: null,
+    })))
+  }
+
+  async function fetchHourCompensations() {
+    const { data, error } = await supabase
+      .from('hour_compensations')
+      .select(`
+        id, date, reason, hours, type, status, created_at, reviewed_at,
+        employee_id, reviewed_by
+      `)
+      .order('created_at', { ascending: false })
+    if (error || !data || data.length === 0) {
+      if (error) console.error('hour_compensations:', error)
+      setHourCompensations(MOCK_HOUR_COMPENSATIONS.map(h => ({
+        id: h.id,
+        employeeId: h.employee_id,
+        employeeName: h.employeeName,
+        date: h.date,
+        reason: h.reason,
+        hours: h.hours,
+        type: h.type,
+        status: h.status,
+        createdAt: h.created_at,
+      })))
+      return
+    }
+    setHourCompensations(data.map(h => ({
+      id: h.id,
+      employeeId: h.employee_id,
+      employeeName: null,
+      date: h.date,
+      reason: h.reason,
+      hours: parseFloat(h.hours),
+      type: h.type,
+      status: h.status,
+      reviewedAt: h.reviewed_at,
+      createdAt: h.created_at,
+    })))
+  }
+
   useEffect(() => {
-    Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles()])
+    Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations()])
       .finally(() => setLoadingData(false))
 
     // ── Supabase Realtime subscriptions ─────────────────────
@@ -156,11 +236,39 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
+    // Documents realtime
+    const documentChannel = supabase
+      .channel('realtime-documents')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'documents' }, (payload) => {
+        fetchDocuments()
+        pushNotif('📄', `Nuevo documento recibido: ${payload.new?.title || ''}`)
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'documents' }, () => {
+        fetchDocuments()
+      })
+      .subscribe()
+
+    // Hour compensations realtime
+    const hoursChannel = supabase
+      .channel('realtime-hours')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'hour_compensations' }, () => {
+        fetchHourCompensations()
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'hour_compensations' }, (payload) => {
+        fetchHourCompensations()
+        const s = payload.new?.status
+        if (s === 'approved') pushNotif('✅', 'Tu solicitud de bolsa de horas ha sido aprobada')
+        else if (s === 'rejected') pushNotif('❌', 'Tu solicitud de bolsa de horas ha sido rechazada')
+      })
+      .subscribe()
+
     return () => {
       supabase.removeChannel(requestChannel)
       supabase.removeChannel(reservationChannel)
       supabase.removeChannel(roomChannel)
       supabase.removeChannel(vehicleChannel)
+      supabase.removeChannel(documentChannel)
+      supabase.removeChannel(hoursChannel)
     }
   }, [])
 
@@ -210,6 +318,87 @@ const [readIds, setReadIds] = useState(() => {
     await fetchReservations()
   }
 
+  const sendDocument = async ({ title, description, fileUrl, senderId, recipientId }) => {
+    const { data, error } = await supabase.from('documents').insert([{
+      title,
+      description,
+      file_url: fileUrl || null,
+      sender_id: senderId,
+      recipient_id: recipientId,
+      status: 'pending',
+    }]).select().single()
+    if (error) { console.error('sendDocument:', error); return null }
+    await fetchDocuments()
+    return data
+  }
+
+  // Upload a File object → first tries Supabase Storage, falls back to base64 data URL
+  const uploadDocumentFile = async (file) => {
+    if (!file) return null
+
+    // ── Strategy 1: Supabase Storage ──────────────────────────
+    try {
+      const ext  = file.name.split('.').pop()
+      const path = `docs/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+      const { error: upErr } = await supabase.storage
+        .from('documents')
+        .upload(path, file, { cacheControl: '3600', upsert: false })
+      if (!upErr) {
+        const { data: { publicUrl } } = supabase.storage.from('documents').getPublicUrl(path)
+        return publicUrl
+      }
+      console.warn('Supabase Storage no disponible, usando base64:', upErr.message)
+    } catch (e) {
+      console.warn('Storage error, usando base64:', e)
+    }
+
+    // ── Strategy 2: Base64 data URL (works without bucket) ────
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = (e) => resolve(e.target.result) // data:application/pdf;base64,...
+      reader.onerror = () => resolve(null)
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const updateDocumentStatus = async (id, status) => {
+    const { error } = await supabase.from('documents').update({
+      status,
+      updated_at: new Date().toISOString(),
+    }).eq('id', id)
+    if (error) { console.error('updateDocumentStatus:', error); return }
+    await fetchDocuments()
+  }
+
+  // ── Hour Compensation helpers ──────────────────────────────
+  const createHourCompensation = async ({ employeeId, date, reason, hours, type }) => {
+    // 'ya' and 'debe' are auto-approved; 'bolsa' waits for admin
+    const status = type === 'bolsa' ? 'pending' : 'approved'
+    const { data, error } = await supabase.from('hour_compensations').insert([{
+      employee_id: employeeId,
+      date,
+      reason,
+      hours: parseFloat(hours),
+      type,
+      status,
+      reviewed_at: type === 'ya' ? new Date().toISOString() : null,
+    }]).select().single()
+    if (error) { console.error('createHourCompensation:', error); return null }
+    await fetchHourCompensations()
+    return data
+  }
+
+  const updateHourCompensationStatus = async (id, status, reviewedBy) => {
+    const { error } = await supabase.from('hour_compensations').update({
+      status,
+      reviewed_by: reviewedBy,
+      reviewed_at: new Date().toISOString(),
+    }).eq('id', id)
+    if (error) { console.error('updateHourCompensationStatus:', error); return }
+    await fetchHourCompensations()
+  }
+
+
 // ── Notification read state ───────────────────────────────
   const markRead = (id) => setReadIds(prev => {
     const next = new Set([...prev, id]);
@@ -243,13 +432,15 @@ const [readIds, setReadIds] = useState(() => {
     <DataCtx.Provider value={{
       requests, setRequests, reservations, setReservations,
       rooms, vehicles,
+      documents, sendDocument, updateDocumentStatus, uploadDocumentFile,
+      hourCompensations, createHourCompensation, updateHourCompensationStatus,
       loadingData,
       createRequest, updateRequestStatus,
       createReservation, updateReservationStatus, deleteReservation,
       readIds, markRead, markAllRead,
       density, toggleDensity,
       liveNotifs,
-      refresh: () => Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles()]),
+      refresh: () => Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations()]),
     }}>
       {children}
     </DataCtx.Provider>

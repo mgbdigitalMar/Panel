@@ -11,6 +11,7 @@ import NewsPage           from './pages/NewsPage'
 import AdminPage          from './pages/AdminPage'
 import EmployeesPage      from './pages/EmployeesPage'
 import ProfilePage        from './pages/ProfilePage'
+import HorasPage          from './pages/HorasPage'
 
 // Loading screen while Supabase restores the session
 function LoadingScreen() {
@@ -48,6 +49,7 @@ function AppShell() {
                     {page === 'dashboard'    && <DashboardPage />}
                     {page === 'reservations' && <ReservationsPage />}
                     {page === 'requests'     && <RequestsPage />}
+                    {page === 'horas'        && <HorasPage />}
                     {page === 'news'         && <NewsPage />}
                     {page === 'profile'      && <ProfilePage />}
                     {page === 'employees'    && <EmployeesPage />}

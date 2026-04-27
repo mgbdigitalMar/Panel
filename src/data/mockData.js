@@ -38,6 +38,23 @@ export const MOCK_REQUESTS = [
   { id: 6, type: 'vacation', employeeId: 5, employeeName: 'Pedro López',   startDate: '2025-02-24', endDate: '2025-02-28', days: 5,   reason: 'Viaje de negocios',             status: 'pending',  createdAt: '2025-01-20' },
 ]
 
+export const MOCK_DOCUMENTS = [
+  { id: 'd1', title: 'Contrato de trabajo 2025', description: 'Revisa y firma tu contrato actualizado para el ejercicio 2025.', file_url: null, sender_id: 1, senderName: 'Carlos Ruiz', recipient_id: 2, recipientName: 'Laura Gómez', status: 'pending', created_at: '2025-01-20T09:00:00Z' },
+  { id: 'd2', title: 'Política de Teletrabajo', description: 'Documento con las nuevas normas de teletrabajo aprobadas en Enero 2025.', file_url: null, sender_id: 1, senderName: 'Carlos Ruiz', recipient_id: 3, recipientName: 'Miguel Torres', status: 'signed', created_at: '2025-01-15T11:30:00Z' },
+  { id: 'd3', title: 'NDA — Proyecto Atlántida', description: 'Acuerdo de confidencialidad para el proyecto Atlántida. Requiere firma antes del 31/01.', file_url: null, sender_id: 1, senderName: 'Carlos Ruiz', recipient_id: 4, recipientName: 'Ana Fernández', status: 'completed', created_at: '2025-01-10T08:00:00Z' },
+]
+
+export const MOCK_HOUR_COMPENSATIONS = [
+  { id: 'hc1', employee_id: 2, employeeName: 'Laura Gómez',   date: '2025-01-10', reason: 'Reunión de urgencia fuera de horario', hours: 2,   type: 'ya',    status: 'approved',  created_at: '2025-01-10T22:00:00Z' },
+  { id: 'hc2', employee_id: 3, employeeName: 'Miguel Torres', date: '2025-01-15', reason: 'Despliegue en producción nocturno',   hours: 4,   type: 'bolsa', status: 'approved',  created_at: '2025-01-15T23:00:00Z' },
+  { id: 'hc3', employee_id: 3, employeeName: 'Miguel Torres', date: '2025-01-22', reason: 'Guardia de soporte fin de semana',    hours: 8,   type: 'bolsa', status: 'pending',   created_at: '2025-01-22T09:00:00Z' },
+  { id: 'hc4', employee_id: 5, employeeName: 'Pedro López',   date: '2025-01-18', reason: 'Visita cliente en festivo',          hours: 3.5, type: 'bolsa', status: 'rejected',  created_at: '2025-01-18T18:00:00Z' },
+  { id: 'hc5', employee_id: 2, employeeName: 'Laura Gómez',   date: '2025-01-25', reason: 'Cobertura baja compañera',           hours: 1.5, type: 'bolsa', status: 'pending',   created_at: '2025-01-25T17:00:00Z' },
+  { id: 'hc6', employee_id: 2, employeeName: 'Laura Gómez',   date: '2025-01-08', reason: 'Llegada tarde por cita médica',      hours: 1,   type: 'debe',  status: 'approved',  created_at: '2025-01-08T09:00:00Z' },
+  { id: 'hc7', employee_id: 3, employeeName: 'Miguel Torres', date: '2025-01-20', reason: 'Salida anticipada (asuntos personales)', hours: 2, type: 'debe',  status: 'pending',   created_at: '2025-01-20T17:00:00Z' },
+  { id: 'hc8', employee_id: 5, employeeName: 'Pedro López',   date: '2025-01-12', reason: 'Ausencia no justificada media jornada', hours: 4, type: 'debe', status: 'approved',  created_at: '2025-01-12T14:00:00Z' },
+]
+
 export const MOCK_NEWS = [
   { id: 1, type: 'news',  title: 'Margube alcanza récord de ventas en Q4 2024',  content: 'Cerramos el trimestre con un incremento del 34% respecto al año anterior. Gracias a todo el equipo por su dedicación y esfuerzo continuo durante este periodo.', author: 'Carlos Ruiz',  authorAvatar: 'CR', date: '2025-01-18', pinned: true,  category: 'Empresa'   },
   { id: 2, type: 'event', title: 'Formación en Liderazgo — 28 Enero',            content: 'Taller intensivo de liderazgo y gestión de equipos. Obligatorio para mandos intermedios. Lugar: Sala Executive. Traed bloc de notas.',                              author: 'Laura Gómez', authorAvatar: 'LG', date: '2025-01-20', pinned: false, category: 'Formación' },

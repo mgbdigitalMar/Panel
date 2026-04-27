@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import { 
   LayoutDashboard, Calendar, Inbox, Newspaper, Settings, User,
   LogOut, Sun, Moon, Menu, Bell, CheckCircle, Clock,
-  UsersRound, AlignJustify, List, Globe, Search
+  UsersRound, AlignJustify, List, Globe, Search, FileText, Timer
 } from 'lucide-react';
 
 import logoColor from '../assets/logos/logo-color.png';
@@ -20,6 +20,7 @@ const navItems = [
   { id: 'dashboard',    label: 'Dashboard',          icon: LayoutDashboard },
   { id: 'reservations', label: 'Reservas',           icon: Calendar       },
   { id: 'requests',     label: 'Solicitudes',        icon: Inbox          },
+  { id: 'horas',        label: 'Horas Extra',        icon: Timer          },
   { id: 'news',         label: 'Noticias y Eventos', icon: Newspaper      },
   { id: 'employees',    label: 'Equipo',             icon: UsersRound     },
 ];
@@ -31,7 +32,7 @@ export default function Layout({ children }) {
   const { user, logout, needsOnboarding, setLastActivity, setCurrentUser } = useAuth();
   const { theme, toggle } = useTheme();
   const { page, navigate } = useApp();
-  const { requests, reservations, readIds, markRead, markAllRead, density, toggleDensity, liveNotifs = [] } = useData();
+  const { requests, reservations, readIds, markRead, markAllRead, density, toggleDensity, liveNotifs = [], documents = [] } = useData();
 
   const [sideOpen, setSideOpen] = useState(false);
   const [notiMenu, setNotiMenu] = useState(false);
@@ -80,6 +81,9 @@ export default function Layout({ children }) {
   const allNotiItems = [
     ...pendingRequests.map(r => ({ id: `req-${r.id}`, kind: 'request', data: r })),
     ...upcomingReservations.map(r => ({ id: `res-${r.id}`, kind: 'reservation', data: r })),
+    ...documents
+      .filter(d => d.recipientId === user?.id && d.status === 'pending')
+      .map(d => ({ id: `doc-${d.id}`, kind: 'document', data: d })),
   ];
 
   const unreadCount = allNotiItems.filter(n => !readIds.has(n.id)).length;
@@ -264,18 +268,22 @@ const sidebarContent = (
                               className={clsx(styles.notiItem, { [styles.notiItemRead]: isRead })}
                               onClick={() => {
                                 markRead(n.id);
-                                navigate(n.kind === 'request' ? 'requests' : 'reservations');
+                                navigate(n.kind === 'request' ? 'requests' : n.kind === 'document' ? 'profile' : 'reservations');
                                 setNotiMenu(false);
                               }}
                             >
-                              <div className={clsx(styles.notiIcon, n.kind === 'request' ? styles.notiWarning : styles.notiSuccess)}>
-                                {n.kind === 'request' ? <Clock size={13} /> : <CheckCircle size={13} />}
+                              <div className={clsx(styles.notiIcon, n.kind === 'request' ? styles.notiWarning : n.kind === 'document' ? styles.notiAccent : styles.notiSuccess)}>
+                                {n.kind === 'request' ? <Clock size={13} /> : n.kind === 'document' ? <FileText size={13} /> : <CheckCircle size={13} />}
                               </div>
                               <div className={styles.notiText}>
-                                <strong>{n.kind === 'request' ? 'Solicitud Pendiente' : 'Reserva Confirmada'}</strong>
+                                <strong>
+                                  {n.kind === 'request' ? 'Solicitud Pendiente' : n.kind === 'document' ? 'Nuevo Documento' : 'Reserva Confirmada'}
+                                </strong>
                                 <span>
                                   {n.kind === 'request'
                                     ? `${n.data.employeeName} · ${n.data.type === 'vacation' ? 'Vacaciones' : 'Compra'}`
+                                    : n.kind === 'document'
+                                    ? `${n.data.title} · de ${n.data.senderName}`
                                     : `${n.data.resourceName} · ${n.data.date}`}
                                 </span>
                               </div>

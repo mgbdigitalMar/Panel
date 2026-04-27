@@ -129,3 +129,309 @@
   border: 1px solid var(--warning);
 }
 
+/* ─── Mis Documentos ─────────────────────────────── */
+.docsCard {
+  padding: 32px;
+
+  @media (max-width: 768px) {
+    padding: 28px 24px;
+  }
+
+  .cardHeader h3 {
+    color: var(--text);
+  }
+}
+
+.docsBadge {
+  margin-left: auto;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  line-height: 1.6;
+}
+
+.docsEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 0;
+  color: var(--text-mut);
+  svg { opacity: 0.35; }
+  p { font-size: 14px; margin: 0; }
+}
+
+.docsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.docItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-left: 3px solid var(--border);
+  transition: box-shadow 0.15s;
+
+  &:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+}
+
+.docPending   { border-left-color: var(--warning); }
+.docSigned    { border-left-color: var(--accent); }
+.docCompleted { border-left-color: var(--success); }
+
+.docIcon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-sec);
+}
+
+.docBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.docTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.docTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.docStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.statusPending   { background: var(--warning-bg);  color: var(--warning); }
+.statusSigned    { background: var(--accent-bg);   color: var(--accent); }
+.statusCompleted { background: var(--success-bg);  color: var(--success); }
+
+.docDesc {
+  font-size: 13px;
+  color: var(--text-sec);
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+
+.docMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-mut);
+  strong { color: var(--text-sec); font-weight: 600; }
+}
+
+.docActions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+
+  @media (min-width: 600px) {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.docBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-sec);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.docBtnComplete {
+  &:hover {
+    background: var(--success-bg);
+    border-color: var(--success);
+    color: var(--success);
+  }
+}
+
+.docBtnSign {
+  &:hover {
+    background: var(--accent-bg);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+.docBtnView {
+  background: var(--accent-bg);
+  border-color: rgba(var(--accent-rgb, 99,102,241), 0.3);
+  color: var(--accent);
+  font-weight: 600;
+
+  &:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+}
+
+/* ── Document Viewer Modal ────────────────────────────────────── */
+.viewerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.18s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.viewerModal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+  width: 100%;
+  max-width: 900px;
+  height: min(85vh, 800px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.viewerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.viewerTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 0;
+
+  svg { color: var(--accent); flex-shrink: 0; }
+  span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+.viewerHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.viewerAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-sec);
+  text-decoration: none;
+  transition: all 0.15s;
+
+  &:hover {
+    background: var(--bg-3);
+    color: var(--text);
+    border-color: var(--border-2);
+  }
+}
+
+.viewerClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-sec);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: var(--danger-bg);
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+}
+
+.viewerFrame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: var(--bg);
+}

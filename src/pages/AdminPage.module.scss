@@ -410,3 +410,107 @@
   padding-top: 20px;
   border-top: 1px solid var(--border);
 }
+
+/* ── Document Status Badges ─────────────────────────────────── */
+.docStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.docStatusPending   { background: var(--warning-bg);  color: var(--warning); }
+.docStatusSigned    { background: var(--accent-bg);   color: var(--accent); }
+.docStatusCompleted { background: var(--success-bg);  color: var(--success); }
+
+/* ── File Upload Zone ───────────────────────────────────────── */
+.fileZone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+
+  &:hover {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+  }
+}
+
+.fileZoneDrag {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 99, 102, 241), 0.12);
+  transform: scale(1.01);
+}
+
+.fileZoneHasFile {
+  border-style: solid;
+  border-color: var(--accent);
+  background: var(--card);
+
+  &:hover {
+    background: var(--bg);
+  }
+}
+
+.filePrompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.filePreview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.fileName {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileSize {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-mut);
+}
+
+.fileRemove {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-sec);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-left: auto;
+
+  &:hover {
+    background: var(--danger-bg);
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+}

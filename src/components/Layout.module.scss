@@ -597,6 +597,7 @@
 
   &.notiWarning { background: var(--warning-bg); color: var(--warning); }
   &.notiSuccess { background: var(--success-bg); color: var(--success); }
+  &.notiAccent  { background: var(--accent-bg);  color: var(--accent); }
 }
 
 .notiText {
