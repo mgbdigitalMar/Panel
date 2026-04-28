@@ -536,55 +536,63 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(documents || []).map(doc => (
-                      <tr key={doc.id}>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 34, height: 34, borderRadius: 8, background: 'var(--accent-bg)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                              <FileText size={16} />
+                    {(documents || []).map(doc => {
+                      const recipient = employees.find(e => String(e.id) === String(doc.recipientId));
+                      const recipName   = recipient?.name   || doc.recipientName || '—';
+                      const recipAvatar = recipient?.avatar  || recipName.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+                      return (
+                        <tr key={doc.id}>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <div style={{ width: 34, height: 34, borderRadius: 8, background: 'var(--accent-bg)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <FileText size={16} />
+                              </div>
+                              <div>
+                                <p style={{ margin: '0 0 2px', fontWeight: 600, fontSize: 13, color: 'var(--text)' }}>{doc.title}</p>
+                                {doc.description && (
+                                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-sec)', maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.description}</p>
+                                )}
+                              </div>
                             </div>
-                            <div>
-                              <p style={{ margin: '0 0 2px', fontWeight: 600, fontSize: 13, color: 'var(--text)' }}>{doc.title}</p>
-                              {doc.description && (
-                                <p style={{ margin: 0, fontSize: 12, color: 'var(--text-sec)', maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.description}</p>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <Avatar initials={recipAvatar} size={28} />
+                              <div>
+                                <span style={{ fontSize: 13, color: 'var(--text)', fontWeight: 600, display: 'block' }}>{recipName}</span>
+                                {recipient?.dept && <span style={{ fontSize: 11, color: 'var(--text-mut)' }}>{recipient.dept}</span>}
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <span className={clsx(styles.docStatusBadge, {
+                              [styles.docStatusPending]:   doc.status === 'pending',
+                              [styles.docStatusSigned]:    doc.status === 'signed',
+                              [styles.docStatusCompleted]: doc.status === 'completed',
+                            })}>
+                              {doc.status === 'pending'   && <><Clock size={11} /> Pendiente</>}
+                              {doc.status === 'signed'    && <><PenTool size={11} /> Firmado</>}
+                              {doc.status === 'completed' && <><CheckCircle size={11} /> Completado</>}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: 13, color: 'var(--text-sec)' }}>
+                            {new Date(doc.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          </td>
+                          <td>
+                            <div className={styles.actionsCell}>
+                              {doc.fileUrl && (
+                                <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
+                                  className={clsx(styles.actionBtn, styles.edit)}
+                                  title="Ver archivo"
+                                >
+                                  <FileText size={14} />
+                                </a>
                               )}
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Avatar initials={(doc.recipientName || '?').split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()} size={28} />
-                            <span style={{ fontSize: 13, color: 'var(--text)', fontWeight: 500 }}>{doc.recipientName || '—'}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <span className={clsx(styles.docStatusBadge, {
-                            [styles.docStatusPending]:   doc.status === 'pending',
-                            [styles.docStatusSigned]:    doc.status === 'signed',
-                            [styles.docStatusCompleted]: doc.status === 'completed',
-                          })}>
-                            {doc.status === 'pending'   && <><Clock size={11} /> Pendiente</>}
-                            {doc.status === 'signed'    && <><PenTool size={11} /> Firmado</>}
-                            {doc.status === 'completed' && <><CheckCircle size={11} /> Completado</>}
-                          </span>
-                        </td>
-                        <td style={{ fontSize: 13, color: 'var(--text-sec)' }}>
-                          {new Date(doc.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
-                        </td>
-                        <td>
-                          <div className={styles.actionsCell}>
-                            {doc.fileUrl && (
-                              <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
-                                className={clsx(styles.actionBtn, styles.edit)}
-                                title="Ver archivo"
-                              >
-                                <FileText size={14} />
-                              </a>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -655,62 +663,70 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredHours.map(h => (
-                      <tr key={h.id}>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Avatar initials={(h.employeeName || '?').split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase()} size={30} />
-                            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{h.employeeName}</span>
-                          </div>
-                        </td>
-                        <td style={{ fontSize: 13, color: 'var(--text)', whiteSpace: 'nowrap' }}>
-                          {new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
-                        </td>
-                        <td style={{ fontSize: 13, color: 'var(--text-sec)', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {h.reason}
-                        </td>
-                        <td>
-                          <span style={{ background: 'var(--accent-bg)', color: 'var(--accent)', fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
-                            {h.hours}h
-                          </span>
-                        </td>
-                        <td>
-                          <span className={clsx(styles.docStatusBadge, {
-                            [styles.docStatusPending]:   h.status === 'pending',
-                            [styles.docStatusCompleted]: h.status === 'approved',
-                            [styles.docStatusSigned]:    h.status === 'rejected',
-                          })} style={h.status === 'rejected' ? { background: 'var(--danger-bg)', color: 'var(--danger)' } : {}}>
-                            {h.status === 'pending'  && <><Clock size={11} /> Pendiente</>}
-                            {h.status === 'approved' && <><CheckCircle size={11} /> Aprobada</>}
-                            {h.status === 'rejected' && <><X size={11} /> Rechazada</>}
-                          </span>
-                        </td>
-                        <td>
-                          {h.status === 'pending' ? (
-                            <div className={styles.actionsCell}>
-                              <button
-                                className={clsx(styles.actionBtn)}
-                                style={{ background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: 6, padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-                                onClick={() => updateHourCompensationStatus(h.id, 'approved', user?.id)}
-                              >
-                                <CheckCircle size={13} /> Aprobar
-                              </button>
-                              <button
-                                className={clsx(styles.actionBtn)}
-                                style={{ background: 'var(--danger-bg)', color: 'var(--danger)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 6, padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-                                onClick={() => updateHourCompensationStatus(h.id, 'rejected', user?.id)}
-                              >
-                                <X size={13} /> Rechazar
-                              </button>
+                    {filteredHours.map(h => {
+                      const emp = employees.find(e => String(e.id) === String(h.employeeId));
+                      const empName = emp?.name || h.employeeName || 'Empleado';
+                      const empAvatar = emp?.avatar || empName.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+                      return (
+                        <tr key={h.id}>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <Avatar initials={empAvatar} size={30} />
+                              <div>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block' }}>{empName}</span>
+                                {emp?.dept && <span style={{ fontSize: 11, color: 'var(--text-mut)' }}>{emp.dept}</span>}
+                              </div>
                             </div>
-                          ) : (
-                            <span style={{ fontSize: 12, color: 'var(--text-mut)' }}>
-                              {h.reviewerName ? `por ${h.reviewerName}` : '—'}
+                          </td>
+                          <td style={{ fontSize: 13, color: 'var(--text)', whiteSpace: 'nowrap' }}>
+                            {new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          </td>
+                          <td style={{ fontSize: 13, color: 'var(--text-sec)', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {h.reason}
+                          </td>
+                          <td>
+                            <span style={{ background: 'var(--accent-bg)', color: 'var(--accent)', fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
+                              {h.hours}h
                             </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td>
+                            <span className={clsx(styles.docStatusBadge, {
+                              [styles.docStatusPending]:   h.status === 'pending',
+                              [styles.docStatusCompleted]: h.status === 'approved',
+                              [styles.docStatusSigned]:    h.status === 'rejected',
+                            })} style={h.status === 'rejected' ? { background: 'var(--danger-bg)', color: 'var(--danger)' } : {}}>
+                              {h.status === 'pending'  && <><Clock size={11} /> Pendiente</>}
+                              {h.status === 'approved' && <><CheckCircle size={11} /> Aprobada</>}
+                              {h.status === 'rejected' && <><X size={11} /> Rechazada</>}
+                            </span>
+                          </td>
+                          <td>
+                            {h.status === 'pending' ? (
+                              <div className={styles.actionsCell}>
+                                <button
+                                  className={clsx(styles.actionBtn)}
+                                  style={{ background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: 6, padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                                  onClick={() => updateHourCompensationStatus(h.id, 'approved', user?.id)}
+                                >
+                                  <CheckCircle size={13} /> Aprobar
+                                </button>
+                                <button
+                                  className={clsx(styles.actionBtn)}
+                                  style={{ background: 'var(--danger-bg)', color: 'var(--danger)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 6, padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                                  onClick={() => updateHourCompensationStatus(h.id, 'rejected', user?.id)}
+                                >
+                                  <X size={13} /> Rechazar
+                                </button>
+                              </div>
+                            ) : (
+                              <span style={{ fontSize: 12, color: 'var(--text-mut)' }}>
+                                {h.reviewerName ? `por ${h.reviewerName}` : '—'}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

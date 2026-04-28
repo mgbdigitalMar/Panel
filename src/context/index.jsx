@@ -424,7 +424,7 @@ const [readIds, setReadIds] = useState(() => {
     return next
   })
 
-  // Legacy setters kept for compatibility (local state still works alongside)
+  // Legacy setters kept for compatibility
   const setRequests     = (fn) => setRequestsState(fn)
   const setReservations = (fn) => setReservationsState(fn)
 

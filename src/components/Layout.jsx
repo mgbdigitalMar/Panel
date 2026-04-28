@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import { 
   LayoutDashboard, Calendar, Inbox, Newspaper, Settings, User,
-  LogOut, Sun, Moon, Menu, Bell, CheckCircle, Clock,
+  LogOut, Sun, Moon, Menu, Bell, CheckCircle, XCircle, Clock,
   UsersRound, AlignJustify, List, Globe, Search, FileText, Timer
 } from 'lucide-react';
 
@@ -70,24 +70,22 @@ export default function Layout({ children }) {
     };
   }, [resetIdle]);
 
-  // Notifications logic — only unread count shown in badge
+  // Notifications logic
   const pendingRequests = requests.filter(r =>
     r.status === 'pending' && (user?.role === 'admin' || r.employeeId === user?.id)
   );
   const upcomingReservations = reservations.filter(r =>
     r.status === 'confirmed' && (user?.role === 'admin' || r.employeeId === user?.id)
   );
+  const docNotifs = (documents || []).filter(d => d.recipientId === user?.id && d.status === 'pending');
 
   const allNotiItems = [
     ...pendingRequests.map(r => ({ id: `req-${r.id}`, kind: 'request', data: r })),
     ...upcomingReservations.map(r => ({ id: `res-${r.id}`, kind: 'reservation', data: r })),
-    ...documents
-      .filter(d => d.recipientId === user?.id && d.status === 'pending')
-      .map(d => ({ id: `doc-${d.id}`, kind: 'document', data: d })),
+    ...docNotifs.map(d => ({ id: `doc-${d.id}`, kind: 'document', data: d })),
   ];
 
   const unreadCount = allNotiItems.filter(n => !readIds.has(n.id)).length;
-
   const handleMarkAllRead = () => markAllRead(allNotiItems.map(n => n.id));
 
   const NavLink = ({ item }) => {
@@ -283,7 +281,7 @@ const sidebarContent = (
                                   {n.kind === 'request'
                                     ? `${n.data.employeeName} · ${n.data.type === 'vacation' ? 'Vacaciones' : 'Compra'}`
                                     : n.kind === 'document'
-                                    ? `${n.data.title} · de ${n.data.senderName}`
+                                    ? `${n.data.title}`
                                     : `${n.data.resourceName} · ${n.data.date}`}
                                 </span>
                               </div>
