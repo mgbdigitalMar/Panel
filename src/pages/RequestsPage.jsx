@@ -34,8 +34,8 @@ export default function RequestsPage() {
     setForm({ startDate: '', endDate: '', reason: '', item: '', amount: '' });
   };
 
-  const changeStatus = async (id, status) => {
-    await updateRequestStatus(id, status, user.id);
+  const changeStatus = async (id, status, employeeId) => {
+    await updateRequestStatus(id, status, user.id, employeeId);
   };
 
   const tabBtn = (id, label) => (
@@ -84,8 +84,8 @@ export default function RequestsPage() {
                 <tr key={r.id}>
                   <td>
                     <div className={styles.userCell}>
-                      <Avatar initials={r.employeeName.split(' ').map(n => n[0]).join('').slice(0, 2)} size={32} />
-                      <span className={styles.userName}>{r.employeeName}</span>
+                      <Avatar initials={(r.employeeName || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()} size={32} />
+                      <span className={styles.userName}>{r.employeeName || '—'}</span>
                     </div>
                   </td>
                   <td>
@@ -102,10 +102,10 @@ export default function RequestsPage() {
                     <td>
                       {r.status === 'pending' && (
                         <div className={styles.actionsCell}>
-                          <button className={clsx(styles.actionBtn, styles.approveBtn)} onClick={() => changeStatus(r.id, 'approved')}>
+                          <button className={clsx(styles.actionBtn, styles.approveBtn)} onClick={() => changeStatus(r.id, 'approved', r.employeeId)}>
                             <Check size={14} /> Aprobar
                           </button>
-                          <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => changeStatus(r.id, 'rejected')}>
+                          <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => changeStatus(r.id, 'rejected', r.employeeId)}>
                             <X size={14} /> Rechazar
                           </button>
                         </div>

@@ -32,7 +32,10 @@ export default function Layout({ children }) {
   const { user, logout, needsOnboarding, setLastActivity, setCurrentUser } = useAuth();
   const { theme, toggle } = useTheme();
   const { page, navigate } = useApp();
-  const { requests, reservations, readIds, markRead, markAllRead, density, toggleDensity, liveNotifs = [], documents = [] } = useData();
+  const { 
+    requests, reservations, readIds, markRead, markAllRead, density, toggleDensity, liveNotifs = [], documents = [],
+    notifications = [], markNotifRead, markAllNotifsRead 
+  } = useData();
 
   const [sideOpen, setSideOpen] = useState(false);
   const [notiMenu, setNotiMenu] = useState(false);
@@ -70,7 +73,7 @@ export default function Layout({ children }) {
     };
   }, [resetIdle]);
 
-  // Notifications logic
+  // Derived actions (still useful for quick access to pending items)
   const pendingRequests = requests.filter(r =>
     r.status === 'pending' && (user?.role === 'admin' || r.employeeId === user?.id)
   );
@@ -79,14 +82,8 @@ export default function Layout({ children }) {
   );
   const docNotifs = (documents || []).filter(d => d.recipientId === user?.id && d.status === 'pending');
 
-  const allNotiItems = [
-    ...pendingRequests.map(r => ({ id: `req-${r.id}`, kind: 'request', data: r })),
-    ...upcomingReservations.map(r => ({ id: `res-${r.id}`, kind: 'reservation', data: r })),
-    ...docNotifs.map(d => ({ id: `doc-${d.id}`, kind: 'document', data: d })),
-  ];
-
-  const unreadCount = allNotiItems.filter(n => !readIds.has(n.id)).length;
-  const handleMarkAllRead = () => markAllRead(allNotiItems.map(n => n.id));
+  const unreadCount = notifications.filter(n => !n.read).length;
+  const handleMarkAllRead = () => markAllNotifsRead?.(user?.id);
 
   const NavLink = ({ item }) => {
     const active = page === item.id;
@@ -255,37 +252,45 @@ const sidebarContent = (
                     </div>
 
                     <div className={styles.notiList}>
-                      {allNotiItems.length === 0 ? (
-                        <p className={styles.emptyNoti}>No hay notificaciones</p>
+                      {notifications.length === 0 ? (
+                        <div className={styles.emptyNoti}>
+                          <p>No hay notificaciones recientes</p>
+                        </div>
                       ) : (
-                        allNotiItems.map(n => {
-                          const isRead = readIds.has(n.id);
+                        notifications.map(n => {
+                          const typeIcon = n.type === 'success' ? <CheckCircle size={13} /> : n.type === 'error' ? <XCircle size={13} /> : <Bell size={13} />;
+                          const typeStyle = n.type === 'success' ? styles.notiSuccess : n.type === 'error' ? styles.notiWarning : styles.notiAccent;
+                          let entityNav = n.entity_type === 'request' ? 'requests' : n.entity_type === 'document' ? 'profile' : n.entity_type === 'hour_compensation' ? 'horas' : n.entity_type === 'reservation' ? 'reservations' : 'dashboard';
+                          
+                          // If admin, navigate to admin page for hour compensation approvals
+                          if (user?.role === 'admin' && n.entity_type === 'hour_compensation') {
+                            entityNav = 'admin';
+                          }
+
                           return (
                             <div
                               key={n.id}
-                              className={clsx(styles.notiItem, { [styles.notiItemRead]: isRead })}
+                              className={clsx(styles.notiItem, { [styles.notiItemRead]: n.read })}
                               onClick={() => {
-                                markRead(n.id);
-                                navigate(n.kind === 'request' ? 'requests' : n.kind === 'document' ? 'profile' : 'reservations');
+                                markNotifRead?.(n.id);
+                                navigate(entityNav);
                                 setNotiMenu(false);
                               }}
                             >
-                              <div className={clsx(styles.notiIcon, n.kind === 'request' ? styles.notiWarning : n.kind === 'document' ? styles.notiAccent : styles.notiSuccess)}>
-                                {n.kind === 'request' ? <Clock size={13} /> : n.kind === 'document' ? <FileText size={13} /> : <CheckCircle size={13} />}
+                              <div className={clsx(styles.notiIcon, typeStyle)}>
+                                {typeIcon}
                               </div>
                               <div className={styles.notiText}>
-                                <strong>
-                                  {n.kind === 'request' ? 'Solicitud Pendiente' : n.kind === 'document' ? 'Nuevo Documento' : 'Reserva Confirmada'}
-                                </strong>
-                                <span>
-                                  {n.kind === 'request'
-                                    ? `${n.data.employeeName} · ${n.data.type === 'vacation' ? 'Vacaciones' : 'Compra'}`
-                                    : n.kind === 'document'
-                                    ? `${n.data.title}`
-                                    : `${n.data.resourceName} · ${n.data.date}`}
+                                <strong>{n.title}</strong>
+                                {n.body && <span>{n.body}</span>}
+                                <span style={{ fontSize: 10, color: 'var(--text-mut)', marginTop: 4 }}>
+                                  {new Date(n.created_at).toLocaleString('es-ES', { 
+                                    day: '2-digit', month: 'short', 
+                                    hour: '2-digit', minute: '2-digit' 
+                                  })}
                                 </span>
                               </div>
-                              {!isRead && <span className={styles.unreadDot} />}
+                              {!n.read && <span className={styles.unreadDot} />}
                             </div>
                           );
                         })

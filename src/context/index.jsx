@@ -27,6 +27,7 @@ export function DataProvider({ children }) {
   const [vehicles, setVehicles]              = useState([])
   const [documents, setDocuments]            = useState([])
   const [hourCompensations, setHourCompensations] = useState([])
+  const [notifications, setNotifications]    = useState([]) // Persistent DB notifications
   const [loadingData, setLoadingData]        = useState(true)
 const [readIds, setReadIds] = useState(() => {
   try {
@@ -39,6 +40,43 @@ const [readIds, setReadIds] = useState(() => {
   const [density, setDensity]              = useState(
     () => localStorage.getItem('margube-density') || 'normal'
   )
+
+  // ── Persistent Notifications (DB) ────────────────────────
+  const fetchNotifications = async (userId) => {
+    if (!userId) return
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(50)
+    if (error) { console.warn('Notifications table check:', error.message); return }
+    setNotifications(data || [])
+  }
+
+  const markNotifRead = async (id) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
+    await supabase.from('notifications').update({ read: true }).eq('id', id)
+  }
+
+  const markAllNotifsRead = async (userId) => {
+    if (!userId) return
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+    await supabase.from('notifications').update({ read: true }).eq('user_id', userId).eq('read', false)
+  }
+
+  const createNotification = async ({ userId, title, body, type = 'info', entityType, entityId }) => {
+    const { error } = await supabase.from('notifications').insert([{
+      user_id: userId,
+      title,
+      body: body || null,
+      type,
+      entity_type: entityType || null,
+      entity_id: entityId || null,
+      read: false,
+    }])
+    if (error) console.warn('Could not insert notification:', error.message)
+  }
 
   // ── Fetch helpers ─────────────────────────────────────────
   async function fetchRequests() {
@@ -178,6 +216,37 @@ const [readIds, setReadIds] = useState(() => {
     })))
   }
 
+  const auth = useContext(AuthCtx)
+  const user = auth?.user
+  const employees = auth?.employees || []
+
+  const notifyAdmins = async ({ title, body, type = 'info', entityType, entityId }) => {
+    const adminIds = employees.filter(e => e.role === 'admin').map(e => e.id)
+    if (adminIds.length === 0) return
+    
+    // Create notifications for each admin
+    const notifs = adminIds.map(adminId => ({
+      user_id: adminId,
+      title,
+      body: body || null,
+      type,
+      entity_type: entityType || null,
+      entity_id: entityId || null,
+      read: false,
+    }))
+    
+    const { error } = await supabase.from('notifications').insert(notifs)
+    if (error) console.warn('Could not notify admins:', error.message)
+  }
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchNotifications(user.id)
+    } else {
+      setNotifications([])
+    }
+  }, [user?.id])
+
   useEffect(() => {
     Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations()])
       .finally(() => setLoadingData(false))
@@ -262,6 +331,24 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
+    // Notifications realtime
+    const notifChannel = supabase
+      .channel('realtime-notifications')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
+        // If it's for the current user
+        if (payload.new.user_id === user?.id) {
+          setNotifications(prev => [payload.new, ...prev.slice(0, 49)])
+          const icon = payload.new.type === 'success' ? '✅' : payload.new.type === 'error' ? '❌' : '🔔'
+          pushNotif(icon, payload.new.title)
+        }
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifications' }, (payload) => {
+        if (payload.new.user_id === user?.id) {
+          setNotifications(prev => prev.map(n => n.id === payload.new.id ? payload.new : n))
+        }
+      })
+      .subscribe()
+
     return () => {
       supabase.removeChannel(requestChannel)
       supabase.removeChannel(reservationChannel)
@@ -269,8 +356,9 @@ const [readIds, setReadIds] = useState(() => {
       supabase.removeChannel(vehicleChannel)
       supabase.removeChannel(documentChannel)
       supabase.removeChannel(hoursChannel)
+      supabase.removeChannel(notifChannel)
     }
-  }, [])
+  }, [user?.id])
 
   // ── Write helpers ─────────────────────────────────────────
   const createRequest = async (employeeId, payload) => {
@@ -280,15 +368,36 @@ const [readIds, setReadIds] = useState(() => {
     }]).select().single()
     if (error) { console.error(error); return null }
     await fetchRequests()
+    
+    // Notify admins
+    const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado'
+    await notifyAdmins({
+      title: `📋 Nueva solicitud: ${payload.type === 'vacation' ? 'Vacaciones' : 'Compra'}`,
+      body: `${empName} ha enviado una solicitud que requiere revisión.`,
+      type: 'info',
+      entityType: 'request',
+      entityId: data?.id
+    })
+    
     return data
   }
 
-  const updateRequestStatus = async (id, status, reviewedBy) => {
+  const updateRequestStatus = async (id, status, reviewedBy, employeeId) => {
     const { error } = await supabase.from('requests').update({
       status, reviewed_by: reviewedBy, reviewed_at: new Date().toISOString(),
     }).eq('id', id)
     if (error) { console.error(error); return }
     await fetchRequests()
+    
+    if (employeeId) {
+      await createNotification({
+        userId: employeeId,
+        title: status === 'approved' ? '✅ Solicitud aprobada' : '❌ Solicitud rechazada',
+        body: status === 'approved' ? 'Tu solicitud ha sido aprobada.' : 'Tu solicitud ha sido rechazada.',
+        type: status === 'approved' ? 'success' : 'error',
+        entityType: 'request', entityId: id
+      })
+    }
   }
 
   const createReservation = async (employeeId, payload) => {
@@ -301,6 +410,17 @@ const [readIds, setReadIds] = useState(() => {
       return { error: error.message || 'Failed to create reservation' }
     }
     await fetchReservations()
+    
+    // Notify admins
+    const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado'
+    await notifyAdmins({
+      title: `📅 Nueva reserva: ${payload.resourceName}`,
+      body: `${empName} ha realizado una reserva de ${payload.type === 'room' ? 'sala' : 'vehículo'}.`,
+      type: 'info',
+      entityType: 'reservation',
+      entityId: data?.id
+    })
+    
     return { data }
   }
 
@@ -329,6 +449,16 @@ const [readIds, setReadIds] = useState(() => {
     }]).select().single()
     if (error) { console.error('sendDocument:', error); return null }
     await fetchDocuments()
+
+    if (recipientId) {
+      await createNotification({
+        userId: recipientId,
+        title: `📄 Nuevo documento: ${title}`,
+        body: description || 'Tienes un nuevo documento disponible en tu perfil.',
+        type: 'info',
+        entityType: 'document', entityId: data?.id
+      })
+    }
     return data
   }
 
@@ -385,10 +515,23 @@ const [readIds, setReadIds] = useState(() => {
     }]).select().single()
     if (error) { console.error('createHourCompensation:', error); return null }
     await fetchHourCompensations()
+
+    // Notify admins if it's a request for the 'bolsa'
+    if (type === 'bolsa') {
+      const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado'
+      await notifyAdmins({
+        title: `⌛ Nueva bolsa de horas`,
+        body: `${empName} solicita compensar ${hours}h en su bolsa.`,
+        type: 'info',
+        entityType: 'hour_compensation',
+        entityId: data?.id
+      })
+    }
+
     return data
   }
 
-  const updateHourCompensationStatus = async (id, status, reviewedBy) => {
+  const updateHourCompensationStatus = async (id, status, reviewedBy, employeeId) => {
     const { error } = await supabase.from('hour_compensations').update({
       status,
       reviewed_by: reviewedBy,
@@ -396,6 +539,16 @@ const [readIds, setReadIds] = useState(() => {
     }).eq('id', id)
     if (error) { console.error('updateHourCompensationStatus:', error); return }
     await fetchHourCompensations()
+
+    if (employeeId) {
+      await createNotification({
+        userId: employeeId,
+        title: status === 'approved' ? '✅ Horas aprobadas' : '❌ Horas rechazadas',
+        body: status === 'approved' ? 'Tu solicitud de bolsa de horas ha sido aprobada.' : 'Tu solicitud ha sido rechazada.',
+        type: status === 'approved' ? 'success' : 'error',
+        entityType: 'hour_compensation', entityId: id
+      })
+    }
   }
 
 
@@ -434,6 +587,7 @@ const [readIds, setReadIds] = useState(() => {
       rooms, vehicles,
       documents, sendDocument, updateDocumentStatus, uploadDocumentFile,
       hourCompensations, createHourCompensation, updateHourCompensationStatus,
+      notifications, markNotifRead, markAllNotifsRead,
       loadingData,
       createRequest, updateRequestStatus,
       createReservation, updateReservationStatus, deleteReservation,

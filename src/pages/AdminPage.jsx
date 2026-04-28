@@ -706,14 +706,14 @@ export default function AdminPage() {
                                 <button
                                   className={clsx(styles.actionBtn)}
                                   style={{ background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: 6, padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-                                  onClick={() => updateHourCompensationStatus(h.id, 'approved', user?.id)}
+                                  onClick={() => updateHourCompensationStatus(h.id, 'approved', user?.id, h.employeeId)}
                                 >
                                   <CheckCircle size={13} /> Aprobar
                                 </button>
                                 <button
                                   className={clsx(styles.actionBtn)}
                                   style={{ background: 'var(--danger-bg)', color: 'var(--danger)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 6, padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-                                  onClick={() => updateHourCompensationStatus(h.id, 'rejected', user?.id)}
+                                  onClick={() => updateHourCompensationStatus(h.id, 'rejected', user?.id, h.employeeId)}
                                 >
                                   <X size={13} /> Rechazar
                                 </button>

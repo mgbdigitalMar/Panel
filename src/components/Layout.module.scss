@@ -548,42 +548,74 @@
 }
 
 .notiList {
-  max-height: 340px;
+  max-height: 400px;
   overflow-y: auto;
+  padding: 4px 0;
+
+  /* Custom Scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--text-mut);
+  }
 }
 
 .emptyNoti {
-  padding: 40px;
+  padding: 60px 40px;
   text-align: center;
   color: var(--text-mut);
   font-size: 13px;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  
+  &::before {
+    content: '🔔';
+    font-size: 24px;
+    opacity: 0.5;
+  }
 }
 
 .notiItem {
   display: flex;
-  gap: 12px;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(var(--text-rgb), 0.04);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   align-items: flex-start;
+  position: relative;
 
-  &:hover { background: var(--bg); }
+  &:hover { 
+    background: var(--bg);
+    padding-left: 20px;
+  }
   &:last-child { border-bottom: none; }
 }
 
 .notiItemRead {
-  opacity: 0.5;
+  opacity: 0.6;
+  filter: grayscale(0.2);
 }
 
 .unreadDot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--accent);
   flex-shrink: 0;
-  margin-top: 5px;
+  margin-top: 6px;
+  box-shadow: 0 0 10px var(--accent);
 }
 
 .notiIcon {
