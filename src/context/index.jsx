@@ -360,6 +360,36 @@ const [readIds, setReadIds] = useState(() => {
     }
   }, [user?.id])
 
+  // Sync work mode for the current user based on approved external requests
+  useEffect(() => {
+    if (!user?.id || loadingData) return;
+
+    const syncMode = async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const activeExternal = requests.find(r => 
+        r.employeeId === user.id && 
+        r.type === 'external' && 
+        r.status === 'approved' && 
+        today >= r.startDate && 
+        today <= r.endDate
+      );
+
+      if (activeExternal && user.workMode !== 'externo') {
+        console.log('Syncing work mode to externo (active request found)');
+        await supabase.from('profiles').update({ work_mode: 'externo' }).eq('id', user.id);
+        // We don't necessarily need to refresh everything, but it helps
+      } else if (!activeExternal && user.workMode === 'externo') {
+        // If they are 'externo' but have no active approved request, revert to 'Office'
+        // Only if they were 'externo' (to avoid overriding other manual modes if possible, 
+        // but here we follow the "automatic" requirement).
+        console.log('Reverting work mode to Office (no active external request)');
+        await supabase.from('profiles').update({ work_mode: 'Office' }).eq('id', user.id);
+      }
+    };
+
+    syncMode();
+  }, [user?.id, user?.workMode, requests, loadingData]);
+
   // ── Write helpers ─────────────────────────────────────────
   const createRequest = async (employeeId, payload) => {
     const { data, error } = await supabase.from('requests').insert([{
@@ -369,11 +399,10 @@ const [readIds, setReadIds] = useState(() => {
     if (error) { console.error(error); return null }
     await fetchRequests()
     
-    // Notify admins
-    const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado'
+    const typeLabel = payload.type === 'vacation' ? 'Vacaciones' : payload.type === 'external' ? 'Trabajo Externo' : 'Compra'
     await notifyAdmins({
-      title: `📋 Nueva solicitud: ${payload.type === 'vacation' ? 'Vacaciones' : 'Compra'}`,
-      body: `${empName} ha enviado una solicitud que requiere revisión.`,
+      title: `📋 Nueva solicitud: ${typeLabel}`,
+      body: `${empName} ha enviado una solicitud de ${typeLabel.toLowerCase()} que requiere revisión.`,
       type: 'info',
       entityType: 'request',
       entityId: data?.id
@@ -383,17 +412,31 @@ const [readIds, setReadIds] = useState(() => {
   }
 
   const updateRequestStatus = async (id, status, reviewedBy, employeeId) => {
+    const { data: reqData } = await supabase.from('requests').select('type, start_date, end_date').eq('id', id).single();
+    
     const { error } = await supabase.from('requests').update({
       status, reviewed_by: reviewedBy, reviewed_at: new Date().toISOString(),
     }).eq('id', id)
     if (error) { console.error(error); return }
+
+    // If approving an external request, update work mode immediately if it's currently active
+    if (status === 'approved' && reqData?.type === 'external') {
+      const today = new Date().toISOString().split('T')[0];
+      if (today >= reqData.start_date && today <= reqData.end_date) {
+        await supabase.from('profiles').update({ work_mode: 'externo' }).eq('id', employeeId);
+      }
+    }
+
     await fetchRequests()
     
     if (employeeId) {
+      const typeLabel = reqData?.type === 'external' ? 'trabajo externo' : reqData?.type === 'vacation' ? 'vacaciones' : 'compra';
       await createNotification({
         userId: employeeId,
         title: status === 'approved' ? '✅ Solicitud aprobada' : '❌ Solicitud rechazada',
-        body: status === 'approved' ? 'Tu solicitud ha sido aprobada.' : 'Tu solicitud ha sido rechazada.',
+        body: status === 'approved' 
+          ? `Tu solicitud de ${typeLabel} ha sido aprobada.` 
+          : `Tu solicitud de ${typeLabel} ha sido rechazada.`,
         type: status === 'approved' ? 'success' : 'error',
         entityType: 'request', entityId: id
       })

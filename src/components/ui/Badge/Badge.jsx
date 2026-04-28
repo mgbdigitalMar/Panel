@@ -11,6 +11,8 @@ export function Badge({ status, label, className }) {
     employee:  { variant: 'neutral', text: 'Empleado'   },
     news:      { variant: 'accent',  text: 'Noticia'    },
     event:     { variant: 'warning', text: 'Evento'     },
+    external:  { variant: 'warning', text: 'Externo'    },
+    purchase:  { variant: 'accent',  text: 'Compra'     },
   };
 
   const s = statusMap[status] || { variant: 'neutral', text: label || status };
