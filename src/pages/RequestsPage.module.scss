@@ -11,6 +11,11 @@
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .tabsRow {
@@ -20,6 +25,15 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 4px;
+
+  @media (max-width: 768px) {
+    overflow-x: auto;
+    width: 100%;
+    
+    &::-webkit-scrollbar { display: none; }
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 .tabBtn {
@@ -151,6 +165,11 @@
   display: flex;
   gap: 8px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+  }
 }
 
 .typeBtn {
