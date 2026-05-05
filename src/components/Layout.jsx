@@ -354,6 +354,62 @@ const sidebarContent = (
       <AnimatePresence>
         {needsOnboarding && <OnboardingModal />}
       </AnimatePresence>
+
+      {/* ── Policy Modal (Blocking) ────────────────────────────── */}
+      <AnimatePresence>
+        {user && user.policyAccepted !== true && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+            backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10000, 
+            display: 'flex', flexDirection: 'column', padding: '24px',
+            backdropFilter: 'blur(4px)'
+          }}>
+            <motion.div 
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              style={{
+                backgroundColor: 'var(--bg)', borderRadius: '12px', flex: 1,
+                display: 'flex', flexDirection: 'column', overflow: 'hidden',
+                boxShadow: '0 24px 48px rgba(0,0,0,0.4)', maxWidth: '900px', margin: '0 auto', width: '100%'
+              }}
+            >
+              <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
+                <h2 style={{ margin: 0, fontSize: '20px', color: 'var(--text)' }}>Lectura Obligatoria</h2>
+                <p style={{ margin: '8px 0 0 0', color: 'var(--text-sec)', fontSize: '14px' }}>
+                  Es obligatorio leer y aceptar el <strong>Procedimiento de Normas Internas 2026</strong> para continuar utilizando la plataforma.
+                </p>
+              </div>
+              
+              <div style={{ flex: 1, backgroundColor: '#f5f5f5', position: 'relative' }}>
+                <iframe 
+                  src="/Procedimiento normas internas 2026.pdf#toolbar=0" 
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                  title="Procedimiento normas internas 2026"
+                />
+              </div>
+
+              <div style={{ padding: '24px', borderTop: '1px solid var(--border)', background: 'var(--card)', display: 'flex', justifyContent: 'flex-end' }}>
+                <button 
+                  onClick={() => setCurrentUser({ id: user.id, policyAccepted: true })}
+                  style={{
+                    background: 'var(--accent)', color: 'white', border: 'none', padding: '12px 24px',
+                    borderRadius: '8px', fontWeight: 600, fontSize: '15px', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 4px 12px rgba(var(--accent-rgb), 0.3)'
+                  }}
+                  onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseOut={e => e.currentTarget.style.transform = 'none'}
+                >
+                  <CheckCircle size={18} />
+                  He leído y acepto el procedimiento
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

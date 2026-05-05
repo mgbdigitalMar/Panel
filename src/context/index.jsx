@@ -753,6 +753,7 @@ export function AuthProvider({ children, navigate }) {
       joinDate:   profile.join_date,
       workMode:   profile.work_mode || 'Office',
       firstLogin: profile.first_login,
+      policyAccepted: profile.policy_accepted,
     }
   }
 
@@ -986,6 +987,9 @@ export function AuthProvider({ children, navigate }) {
     }
     if (updates.workMode) {
       await supabase.from('profiles').update({ work_mode: updates.workMode }).eq('id', updates.id)
+    }
+    if (updates.policyAccepted === true) {
+      await supabase.from('profiles').update({ policy_accepted: true }).eq('id', updates.id)
     }
     setUser(prev => ({ ...prev, ...updates }))
     await loadAllEmployees()
