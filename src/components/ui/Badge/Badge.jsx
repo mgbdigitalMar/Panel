@@ -13,6 +13,7 @@ export function Badge({ status, label, className }) {
     event:     { variant: 'warning', text: 'Evento'     },
     external:  { variant: 'warning', text: 'Externo'    },
     purchase:  { variant: 'accent',  text: 'Compra'     },
+    asuntos_propios: { variant: 'success', text: 'Asuntos Propios' },
   };
 
   const s = statusMap[status] || { variant: 'neutral', text: label || status };

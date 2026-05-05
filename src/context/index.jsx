@@ -7,11 +7,18 @@ import { MOCK_DOCUMENTS, MOCK_HOUR_COMPENSATIONS } from '../data/mockData'
 export const ThemeCtx = createContext()
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState('dark')
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('app-theme')
+    return saved || 'dark'
+  })
+  
   const toggle = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'))
+  
   useEffect(() => {
+    localStorage.setItem('app-theme', theme)
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
+  
   return <ThemeCtx.Provider value={{ theme, toggle }}>{children}</ThemeCtx.Provider>
 }
 export function useTheme() { return useContext(ThemeCtx) }
@@ -27,6 +34,7 @@ export function DataProvider({ children }) {
   const [vehicles, setVehicles]              = useState([])
   const [documents, setDocuments]            = useState([])
   const [hourCompensations, setHourCompensations] = useState([])
+  const [personalDays, setPersonalDays]      = useState([]) // New personal days state
   const [notifications, setNotifications]    = useState([]) // Persistent DB notifications
   const [loadingData, setLoadingData]        = useState(true)
 const [readIds, setReadIds] = useState(() => {
@@ -216,6 +224,32 @@ const [readIds, setReadIds] = useState(() => {
     })))
   }
 
+  async function fetchPersonalDays() {
+    const { data, error } = await supabase
+      .from('personal_days')
+      .select(`
+        id, date, reason, file_url, status, created_at, reviewed_at,
+        employee_id, reviewed_by
+      `)
+      .order('created_at', { ascending: false })
+    if (error || !data || data.length === 0) {
+      if (error) console.error('personal_days:', error)
+      setPersonalDays([])
+      return
+    }
+    setPersonalDays(data.map(p => ({
+      id: p.id,
+      employeeId: p.employee_id,
+      employeeName: null,
+      date: p.date,
+      reason: p.reason,
+      fileUrl: p.file_url,
+      status: p.status,
+      reviewedAt: p.reviewed_at,
+      createdAt: p.created_at,
+    })))
+  }
+
   const auth = useContext(AuthCtx)
   const user = auth?.user
   const employees = auth?.employees || []
@@ -248,7 +282,7 @@ const [readIds, setReadIds] = useState(() => {
   }, [user?.id])
 
   useEffect(() => {
-    Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations()])
+    Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations(), fetchPersonalDays()])
       .finally(() => setLoadingData(false))
 
     // ── Supabase Realtime subscriptions ─────────────────────
@@ -360,29 +394,28 @@ const [readIds, setReadIds] = useState(() => {
     }
   }, [user?.id])
 
-  // Sync work mode for the current user based on approved external requests
+  // Sync work mode for the current user based on approved remote requests
   useEffect(() => {
     if (!user?.id || loadingData) return;
 
     const syncMode = async () => {
       const today = new Date().toISOString().split('T')[0];
-      const activeExternal = requests.find(r => 
+      const activeRemote = requests.find(r => 
         r.employeeId === user.id && 
-        r.type === 'external' && 
+        (r.type === 'external' || r.type === 'remoto') && 
         r.status === 'approved' && 
         today >= r.startDate && 
         today <= r.endDate
       );
 
-      if (activeExternal && user.workMode !== 'externo') {
-        console.log('Syncing work mode to externo (active request found)');
-        await supabase.from('profiles').update({ work_mode: 'externo' }).eq('id', user.id);
-        // We don't necessarily need to refresh everything, but it helps
-      } else if (!activeExternal && user.workMode === 'externo') {
-        // If they are 'externo' but have no active approved request, revert to 'Office'
-        // Only if they were 'externo' (to avoid overriding other manual modes if possible, 
-        // but here we follow the "automatic" requirement).
-        console.log('Reverting work mode to Office (no active external request)');
+      if (activeRemote) {
+        const targetMode = activeRemote.type === 'external' ? 'externo' : 'remoto';
+        if (user.workMode !== targetMode) {
+          console.log(`Syncing work mode to ${targetMode} (active request found)`);
+          await supabase.from('profiles').update({ work_mode: targetMode }).eq('id', user.id);
+        }
+      } else if (!activeRemote && (user.workMode === 'externo' || user.workMode === 'remoto')) {
+        console.log('Reverting work mode to Office (no active remote request)');
         await supabase.from('profiles').update({ work_mode: 'Office' }).eq('id', user.id);
       }
     };
@@ -399,7 +432,8 @@ const [readIds, setReadIds] = useState(() => {
     if (error) { console.error(error); return null }
     await fetchRequests()
     
-    const typeLabel = payload.type === 'vacation' ? 'Vacaciones' : payload.type === 'external' ? 'Trabajo Externo' : 'Compra'
+    const typeLabel = payload.type === 'remoto' ? 'Remoto' : payload.type === 'external' ? 'Trabajo Externo' : 'Compra'
+    const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado'
     await notifyAdmins({
       title: `📋 Nueva solicitud: ${typeLabel}`,
       body: `${empName} ha enviado una solicitud de ${typeLabel.toLowerCase()} que requiere revisión.`,
@@ -419,18 +453,19 @@ const [readIds, setReadIds] = useState(() => {
     }).eq('id', id)
     if (error) { console.error(error); return }
 
-    // If approving an external request, update work mode immediately if it's currently active
-    if (status === 'approved' && reqData?.type === 'external') {
+    // If approving a remote request, update work mode immediately if it's currently active
+    if (status === 'approved' && (reqData?.type === 'external' || reqData?.type === 'remoto')) {
       const today = new Date().toISOString().split('T')[0];
       if (today >= reqData.start_date && today <= reqData.end_date) {
-        await supabase.from('profiles').update({ work_mode: 'externo' }).eq('id', employeeId);
+        const targetMode = reqData.type === 'external' ? 'externo' : 'remoto';
+        await supabase.from('profiles').update({ work_mode: targetMode }).eq('id', employeeId);
       }
     }
 
     await fetchRequests()
     
     if (employeeId) {
-      const typeLabel = reqData?.type === 'external' ? 'trabajo externo' : reqData?.type === 'vacation' ? 'vacaciones' : 'compra';
+      const typeLabel = reqData?.type === 'external' ? 'trabajo externo' : reqData?.type === 'remoto' ? 'remoto' : 'compra';
       await createNotification({
         userId: employeeId,
         title: status === 'approved' ? '✅ Solicitud aprobada' : '❌ Solicitud rechazada',
@@ -439,6 +474,48 @@ const [readIds, setReadIds] = useState(() => {
           : `Tu solicitud de ${typeLabel} ha sido rechazada.`,
         type: status === 'approved' ? 'success' : 'error',
         entityType: 'request', entityId: id
+      })
+    }
+  }
+
+  const createPersonalDay = async ({ employeeId, date, reason, fileUrl }) => {
+    const { data, error } = await supabase.from('personal_days').insert([{
+      employee_id: employeeId,
+      date,
+      reason,
+      file_url: fileUrl || null,
+      status: 'pending',
+    }]).select().single()
+    if (error) { console.error('createPersonalDay:', error); return null }
+    await fetchPersonalDays()
+
+    const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado'
+    await notifyAdmins({
+      title: `📝 Día de asuntos propios`,
+      body: `${empName} ha solicitado un día de asuntos propios.`,
+      type: 'info',
+      entityType: 'personal_day',
+      entityId: data?.id
+    })
+    return data
+  }
+
+  const updatePersonalDayStatus = async (id, status, reviewedBy, employeeId) => {
+    const { error } = await supabase.from('personal_days').update({
+      status,
+      reviewed_by: reviewedBy,
+      reviewed_at: new Date().toISOString(),
+    }).eq('id', id)
+    if (error) { console.error('updatePersonalDayStatus:', error); return }
+    await fetchPersonalDays()
+
+    if (employeeId) {
+      await createNotification({
+        userId: employeeId,
+        title: status === 'approved' ? '✅ Asuntos propios aprobados' : '❌ Asuntos propios rechazados',
+        body: status === 'approved' ? 'Tu solicitud de día de asuntos propios ha sido aprobada.' : 'Tu solicitud ha sido rechazada.',
+        type: status === 'approved' ? 'success' : 'error',
+        entityType: 'personal_day', entityId: id
       })
     }
   }
@@ -630,6 +707,7 @@ const [readIds, setReadIds] = useState(() => {
       rooms, vehicles,
       documents, sendDocument, updateDocumentStatus, uploadDocumentFile,
       hourCompensations, createHourCompensation, updateHourCompensationStatus,
+      personalDays, createPersonalDay, updatePersonalDayStatus,
       notifications, markNotifRead, markAllNotifsRead,
       loadingData,
       createRequest, updateRequestStatus,
@@ -637,7 +715,7 @@ const [readIds, setReadIds] = useState(() => {
       readIds, markRead, markAllRead,
       density, toggleDensity,
       liveNotifs,
-      refresh: () => Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations()]),
+      refresh: () => Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations(), fetchPersonalDays()]),
     }}>
       {children}
     </DataCtx.Provider>

@@ -766,8 +766,8 @@ export default function AdminPage() {
             onChange={v => setForm({ ...form, workMode: v })}
             options={[
               { value: 'office', label: 'Oficina' },
-              { value: 'remote', label: 'Remoto' },
-              { value: 'field', label: 'Externo' }
+              { value: 'remoto', label: 'Remoto' },
+              { value: 'externo', label: 'Externo' }
             ]} 
           />
           </div>
