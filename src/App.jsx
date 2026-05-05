@@ -2,16 +2,18 @@ import { useState } from 'react'
 import { ThemeProvider, AuthProvider, AuthCtx, AppCtx, DataProvider, useAuth } from './context'
 
 import Layout             from './components/Layout'
-import LoginPage          from './pages/LoginPage'
-import ChangePasswordPage from './pages/ChangePasswordPage'
-import DashboardPage      from './pages/DashboardPage'
-import ReservationsPage   from './pages/ReservationsPage'
-import RequestsPage       from './pages/RequestsPage'
-import NewsPage           from './pages/NewsPage'
-import AdminPage          from './pages/AdminPage'
-import EmployeesPage      from './pages/EmployeesPage'
-import ProfilePage        from './pages/ProfilePage'
-import HorasPage          from './pages/HorasPage'
+import { Suspense, lazy } from 'react'
+
+const LoginPage          = lazy(() => import('./pages/LoginPage'))
+const ChangePasswordPage = lazy(() => import('./pages/ChangePasswordPage'))
+const DashboardPage      = lazy(() => import('./pages/DashboardPage'))
+const ReservationsPage   = lazy(() => import('./pages/ReservationsPage'))
+const RequestsPage       = lazy(() => import('./pages/RequestsPage'))
+const NewsPage           = lazy(() => import('./pages/NewsPage'))
+const AdminPage          = lazy(() => import('./pages/AdminPage'))
+const EmployeesPage      = lazy(() => import('./pages/EmployeesPage'))
+const ProfilePage        = lazy(() => import('./pages/ProfilePage'))
+const HorasPage          = lazy(() => import('./pages/HorasPage'))
 
 // Loading screen while Supabase restores the session
 function LoadingScreen() {
@@ -42,20 +44,22 @@ function AppShell() {
           return (
             <AppCtx.Provider value={{ page, navigate }}>
               <DataProvider>
-                {page === 'login'          && <LoginPage />}
-                {page === 'changePassword' && <ChangePasswordPage />}
-                {page !== 'login' && page !== 'changePassword' && (
-                  <Layout>
-                    {page === 'dashboard'    && <DashboardPage />}
-                    {page === 'reservations' && <ReservationsPage />}
-                    {page === 'requests'     && <RequestsPage />}
-                    {page === 'horas'        && <HorasPage />}
-                    {page === 'news'         && <NewsPage />}
-                    {page === 'profile'      && <ProfilePage />}
-                    {page === 'employees'    && <EmployeesPage />}
-                    {page === 'admin'        && (user?.role === 'admin' ? <AdminPage /> : <DashboardPage />)}
-                  </Layout>
-                )}
+                <Suspense fallback={<LoadingScreen />}>
+                  {page === 'login'          && <LoginPage />}
+                  {page === 'changePassword' && <ChangePasswordPage />}
+                  {page !== 'login' && page !== 'changePassword' && (
+                    <Layout>
+                      {page === 'dashboard'    && <DashboardPage />}
+                      {page === 'reservations' && <ReservationsPage />}
+                      {page === 'requests'     && <RequestsPage />}
+                      {page === 'horas'        && <HorasPage />}
+                      {page === 'news'         && <NewsPage />}
+                      {page === 'profile'      && <ProfilePage />}
+                      {page === 'employees'    && <EmployeesPage />}
+                      {page === 'admin'        && (user?.role === 'admin' ? <AdminPage /> : <DashboardPage />)}
+                    </Layout>
+                  )}
+                </Suspense>
               </DataProvider>
             </AppCtx.Provider>
           )

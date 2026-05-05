@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuth } from '../context';
 import { Avatar, Badge, Card } from '../components/ui';
 import { Home, Building2, MapPin } from 'lucide-react';
@@ -29,11 +29,11 @@ export default function EmployeesPage() {
   const [filter, setFilter] = useState('all');
   const [view, setView] = useState('grid');
 
-  const depts = ['all', ...new Set(employees.map(e => e.dept))];
+  const depts = useMemo(() => ['all', ...new Set(employees.map(e => e.dept))], [employees]);
 
-  const filtered = employees.filter(e =>
+  const filtered = useMemo(() => employees.filter(e =>
     filter === 'all' ? true : e.dept === filter
-  );
+  ), [employees, filter]);
 
   const handleWorkModeChange = async (empId, mode) => {
     try {
@@ -54,10 +54,10 @@ export default function EmployeesPage() {
     }
   };
 
-  const summary = Object.entries(WORK_MODES).map(([key, meta]) => ({
+  const summary = useMemo(() => Object.entries(WORK_MODES).map(([key, meta]) => ({
     key, ...meta,
     count: employees.filter(e => e.workMode === key).length,
-  }));
+  })), [employees]);
 
   return (
     <div className={styles.container}>

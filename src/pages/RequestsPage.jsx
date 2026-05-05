@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuth, useData } from '../context';
 import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard } from '../components/ui';
 import { Plus, Check, X, FileText, ExternalLink } from 'lucide-react';
@@ -16,7 +16,7 @@ export default function RequestsPage() {
   const [form, setForm]           = useState({ startDate: '', endDate: '', date: '', reason: '', item: '', amount: '', acceptedTerms: false });
   const [file, setFile]           = useState(null);
 
-  const allItems = [
+  const allItems = useMemo(() => [
     ...requests,
     ...(personalDays || []).map(p => ({
       ...p,
@@ -26,12 +26,13 @@ export default function RequestsPage() {
       endDate: p.date,
       days: 1
     }))
-  ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)), [requests, personalDays, employees]);
 
-  const filtered =
-    tab === 'all'      ? allItems :
-    tab === 'mine'     ? allItems.filter(r => r.employeeId === user.id) :
-    allItems.filter(r => r.type === tab);
+  const filtered = useMemo(() => {
+    if (tab === 'all') return allItems;
+    if (tab === 'mine') return allItems.filter(r => r.employeeId === user?.id);
+    return allItems.filter(r => r.type === tab);
+  }, [allItems, tab, user?.id]);
 
   const handleCreate = async () => {
     setLoading(true);

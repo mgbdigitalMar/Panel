@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo } from 'react'
 import { supabase } from '../utils/supabase'
 import bcrypt from 'bcryptjs'
 import { MOCK_DOCUMENTS, MOCK_HOUR_COMPENSATIONS } from '../data/mockData'
@@ -701,22 +701,27 @@ const [readIds, setReadIds] = useState(() => {
   const setRequests     = (fn) => setRequestsState(fn)
   const setReservations = (fn) => setReservationsState(fn)
 
+  const contextValue = useMemo(() => ({
+    requests, setRequests, reservations, setReservations,
+    rooms, vehicles,
+    documents, sendDocument, updateDocumentStatus, uploadDocumentFile,
+    hourCompensations, createHourCompensation, updateHourCompensationStatus,
+    personalDays, createPersonalDay, updatePersonalDayStatus,
+    notifications, markNotifRead, markAllNotifsRead,
+    loadingData,
+    createRequest, updateRequestStatus,
+    createReservation, updateReservationStatus, deleteReservation,
+    readIds, markRead, markAllRead,
+    density, toggleDensity,
+    liveNotifs,
+    refresh: () => Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations(), fetchPersonalDays()]),
+  }), [
+    requests, reservations, rooms, vehicles, documents, hourCompensations, personalDays,
+    notifications, loadingData, readIds, density, liveNotifs
+  ])
+
   return (
-    <DataCtx.Provider value={{
-      requests, setRequests, reservations, setReservations,
-      rooms, vehicles,
-      documents, sendDocument, updateDocumentStatus, uploadDocumentFile,
-      hourCompensations, createHourCompensation, updateHourCompensationStatus,
-      personalDays, createPersonalDay, updatePersonalDayStatus,
-      notifications, markNotifRead, markAllNotifsRead,
-      loadingData,
-      createRequest, updateRequestStatus,
-      createReservation, updateReservationStatus, deleteReservation,
-      readIds, markRead, markAllRead,
-      density, toggleDensity,
-      liveNotifs,
-      refresh: () => Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations(), fetchPersonalDays()]),
-    }}>
+    <DataCtx.Provider value={contextValue}>
       {children}
     </DataCtx.Provider>
   )
@@ -1006,14 +1011,16 @@ export function AuthProvider({ children, navigate }) {
     await loadAllEmployees()
   }
 
+  const contextValue = useMemo(() => ({
+    user, login, logout, setLastActivity,
+    employees, setEmployees,
+    setCurrentUser,
+    needsOnboarding, setNeedsOnboarding,
+    authLoading,
+  }), [user, employees, needsOnboarding, authLoading])
+
   return (
-    <AuthCtx.Provider value={{
-      user, login, logout, setLastActivity,
-      employees, setEmployees,
-      setCurrentUser,
-      needsOnboarding, setNeedsOnboarding,
-      authLoading,
-    }}>
+    <AuthCtx.Provider value={contextValue}>
       {children}
     </AuthCtx.Provider>
   )

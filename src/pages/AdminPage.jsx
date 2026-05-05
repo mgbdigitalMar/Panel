@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth, useData } from '../context';
 import { MOCK_ROOMS, MOCK_VEHICLES } from '../data/mockData';
 import { Avatar, Badge, Modal, Input, Select, Button, Card } from '../components/ui';
@@ -30,11 +30,13 @@ export default function AdminPage() {
   const [hoursFilterTo,   setHoursFilterTo]   = useState('');
   const [hoursFilterEmp,  setHoursFilterEmp]  = useState('');
 
-  const filteredHours = (hourCompensations || [])
+  const filteredHours = useMemo(() => (hourCompensations || [])
     .filter(h => h.type === 'bolsa')
     .filter(h => !hoursFilterEmp || h.employeeId === hoursFilterEmp)
     .filter(h => !hoursFilterFrom || h.date >= hoursFilterFrom)
-    .filter(h => !hoursFilterTo   || h.date <= hoursFilterTo);
+    .filter(h => !hoursFilterTo   || h.date <= hoursFilterTo), 
+    [hourCompensations, hoursFilterEmp, hoursFilterFrom, hoursFilterTo]
+  );
 
   const exportHoursCSV = (rows) => {
     const headers = ['Empleado', 'Fecha', 'Motivo', 'Horas', 'Estado', 'Revisado por', 'Fecha solicitud'];
@@ -77,11 +79,11 @@ export default function AdminPage() {
 
 
 
-  const filtered = employees.filter(e =>
+  const filtered = useMemo(() => employees.filter(e =>
     e.name.toLowerCase().includes(search.toLowerCase()) ||
     e.email.toLowerCase().includes(search.toLowerCase())
-  );
-  const depts = [...new Set(employees.map(e => e.dept))];
+  ), [employees, search]);
+  const depts = useMemo(() => [...new Set(employees.map(e => e.dept))], [employees]);
 
   const handleSaveEmployee = async () => {
     if (!form.name || !form.email) return;
