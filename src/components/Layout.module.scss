@@ -7,7 +7,9 @@
 /* ── Sidebar ───────────────────────────────────────────────── */
 .sidebar {
   width: var(--sidebar-w);
-  background: var(--sidebar);
+  background: rgba(var(--sidebar-rgb), var(--sidebar-opacity));
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-right: 1px solid var(--border);
   position: fixed;
   top: 0;
@@ -23,7 +25,9 @@
 
 .sidebarMobileContent {
   width: var(--sidebar-w);
-  background: var(--sidebar);
+  background: rgba(var(--sidebar-rgb), var(--sidebar-opacity));
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-right: 1px solid var(--border);
   position: absolute;
   top: 0; left: 0; bottom: 0;
@@ -326,7 +330,7 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(var(--bg-rgb), 0.75);
+  background: rgba(var(--bg-rgb), var(--header-opacity));
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--border);
@@ -338,12 +342,18 @@
   gap: 16px;
 }
 
-/* In light mode, rgba(250,250,250,0.75) approximately */
+/* RGB variables for Glassmorphism */
 :root {
-  --bg-rgb: 250, 250, 250;
+  --bg-rgb: 245, 246, 250;
+  --sidebar-rgb: 255, 255, 255;
+  --sidebar-opacity: 0.85;
+  --header-opacity: 0.75;
 }
 [data-theme='dark'] {
-  --bg-rgb: 9, 9, 11;
+  --bg-rgb: 5, 11, 36;
+  --sidebar-rgb: 5, 11, 36;
+  --sidebar-opacity: 0.65; /* Lower opacity in dark mode to make blur visible */
+  --header-opacity: 0.65;
 }
 
 .headerLeft {
