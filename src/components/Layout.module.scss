@@ -7,9 +7,7 @@
 /* ── Sidebar ───────────────────────────────────────────────── */
 .sidebar {
   width: var(--sidebar-w);
-  background: rgba(245, 246, 250, 0.85);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: var(--sidebar);
   border-right: 1px solid var(--border);
   position: fixed;
   top: 0;
@@ -25,9 +23,7 @@
 
 .sidebarMobileContent {
   width: var(--sidebar-w);
-  background: rgba(245, 246, 250, 0.85);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: var(--sidebar);
   border-right: 1px solid var(--border);
   position: absolute;
   top: 0; left: 0; bottom: 0;
@@ -39,7 +35,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 20px 16px;
+  padding: 24px 16px;
 }
 
 /* ── Logo ──────────────────────────────────────────────────── */
@@ -49,13 +45,12 @@
   gap: 10px;
   margin-bottom: 32px;
   padding: 4px 8px 16px;
-  border-bottom: 1px solid var(--border);
 }
 
 .logoIcon {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   background: var(--gradient-accent);
   color: #fff;
   display: flex;
@@ -65,7 +60,7 @@
   font-size: 15px;
   letter-spacing: -0.5px;
   flex-shrink: 0;
-  box-shadow: var(--shadow-accent);
+  box-shadow: var(--shadow-sm);
 }
 
 .logoText {
@@ -80,16 +75,16 @@
 .navGroup {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   margin-bottom: 24px;
 }
 
 .navGroupLabel {
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   color: var(--text-mut);
   text-transform: uppercase;
-  letter-spacing: 0.10em;
+  letter-spacing: 0.05em;
   padding: 0 12px;
   margin: 20px 0 8px;
 
@@ -99,8 +94,8 @@
 .navLink {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 9px 12px;
+  gap: 12px;
+  padding: 10px 14px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   border: none;
@@ -109,15 +104,15 @@
   background: transparent;
   color: var(--text-sec);
   font-weight: 500;
-  font-size: 13.5px;
-  transition: all 0.18s var(--ease-in-out);
+  font-size: 14px;
+  transition: all 0.2s var(--ease-in-out);
   position: relative;
   overflow: hidden;
 
   svg {
     transition: transform 0.2s ease;
     flex-shrink: 0;
-    opacity: 0.7;
+    opacity: 0.8;
   }
 
   &:hover {
@@ -125,8 +120,8 @@
     color: var(--text);
 
     svg {
-      transform: scale(1.08);
       opacity: 1;
+      transform: translateX(2px);
     }
   }
 
@@ -137,7 +132,7 @@
 
 .navLinkActive {
   background: var(--nav-bg) !important;
-  color: var(--accent) !important;
+  color: var(--text) !important;
   font-weight: 600;
 
   svg {
@@ -151,7 +146,7 @@
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    height: 20px;
+    height: 18px;
     width: 3px;
     background: var(--accent);
     border-radius: 0 var(--radius-full) var(--radius-full) 0;
@@ -161,26 +156,26 @@
 .navDivider {
   height: 1px;
   background: var(--border);
-  margin: 10px 8px;
+  margin: 12px 8px;
 }
 
 /* ── User bottom ───────────────────────────────────────────── */
 .userBottom {
   margin-top: auto;
   border-top: 1px solid var(--border);
-  padding-top: 16px;
+  padding-top: 20px;
 }
 
 .userCard {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  gap: 12px;
+  padding: 10px 12px;
   border-radius: var(--radius-sm);
   background: transparent;
   position: relative;
-  transition: background 0.18s ease;
+  transition: background 0.2s ease;
   cursor: default;
 
   &:hover {
@@ -193,12 +188,12 @@
   border: none;
   cursor: pointer;
   color: var(--text-mut);
-  padding: 5px;
-  border-radius: var(--radius-sm);
+  padding: 6px;
+  border-radius: var(--radius-xs);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   flex-shrink: 0;
   margin-left: auto;
 
@@ -208,7 +203,7 @@
   }
 
   &:active {
-    transform: scale(0.92);
+    transform: scale(0.95);
   }
 
   svg {
@@ -225,7 +220,7 @@
 
   p:first-child {
     margin: 0;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--text);
     overflow: hidden;
@@ -236,7 +231,7 @@
 
   p:last-child {
     margin: 0;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-mut);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -255,8 +250,8 @@
   right: 0;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 6px;
+  border-radius: var(--radius);
+  padding: 8px;
   box-shadow: var(--shadow-lg);
   z-index: 300;
 }
@@ -264,20 +259,21 @@
 .dropdownItem {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
+  gap: 12px;
+  padding: 10px 14px;
   border-radius: var(--radius-sm);
   background: transparent;
   border: none;
   width: 100%;
   text-align: left;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.2s;
   font-size: 13px;
+  font-weight: 500;
   color: var(--text-sec);
 
   &:hover {
-    background: var(--bg);
+    background: var(--bg-3);
     color: var(--text);
   }
 
@@ -288,7 +284,7 @@
 }
 
 .logoutDropdown {
-  margin-top: 2px;
+  margin-top: 4px;
   color: var(--danger) !important;
 
   &:hover {
@@ -330,43 +326,45 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(245, 246, 250, 0.85);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(var(--bg-rgb), 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--border);
   padding: 0 32px;
-  height: 60px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
 }
 
-[data-theme='dark'] .header,
-[data-theme='dark'] .sidebar,
-[data-theme='dark'] .sidebarMobileContent {
-  background: rgba(10, 10, 15, 0.88);
+/* In light mode, rgba(250,250,250,0.75) approximately */
+:root {
+  --bg-rgb: 250, 250, 250;
+}
+[data-theme='dark'] {
+  --bg-rgb: 9, 9, 11;
 }
 
 .headerLeft {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   flex-shrink: 0;
 }
 
 .headerRight {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .pageTitle {
   margin: 0;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   font-family: var(--font-heading);
 }
 
@@ -374,32 +372,31 @@
 .headerSearch {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background: var(--bg-2);
   border: 1px solid var(--border);
-  padding: 7px 12px;
-  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
   color: var(--text-mut);
   flex: 1;
-  max-width: 300px;
+  max-width: 320px;
   transition: all 0.2s ease;
+  box-shadow: var(--shadow-xs);
 
   &:hover {
     border-color: var(--border-2);
-    background: var(--card);
   }
 
   &:focus-within {
     border-color: var(--accent);
     box-shadow: var(--accent-glow);
-    background: var(--card);
   }
 
   input {
     border: none;
     background: transparent;
     outline: none;
-    font-size: 13px;
+    font-size: 14px;
     width: 100%;
     color: var(--text);
 
@@ -414,41 +411,41 @@
   flex-shrink: 0;
   background: var(--bg-3);
   border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 1px 5px;
-  font-size: 10px;
+  border-radius: var(--radius-xs);
+  padding: 2px 6px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-mut);
   font-family: var(--font-mono);
-  line-height: 1.6;
+  line-height: 1.2;
   white-space: nowrap;
 }
 
 /* ── Icon buttons ──────────────────────────────────────────── */
 .iconBtn {
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   padding: 0;
   cursor: pointer;
   color: var(--text-sec);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.18s var(--ease-in-out);
+  transition: all 0.2s ease;
   position: relative;
   flex-shrink: 0;
 
   &:hover {
     background: var(--bg-3);
     color: var(--text);
+    border-color: var(--border);
   }
 
   &:active {
-    transform: scale(0.92);
-    background: var(--border);
+    transform: scale(0.95);
   }
 }
 
@@ -456,23 +453,23 @@
 
 .badge {
   position: absolute;
-  top: 3px;
-  right: 3px;
+  top: 4px;
+  right: 4px;
   background: var(--danger);
   color: #fff;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
-  min-width: 15px;
-  height: 15px;
-  border-radius: 8px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
   letter-spacing: 0;
   font-family: var(--font-body);
+  border: 2px solid var(--bg-2);
 }
 
-/* ── User menu button ──────────────────────────────────────── */
 .userMenuBtn {
   display: flex;
   align-items: center;
@@ -500,18 +497,18 @@
 .dropdown {
   position: absolute;
   right: 0;
-  top: calc(100% + 8px);
+  top: calc(100% + 12px);
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 6px;
-  min-width: 200px;
-  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-lg);
+  padding: 8px;
+  min-width: 280px;
+  box-shadow: var(--shadow-xl);
   z-index: 100;
 }
 
 .dropdownHeader {
-  padding: 12px 14px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -519,7 +516,7 @@
 
   p:first-child {
     margin: 0;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--text);
     font-family: var(--font-heading);
@@ -530,19 +527,20 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--accent);
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
-  transition: background 0.15s;
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+  transition: background 0.2s;
 
   &:hover { background: var(--accent-bg); }
 }
 
 /* ── Notification dropdown ─────────────────────────────────── */
 .notiDropdown {
-  min-width: 360px;
+  width: min(380px, calc(100vw - 32px));
+  max-width: 420px;
   padding: 0;
   overflow: hidden;
 }
@@ -550,62 +548,53 @@
 .notiList {
   max-height: 400px;
   overflow-y: auto;
-  padding: 4px 0;
+  padding: 8px 0;
 
-  /* Custom Scrollbar */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb {
     background: var(--border);
     border-radius: 10px;
   }
-  &::-webkit-scrollbar-thumb:hover {
-    background: var(--text-mut);
-  }
+  &::-webkit-scrollbar-thumb:hover { background: var(--text-mut); }
 }
 
 .emptyNoti {
   padding: 60px 40px;
   text-align: center;
   color: var(--text-mut);
-  font-size: 13px;
+  font-size: 14px;
   margin: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   
   &::before {
     content: '🔔';
-    font-size: 24px;
-    opacity: 0.5;
+    font-size: 32px;
+    opacity: 0.3;
   }
 }
 
 .notiItem {
   display: flex;
-  gap: 14px;
-  padding: 14px 18px;
+  gap: 16px;
+  padding: 16px 20px;
   border-bottom: 1px solid rgba(var(--text-rgb), 0.04);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   align-items: flex-start;
   position: relative;
 
   &:hover { 
-    background: var(--bg);
-    padding-left: 20px;
+    background: var(--bg-3);
   }
   &:last-child { border-bottom: none; }
 }
 
 .notiItemRead {
   opacity: 0.6;
-  filter: grayscale(0.2);
 }
 
 .unreadDot {
@@ -614,18 +603,19 @@
   border-radius: 50%;
   background: var(--accent);
   flex-shrink: 0;
-  margin-top: 6px;
-  box-shadow: 0 0 10px var(--accent);
+  margin-top: 8px;
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.4);
 }
 
 .notiIcon {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  font-size: 16px;
 
   &.notiWarning { background: var(--warning-bg); color: var(--warning); }
   &.notiSuccess { background: var(--success-bg); color: var(--success); }
@@ -635,28 +625,34 @@
 .notiText {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   flex: 1;
   min-width: 0;
 
   strong {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--text);
   }
 
   span {
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-sec);
-    line-height: 1.4;
+    line-height: 1.5;
   }
 }
 
 /* ── Page content ──────────────────────────────────────────── */
 .content {
   flex: 1;
-  padding: 36px 40px;
+  padding: 32px;
   overflow-y: auto;
+}
+
+@supports(padding-top: env(safe-area-inset-top)) {
+  .content {
+    padding-top: calc(32px + env(safe-area-inset-top));
+  }
 }
 
 /* ── Mobile overlay ────────────────────────────────────────── */
@@ -669,20 +665,18 @@
 .mobileBackdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(4px);
 }
 
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 1024px) {
-  .content { padding: 28px 28px; }
+  .content { padding: 24px; }
   .header { padding: 0 24px; }
 }
 
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .main { margin-left: 0; }
-  .header { padding: 0 16px; }
-  .content { padding: 20px 16px; }
   .headerSearch { display: none; }
 }

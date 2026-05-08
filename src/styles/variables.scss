@@ -1,34 +1,34 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
-/* ─── Light Theme ─────────────────────────────────────────── */
+/* ─── Light Theme (Enterprise Premium) ────────────────────── */
 :root {
   /* Backgrounds — surface hierarchy */
-  --bg:         #F5F6FA;
+  --bg:         #FAFAFA;       /* Very light, clean chalk background */
   --bg-2:       #FFFFFF;
-  --bg-3:       #F0F1F7;
+  --bg-3:       #F4F4F5;       /* Subtle neutral gray for hovers */
   --card:       #FFFFFF;
   --sidebar:    #FFFFFF;
-  --border:     #E4E6EF;
-  --border-2:   #D1D5DB;
+  --border:     #E4E4E7;       /* Refined zinc border */
+  --border-2:   #D4D4D8;
 
   /* Text */
-  --text:       #000000;
-  --text-sec:   #071033;
-  --text-mut:   #5f6ea5;
+  --text:       #09090B;       /* Deep slate/zinc almost black */
+  --text-sec:   #52525B;       /* Zinc 600 */
+  --text-mut:   #A1A1AA;       /* Zinc 400 */
 
-  /* Accent (Brand Blue) */
-  --accent:       #2251ff;
-  --accent-hover: #1c44d9;
+  /* Accent (Premium Indigo/Blue) */
+  --accent:       #4F46E5;     /* Indigo 600 */
+  --accent-hover: #4338CA;     /* Indigo 700 */
   --accent-fg:    #FFFFFF;
-  --accent-bg:    rgba(34, 81, 255, 0.08);
-  --accent-glow:  0 0 0 3px rgba(34, 81, 255, 0.20);
-  --accent-rgb:   34, 81, 255;
+  --accent-bg:    rgba(79, 70, 229, 0.08);
+  --accent-glow:  0 0 0 3px rgba(79, 70, 229, 0.20);
+  --accent-rgb:   79, 70, 229;
 
   /* Gradients */
-  --gradient-accent: linear-gradient(135deg, #2251ff 0%, #5f6ea5 100%);
+  --gradient-accent: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%);
   --gradient-warm:   linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
-  --gradient-surface: linear-gradient(180deg, #FFFFFF 0%, #F8F9FC 100%);
-  --gradient-banner: linear-gradient(135deg, rgba(34,81,255,0.05) 0%, rgba(95,110,165,0.08) 100%);
+  --gradient-surface: linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%);
+  --gradient-banner: linear-gradient(135deg, rgba(79,70,229,0.05) 0%, rgba(59,130,246,0.05) 100%);
 
   /* Semantic */
   --success:    #059669;
@@ -42,25 +42,25 @@
 
   /* Inputs */
   --input:        #FFFFFF;
-  --input-border: #D1D5DB;
-  --input-focus:  #635BFF;
+  --input-border: #E4E4E7;
+  --input-focus:  #4F46E5;
 
   /* Nav active */
-  --nav:      #0F1117;
-  --nav-bg:   rgba(99, 91, 255, 0.08);
-  --nav-glow: rgba(0, 0, 0, 0.0);
+  --nav:      #09090B;
+  --nav-bg:   #F4F4F5;
+  --nav-glow: transparent;
 
-  /* Shadows — premium layered */
-  --shadow-xs: 0 1px 2px 0 rgba(15, 17, 23, 0.04);
-  --shadow-sm: 0 1px 3px 0 rgba(15, 17, 23, 0.06), 0 1px 2px -1px rgba(15, 17, 23, 0.04);
-  --shadow:    0 4px 8px -2px rgba(15, 17, 23, 0.08), 0 2px 4px -2px rgba(15, 17, 23, 0.04);
-  --shadow-md: 0 12px 20px -4px rgba(15, 17, 23, 0.09), 0 4px 8px -4px rgba(15, 17, 23, 0.05);
-  --shadow-lg: 0 24px 40px -8px rgba(15, 17, 23, 0.12), 0 8px 16px -6px rgba(15, 17, 23, 0.06);
-  --shadow-xl: 0 40px 64px -12px rgba(7, 16, 51, 0.16), 0 16px 24px -8px rgba(7, 16, 51, 0.08);
-  --shadow-accent: 0 8px 24px -4px rgba(34, 81, 255, 0.28);
+  /* Shadows — Premium Layered (Stripe-like) */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow:    0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.06);
+  --shadow-accent: 0 8px 24px -4px rgba(79, 70, 229, 0.28);
 
-  /* Radius — modern curves */
-  --radius-xs:  4px;
+  /* Radius — Smooth Curves */
+  --radius-xs:  6px;
   --radius-sm:  8px;
   --radius:     12px;
   --radius-md:  16px;
@@ -71,44 +71,44 @@
 
   /* Typography */
   --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-heading: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono:    'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
 
   /* Timing functions */
-  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring:  cubic-bezier(0.175, 0.885, 0.32, 1.275);
   --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out:  cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Sidebar width */
-  --sidebar-w: 252px;
+  --sidebar-w: 260px;
 }
 
-/* ─── Dark Theme ──────────────────────────────────────────── */
+/* ─── Dark Theme (Linear / Framer style) ──────────────────── */
 [data-theme='dark'] {
-  /* Backgrounds — Brand Navy #071033 */
-  --bg:      #050B24;
-  --bg-2:    #071033;
-  --bg-3:    #0A1747;
-  --card:    #071033;
-  --sidebar: #050B24;
-  --border:  #14256A;
-  --border-2: #1A3088;
+  /* Backgrounds — Deep dark zinc/slate */
+  --bg:      #09090B;
+  --bg-2:    #18181B;
+  --bg-3:    #27272A;
+  --card:    #18181B;
+  --sidebar: #09090B;
+  --border:  #27272A;
+  --border-2: #3F3F46;
 
   /* Text */
-  --text:     #FFFFFF;
-  --text-sec: #8A9DDA;
-  --text-mut: #5f6ea5;
+  --text:     #FAFAFA;
+  --text-sec: #A1A1AA;
+  --text-mut: #71717A;
 
   /* Accent */
-  --accent:       #2251ff;
-  --accent-hover: #486eff;
+  --accent:       #6366F1;     /* Indigo 500 */
+  --accent-hover: #818CF8;     /* Indigo 400 */
   --accent-fg:    #FFFFFF;
-  --accent-bg:    rgba(34, 81, 255, 0.15);
-  --accent-glow:  0 0 0 3px rgba(34, 81, 255, 0.25);
+  --accent-bg:    rgba(99, 102, 241, 0.15);
+  --accent-glow:  0 0 0 3px rgba(99, 102, 241, 0.25);
 
-  --gradient-accent: linear-gradient(135deg, #2251ff 0%, #486eff 100%);
-  --gradient-surface: linear-gradient(180deg, #071033 0%, #0A1747 100%);
-  --gradient-banner: linear-gradient(135deg, rgba(34,81,255,0.12) 0%, rgba(95,110,165,0.15) 100%);
+  --gradient-accent: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
+  --gradient-surface: linear-gradient(180deg, #18181B 0%, #09090B 100%);
+  --gradient-banner: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(99,102,241,0.05) 100%);
 
   /* Semantic */
   --success:    #10B981;
@@ -121,21 +121,21 @@
   --info-bg:    rgba(56, 189, 248, 0.10);
 
   /* Inputs */
-  --input:        #0A0A0F;
-  --input-border: #1E1E2A;
-  --input-focus:  #7C73FF;
+  --input:        #18181B;
+  --input-border: #27272A;
+  --input-focus:  #6366F1;
 
   /* Nav active */
-  --nav:      #F4F4F8;
-  --nav-bg:   rgba(124, 115, 255, 0.12);
+  --nav:      #FAFAFA;
+  --nav-bg:   #27272A;
   --nav-glow: transparent;
 
-  /* Shadows */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
-  --shadow:    0 4px 8px -2px rgba(0, 0, 0, 0.6), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 12px 20px -4px rgba(0, 0, 0, 0.7), 0 4px 8px -4px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 24px 40px -8px rgba(0, 0, 0, 0.8), 0 8px 16px -6px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 40px 64px -12px rgba(0, 0, 0, 0.9), 0 16px 24px -8px rgba(0, 0, 0, 0.6);
-  --shadow-accent: 0 8px 24px -4px rgba(124, 115, 255, 0.35);
+  /* Shadows — Deeper and softer for dark mode */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow:    0 4px 6px -1px rgba(0, 0, 0, 0.7), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.8), 0 4px 6px -4px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.9), 0 8px 10px -6px rgba(0, 0, 0, 0.7);
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 1);
+  --shadow-accent: 0 8px 24px -4px rgba(99, 102, 241, 0.35);
 }

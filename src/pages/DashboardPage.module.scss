@@ -1,7 +1,7 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 24px;
 }
 
 /* ── Welcome Banner ─────────────────────────────────── */
@@ -9,23 +9,24 @@
   background: var(--gradient-banner);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  padding: 22px 28px;
+  padding: 32px 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 20px;
   flex-wrap: wrap;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 
   &::before {
     content: '';
     position: absolute;
-    top: -40px;
+    top: -60px;
     right: -40px;
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.12) 0%, transparent 70%);
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.08) 0%, transparent 70%);
     pointer-events: none;
   }
 }
@@ -33,18 +34,19 @@
 .welcomeLeft {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
 }
 
 .welcomeEmoji {
-  font-size: 28px;
+  font-size: 36px;
   line-height: 1;
   flex-shrink: 0;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
 }
 
 .welcomeTitle {
-  margin: 0 0 3px;
-  font-size: 20px;
+  margin: 0 0 6px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.03em;
@@ -53,13 +55,14 @@
 
 .welcomeSub {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-sec);
+  font-weight: 500;
 }
 
 .welcomeActions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-shrink: 0;
   flex-wrap: wrap;
 }
@@ -67,13 +70,13 @@
 .bannerBtn {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 9px 18px;
+  gap: 8px;
+  padding: 10px 20px;
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s var(--ease-out);
@@ -81,66 +84,68 @@
 
   &:hover {
     background: var(--accent-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 10px 28px -4px rgba(var(--accent-rgb), 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px -4px rgba(var(--accent-rgb), 0.4);
   }
 
-  &:active { transform: scale(0.97); }
+  &:active { transform: scale(0.96); }
 }
 
 .bannerBtnSecondary {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 9px 18px;
+  gap: 8px;
+  padding: 10px 20px;
   background: var(--card);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: var(--shadow-xs);
 
   &:hover {
     background: var(--bg-3);
     border-color: var(--border-2);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
   }
 
-  &:active { transform: scale(0.97); }
+  &:active { transform: scale(0.96); }
 }
 
 /* ── KPI Cards ──────────────────────────────────────── */
 .gridCards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
 }
 
 /* ── Charts ─────────────────────────────────────────── */
 .chartsRow {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
-  gap: 16px;
+  gap: 20px;
 }
 
 .chartCard {
   overflow: visible !important;
+  border-radius: var(--radius-lg);
 }
 
 .chartHeader {
-  padding: 18px 22px 0;
+  padding: 24px 28px 0;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
 .chartTitle {
-  margin: 0 0 2px;
-  font-size: 13.5px;
+  margin: 0 0 4px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.02em;
@@ -148,15 +153,16 @@
 }
 
 .chartSub {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-mut);
 }
 
 .chartLegend {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 11px;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--text-sec);
   flex-wrap: wrap;
 }
@@ -165,12 +171,12 @@
   display: inline-block;
   width: 8px;
   height: 8px;
-  border-radius: 2px;
+  border-radius: 50%;
   flex-shrink: 0;
 }
 
 .chartBody {
-  padding: 14px 10px 16px;
+  padding: 20px 16px 20px;
 }
 
 .donutBody {
@@ -182,16 +188,17 @@
 .pieLegend {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  padding: 0 20px 16px;
+  padding: 0 28px 24px;
 }
 
 .pieLegendItem {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--text-sec);
 
   strong {
@@ -202,9 +209,9 @@
 }
 
 .pieColor {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
   flex-shrink: 0;
 }
 
@@ -212,24 +219,24 @@
 .gridContent {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 20px;
 }
 
 /* ── Card inner padding ─────────────────────────────── */
 .cardPad {
-  padding: 20px 24px;
+  padding: 24px 28px;
 }
 
 .cardHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
 }
 
 .sectionTitle {
   margin: 0;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.02em;
@@ -243,18 +250,18 @@
 
 .feedItem {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   align-items: flex-start;
-  padding: 11px 0;
+  padding: 16px 0;
   border-bottom: 1px solid var(--border);
 
-  &:last-child { border-bottom: none; }
+  &:last-child { border-bottom: none; padding-bottom: 0; }
   &:first-child { padding-top: 0; }
 }
 
 .feedIcon {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
@@ -270,13 +277,13 @@
 .feedTitleRow {
   display: flex;
   align-items: center;
-  gap: 5px;
-  margin-bottom: 2px;
+  gap: 6px;
+  margin-bottom: 4px;
 }
 
 .feedTitle {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text);
   overflow: hidden;
@@ -286,7 +293,7 @@
 
 .feedMeta {
   margin: 0;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-mut);
 }
 
@@ -294,23 +301,23 @@
   background: transparent;
   border: none;
   color: var(--accent);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  padding: 5px 10px;
+  padding: 6px 12px;
   border-radius: var(--radius-sm);
   transition: background 0.15s;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 
   &:hover { background: var(--accent-bg); }
 }
 
 .daysChip {
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: var(--radius-full);
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
   flex-shrink: 0;
@@ -322,23 +329,23 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
 
   th {
-    padding: 11px 16px;
+    padding: 14px 20px;
     text-align: left;
     color: var(--text-mut);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     white-space: nowrap;
     border-bottom: 1px solid var(--border);
-    background: var(--bg-2);
+    background: transparent;
   }
 
   td {
-    padding: 13px 16px;
+    padding: 16px 20px;
     border-bottom: 1px solid var(--border);
     color: var(--text-sec);
     vertical-align: middle;
@@ -346,8 +353,8 @@
 
   tr:last-child td { border-bottom: none; }
   tbody tr {
-    transition: background 0.15s;
-    &:hover { background: var(--bg); }
+    transition: background 0.2s;
+    &:hover { background: var(--bg-3); }
   }
 }
 
@@ -356,8 +363,8 @@
 .typeBadge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -370,11 +377,11 @@
 
 @media (max-width: 768px) {
   .welcomeBanner { 
-    padding: 20px; 
+    padding: 24px; 
     flex-direction: column; 
     align-items: flex-start;
   }
-  .welcomeTitle { font-size: 18px; }
+  .welcomeTitle { font-size: 20px; }
   .welcomeActions { width: 100%; }
   .bannerBtn, .bannerBtnSecondary { flex: 1; justify-content: center; }
 }

@@ -320,7 +320,18 @@ const sidebarContent = (
       </div>
 
       {/* ── Live Toast Notifications ─────────────────────────────── */}
-      <div style={{ position: 'fixed', bottom: 24, right: 24, display: 'flex', flexDirection: 'column', gap: 10, zIndex: 9999, pointerEvents: 'none' }}>
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+          zIndex: 9999,
+          pointerEvents: 'none',
+        }}
+      >
         <AnimatePresence>
           {liveNotifs.map(n => (
             <motion.div
@@ -339,7 +350,8 @@ const sidebarContent = (
                 alignItems: 'center',
                 gap: 12,
                 boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-                minWidth: 300,
+                width: 'min(380px, calc(100vw - 24px))',
+                minWidth: 0,
                 maxWidth: 380,
                 pointerEvents: 'all',
               }}
