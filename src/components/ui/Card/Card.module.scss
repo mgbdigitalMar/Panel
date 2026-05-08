@@ -1,30 +1,13 @@
 .card {
   background: var(--card);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-  
-  /* Liquid Glass Inner Border */
-  position: relative;
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-  }
+  transition: box-shadow 0.2s var(--ease-out), transform 0.2s var(--ease-out), border-color 0.2s ease;
+  position: relative;
 
   &:hover {
     box-shadow: var(--shadow-md);
@@ -38,7 +21,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: transparent;
+  background: var(--card); /* Keep it card color instead of bg-2 for cleaner look */
 }
 
 .title {
