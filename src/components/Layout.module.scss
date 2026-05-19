@@ -9,6 +9,45 @@
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.bgBlob1,
+.bgBlob2 {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(140px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.8;
+  mix-blend-mode: normal;
+  transition: all 0.5s ease;
+}
+
+.bgBlob1 {
+  top: -10%;
+  left: -5%;
+  width: 45vw;
+  height: 45vw;
+  background: radial-gradient(circle, rgba(34, 81, 255, 0.16) 0%, rgba(72, 110, 255, 0.04) 70%, transparent 100%);
+}
+
+.bgBlob2 {
+  bottom: -15%;
+  right: -5%;
+  width: 55vw;
+  height: 55vw;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.14) 0%, rgba(139, 92, 246, 0.03) 70%, transparent 100%);
+}
+
+[data-theme='dark'] {
+  .bgBlob1 {
+    background: radial-gradient(circle, rgba(62, 99, 221, 0.12) 0%, rgba(62, 99, 221, 0.02) 70%, transparent 100%);
+  }
+  .bgBlob2 {
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.01) 70%, transparent 100%);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -17,11 +56,11 @@
 
 .sidebar {
   width: var(--sidebar-w);
-  /* Heavy glassmorphism */
-  background: rgba(var(--sidebar-rgb), var(--sidebar-opacity));
-  backdrop-filter: blur(28px) saturate(200%) brightness(1.05);
-  -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.05);
-  border-right: 1px solid rgba(var(--sidebar-rgb), 0.15);
+  /* Matching header background and glassmorphism */
+  background: rgba(var(--bg-rgb), var(--header-opacity));
+  backdrop-filter: blur(32px) saturate(200%) brightness(1.02);
+  -webkit-backdrop-filter: blur(32px) saturate(200%) brightness(1.02);
+  border-right: 1px solid rgba(var(--bg-rgb), 0.15);
   position: fixed;
   top: 0;
   left: 0;
@@ -43,7 +82,7 @@
 /* Mobile drawer — same glass style, slightly more opaque */
 .sidebarMobileContent {
   width: var(--sidebar-w);
-  background: rgba(var(--sidebar-rgb), 0.96);
+  background: rgba(var(--bg-rgb), 0.96);
   backdrop-filter: blur(32px) saturate(220%);
   -webkit-backdrop-filter: blur(32px) saturate(220%);
   border-right: 1px solid var(--border);

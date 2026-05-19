@@ -164,6 +164,9 @@ export default function Layout({ children }) {
 
   return (
     <div className={styles.layout}>
+      {/* Background blobs to make sidebar/header translucency visible */}
+      <div className={styles.bgBlob1} aria-hidden="true" />
+      <div className={styles.bgBlob2} aria-hidden="true" />
 
       {/* ── Desktop sidebar ──────────────────────────────────────── */}
       <aside
