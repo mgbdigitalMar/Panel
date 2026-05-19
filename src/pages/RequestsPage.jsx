@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useAuth, useData } from '../context';
 import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard } from '../components/ui';
-import { Plus, Check, X, FileText, ExternalLink } from 'lucide-react';
+import { Plus, Check, X, FileText, ExternalLink, Download } from 'lucide-react';
 import styles from './RequestsPage.module.scss';
 import clsx from 'clsx';
 
@@ -127,8 +127,8 @@ export default function RequestsPage() {
                       ? `${r.startDate} → ${r.endDate} (${r.days || '?'} días)`
                       : `${r.item} — ${r.amount}€`}
                     {r.fileUrl && (
-                      <a href={r.fileUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginLeft: 8, color: 'var(--accent)' }}>
-                        <FileText size={14} />
+                      <a href={r.fileUrl} download="justificante" style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 8, color: 'var(--accent)', verticalAlign: 'middle' }} title="Descargar justificante">
+                        <Download size={14} />
                       </a>
                     )}
                   </td>
@@ -138,11 +138,11 @@ export default function RequestsPage() {
                     <td data-label="Acciones">
                       {r.status === 'pending' && (
                         <div className={styles.actionsCell}>
-                          <button className={clsx(styles.actionBtn, styles.approveBtn)} onClick={() => changeStatus(r.id, 'approved', r.employeeId, r.type)}>
-                            <Check size={14} /> Aprobar
+                          <button className={clsx(styles.actionBtn, styles.approveBtn)} onClick={() => changeStatus(r.id, 'approved', r.employeeId, r.type)} title="Aprobar">
+                            <Check size={16} />
                           </button>
-                          <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => changeStatus(r.id, 'rejected', r.employeeId, r.type)}>
-                            <X size={14} /> Rechazar
+                          <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => changeStatus(r.id, 'rejected', r.employeeId, r.type)} title="Rechazar">
+                            <X size={16} />
                           </button>
                         </div>
                       )}

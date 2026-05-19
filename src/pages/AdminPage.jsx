@@ -23,7 +23,7 @@ const DEPARTMENTS = [
 
 export default function AdminPage() {
   const { user, employees, setEmployees } = useAuth();
-  const { rooms, vehicles, documents, sendDocument, uploadDocumentFile, hourCompensations = [], updateHourCompensationStatus, refresh } = useData();
+  const { rooms, vehicles, documents, sendDocument, uploadDocumentFile, deleteDocument, hourCompensations = [], updateHourCompensationStatus, refresh } = useData();
 
   // Admin Bolsa Horas filters
   const [hoursFilterFrom, setHoursFilterFrom] = useState('');
@@ -135,7 +135,7 @@ export default function AdminPage() {
     }
     setShowModal(false);
     setEditEmp(null);
-        setForm({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'office' });
+        setForm({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'Office' });
   };
 
   const handleEdit = emp => { 
@@ -149,7 +149,7 @@ export default function AdminPage() {
       position: emp.position, 
       phone: emp.phone, 
       birthdate: emp.birthdate,
-      workMode: emp.workMode || 'office'
+      workMode: emp.workMode || 'Office'
     }); 
     setShowModal(true); 
   };
@@ -226,7 +226,7 @@ export default function AdminPage() {
         </div>
         
         {tab === 'employees' && (
-          <Button icon={Plus} onClick={() => { setEditEmp(null); setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '', workMode: 'office' }); setShowModal(true); }}>
+          <Button icon={Plus} onClick={() => { setEditEmp(null); setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '', workMode: 'Office' }); setShowModal(true); }}>
             Nuevo empleado
           </Button>
         )}
@@ -427,13 +427,13 @@ export default function AdminPage() {
                       setEditingRes(true);
                       setShowResModal(true);
                     }} title="Editar">
-                      <Edit2 size={14} />
+                      <Edit2 size={16} />
                     </button>
                     <button className={clsx(styles.actionBtn, styles.delete)} onClick={async () => {
                       const { error } = await supabase.from('rooms').delete().eq('id', room.id);
                       if (!error) refresh();
-                    }}>
-                      <Trash2 size={14} />
+                    }} title="Eliminar">
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
@@ -478,13 +478,13 @@ export default function AdminPage() {
                       setEditingRes(true);
                       setShowResModal(true);
                     }} title="Editar">
-                      <Edit2 size={14} />
+                      <Edit2 size={16} />
                     </button>
                     <button className={clsx(styles.actionBtn, styles.delete)} onClick={async () => {
                       const { error } = await supabase.from('vehicles').delete().eq('id', v.id);
                       if (!error) refresh();
-                    }}>
-                      <Trash2 size={14} />
+                    }} title="Eliminar">
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
@@ -578,13 +578,24 @@ export default function AdminPage() {
                           <td data-label="Acciones">
                             <div className={styles.actionsCell}>
                               {doc.fileUrl && (
-                                <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
-                                  className={clsx(styles.actionBtn, styles.edit)}
-                                  title="Ver archivo"
+                                <a href={doc.fileUrl} download={doc.title || "documento"}
+                                  className={clsx(styles.actionBtn, styles.download)}
+                                  title="Descargar archivo"
                                 >
-                                  <FileText size={14} />
+                                  <Download size={16} />
                                 </a>
                               )}
+                              <button
+                                onClick={async () => {
+                                  if (window.confirm('¿Estás seguro de que deseas eliminar este documento?')) {
+                                    await deleteDocument(doc.id);
+                                  }
+                                }}
+                                className={clsx(styles.actionBtn, styles.delete)}
+                                title="Eliminar documento"
+                              >
+                                <Trash2 size={16} />
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -705,14 +716,14 @@ export default function AdminPage() {
                                   onClick={() => updateHourCompensationStatus(h.id, 'approved', user?.id, h.employeeId)}
                                   title="Aprobar"
                                 >
-                                  <CheckCircle size={15} />
+                                  <CheckCircle size={16} />
                                 </button>
                                 <button
                                   className={clsx(styles.actionBtn, styles.rejectBtn)}
                                   onClick={() => updateHourCompensationStatus(h.id, 'rejected', user?.id, h.employeeId)}
                                   title="Rechazar"
                                 >
-                                  <X size={15} />
+                                  <X size={16} />
                                 </button>
                               </div>
                             ) : (
@@ -762,7 +773,7 @@ export default function AdminPage() {
             value={form.workMode} 
             onChange={v => setForm({ ...form, workMode: v })}
             options={[
-              { value: 'office', label: 'Oficina' },
+              { value: 'Office', label: 'Oficina' },
               { value: 'remoto', label: 'Remoto' },
               { value: 'externo', label: 'Externo' }
             ]} 
@@ -814,7 +825,8 @@ export default function AdminPage() {
         <div className={styles.modalActions}>
           <Button variant="ghost" onClick={() => setShowResModal(false)}>Cancelar</Button>
           <Button onClick={async () => {
-            const equipmentArray = resForm.equipment.split(',').map(item => item.trim()).filter(Boolean);
+            const equipmentArray = resForm.equipment ? resForm.equipment.split(',').map(item => item.trim()).filter(Boolean) : [];
+            let err = null;
             if (resType === 'room') {
               if (editingRes && resForm.id) {
                 // Update room
@@ -822,18 +834,20 @@ export default function AdminPage() {
                   name: resForm.name, 
                   capacity: parseInt(resForm.capacity), 
                   floor: parseInt(resForm.floor), 
-                  equipment: equipmentArray.length ? equipmentArray : []
+                  equipment: equipmentArray
                 }).eq('id', resForm.id);
+                err = error;
               } else {
                 // Create room
                 const { data, error } = await supabase.from('rooms').insert([{ 
                   name: resForm.name, 
                   capacity: parseInt(resForm.capacity), 
                   floor: parseInt(resForm.floor), 
-                  equipment: equipmentArray.length ? equipmentArray : [] 
+                  equipment: equipmentArray 
                 }]).select().single();
+                err = error;
               }
-              if (!error) refresh();
+              if (!err) refresh();
             } else {
               if (editingRes && resForm.id) {
                 // Update vehicle
@@ -843,6 +857,7 @@ export default function AdminPage() {
                   year: parseInt(resForm.year) || null, 
                   type: resForm.type 
                 }).eq('id', resForm.id);
+                err = error;
               } else {
                 // Create vehicle
                 const { data, error } = await supabase.from('vehicles').insert([{ 
@@ -851,8 +866,9 @@ export default function AdminPage() {
                   year: parseInt(resForm.year), 
                   type: resForm.type 
                 }]).select().single();
+                err = error;
               }
-              if (!error) refresh();
+              if (!err) refresh();
             }
             setShowResModal(false);
             setEditingRes(false);

@@ -137,7 +137,7 @@
   /* ── RGB for rgba() usage ─────────────────────────────────────── */
   --bg-rgb:         245, 246, 250;
   --sidebar-rgb:    255, 255, 255;
-  --sidebar-opacity:   0.90;  /* Reduced translucency */
+  --sidebar-opacity:   0.65;  /* Frosted translucency */
   --header-opacity:    0.85;
 }
 
@@ -212,6 +212,6 @@
   /* ── RGB for rgba() ───────────────────────────────────────────── */
   --bg-rgb:           9, 11, 15;
   --sidebar-rgb:      15, 17, 26;
-  --sidebar-opacity:  0.85;
+  --sidebar-opacity:  0.45;
   --header-opacity:   0.80;
 }

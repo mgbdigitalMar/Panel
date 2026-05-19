@@ -159,16 +159,16 @@ export default function ReservationsPage() {
                         {user.role === 'admin' && r.status === 'pending' && (
                           <>
                             <button className={clsx(styles.actionBtn, styles.approveBtn)} onClick={() => handleApprove(r.id)} title="Aprobar">
-                              <Check size={14} />
+                              <Check size={16} />
                             </button>
                             <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => handleReject(r.id)} title="Rechazar">
-                              <X size={14} />
+                              <X size={16} />
                             </button>
                           </>
                         )}
                         {(user.role === 'admin' || r.employeeId === user.id) && r.status !== 'pending' && (
                           <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => handleDelete(r.id)} title="Eliminar">
-                            <X size={14} />
+                            <X size={16} />
                           </button>
                         )}
                       </div>

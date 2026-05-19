@@ -251,36 +251,32 @@
 }
 
 .actionBtn {
-  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
+  transition: all 0.18s var(--ease-in-out);
   background: transparent;
-  color: var(--text-sec);
-  cursor: pointer;
-  transition: all 0.18s ease;
+  color: var(--text-mut);
 
   &:hover {
-    background: var(--bg);
     color: var(--text);
+    background: var(--bg-3);
+    border-color: var(--border);
   }
-}
 
-.approveBtn {
-  color: var(--success);
-  border-color: rgba(5, 150, 105, 0.2);
-  background: var(--success-bg);
-  &:hover { background: rgba(5, 150, 105, 0.15); }
-}
+  &.approveBtn {
+    &:hover { color: var(--success); background: var(--success-bg); border-color: rgba(22, 163, 74, 0.2); }
+  }
 
-.rejectBtn {
-  color: var(--danger);
-  border-color: rgba(220, 38, 38, 0.2);
-  background: var(--danger-bg);
-  &:hover { background: rgba(220, 38, 38, 0.12); }
+  &.rejectBtn {
+    &:hover { color: var(--danger); background: var(--danger-bg); border-color: rgba(220, 38, 38, 0.2); }
+  }
 }
 
 /* ── Modal ── */

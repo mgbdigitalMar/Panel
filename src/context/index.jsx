@@ -620,6 +620,12 @@ const [readIds, setReadIds] = useState(() => {
     await fetchDocuments()
   }
 
+  const deleteDocument = async (id) => {
+    const { error } = await supabase.from('documents').delete().eq('id', id)
+    if (error) { console.error('deleteDocument:', error); return }
+    await fetchDocuments()
+  }
+
   // ── Hour Compensation helpers ──────────────────────────────
   const createHourCompensation = async ({ employeeId, date, reason, hours, type }) => {
     // 'ya' and 'debe' are auto-approved; 'bolsa' waits for admin
@@ -704,7 +710,7 @@ const [readIds, setReadIds] = useState(() => {
   const contextValue = useMemo(() => ({
     requests, setRequests, reservations, setReservations,
     rooms, vehicles,
-    documents, sendDocument, updateDocumentStatus, uploadDocumentFile,
+    documents, sendDocument, updateDocumentStatus, uploadDocumentFile, deleteDocument,
     hourCompensations, createHourCompensation, updateHourCompensationStatus,
     personalDays, createPersonalDay, updatePersonalDayStatus,
     notifications, markNotifRead, markAllNotifsRead,
