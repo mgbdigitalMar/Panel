@@ -1,74 +1,60 @@
+/* ── StatCard — Premium KPI card ──────────────────────────────────── */
 .statCard {
-  padding: 24px;
-  gap: 16px;
-  background: var(--card);
-  transition: box-shadow 0.25s ease, transform 0.2s ease;
-  cursor: default;
+  padding: clamp(18px, 2.5vw, 24px);
   display: flex;
   flex-direction: column;
-  border-radius: var(--radius-lg);
+  gap: 16px;
+  border-radius: var(--radius-lg) !important;
+  cursor: default;
+  overflow: hidden !important;
+  transition:
+    box-shadow 0.25s var(--ease-out),
+    transform 0.25s var(--ease-out) !important;
 
   &:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+    transform: translateY(-3px) !important;
+    box-shadow: var(--shadow-lg) !important;
+  }
+
+  &:active {
+    transform: translateY(-1px) !important;
   }
 }
 
+/* ── Top row: icon + trend ────────────────────────────────────────── */
 .topRow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 10px;
 }
 
 .iconWrapper {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-sm);
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);
+  transition: transform 0.2s var(--ease-spring);
+
+  .statCard:hover & {
+    transform: scale(1.08) rotate(-3deg);
+  }
 }
 
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.value {
-  margin: 0;
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1;
-  letter-spacing: -0.03em;
-  font-family: var(--font-heading);
-}
-
-.label {
-  margin: 4px 0 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-sec);
-}
-
-.sub {
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-mut);
-}
-
+/* ── Trend badges ─────────────────────────────────────────────────── */
 .trend {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
   border-radius: var(--radius-full);
-  letter-spacing: 0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .trendUp {
@@ -77,6 +63,54 @@
 }
 
 .trendDown {
-  background: var(--danger-bg);
-  color: var(--danger);
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+/* ── Value + labels ───────────────────────────────────────────────── */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.value {
+  margin: 0;
+  font-size: clamp(26px, 3.5vw, 36px);
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.05em;
+  line-height: 1;
+  font-family: var(--font-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  margin: 0;
+  font-size: clamp(12px, 1vw, 13.5px);
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.sub {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-mut);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* ── Bottom accent bar ────────────────────────────────────────────── */
+.accentBar {
+  height: 3px;
+  width: 100%;
+  margin-top: auto;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+
+  .statCard:hover & {
+    opacity: 1;
+  }
 }

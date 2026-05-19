@@ -1,49 +1,189 @@
+/* ═══════════════════════════════════════════════════════════════════
+   LOGIN PAGE — Premium Split Layout
+   Desktop: Branding panel (left) + Form panel (right)
+   Mobile: Single column, centered form
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── Full-screen container ────────────────────────────────────────── */
 .container {
   min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
   background: var(--bg);
+
+  @media (max-width: 767px) {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(24px, 5vw, 48px) clamp(16px, 4vw, 24px);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LEFT PANEL — Branding
+═══════════════════════════════════════════════════════════════════ */
+.brandPanel {
+  flex: 1;
+  background: var(--gradient-hero);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(32px, 5vw, 56px);
+  position: relative;
+  overflow: hidden;
+
+  /* Decorative circles */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -80px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -80px;
+    left: -60px;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(34,81,255,0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
+
+.brandTop {
+  position: relative;
+  z-index: 1;
+}
+
+.brandLogo {
+  img {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
+    filter: brightness(0) invert(1); /* Force white logo */
+    opacity: 0.95;
+  }
+}
+
+.brandMid {
+  position: relative;
+  z-index: 1;
+}
+
+.brandHeadline {
+  font-size: clamp(28px, 3.5vw, 42px);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.05em;
+  line-height: 1.15;
+  margin: 0 0 16px;
+  text-wrap: balance;
+}
+
+.brandDesc {
+  font-size: clamp(14px, 1.2vw, 16px);
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.7;
+  margin: 0;
+  max-width: 400px;
+}
+
+.brandFeatures {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.brandFeature {
   display: flex;
   align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.brandFeatureDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.brandBottom {
+  position: relative;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RIGHT PANEL — Form (Glassmorphic)
+═══════════════════════════════════════════════════════════════════ */
+.formPanel {
+  width: clamp(340px, 42%, 520px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  padding: 24px 16px;
+  padding: clamp(24px, 5vw, 64px) clamp(24px, 5vw, 56px);
+  
+  /* Glassmorphism */
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-left: 1px solid var(--glass-border);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.05);
+
+  overflow-y: auto;
+
+  @media (max-width: 767px) {
+    width: 100%;
+    max-width: 400px;
+    border-left: none;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+    padding: 0;
+    justify-content: flex-start;
+  }
 }
 
 .wrapper {
   width: 100%;
-  max-width: 400px;
+  max-width: 380px;
 }
 
+/* ── Mobile logo (hidden on desktop) ─────────────────────────────── */
 .logoContainer {
   text-align: center;
   margin-bottom: 32px;
+  display: none;
+
+  @media (max-width: 767px) { display: block; }
 }
 
-.logoRow {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-
-.logoIcon {
-  width: 40px;
+.logoImg {
   height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--accent);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 20px;
-  letter-spacing: -0.5px;
-}
-
-.logoText {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 26px;
-  color: var(--text);
-  letter-spacing: -0.04em;
+  width: auto;
+  margin: 0 auto 10px;
+  display: block;
+  object-fit: contain;
 }
 
 .subtitle {
@@ -52,38 +192,57 @@
   font-size: 13px;
 }
 
+/* ── Form heading ─────────────────────────────────────────────────── */
+.formHeading {
+  margin: 0 0 6px;
+  font-size: clamp(22px, 2.5vw, 28px);
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.04em;
+}
+
+.formSubtext {
+  color: var(--text-mut);
+  margin: 0 0 28px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── Login card (mobile only frame) ─────────────────────────────── */
 .loginCard {
-  padding: 28px;
+  padding: clamp(20px, 4vw, 28px);
   border-radius: var(--radius-xl) !important;
   box-shadow: var(--shadow-lg) !important;
+  
+  /* Glass on mobile */
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border) !important;
+
+  @media (min-width: 768px) {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: 0 !important;
+  }
 }
 
-.welcomeTitle {
-  font-weight: 700;
-  font-size: 20px;
-  color: var(--text);
-  margin: 0 0 4px;
-  letter-spacing: -0.03em;
-}
-
-.welcomeText {
-  color: var(--text-mut);
-  margin: 0 0 24px;
-  font-size: 13px;
-}
-
+/* ── Input groups ─────────────────────────────────────────────────── */
 .inputGroup {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .passwordWrapper {
   position: relative;
-  margin-top: 5px;
+  margin-top: 6px;
 }
 
 .eyeButton {
   position: absolute;
-  right: 10px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -91,52 +250,66 @@
   cursor: pointer;
   color: var(--text-mut);
   display: flex;
-  padding: 3px;
+  padding: 4px;
   border-radius: var(--radius-sm);
   transition: color 0.15s;
+  /* Touch target */
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
 
   &:hover { color: var(--text); }
 }
 
+/* ── Error box ────────────────────────────────────────────────────── */
 .errorBox {
   background: var(--danger-bg);
-  border: 1px solid var(--danger);
+  border: 1px solid rgba(var(--danger-rgb), 0.3);
   border-radius: var(--radius);
-  padding: 9px 12px;
+  padding: 10px 14px;
   margin-bottom: 14px;
   color: var(--danger);
   font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
 }
 
+/* ── CTA button ───────────────────────────────────────────────────── */
 .actionButton {
   width: 100%;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
+/* ── Help text ────────────────────────────────────────────────────── */
 .helpText {
   text-align: center;
   color: var(--text-mut);
-  font-size: 12px;
+  font-size: 12.5px;
   margin-top: 20px;
   margin-bottom: 0;
+  line-height: 1.6;
 }
 
+/* ── Demo section ─────────────────────────────────────────────────── */
 .demoCard {
-  margin-top: 14px;
-  padding: 14px 16px;
+  margin-top: 16px;
+  padding: 14px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
-  background: var(--card);
+  background: var(--bg);
   box-shadow: var(--shadow-sm);
 }
 
 .demoTitle {
   margin: 0 0 10px;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
-  color: var(--text-sec);
+  color: var(--text-mut);
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.08em;
 }
 
 .demoList {
@@ -153,14 +326,15 @@
   padding: 7px 10px;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.15s;
   text-align: left;
   gap: 8px;
+  min-height: 40px;
 
   &:hover {
-    background: var(--bg);
+    background: var(--card);
     border-color: var(--border);
   }
 }
@@ -174,7 +348,7 @@
 }
 
 .demoBadge {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   padding: 2px 7px;
   border-radius: var(--radius-sm);
@@ -191,7 +365,7 @@
 }
 
 .demoPass {
-  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--accent);
   font-weight: 600;

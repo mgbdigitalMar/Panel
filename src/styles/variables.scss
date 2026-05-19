@@ -1,141 +1,217 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&display=swap');
 
-/* ─── Light Theme (Margube Brand) ────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+   DESIGN TOKENS — Margube Brand System
+   Premium SaaS Design System (Stripe / Linear / Vercel inspired)
+═══════════════════════════════════════════════════════════════════ */
+
+/* ─── Light Theme ────────────────────────────────────────────────── */
 :root {
-  /* Backgrounds — surface hierarchy */
-  --bg:         #F5F6FA;       /* Light clean background */
+  /* ── Backgrounds — surface hierarchy ──────────────────────────── */
+  --bg:         #F5F6FA;
   --bg-2:       #FFFFFF;
-  --bg-3:       #F0F1F7;       
+  --bg-3:       #EEF0F8;
   --card:       #FFFFFF;
   --sidebar:    #FFFFFF;
-  --border:     #E4E6EF;       
-  --border-2:   #D1D5DB;
+  --border:     #E4E6EF;
+  --border-2:   #CDD1E0;
 
-  /* Text */
-  --text:       #071033;       /* Brand Dark Navy */
-  --text-sec:   #5f6ea5;       /* Brand Secondary */
-  --text-mut:   #8a9dda;       
+  /* ── Text ─────────────────────────────────────────────────────── */
+  --text:       #071033;
+  --text-sec:   #5f6ea5;
+  --text-mut:   #8a9dda;
 
-  /* Accent (Margube Brand Blue) */
-  --accent:       #2251ff;     
-  --accent-hover: #1c44d9;     
-  --accent-fg:    #FFFFFF;
-  --accent-bg:    rgba(34, 81, 255, 0.08);
-  --accent-glow:  0 0 0 3px rgba(34, 81, 255, 0.20);
-  --accent-rgb:   34, 81, 255;
+  /* ── Accent — Margube Brand Blue ──────────────────────────────── */
+  --accent:         #2251ff;
+  --accent-hover:   #1c44d9;
+  --accent-light:   #486eff;
+  --accent-fg:      #FFFFFF;
+  --accent-bg:      rgba(34, 81, 255, 0.08);
+  --accent-bg-2:    rgba(34, 81, 255, 0.14);
+  --accent-glow:    0 0 0 3px rgba(34, 81, 255, 0.20);
+  --accent-rgb:     34, 81, 255;
 
-  /* Gradients */
-  --gradient-accent: linear-gradient(135deg, #2251ff 0%, #5f6ea5 100%);
-  --gradient-warm:   linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
-  --gradient-surface: linear-gradient(180deg, #FFFFFF 0%, #F5F6FA 100%);
-  --gradient-banner: linear-gradient(135deg, rgba(34, 81, 255, 0.05) 0%, rgba(95, 110, 165, 0.05) 100%);
+  /* ── Gradients ────────────────────────────────────────────────── */
+  --gradient-accent:   linear-gradient(135deg, #2251ff 0%, #486eff 100%);
+  --gradient-warm:     linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
+  --gradient-surface:  linear-gradient(180deg, #FFFFFF 0%, #F5F6FA 100%);
+  --gradient-banner:   linear-gradient(135deg, rgba(34,81,255,0.06) 0%, rgba(95,110,165,0.04) 100%);
+  --gradient-hero:     linear-gradient(135deg, #071033 0%, #0f2070 50%, #2251ff 100%);
+  --gradient-glass:    linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(245,246,250,0.8) 100%);
 
-  /* Semantic */
-  --success:    #059669;
-  --success-bg: #ECFDF5;
-  --warning:    #D97706;
-  --warning-bg: #FFFBEB;
-  --danger:     #DC2626;
-  --danger-bg:  #FEF2F2;
-  --info:       #0EA5E9;
-  --info-bg:    #F0F9FF;
+  /* ── Semantic Colors ──────────────────────────────────────────── */
+  --success:      #059669;
+  --success-bg:   #ECFDF5;
+  --success-rgb:  5, 150, 105;
+  --warning:      #D97706;
+  --warning-bg:   #FFFBEB;
+  --warning-rgb:  217, 119, 6;
+  --danger:       #DC2626;
+  --danger-bg:    #FEF2F2;
+  --danger-rgb:   220, 38, 38;
+  --info:         #0EA5E9;
+  --info-bg:      #F0F9FF;
+  --info-rgb:     14, 165, 233;
 
-  /* Inputs */
-  --input:        #FFFFFF;
-  --input-border: #E4E6EF;
-  --input-focus:  #2251ff;
+  /* ── Inputs ───────────────────────────────────────────────────── */
+  --input:          #FFFFFF;
+  --input-border:   #E4E6EF;
+  --input-focus:    #2251ff;
+  --input-bg-hover: #F8F9FF;
 
-  /* Nav active */
+  /* ── Nav active state ─────────────────────────────────────────── */
   --nav:      #071033;
-  --nav-bg:   #F0F1F7;
+  --nav-bg:   #EEF0FA;
   --nav-glow: transparent;
 
-  /* Shadows — Premium Layered (Stripe-like) */
-  --shadow-xs: 0 1px 2px rgba(7, 16, 51, 0.05);
-  --shadow-sm: 0 1px 3px rgba(7, 16, 51, 0.04), 0 1px 2px rgba(7, 16, 51, 0.02);
-  --shadow:    0 4px 6px -1px rgba(7, 16, 51, 0.04), 0 2px 4px -2px rgba(7, 16, 51, 0.02);
-  --shadow-md: 0 10px 15px -3px rgba(7, 16, 51, 0.04), 0 4px 6px -4px rgba(7, 16, 51, 0.02);
-  --shadow-lg: 0 20px 25px -5px rgba(7, 16, 51, 0.04), 0 8px 10px -6px rgba(7, 16, 51, 0.02);
-  --shadow-xl: 0 25px 50px -12px rgba(7, 16, 51, 0.06);
+  /* ── Shadows — Premium Layered (Stripe-inspired) ──────────────── */
+  --shadow-xs:     0 1px 2px rgba(7, 16, 51, 0.05);
+  --shadow-sm:     0 1px 3px rgba(7, 16, 51, 0.06), 0 1px 2px rgba(7, 16, 51, 0.04);
+  --shadow:        0 4px 6px -1px rgba(7, 16, 51, 0.05), 0 2px 4px -2px rgba(7, 16, 51, 0.03);
+  --shadow-md:     0 10px 15px -3px rgba(7, 16, 51, 0.06), 0 4px 6px -4px rgba(7, 16, 51, 0.04);
+  --shadow-lg:     0 20px 25px -5px rgba(7, 16, 51, 0.07), 0 8px 10px -6px rgba(7, 16, 51, 0.04);
+  --shadow-xl:     0 25px 50px -12px rgba(7, 16, 51, 0.10);
+  --shadow-2xl:    0 40px 80px -20px rgba(7, 16, 51, 0.14);
   --shadow-accent: 0 8px 24px -4px rgba(34, 81, 255, 0.28);
+  --shadow-card:   0 2px 8px rgba(7, 16, 51, 0.06), 0 0 0 1px rgba(7, 16, 51, 0.04);
 
-  /* Radius — Smooth Curves */
-  --radius-xs:  6px;
-  --radius-sm:  8px;
-  --radius:     12px;
-  --radius-md:  16px;
-  --radius-lg:  20px;
-  --radius-xl:  24px;
-  --radius-2xl: 32px;
+  /* ── Radius — Smooth Modern Curves ───────────────────────────── */
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius:      12px;
+  --radius-md:   16px;
+  --radius-lg:   20px;
+  --radius-xl:   24px;
+  --radius-2xl:  32px;
+  --radius-3xl:  40px;
   --radius-full: 9999px;
 
-  /* Typography - Margube Brand Font */
+  /* ── Typography — Brand Font System ──────────────────────────── */
   --font-body:    'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-heading: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono:    'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
 
-  /* Timing functions */
-  --ease-spring:  cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out:  cubic-bezier(0.4, 0, 0.2, 1);
+  /* ── Timing Functions ─────────────────────────────────────────── */
+  --ease-spring:    cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-out:       cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out:    cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce:    cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth:    cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
-  /* Sidebar width */
-  --sidebar-w: 260px;
+  /* ── Spacing Tokens ───────────────────────────────────────────── */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+  --space-20:  80px;
+
+  /* ── Z-index Layers ───────────────────────────────────────────── */
+  --z-base:     1;
+  --z-elevated: 10;
+  --z-dropdown: 50;
+  --z-sidebar:  100;
+  --z-header:   90;
+  --z-modal:    200;
+  --z-overlay:  300;
+  --z-toast:    9999;
+
+  /* ── Layout ───────────────────────────────────────────────────── */
+  --sidebar-w:           260px;
+  --sidebar-w-collapsed: 72px;
+  --header-h:            64px;
+  --header-h-mobile:     56px;
+  --content-max-w:       1600px;
+
+  /* ── Glassmorphism ────────────────────────────────────────────── */
+  --glass-bg:     rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-blur:   blur(16px) saturate(140%);
+  --glass-blur-sm: blur(12px) saturate(120%);
+
+  /* ── RGB for rgba() usage ─────────────────────────────────────── */
+  --bg-rgb:         245, 246, 250;
+  --sidebar-rgb:    255, 255, 255;
+  --sidebar-opacity:   0.90;  /* Reduced translucency */
+  --header-opacity:    0.85;
 }
 
-/* ─── Dark Theme (Margube Brand) ──────────────────── */
+/* ─── Dark Theme ─────────────────────────────────────────────────── */
 [data-theme='dark'] {
-  /* Backgrounds — Deep dark based on brand #071033 */
+  /* ── Backgrounds — Deep brand dark ───────────────────────────── */
   --bg:      #050B24;
-  --bg-2:    #071033; /* Brand Dark Navy */
+  --bg-2:    #071033;
   --bg-3:    #0A1747;
-  --card:    #071033;
-  --sidebar: #050B24;
+  --card:    #0B1540;
+  --sidebar: #060D2A;
   --border:  #14256A;
-  --border-2: #1A3088;
+  --border-2: #1C3388;
 
-  /* Text */
-  --text:     #FFFFFF;
+  /* ── Text ─────────────────────────────────────────────────────── */
+  --text:     #F0F4FF;
   --text-sec: #8A9DDA;
-  --text-mut: #5f6ea5; /* Brand Secondary */
+  --text-mut: #5f6ea5;
 
-  /* Accent */
-  --accent:       #2251ff;     
-  --accent-hover: #486eff;     
-  --accent-fg:    #FFFFFF;
-  --accent-bg:    rgba(34, 81, 255, 0.15);
-  --accent-glow:  0 0 0 3px rgba(34, 81, 255, 0.25);
+  /* ── Accent ───────────────────────────────────────────────────── */
+  --accent:       #2251ff;
+  --accent-hover: #486eff;
+  --accent-light: #6b8aff;
+  --accent-bg:    rgba(34, 81, 255, 0.14);
+  --accent-bg-2:  rgba(34, 81, 255, 0.22);
+  --accent-glow:  0 0 0 3px rgba(34, 81, 255, 0.28);
 
-  --gradient-accent: linear-gradient(135deg, #2251ff 0%, #486eff 100%);
-  --gradient-surface: linear-gradient(180deg, #071033 0%, #0A1747 100%);
-  --gradient-banner: linear-gradient(135deg, rgba(34,81,255,0.12) 0%, rgba(95,110,165,0.15) 100%);
+  /* ── Gradients ────────────────────────────────────────────────── */
+  --gradient-accent:   linear-gradient(135deg, #2251ff 0%, #486eff 100%);
+  --gradient-surface:  linear-gradient(180deg, #071033 0%, #0A1747 100%);
+  --gradient-banner:   linear-gradient(135deg, rgba(34,81,255,0.12) 0%, rgba(95,110,165,0.10) 100%);
+  --gradient-hero:     linear-gradient(135deg, #030818 0%, #071033 50%, #0f2070 100%);
+  --gradient-glass:    linear-gradient(135deg, rgba(11,21,64,0.92) 0%, rgba(6,13,42,0.88) 100%);
 
-  /* Semantic */
+  /* ── Semantic Colors ──────────────────────────────────────────── */
   --success:    #10B981;
-  --success-bg: rgba(16, 185, 129, 0.10);
+  --success-bg: rgba(16, 185, 129, 0.12);
   --warning:    #F59E0B;
-  --warning-bg: rgba(245, 158, 11, 0.10);
+  --warning-bg: rgba(245, 158, 11, 0.12);
   --danger:     #EF4444;
-  --danger-bg:  rgba(239, 68, 68, 0.10);
+  --danger-bg:  rgba(239, 68, 68, 0.12);
   --info:       #38BDF8;
-  --info-bg:    rgba(56, 189, 248, 0.10);
+  --info-bg:    rgba(56, 189, 248, 0.12);
 
-  /* Inputs */
-  --input:        #0A0A0F;
-  --input-border: #14256A;
-  --input-focus:  #2251ff;
+  /* ── Inputs ───────────────────────────────────────────────────── */
+  --input:          #0A1747;
+  --input-border:   #14256A;
+  --input-focus:    #2251ff;
+  --input-bg-hover: #0d1d5c;
 
-  /* Nav active */
-  --nav:      #FFFFFF;
-  --nav-bg:   #0A1747;
-  --nav-glow: transparent;
+  /* ── Nav ──────────────────────────────────────────────────────── */
+  --nav:     #F0F4FF;
+  --nav-bg:  #0A1747;
 
-  /* Shadows — Deeper and softer for dark mode */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow:    0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
-  --shadow-accent: 0 8px 24px -4px rgba(34, 81, 255, 0.35);
+  /* ── Shadows — Deep dark ─────────────────────────────────────── */
+  --shadow-xs:     0 1px 2px rgba(0, 0, 0, 0.30);
+  --shadow-sm:     0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow:        0 4px 6px -1px rgba(0, 0, 0, 0.55), 0 2px 4px -2px rgba(0, 0, 0, 0.35);
+  --shadow-md:     0 10px 15px -3px rgba(0, 0, 0, 0.65), 0 4px 6px -4px rgba(0, 0, 0, 0.45);
+  --shadow-lg:     0 20px 25px -5px rgba(0, 0, 0, 0.75), 0 8px 10px -6px rgba(0, 0, 0, 0.55);
+  --shadow-xl:     0 25px 50px -12px rgba(0, 0, 0, 0.85);
+  --shadow-2xl:    0 40px 80px -20px rgba(0, 0, 0, 0.90);
+  --shadow-accent: 0 8px 24px -4px rgba(34, 81, 255, 0.38);
+  --shadow-card:   0 2px 8px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.04);
+
+  /* ── Glassmorphism ────────────────────────────────────────────── */
+  --glass-bg:     rgba(15, 17, 26, 0.80);
+  --glass-border: rgba(255, 255, 255, 0.10);
+  --glass-blur:   blur(20px) saturate(140%);
+  --glass-blur-sm: blur(12px) saturate(120%);
+
+  /* ── RGB for rgba() ───────────────────────────────────────────── */
+  --bg-rgb:           9, 11, 15;
+  --sidebar-rgb:      15, 17, 26;
+  --sidebar-opacity:  0.85;
+  --header-opacity:   0.80;
 }

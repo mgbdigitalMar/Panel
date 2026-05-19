@@ -159,15 +159,15 @@ export default function EmployeesPage() {
                   const canEdit = user.role === 'admin' || user.id === emp.id;
                   return (
                     <tr key={emp.id}>
-                      <td>
+                      <td data-label="Empleado">
                         <div className={styles.tableUser}>
                           <Avatar initials={emp.avatar} size={32} />
                           <span className={styles.tableUserName}>{emp.name}</span>
                         </div>
                       </td>
-                      <td style={{ color: 'var(--text-sec)' }}>{emp.dept}</td>
-                      <td style={{ color: 'var(--text-sec)' }}>{emp.position}</td>
-                      <td>
+                      <td data-label="Departamento" style={{ color: 'var(--text-sec)' }}>{emp.dept}</td>
+                      <td data-label="Cargo" style={{ color: 'var(--text-sec)' }}>{emp.position}</td>
+                      <td data-label="Modo trabajo">
                         {canEdit ? (
                           <select
                             value={emp.workMode}
@@ -182,8 +182,8 @@ export default function EmployeesPage() {
                           <WorkModeBadge mode={emp.workMode} />
                         )}
                       </td>
-                      <td><Badge status={emp.role} /></td>
-                      <td style={{ color: 'var(--text-mut)', fontSize: 13 }}>{emp.phone || '---'}</td>
+                      <td data-label="Rol"><Badge status={emp.role} /></td>
+                      <td data-label="DNI" style={{ color: 'var(--text-mut)', fontSize: 13 }}>{emp.phone || '---'}</td>
                     </tr>
                   );
                 })}

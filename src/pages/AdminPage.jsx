@@ -301,8 +301,7 @@ export default function AdminPage() {
                 <tbody>
                   {filtered.map(emp => (
                     <tr key={emp.id}>
-                      {/* 1. Usuario */}
-                      <td>
+                      <td data-label="Usuario">
                         <div className={styles.userCell}>
                           <Avatar initials={emp.avatar} size={42} />
                           <div>
@@ -315,14 +314,12 @@ export default function AdminPage() {
                         </div>
                       </td>
 
-                      {/* 2. Puesto */}
-                      <td>
+                      <td data-label="Puesto">
                         <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--text)', fontSize: 13 }}>{emp.position || 'Sin cargo'}</p>
                         <p style={{ margin: 0, fontSize: 12, color: 'var(--text-sec)' }}>{emp.dept}</p>
                       </td>
 
-                      {/* 3. Contacto */}
-                      <td>
+                      <td data-label="Contacto">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start' }}>
                           <Badge 
                             status="neutral" 
@@ -358,8 +355,7 @@ export default function AdminPage() {
                         </div>
                       </td>
 
-                      {/* 4. Modalidad */}
-                      <td>
+                      <td data-label="Modalidad">
                         {(() => {
                           const mode = (emp.workMode || 'office').toLowerCase();
                           const isOffice = mode === 'office' || mode === 'oficina';
@@ -382,8 +378,7 @@ export default function AdminPage() {
                         })()}
                       </td>
 
-                      {/* 5. Acciones */}
-                      <td>
+                      <td data-label="Acciones">
                         <div className={styles.actionsCell}>
                           <button className={clsx(styles.actionBtn, styles.edit)} onClick={() => handleEdit(emp)} title="Editar empleado">
                             <Edit2 size={16} />
@@ -544,7 +539,7 @@ export default function AdminPage() {
                       const recipAvatar = recipient?.avatar  || recipName.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
                       return (
                         <tr key={doc.id}>
-                          <td>
+                          <td data-label="Documento">
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               <div style={{ width: 34, height: 34, borderRadius: 8, background: 'var(--accent-bg)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                 <FileText size={16} />
@@ -557,7 +552,7 @@ export default function AdminPage() {
                               </div>
                             </div>
                           </td>
-                          <td>
+                          <td data-label="Destinatario">
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <Avatar initials={recipAvatar} size={28} />
                               <div>
@@ -566,7 +561,7 @@ export default function AdminPage() {
                               </div>
                             </div>
                           </td>
-                          <td>
+                          <td data-label="Estado">
                             <span className={clsx(styles.docStatusBadge, {
                               [styles.docStatusPending]:   doc.status === 'pending',
                               [styles.docStatusSigned]:    doc.status === 'signed',
@@ -577,10 +572,10 @@ export default function AdminPage() {
                               {doc.status === 'completed' && <><CheckCircle size={11} /> Completado</>}
                             </span>
                           </td>
-                          <td style={{ fontSize: 13, color: 'var(--text-sec)' }}>
+                          <td data-label="Fecha" style={{ fontSize: 13, color: 'var(--text-sec)' }}>
                             {new Date(doc.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                           </td>
-                          <td>
+                          <td data-label="Acciones">
                             <div className={styles.actionsCell}>
                               {doc.fileUrl && (
                                 <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
@@ -671,7 +666,7 @@ export default function AdminPage() {
                       const empAvatar = emp?.avatar || empName.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
                       return (
                         <tr key={h.id}>
-                          <td>
+                          <td data-label="Empleado">
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <Avatar initials={empAvatar} size={30} />
                               <div>
@@ -680,18 +675,18 @@ export default function AdminPage() {
                               </div>
                             </div>
                           </td>
-                          <td style={{ fontSize: 13, color: 'var(--text)', whiteSpace: 'nowrap' }}>
+                          <td data-label="Fecha" style={{ fontSize: 13, color: 'var(--text)', whiteSpace: 'nowrap' }}>
                             {new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                           </td>
-                          <td style={{ fontSize: 13, color: 'var(--text-sec)', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <td data-label="Motivo" style={{ fontSize: 13, color: 'var(--text-sec)', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {h.reason}
                           </td>
-                          <td>
+                          <td data-label="Horas">
                             <span style={{ background: 'var(--accent-bg)', color: 'var(--accent)', fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
                               {h.hours}h
                             </span>
                           </td>
-                          <td>
+                          <td data-label="Estado">
                             <span className={clsx(styles.docStatusBadge, {
                               [styles.docStatusPending]:   h.status === 'pending',
                               [styles.docStatusCompleted]: h.status === 'approved',
@@ -702,22 +697,22 @@ export default function AdminPage() {
                               {h.status === 'rejected' && <><X size={11} /> Rechazada</>}
                             </span>
                           </td>
-                          <td>
+                          <td data-label="Acciones">
                             {h.status === 'pending' ? (
                               <div className={styles.actionsCell}>
                                 <button
-                                  className={clsx(styles.actionBtn)}
-                                  style={{ background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: 6, padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                                  className={clsx(styles.actionBtn, styles.approveBtn)}
                                   onClick={() => updateHourCompensationStatus(h.id, 'approved', user?.id, h.employeeId)}
+                                  title="Aprobar"
                                 >
-                                  <CheckCircle size={13} /> Aprobar
+                                  <CheckCircle size={15} />
                                 </button>
                                 <button
-                                  className={clsx(styles.actionBtn)}
-                                  style={{ background: 'var(--danger-bg)', color: 'var(--danger)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 6, padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                                  className={clsx(styles.actionBtn, styles.rejectBtn)}
                                   onClick={() => updateHourCompensationStatus(h.id, 'rejected', user?.id, h.employeeId)}
+                                  title="Rechazar"
                                 >
-                                  <X size={13} /> Rechazar
+                                  <X size={15} />
                                 </button>
                               </div>
                             ) : (

@@ -142,19 +142,19 @@ export default function ReservationsPage() {
               <tbody>
                 {filtered.map(r => (
                   <tr key={r.id}>
-                    <td style={{ color: 'var(--text)', fontWeight: 600 }}>{r.resourceName}</td>
-                    <td>
+                    <td data-label="Recurso" style={{ color: 'var(--text)', fontWeight: 600 }}>{r.resourceName}</td>
+                    <td data-label="Tipo">
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: r.type === 'vehicle' ? 'var(--warning)' : 'var(--accent)' }}>
                         {r.type === 'vehicle' ? <Car size={13} /> : <Building size={13} />}
                         {r.type === 'vehicle' ? 'Vehículo' : 'Sala'}
                       </span>
                     </td>
-                    <td style={{ color: 'var(--text-sec)' }}>{r.employeeName}</td>
-                    <td style={{ color: 'var(--text-sec)', whiteSpace: 'nowrap' }}>{r.date}</td>
-                    <td style={{ color: 'var(--text-sec)', whiteSpace: 'nowrap' }}>{r.timeStart}–{r.timeEnd}</td>
-                    <td style={{ color: 'var(--text-sec)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.purpose}</td>
-                    <td><Badge status={r.status} /></td>
-                    <td>
+                    <td data-label="Solicitante" style={{ color: 'var(--text-sec)' }}>{r.employeeName}</td>
+                    <td data-label="Fecha" style={{ color: 'var(--text-sec)', whiteSpace: 'nowrap' }}>{r.date}</td>
+                    <td data-label="Horario" style={{ color: 'var(--text-sec)', whiteSpace: 'nowrap' }}>{r.timeStart}–{r.timeEnd}</td>
+                    <td data-label="Propósito" style={{ color: 'var(--text-sec)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.purpose}</td>
+                    <td data-label="Estado"><Badge status={r.status} /></td>
+                    <td data-label="Acciones">
                       <div className={styles.actionsCell} style={{ gap: 4 }}>
                         {user.role === 'admin' && r.status === 'pending' && (
                           <>

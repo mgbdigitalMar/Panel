@@ -344,20 +344,20 @@ export default function HorasPage() {
                     <tbody>
                       {allRows.map(h => (
                         <tr key={h.id} className={h.type === 'debe' ? styles.rowDebe : ''}>
-                          <td className={styles.dateCell}>
+                          <td className={styles.dateCell} data-label="Fecha">
                             {new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                           </td>
-                          <td>{typeBadge(h.type)}</td>
-                          <td className={styles.reasonCell}>{h.reason}</td>
-                          <td>
+                          <td data-label="Tipo">{typeBadge(h.type)}</td>
+                          <td className={styles.reasonCell} data-label="Motivo">{h.reason}</td>
+                          <td data-label="Horas">
                             <span className={clsx(styles.hoursChip, h.type === 'debe' ? styles.hoursChipDebe : '')}>
                               {h.type === 'debe' ? '-' : '+'}{h.hours}h
                             </span>
                           </td>
-                          <td>{statusBadge(h.status)}</td>
-                          <td className={styles.reviewCell}>
+                          <td data-label="Estado">{statusBadge(h.status)}</td>
+                          <td className={styles.reviewCell} data-label="Revisado">
                             {h.reviewerName
-                              ? <><strong>{h.reviewerName}</strong><br /><span>{h.reviewedAt ? new Date(h.reviewedAt).toLocaleDateString('es-ES') : ''}</span></>
+                              ? <><strong>{h.reviewerName}</strong><span>{h.reviewedAt ? new Date(h.reviewedAt).toLocaleDateString('es-ES') : ''}</span></>
                               : <span style={{ color: 'var(--text-mut)' }}>—</span>
                             }
                           </td>

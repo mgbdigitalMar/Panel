@@ -343,17 +343,17 @@ const tooltipStyle = {
               <tbody>
                 {reservations.slice(0, 6).map(r => (
                   <tr key={r.id}>
-                    <td className={styles.tdBold}>{r.resourceName}</td>
-                    <td>
+                    <td data-label="Recurso" className={styles.tdBold}>{r.resourceName}</td>
+                    <td data-label="Tipo">
                       <span className={styles.typeBadge} style={{ color: r.type === 'vehicle' ? 'var(--warning)' : 'var(--accent)' }}>
                         {r.type === 'vehicle' ? <Car size={13} /> : <Building size={13} />}
                         {r.type === 'vehicle' ? 'Vehículo' : 'Sala'}
                       </span>
                     </td>
-                    <td>{r.employeeName}</td>
-                    <td>{r.date}</td>
-                    <td>{r.timeStart}–{r.timeEnd}</td>
-                    <td><Badge status={r.status} /></td>
+                    <td data-label="Solicitante">{r.employeeName}</td>
+                    <td data-label="Fecha">{r.date}</td>
+                    <td data-label="Horario">{r.timeStart}–{r.timeEnd}</td>
+                    <td data-label="Estado"><Badge status={r.status} /></td>
                   </tr>
                 ))}
               </tbody>

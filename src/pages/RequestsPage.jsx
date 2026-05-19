@@ -111,16 +111,16 @@ export default function RequestsPage() {
             <tbody>
               {filtered.map(r => (
                 <tr key={r.id}>
-                  <td>
+                  <td data-label="Empleado">
                     <div className={styles.userCell}>
                       <Avatar initials={(r.employeeName || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()} size={32} />
                       <span className={styles.userName}>{r.employeeName || '—'}</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Tipo">
                     <Badge status={r.type} label={r.type === 'asuntos_propios' ? 'Asuntos Propios' : r.type === 'remoto' ? 'Remoto' : r.type === 'external' ? 'Trabajo Externo' : 'Compra'} />
                   </td>
-                  <td style={{ color: 'var(--text-sec)' }}>
+                  <td data-label="Detalle" style={{ color: 'var(--text-sec)' }}>
                     {r.type === 'asuntos_propios'
                       ? `${r.date} (1 día)`
                       : r.type === 'external' || r.type === 'remoto'
@@ -132,10 +132,10 @@ export default function RequestsPage() {
                       </a>
                     )}
                   </td>
-                  <td style={{ color: 'var(--text-mut)' }}>{r.createdAt}</td>
-                  <td><Badge status={r.status} /></td>
+                  <td data-label="Fecha solicitud" style={{ color: 'var(--text-mut)' }}>{r.createdAt}</td>
+                  <td data-label="Estado"><Badge status={r.status} /></td>
                   {user.role === 'admin' && (
-                    <td>
+                    <td data-label="Acciones">
                       {r.status === 'pending' && (
                         <div className={styles.actionsCell}>
                           <button className={clsx(styles.actionBtn, styles.approveBtn)} onClick={() => changeStatus(r.id, 'approved', r.employeeId, r.type)}>
