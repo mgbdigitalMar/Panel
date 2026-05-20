@@ -38,7 +38,7 @@ function dateString(y, m, d) {
 export default function ReservationsCalendar() {
   const { reservations } = useData();
   const [viewMode, setViewMode] = useState('month');
-  const [base, setBase] = useState(new Date(2025, 0, 1));
+  const [base, setBase] = useState(new Date());
 
   const year = base.getFullYear();
   const month = base.getMonth();
