@@ -13,14 +13,14 @@
   position: relative;
 
   &:hover {
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
     border-color: var(--border-2);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
   }
 }
 
 .header {
-  padding: clamp(14px, 1.8vw, 18px) clamp(16px, 2vw, 22px);
+  padding: clamp(16px, 2vw, 20px) clamp(20px, 2.5vw, 26px);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -38,6 +38,6 @@
 }
 
 .content {
-  padding: clamp(16px, 2vw, 22px);
+  padding: clamp(20px, 2.5vw, 26px);
   flex: 1;
 }

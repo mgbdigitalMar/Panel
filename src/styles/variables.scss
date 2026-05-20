@@ -65,25 +65,25 @@
   --nav-glow: transparent;
 
   /* ── Shadows — Premium Layered (Stripe-inspired) ──────────────── */
-  --shadow-xs:     0 1px 2px rgba(7, 16, 51, 0.05);
-  --shadow-sm:     0 1px 3px rgba(7, 16, 51, 0.06), 0 1px 2px rgba(7, 16, 51, 0.04);
-  --shadow:        0 4px 6px -1px rgba(7, 16, 51, 0.05), 0 2px 4px -2px rgba(7, 16, 51, 0.03);
-  --shadow-md:     0 10px 15px -3px rgba(7, 16, 51, 0.06), 0 4px 6px -4px rgba(7, 16, 51, 0.04);
-  --shadow-lg:     0 20px 25px -5px rgba(7, 16, 51, 0.07), 0 8px 10px -6px rgba(7, 16, 51, 0.04);
-  --shadow-xl:     0 25px 50px -12px rgba(7, 16, 51, 0.10);
-  --shadow-2xl:    0 40px 80px -20px rgba(7, 16, 51, 0.14);
-  --shadow-accent: 0 8px 24px -4px rgba(34, 81, 255, 0.28);
-  --shadow-card:   0 2px 8px rgba(7, 16, 51, 0.06), 0 0 0 1px rgba(7, 16, 51, 0.04);
+  --shadow-xs:     0 1px 2px rgba(7, 16, 51, 0.04);
+  --shadow-sm:     0 1px 4px rgba(7, 16, 51, 0.05), 0 2px 4px rgba(7, 16, 51, 0.03);
+  --shadow:        0 4px 8px -2px rgba(7, 16, 51, 0.04), 0 2px 4px -2px rgba(7, 16, 51, 0.03);
+  --shadow-md:     0 12px 20px -4px rgba(7, 16, 51, 0.05), 0 4px 8px -4px rgba(7, 16, 51, 0.03);
+  --shadow-lg:     0 24px 32px -6px rgba(7, 16, 51, 0.06), 0 10px 12px -6px rgba(7, 16, 51, 0.04);
+  --shadow-xl:     0 32px 64px -12px rgba(7, 16, 51, 0.08);
+  --shadow-2xl:    0 48px 100px -20px rgba(7, 16, 51, 0.12);
+  --shadow-accent: 0 12px 32px -4px rgba(34, 81, 255, 0.24);
+  --shadow-card:   0 4px 12px rgba(7, 16, 51, 0.04), 0 0 0 1px rgba(7, 16, 51, 0.03);
 
   /* ── Radius — Smooth Modern Curves ───────────────────────────── */
   --radius-xs:   4px;
-  --radius-sm:   8px;
-  --radius:      12px;
-  --radius-md:   16px;
-  --radius-lg:   20px;
-  --radius-xl:   24px;
-  --radius-2xl:  32px;
-  --radius-3xl:  40px;
+  --radius-sm:   10px;
+  --radius:      14px;
+  --radius-md:   18px;
+  --radius-lg:   24px;
+  --radius-xl:   28px;
+  --radius-2xl:  36px;
+  --radius-3xl:  44px;
   --radius-full: 9999px;
 
   /* ── Typography — Brand Font System ──────────────────────────── */
@@ -137,8 +137,8 @@
   /* ── RGB for rgba() usage ─────────────────────────────────────── */
   --bg-rgb:         245, 246, 250;
   --sidebar-rgb:    255, 255, 255;
-  --sidebar-opacity:   0.65;  /* Frosted translucency */
-  --header-opacity:    0.85;
+  --sidebar-opacity:   0.45;  /* Frosted translucency */
+  --header-opacity:    0.65;
 }
 
 /* ─── Dark Theme ─────────────────────────────────────────────────── */
@@ -193,15 +193,15 @@
   --nav-bg:  #182033;
 
   /* ── Shadows — Deep dark ─────────────────────────────────────── */
-  --shadow-xs:     0 1px 2px rgba(0, 0, 0, 0.40);
-  --shadow-sm:     0 1px 3px rgba(0, 0, 0, 0.50), 0 1px 2px rgba(0, 0, 0, 0.30);
-  --shadow:        0 4px 6px -1px rgba(0, 0, 0, 0.60), 0 2px 4px -2px rgba(0, 0, 0, 0.40);
-  --shadow-md:     0 10px 15px -3px rgba(0, 0, 0, 0.70), 0 4px 6px -4px rgba(0, 0, 0, 0.50);
-  --shadow-lg:     0 20px 25px -5px rgba(0, 0, 0, 0.80), 0 8px 10px -6px rgba(0, 0, 0, 0.60);
-  --shadow-xl:     0 25px 50px -12px rgba(0, 0, 0, 0.90);
-  --shadow-2xl:    0 40px 80px -20px rgba(0, 0, 0, 0.95);
-  --shadow-accent: 0 8px 24px -4px rgba(62, 99, 221, 0.30);
-  --shadow-card:   0 2px 8px rgba(0,0,0,0.50), 0 0 0 1px rgba(255,255,255,0.03);
+  --shadow-xs:     0 1px 2px rgba(0, 0, 0, 0.30);
+  --shadow-sm:     0 1px 4px rgba(0, 0, 0, 0.40), 0 2px 4px rgba(0, 0, 0, 0.20);
+  --shadow:        0 4px 8px -2px rgba(0, 0, 0, 0.50), 0 2px 4px -2px rgba(0, 0, 0, 0.30);
+  --shadow-md:     0 12px 20px -4px rgba(0, 0, 0, 0.60), 0 4px 8px -4px rgba(0, 0, 0, 0.40);
+  --shadow-lg:     0 24px 32px -6px rgba(0, 0, 0, 0.70), 0 10px 12px -6px rgba(0, 0, 0, 0.50);
+  --shadow-xl:     0 32px 64px -12px rgba(0, 0, 0, 0.80);
+  --shadow-2xl:    0 48px 100px -20px rgba(0, 0, 0, 0.90);
+  --shadow-accent: 0 12px 32px -4px rgba(62, 99, 221, 0.24);
+  --shadow-card:   0 4px 12px rgba(0,0,0,0.40), 0 0 0 1px rgba(255,255,255,0.02);
 
   /* ── Glassmorphism ────────────────────────────────────────────── */
   --glass-bg:     rgba(15, 21, 36, 0.75);
@@ -212,6 +212,6 @@
   /* ── RGB for rgba() ───────────────────────────────────────────── */
   --bg-rgb:           9, 13, 22;
   --sidebar-rgb:      15, 21, 36;
-  --sidebar-opacity:  0.45;
-  --header-opacity:   0.75;
+  --sidebar-opacity:  0.35;
+  --header-opacity:   0.55;
 }

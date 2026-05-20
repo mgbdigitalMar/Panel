@@ -17,12 +17,12 @@ import styles from './Layout.module.scss';
 
 /* ── Navigation items ─────────────────────────────────────────────── */
 const navItems = [
-  { id: 'dashboard',    label: 'Dashboard',          icon: LayoutDashboard },
-  { id: 'reservations', label: 'Reservas',            icon: Calendar        },
-  { id: 'requests',     label: 'Solicitudes',         icon: Inbox           },
-  { id: 'horas',        label: 'Horas Extra',         icon: Timer           },
-  { id: 'news',         label: 'Noticias y Eventos',  icon: Newspaper       },
-  { id: 'employees',    label: 'Equipo',              icon: UsersRound      },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'reservations', label: 'Reservas', icon: Calendar },
+  { id: 'requests', label: 'Solicitudes', icon: Inbox },
+  { id: 'horas', label: 'Horas Extra', icon: Timer },
+  { id: 'news', label: 'Noticias y Eventos', icon: Newspaper },
+  { id: 'employees', label: 'Equipo', icon: UsersRound },
 ];
 const adminItems = [
   { id: 'admin', label: 'Administración', icon: Settings },
@@ -59,11 +59,11 @@ export default function Layout({ children }) {
   } = useData();
 
   /* ── UI state ──────────────────────────────────────────────────── */
-  const [sideOpen,     setSideOpen]     = useState(false); // mobile drawer
-  const [notiMenu,     setNotiMenu]     = useState(false);
+  const [sideOpen, setSideOpen] = useState(false); // mobile drawer
+  const [notiMenu, setNotiMenu] = useState(false);
   const [userDropdown, setUserDropdown] = useState(false);
 
-  const notiMenuRef     = useRef(null);
+  const notiMenuRef = useRef(null);
   const userDropdownRef = useRef(null);
 
   /* ── Idle timer reset ──────────────────────────────────────────── */
@@ -241,7 +241,7 @@ export default function Layout({ children }) {
               title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
             >
               {theme === 'dark'
-                ? <Sun  size={17} aria-hidden="true" />
+                ? <Sun size={17} aria-hidden="true" />
                 : <Moon size={17} aria-hidden="true" />
               }
             </button>
@@ -295,9 +295,9 @@ export default function Layout({ children }) {
                         </div>
                       ) : (
                         notifications.map(n => {
-                          const typeIcon  = n.type === 'success' ? <CheckCircle size={13} /> : n.type === 'error' ? <XCircle size={13} /> : <Bell size={13} />;
+                          const typeIcon = n.type === 'success' ? <CheckCircle size={13} /> : n.type === 'error' ? <XCircle size={13} /> : <Bell size={13} />;
                           const typeStyle = n.type === 'success' ? styles.notiSuccess : n.type === 'error' ? styles.notiWarning : styles.notiAccent;
-                          let entityNav   = n.entity_type === 'request' ? 'requests' : n.entity_type === 'document' ? 'profile' : n.entity_type === 'hour_compensation' ? 'horas' : n.entity_type === 'reservation' ? 'reservations' : 'dashboard';
+                          let entityNav = n.entity_type === 'request' ? 'requests' : n.entity_type === 'document' ? 'profile' : n.entity_type === 'hour_compensation' ? 'horas' : n.entity_type === 'reservation' ? 'reservations' : 'dashboard';
                           if (user?.role === 'admin' && n.entity_type === 'hour_compensation') entityNav = 'admin';
 
                           return (

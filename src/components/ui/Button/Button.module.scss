@@ -20,7 +20,7 @@
   }
 
   &:active:not(:disabled) {
-    transform: scale(0.98);
+    transform: scale(0.96);
   }
 }
 
@@ -96,12 +96,12 @@
 }
 
 .size-md {
-  padding: 8px 14px;
+  padding: 10px 16px;
   font-size: 13px;
 }
 
 .size-lg {
-  padding: 11px 20px;
+  padding: 12px 24px;
   font-size: 14px;
   font-weight: 600;
   border-radius: var(--radius-md);
