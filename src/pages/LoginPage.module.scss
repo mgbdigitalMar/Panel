@@ -32,34 +32,42 @@
   position: relative;
   overflow: hidden;
 
-  /* Decorative circles */
+  /* Decorative circle top-right */
   &::before {
     content: '';
     position: absolute;
     top: -100px;
     right: -80px;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 70%);
     border-radius: 50%;
     pointer-events: none;
+    animation: float 7s ease-in-out infinite;
   }
 
+  /* Decorative circle bottom-left */
   &::after {
     content: '';
     position: absolute;
     bottom: -80px;
     left: -60px;
-    width: 350px;
-    height: 350px;
-    background: radial-gradient(circle, rgba(34,81,255,0.3) 0%, transparent 70%);
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, rgba(34,81,255,0.32) 0%, transparent 70%);
     border-radius: 50%;
     pointer-events: none;
+    animation: float 9s ease-in-out infinite reverse;
   }
 
   @media (max-width: 767px) {
     display: none;
   }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%       { transform: translateY(-16px) scale(1.03); }
 }
 
 .brandTop {
@@ -72,8 +80,11 @@
     height: 36px;
     width: auto;
     object-fit: contain;
-    filter: brightness(0) invert(1); /* Force white logo */
-    opacity: 0.95;
+    filter: brightness(0) invert(1);
+    opacity: 0.92;
+    transition: opacity 0.2s ease;
+
+    &:hover { opacity: 1; }
   }
 }
 
@@ -83,11 +94,11 @@
 }
 
 .brandHeadline {
-  font-size: clamp(28px, 3.5vw, 42px);
+  font-size: clamp(28px, 3.5vw, 44px);
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.05em;
-  line-height: 1.15;
+  line-height: 1.12;
   margin: 0 0 16px;
   text-wrap: balance;
 }
@@ -95,7 +106,7 @@
 .brandDesc {
   font-size: clamp(14px, 1.2vw, 16px);
   color: rgba(255, 255, 255, 0.65);
-  line-height: 1.7;
+  line-height: 1.75;
   margin: 0;
   max-width: 400px;
 }
@@ -103,31 +114,35 @@
 .brandFeatures {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 32px;
+  gap: 13px;
+  margin-top: 34px;
 }
 
 .brandFeature {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.82);
   font-size: 14px;
   font-weight: 500;
+  transition: color 0.2s ease;
+
+  &:hover { color: #fff; }
 }
 
 .brandFeatureDot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--gradient-accent);
   flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5);
 }
 
 .brandBottom {
   position: relative;
   z-index: 1;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.32);
   font-size: 12px;
 }
 
@@ -141,19 +156,18 @@
   align-items: center;
   justify-content: center;
   padding: clamp(24px, 5vw, 64px) clamp(24px, 5vw, 56px);
-  
+
   /* Glassmorphism */
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border-left: 1px solid var(--glass-border);
-  box-shadow: -4px 0 24px rgba(0,0,0,0.05);
-
+  box-shadow: -4px 0 32px rgba(0,0,0,0.06);
   overflow-y: auto;
 
   @media (max-width: 767px) {
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     border-left: none;
     background: transparent;
     backdrop-filter: none;
@@ -167,6 +181,12 @@
 .wrapper {
   width: 100%;
   max-width: 380px;
+  animation: fadeInUp 0.35s var(--ease-out) both;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Mobile logo (hidden on desktop) ─────────────────────────────── */
@@ -198,7 +218,7 @@
   font-size: clamp(22px, 2.5vw, 28px);
   font-weight: 800;
   color: var(--text);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.042em;
 }
 
 .formSubtext {
@@ -213,8 +233,7 @@
   padding: clamp(20px, 4vw, 28px);
   border-radius: var(--radius-xl) !important;
   box-shadow: var(--shadow-lg) !important;
-  
-  /* Glass on mobile */
+
   background: var(--glass-bg) !important;
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -232,7 +251,7 @@
 
 /* ── Input groups ─────────────────────────────────────────────────── */
 .inputGroup {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .passwordWrapper {
@@ -252,29 +271,32 @@
   display: flex;
   padding: 4px;
   border-radius: var(--radius-sm);
-  transition: color 0.15s;
-  /* Touch target */
+  transition: color 0.15s ease, background 0.15s ease;
   min-width: 44px;
   min-height: 44px;
   align-items: center;
   justify-content: center;
 
-  &:hover { color: var(--text); }
+  &:hover {
+    color: var(--text);
+    background: var(--bg-3);
+  }
 }
 
 /* ── Error box ────────────────────────────────────────────────────── */
 .errorBox {
   background: var(--danger-bg);
-  border: 1px solid rgba(var(--danger-rgb), 0.3);
+  border: 1px solid rgba(var(--danger-rgb), 0.25);
   border-radius: var(--radius);
-  padding: 10px 14px;
-  margin-bottom: 14px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
   color: var(--danger);
   font-size: 13px;
   font-weight: 500;
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 9px;
+  animation: fadeInUp 0.2s ease both;
 }
 
 /* ── CTA button ───────────────────────────────────────────────────── */
@@ -296,11 +318,25 @@
 /* ── Demo section ─────────────────────────────────────────────────── */
 .demoCard {
   margin-top: 16px;
-  padding: 14px;
+  padding: 16px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   background: var(--bg);
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  position: relative;
+
+  /* Top shimmer */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.25), transparent);
+    pointer-events: none;
+  }
 }
 
 .demoTitle {
@@ -323,20 +359,26 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 7px 10px;
+  padding: 8px 12px;
   background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.15s;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s var(--ease-spring);
   text-align: left;
   gap: 8px;
-  min-height: 40px;
+  min-height: 42px;
 
   &:hover {
-    background: var(--card);
-    border-color: var(--border);
+    background: var(--accent-bg);
+    border-color: rgba(var(--accent-rgb), 0.18);
+    transform: translateX(2px);
   }
+
+  &:active { transform: scale(0.98); }
 }
 
 .demoRowLeft {

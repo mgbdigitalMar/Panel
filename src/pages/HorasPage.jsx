@@ -333,7 +333,7 @@ export default function HorasPage() {
             ) : (
               <Card style={{ padding: 0, overflow: 'hidden' }}>
                 <div className={styles.tableWrapper}>
-                  <table className={styles.table}>
+                  <table className="table">
                     <thead>
                       <tr>
                         {['Fecha', 'Tipo', 'Motivo', 'Horas', 'Estado', 'Revisado'].map(h => (

@@ -131,7 +131,7 @@ export default function ReservationsPage() {
             <h3 style={{ margin: '0 0 0', fontSize: 14, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-heading)' }}>Historial de reservas</h3>
           </div>
           <div className={styles.tableWrapper}>
-            <table className={styles.table}>
+            <table className="table">
               <thead>
                 <tr>
                   {['Recurso', 'Tipo', 'Solicitante', 'Fecha', 'Horario', 'Propósito', 'Estado', 'Acciones'].map(h => (

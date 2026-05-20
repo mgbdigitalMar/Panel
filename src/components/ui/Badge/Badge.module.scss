@@ -1,41 +1,68 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
+  gap: 5px;
+  padding: 3px 10px;
   border-radius: var(--radius-full);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11.5px;
+  font-weight: 700;
   white-space: nowrap;
   letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  transition: all 0.18s ease;
+  line-height: 1.5;
+
+  /* Dot indicator */
+  &[data-dot]::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    display: inline-block;
+    flex-shrink: 0;
+  }
 }
 
 .variant-success {
   background: var(--success-bg);
   color: var(--success);
-  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.2);
+  border-color: rgba(var(--success-rgb), 0.2);
 }
 
 .variant-warning {
   background: var(--warning-bg);
   color: var(--warning);
-  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.2);
+  border-color: rgba(var(--warning-rgb), 0.2);
 }
 
 .variant-danger {
   background: var(--danger-bg);
   color: var(--danger);
-  box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.2);
+  border-color: rgba(var(--danger-rgb), 0.2);
 }
 
 .variant-accent {
   background: var(--accent-bg);
   color: var(--accent);
-  box-shadow: inset 0 0 0 1px rgba(79, 70, 229, 0.2);
+  border-color: rgba(var(--accent-rgb), 0.2);
 }
 
 .variant-neutral {
   background: var(--bg-3);
   color: var(--text-sec);
-  box-shadow: inset 0 0 0 1px var(--border);
+  border-color: var(--border);
+}
+
+/* ── Sizes ────────────────────────────────────────────────── */
+.size-sm {
+  font-size: 10px;
+  padding: 2px 7px;
+  letter-spacing: 0.03em;
+}
+
+.size-lg {
+  font-size: 13px;
+  padding: 5px 14px;
+  gap: 7px;
 }

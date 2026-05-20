@@ -290,7 +290,7 @@ export default function AdminPage() {
             </div>
 
             <div className={styles.tableWrapper}>
-              <table className={styles.table}>
+              <table className="table">
                 <thead>
                   <tr>
                     {['Usuario', 'Puesto', 'Contacto', 'Modalidad', 'Acciones'].map(h => (
@@ -524,7 +524,7 @@ export default function AdminPage() {
               </div>
             ) : (
               <div className={styles.tableWrapper}>
-                <table className={styles.table}>
+                <table className="table">
                   <thead>
                     <tr>
                       {['Documento', 'Destinatario', 'Estado', 'Fecha', 'Acciones'].map(h => (
@@ -664,7 +664,7 @@ export default function AdminPage() {
               </div>
             ) : (
               <div className={styles.tableWrapper}>
-                <table className={styles.table}>
+                <table className="table">
                   <thead>
                     <tr>
                       {['Empleado', 'Fecha', 'Motivo', 'Horas', 'Estado', 'Acciones'].map(h => <th key={h}>{h}</th>)}

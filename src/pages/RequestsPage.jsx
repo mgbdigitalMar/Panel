@@ -100,7 +100,7 @@ export default function RequestsPage() {
       {/* Table */}
       <Card>
         <div className={styles.tableWrapper}>
-          <table className={styles.table}>
+          <table className="table">
             <thead>
               <tr>
                 {['Empleado', 'Tipo', 'Detalle', 'Fecha solicitud', 'Estado', user.role === 'admin' ? 'Acciones' : null].filter(Boolean).map(h => (

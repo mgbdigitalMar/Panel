@@ -332,7 +332,7 @@ const tooltipStyle = {
             </div>
           </div>
           <div className={styles.tableWrapper}>
-            <table className={styles.table}>
+            <table className="table">
               <thead>
                 <tr>
                   {['Recurso', 'Tipo', 'Solicitante', 'Fecha', 'Horario', 'Estado'].map(h => (

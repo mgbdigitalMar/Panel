@@ -148,7 +148,7 @@ export default function EmployeesPage() {
       {view === 'list' && (
         <Card>
           <div className={styles.tableWrap}>
-            <table className={styles.table}>
+            <table className="table">
               <thead>
                 <tr>
                 {['Empleado', 'Departamento', 'Cargo', 'Modo trabajo', 'Rol', 'DNI'].map(h => <th key={h}>{h}</th>)}
