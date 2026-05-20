@@ -5,20 +5,6 @@
    Mobile-first, premium SaaS aesthetic
 ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Missing transition token (used in table transitions) ─────────── */
-:root {
-  --transition-fast:   all 0.12s var(--ease-out);
-  --transition-smooth: all 0.2s var(--ease-out);
-  --transition-slow:   all 0.35s var(--ease-in-out);
-
-  /* Border RGB for rgba() in mobile card layouts */
-  --border-rgb: 228, 230, 239;
-}
-
-[data-theme='dark'] {
-  --border-rgb: 30, 41, 59;
-}
-
 /* ── Unified Premium Table ────────────────────────────────────────── */
 .table {
   width: 100%;
@@ -30,36 +16,30 @@
   overflow: hidden;
 
   th {
-    padding: 13px 18px;
+    padding: 14px 16px;
     text-align: left;
-    font-size: 10.5px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 600;
     color: var(--text-mut);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
-    background: var(--bg-2);
-    position: sticky;
-    top: 0;
-    z-index: 2;
+    background: transparent;
   }
 
   td {
-    padding: 14px 18px;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--border);
-    transition: background 0.15s ease, color 0.15s ease;
-    vertical-align: middle;
+    transition: var(--transition-smooth);
   }
 
   tr:last-child td { border-bottom: none; }
 
   tbody tr {
-    transition: background 0.15s ease;
-
+    transition: var(--transition-smooth);
     &:hover {
       background: var(--bg);
-
       td { color: var(--text); }
     }
   }
@@ -70,9 +50,9 @@
     border: none;
     border-radius: 0;
     background: transparent;
-
+    
     thead { display: none; }
-
+    
     tbody {
       display: flex;
       flex-direction: column;
@@ -102,13 +82,12 @@
 
       &::before {
         content: attr(data-label);
-        font-size: 10.5px;
+        font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
         color: var(--text-mut);
-        letter-spacing: 0.06em;
+        letter-spacing: 0.05em;
         text-align: left;
-        flex-shrink: 0;
       }
 
       &:last-child { border-bottom: none; }
@@ -130,7 +109,6 @@ html {
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
-  scroll-padding-top: var(--header-h);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -201,7 +179,7 @@ img, svg, video { display: block; max-width: 100%; }
 ::-webkit-scrollbar            { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track      { background: transparent; }
 ::-webkit-scrollbar-thumb      {
-  background: var(--border-2);
+  background: var(--border);
   border-radius: var(--radius-full);
   &:hover { background: var(--text-mut); }
 }
@@ -212,15 +190,13 @@ img, svg, video { display: block; max-width: 100%; }
 /* ── Focus Ring — Accessibility ───────────────────────────────────── */
 :focus-visible {
   outline: none;
-  box-shadow:
-    0 0 0 2px var(--bg),
-    0 0 0 4px rgba(var(--accent-rgb), 0.35);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px rgba(var(--accent-rgb), 0.3);
   border-radius: inherit;
 }
 
 /* ── Selection ────────────────────────────────────────────────────── */
 ::selection {
-  background: rgba(var(--accent-rgb), 0.18);
+  background: rgba(var(--accent-rgb), 0.2);
   color: var(--text);
 }
 
@@ -267,17 +243,21 @@ img, svg, video { display: block; max-width: 100%; }
 
   h1 {
     font-size: clamp(18px, 2.5vw, 26px);
-    font-weight: 800;
+    font-weight: 700;
     margin: 0 0 4px;
-    letter-spacing: -0.035em;
+    letter-spacing: -0.03em;
     line-height: 1.2;
   }
 
   p {
     margin: 0;
-    font-size: 13.5px;
+    font-size: 13px;
     color: var(--text-sec);
     line-height: 1.5;
+  }
+
+  @media (max-width: 767px) {
+    align-items: flex-start;
   }
 }
 
@@ -326,56 +306,12 @@ img, svg, video { display: block; max-width: 100%; }
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   border-radius: var(--radius-lg);
-
+  
+  /* Fade indicator on right edge when scrollable */
   &::after {
     content: '';
     display: block;
     height: 1px;
-  }
-}
-
-/* ── Button group utility ─────────────────────────────────────────── */
-.btn-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-
-  @media (max-width: 479px) {
-    width: 100%;
-    > * { flex: 1; justify-content: center; }
-  }
-}
-
-/* ── Empty state utility ──────────────────────────────────────────── */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: clamp(40px, 7vw, 72px) 24px;
-  text-align: center;
-  color: var(--text-mut);
-  animation: fadeInUp 0.3s var(--ease-out) both;
-
-  svg {
-    opacity: 0.22;
-    flex-shrink: 0;
-  }
-
-  p {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-sec);
-    margin: 0;
-  }
-
-  span {
-    font-size: 13px;
-    color: var(--text-mut);
-    max-width: 340px;
-    line-height: 1.6;
   }
 }
 
@@ -432,36 +368,12 @@ img, svg, video { display: block; max-width: 100%; }
   to { transform: rotate(360deg); }
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.94);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 /* Skeleton loading */
 .skeleton {
   background: linear-gradient(90deg, var(--border) 25%, var(--bg-3) 50%, var(--border) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: var(--radius-sm);
-  pointer-events: none;
-  user-select: none;
 }
 
 /* ═══════════════════════════════════════════════════════════════════

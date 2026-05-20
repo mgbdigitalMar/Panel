@@ -192,7 +192,10 @@ export default function HorasPage() {
                     <button
                       key={key}
                       className={clsx(styles.modeBtn, {
-                        [styles.modeBtnActive]: mode === key,
+                        [styles.modeBtnYa]: key === 'ya',
+                        [styles.modeBtnYaActive]: key === 'ya' && mode === 'ya',
+                        [styles.modeBtnBolsa]: key === 'bolsa',
+                        [styles.modeBtnBolsaActive]: key === 'bolsa' && mode === 'bolsa',
                         [styles.modeBtnDebe]: key === 'debe',
                         [styles.modeBtnDebeActive]: key === 'debe' && mode === 'debe',
                       })}

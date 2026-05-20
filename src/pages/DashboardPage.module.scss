@@ -6,13 +6,7 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: clamp(18px, 2.5vw, 28px);
-  animation: fadeInUp 0.3s var(--ease-out) both;
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  gap: clamp(16px, 2.5vw, 28px);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -22,7 +16,7 @@
   background: var(--gradient-banner);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  padding: clamp(20px, 3.5vw, 36px) clamp(20px, 4vw, 42px);
+  padding: clamp(20px, 3.5vw, 36px) clamp(20px, 4vw, 40px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -30,49 +24,36 @@
   flex-wrap: wrap;
   position: relative;
   overflow: hidden;
-  box-shadow:
-    var(--shadow-card),
-    0 0 0 1px rgba(var(--accent-rgb), 0.04) inset;
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  box-shadow: var(--shadow-card);
 
-  &:hover {
-    border-color: rgba(var(--accent-rgb), 0.2);
-    box-shadow:
-      var(--shadow-md),
-      0 0 0 1px rgba(var(--accent-rgb), 0.08) inset;
-  }
-
-  /* Primary radial glow */
+  /* Radial glow decoration */
   &::before {
     content: '';
     position: absolute;
     top: -80px;
     right: -60px;
-    width: 320px;
-    height: 320px;
-    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.12) 0%, transparent 70%);
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.10) 0%, transparent 70%);
     pointer-events: none;
-    transition: opacity 0.4s ease;
   }
 
-  /* Secondary glow */
   &::after {
     content: '';
     position: absolute;
-    bottom: -50px;
-    left: 8%;
-    width: 220px;
-    height: 220px;
-    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.06) 0%, transparent 70%);
+    bottom: -40px;
+    left: 10%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.05) 0%, transparent 70%);
     pointer-events: none;
   }
 
   @media (max-width: 767px) {
     flex-direction: column;
     align-items: flex-start;
-    padding: 22px 20px;
+    padding: 20px;
     border-radius: var(--radius-lg);
-    gap: 16px;
   }
 }
 
@@ -82,26 +63,18 @@
   gap: clamp(14px, 2vw, 22px);
   flex: 1;
   min-width: 0;
-  position: relative;
-  z-index: 1;
 }
 
 .welcomeEmoji {
-  font-size: clamp(28px, 4vw, 44px);
+  font-size: clamp(28px, 4vw, 40px);
   line-height: 1;
   flex-shrink: 0;
-  filter: drop-shadow(0 4px 14px rgba(0,0,0,0.12));
-  animation: float 4s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-6px); }
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.12));
 }
 
 .welcomeTitle {
   margin: 0 0 5px;
-  font-size: clamp(18px, 2.8vw, 27px);
+  font-size: clamp(18px, 2.8vw, 26px);
   font-weight: 800;
   color: var(--text);
   letter-spacing: -0.04em;
@@ -125,8 +98,6 @@
   gap: 10px;
   flex-shrink: 0;
   flex-wrap: wrap;
-  position: relative;
-  z-index: 1;
 
   @media (max-width: 767px) {
     width: 100%;
@@ -143,36 +114,24 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: clamp(9px, 1.2vw, 12px) clamp(16px, 2vw, 24px);
+  padding: clamp(9px, 1.2vw, 12px) clamp(16px, 2vw, 22px);
   background: var(--gradient-accent);
   color: #fff;
   border: none;
   border-radius: var(--radius-md);
   font-size: clamp(13px, 1vw, 14px);
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition:
-    box-shadow 0.22s var(--ease-out),
-    transform 0.2s var(--ease-spring);
+  transition: var(--transition-smooth);
   box-shadow: var(--shadow-accent);
   white-space: nowrap;
-  position: relative;
-  overflow: hidden;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 60%);
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
-  }
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 14px 36px -4px rgba(var(--accent-rgb), 0.48);
-    &::after { opacity: 1; }
+    box-shadow: 0 12px 32px -4px rgba(var(--accent-rgb), 0.45);
+    filter: brightness(1.06);
+
+    svg { filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.6)); }
   }
   &:active { transform: scale(0.96); }
 }
@@ -182,7 +141,7 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: clamp(9px, 1.2vw, 12px) clamp(16px, 2vw, 24px);
+  padding: clamp(9px, 1.2vw, 12px) clamp(16px, 2vw, 22px);
   background: var(--card);
   color: var(--text);
   border: 1px solid var(--border);
@@ -190,11 +149,7 @@
   font-size: clamp(13px, 1vw, 14px);
   font-weight: 600;
   cursor: pointer;
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    transform 0.2s var(--ease-spring),
-    box-shadow 0.18s ease;
+  transition: var(--transition-smooth);
   box-shadow: var(--shadow-xs);
   white-space: nowrap;
 
@@ -203,6 +158,8 @@
     border-color: var(--border-2);
     transform: translateY(-2px);
     box-shadow: var(--shadow-sm);
+
+    svg { filter: drop-shadow(0 0 4px rgba(var(--text-rgb, 200, 200, 200), 0.3)); }
   }
   &:active { transform: scale(0.96); }
 }
@@ -215,6 +172,7 @@
   grid-template-columns: repeat(4, 1fr);
   gap: clamp(12px, 2vw, 18px);
 
+  /* xl: stays 4 columns */
   @media (max-width: 1279px) { grid-template-columns: repeat(2, 1fr); }
   @media (max-width: 479px)  { grid-template-columns: 1fr; }
 }
@@ -234,13 +192,12 @@
 .chartCard { overflow: visible !important; }
 
 .chartHeader {
-  padding: clamp(16px, 2.5vw, 24px) clamp(16px, 2.5vw, 28px) clamp(12px, 1.5vw, 16px);
+  padding: clamp(16px, 2.5vw, 24px) clamp(16px, 2.5vw, 28px) 0;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  border-bottom: 1px solid var(--border);
 }
 
 .chartTitle {
@@ -254,7 +211,6 @@
 .chartSub {
   font-size: 12px;
   color: var(--text-mut);
-  font-weight: 500;
 }
 
 .chartLegend {
@@ -328,20 +284,19 @@
 
 /* ── Card inner sections ──────────────────────────────────────────── */
 .cardPad {
-  padding: clamp(18px, 2.5vw, 28px) clamp(18px, 2.5vw, 28px);
+  padding: clamp(16px, 2.5vw, 26px) clamp(16px, 2.5vw, 28px);
 }
 
 .cardHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: clamp(14px, 2vw, 22px);
-  gap: 12px;
+  margin-bottom: clamp(16px, 2vw, 24px);
 }
 
 .sectionTitle {
   margin: 0;
-  font-size: clamp(13.5px, 1.2vw, 16px);
+  font-size: clamp(14px, 1.2vw, 16px);
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.025em;
@@ -354,32 +309,28 @@
   display: flex;
   gap: clamp(10px, 1.5vw, 16px);
   align-items: flex-start;
-  padding: clamp(11px, 1.5vw, 16px) clamp(6px, 1vw, 10px);
+  padding: clamp(10px, 1.5vw, 14px) clamp(6px, 1vw, 10px);
   border-bottom: 1px solid var(--border);
-  transition:
-    background 0.15s ease,
-    transform 0.15s var(--ease-out);
   border-radius: var(--radius-sm);
+  transition: background 0.18s var(--ease-out);
   margin: 0 -6px;
-
-  &:hover {
-    background: var(--bg);
-  }
 
   &:last-child { border-bottom: none; padding-bottom: 0; }
   &:first-child { padding-top: 0; }
+
+  &:hover {
+    background: var(--bg-3);
+  }
 }
 
 .feedIcon {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: var(--shadow-xs);
-  border: 1px solid rgba(0,0,0,0.04);
 }
 
 .feedContent {
@@ -408,7 +359,6 @@
   margin: 0;
   font-size: 11.5px;
   color: var(--text-mut);
-  line-height: 1.4;
 }
 
 .viewAllBtn {
@@ -420,36 +370,29 @@
   cursor: pointer;
   padding: 5px 10px;
   border-radius: var(--radius-sm);
-  transition:
-    background 0.15s ease,
-    transform 0.15s ease;
+  transition: var(--transition-fast);
   display: inline-flex;
   align-items: center;
   gap: 5px;
   white-space: nowrap;
   flex-shrink: 0;
-
-  svg {
-    transition: transform 0.2s var(--ease-spring);
-  }
+  min-height: 36px;
 
   &:hover {
     background: var(--accent-bg);
+    transform: translateX(2px);
 
-    svg { transform: translateX(3px); }
+    svg { filter: drop-shadow(0 0 4px rgba(var(--accent-rgb), 0.45)); }
   }
-
-  &:active { transform: scale(0.96); }
 }
 
 .daysChip {
-  padding: 3px 10px;
+  padding: 4px 10px;
   border-radius: var(--radius-full);
   font-size: 11.5px;
   font-weight: 700;
   white-space: nowrap;
   flex-shrink: 0;
-  border: 1px solid transparent;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -460,6 +403,7 @@
   -webkit-overflow-scrolling: touch;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 
+  /* Fade-right shadow to hint at horizontal scroll */
   &::after {
     content: '';
     position: absolute;
@@ -479,47 +423,44 @@
   width: 100%;
   border-collapse: collapse;
   font-size: clamp(12px, 1vw, 14px);
-  min-width: 560px;
+  min-width: 560px; /* prevents collapsing too small */
 
   th {
-    padding: clamp(11px, 1.5vw, 14px) clamp(14px, 2vw, 20px);
+    padding: clamp(10px, 1.5vw, 14px) clamp(12px, 2vw, 20px);
     text-align: left;
     color: var(--text-mut);
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     white-space: nowrap;
     border-bottom: 1px solid var(--border);
     background: var(--bg-2);
-    position: sticky;
-    top: 0;
 
     &:first-child { border-radius: 0; }
   }
 
   td {
-    padding: clamp(12px, 1.5vw, 16px) clamp(14px, 2vw, 20px);
+    padding: clamp(12px, 1.5vw, 16px) clamp(12px, 2vw, 20px);
     border-bottom: 1px solid var(--border);
     color: var(--text-sec);
     vertical-align: middle;
     white-space: nowrap;
-    transition: background 0.15s ease;
   }
 
   tr:last-child td { border-bottom: none; }
 
   tbody tr {
-    transition: background 0.15s ease;
-    &:hover { background: var(--bg); td { color: var(--text); } }
+    transition: background 0.15s;
+    &:hover { background: var(--bg); }
   }
 
   /* ── Mobile Card Layout ── */
   @media (max-width: 767px) {
     min-width: 100%;
-
+    
     thead { display: none; }
-
+    
     tbody {
       display: flex;
       flex-direction: column;
@@ -549,13 +490,12 @@
 
       &::before {
         content: attr(data-label);
-        font-size: 10.5px;
+        font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
         color: var(--text-mut);
-        letter-spacing: 0.06em;
+        letter-spacing: 0.05em;
         text-align: left;
-        flex-shrink: 0;
       }
 
       &:last-child { border-bottom: none; }
@@ -565,7 +505,7 @@
       background: var(--bg-2);
       border-bottom: 1px solid var(--border);
       padding: 12px 14px;
-      &::before { display: none; }
+      &::before { display: none; } /* Hide label */
     }
   }
 }

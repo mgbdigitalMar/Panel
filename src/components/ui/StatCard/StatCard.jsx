@@ -35,7 +35,7 @@ export function StatCard({ label, value, icon, color, sub, trend, trendUp, class
         {/* Icon with color glow */}
         <div
           className={styles.iconWrapper}
-          style={{ backgroundColor: `${color}18`, color }}
+          style={{ color }}
           aria-hidden="true"
         >
           <IconComponent size={22} strokeWidth={2} />

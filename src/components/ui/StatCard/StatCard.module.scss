@@ -7,28 +7,14 @@
   border-radius: var(--radius-lg) !important;
   cursor: default;
   overflow: hidden !important;
+  will-change: transform;
   transition:
-    box-shadow 0.25s var(--ease-out),
-    transform 0.25s var(--ease-out),
-    border-color 0.25s ease !important;
-
-  /* Subtle top highlight line */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
-    pointer-events: none;
-    z-index: 1;
-  }
+    box-shadow 0.22s var(--ease-out),
+    transform 0.22s var(--ease-out) !important;
 
   &:hover {
-    transform: translateY(-4px) !important;
-    box-shadow: var(--shadow-lg) !important;
-    border-color: var(--border-2) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-md) !important;
   }
 
   &:active {
@@ -45,31 +31,19 @@
 }
 
 .iconWrapper {
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 46px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition:
-    transform 0.25s var(--ease-spring),
-    box-shadow 0.25s ease;
-  position: relative;
-
-  /* Inner glow on wrapper */
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
-    pointer-events: none;
-  }
+  transition: transform 0.22s var(--ease-spring);
 
   .statCard:hover & {
-    transform: scale(1.1) rotate(-4deg);
-    box-shadow: 0 8px 20px -4px currentColor;
+    transform: scale(1.07) rotate(-2deg);
+    
+    svg { filter: drop-shadow(0 0 6px currentColor); }
   }
 }
 
@@ -80,30 +54,27 @@
   gap: 4px;
   font-size: 11px;
   font-weight: 700;
-  padding: 4px 10px;
+  padding: 4px 9px;
   border-radius: var(--radius-full);
   white-space: nowrap;
   flex-shrink: 0;
-  border: 1px solid transparent;
 }
 
 .trendUp {
   background: var(--success-bg);
   color: var(--success);
-  border-color: rgba(var(--success-rgb), 0.2);
 }
 
 .trendDown {
   background: var(--warning-bg);
   color: var(--warning);
-  border-color: rgba(var(--warning-rgb), 0.2);
 }
 
 /* ── Value + labels ───────────────────────────────────────────────── */
 .content {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .value {
@@ -130,21 +101,19 @@
   font-size: 11.5px;
   color: var(--text-mut);
   font-weight: 500;
-  margin-top: 1px;
-  line-height: 1.4;
+  margin-top: 2px;
 }
 
 /* ── Bottom accent bar ────────────────────────────────────────────── */
 .accentBar {
-  height: 4px;
+  height: 3px;
   width: 100%;
   margin-top: auto;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-  opacity: 0.55;
-  transition: opacity 0.25s ease, height 0.25s ease;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
 
   .statCard:hover & {
     opacity: 1;
-    height: 5px;
   }
 }

@@ -4,7 +4,16 @@
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: clamp(11px, 1.1vw, 13px);
+  letter-spacing: -0.02em;
   flex-shrink: 0;
   user-select: none;
+  transition: box-shadow 0.2s var(--ease-out), transform 0.2s var(--ease-out);
+  position: relative;
+
+  &:hover {
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.22);
+    transform: scale(1.05);
+  }
 }

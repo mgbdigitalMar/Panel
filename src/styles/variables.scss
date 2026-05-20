@@ -111,6 +111,14 @@
   --space-16:  64px;
   --space-20:  80px;
 
+  /* ── Transitions ─────────────────────────────────────────────── */
+  --transition-fast:    all 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth:  all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-medium:  all 0.30s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── Border RGB (for rgba() usage in table cells) ────────────── */
+  --border-rgb:         228, 230, 239;
+
   /* ── Z-index Layers ───────────────────────────────────────────── */
   --z-base:     1;
   --z-elevated: 10;
@@ -214,4 +222,7 @@
   --sidebar-rgb:      15, 21, 36;
   --sidebar-opacity:  0.35;
   --header-opacity:   0.55;
+
+  /* ── Border RGB (dark) ────────────────────────────────────────── */
+  --border-rgb:         30, 41, 59;
 }

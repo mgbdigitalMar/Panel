@@ -2,12 +2,6 @@
   display: flex;
   flex-direction: column;
   gap: clamp(14px, 2.5vw, 20px);
-  animation: fadeInUp 0.3s var(--ease-out) both;
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Page Controls ─────────────────────────────────────── */
@@ -43,7 +37,7 @@
 }
 
 .tabBtn {
-  padding: clamp(7px, 1vw, 9px) clamp(12px, 1.5vw, 18px);
+  padding: 8px 16px;
   border: none;
   background: transparent;
   color: var(--text-sec);
@@ -51,12 +45,8 @@
   font-size: 13px;
   cursor: pointer;
   border-radius: 6px;
-  transition:
-    background 0.18s ease,
-    color 0.15s ease,
-    box-shadow 0.18s ease;
+  transition: all 0.18s var(--ease-in-out);
   white-space: nowrap;
-  min-height: 36px;
 
   &:hover {
     color: var(--text);
@@ -67,8 +57,8 @@
 .tabBtnActive {
   background: var(--card);
   color: var(--text);
-  font-weight: 700;
-  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
 /* ── Stats ─────────────────────────────────────────────── */
@@ -91,33 +81,29 @@
   min-width: 540px;
 
   th {
-    padding: 12px 18px;
+    padding: 11px 16px;
     text-align: left;
     color: var(--text-mut);
-    font-size: 10.5px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.06em;
     white-space: nowrap;
     border-bottom: 1px solid var(--border);
     background: var(--bg-2);
-    position: sticky;
-    top: 0;
-    z-index: 2;
   }
 
   td {
-    padding: 14px 18px;
+    padding: 13px 16px;
     border-bottom: 1px solid var(--border);
     color: var(--text-sec);
     vertical-align: middle;
-    transition: background 0.15s ease;
   }
 
   tr:last-child td { border-bottom: none; }
   tbody tr {
     transition: background 0.15s;
-    &:hover { background: var(--bg); td { color: var(--text); } }
+    &:hover { background: var(--bg); }
   }
 
   /* ── Mobile Card Layout ── */
@@ -203,36 +189,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition:
-    background 0.18s var(--ease-out),
-    border-color 0.18s ease,
-    color 0.15s ease,
-    transform 0.15s var(--ease-spring),
-    box-shadow 0.18s ease;
+  transition: all 0.18s var(--ease-in-out);
   background: transparent;
   color: var(--text-mut);
 
   &.approveBtn {
-    &:hover {
-      color: var(--success);
-      background: var(--success-bg);
-      border-color: rgba(var(--success-rgb), 0.25);
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(var(--success-rgb), 0.15);
+    &:hover { 
+      color: var(--success); 
+      background: var(--success-bg); 
+      border-color: rgba(22, 163, 74, 0.2); 
+      
+      svg { filter: drop-shadow(0 0 5px rgba(var(--success-rgb), 0.55)); }
     }
   }
 
   &.rejectBtn {
-    &:hover {
-      color: var(--danger);
-      background: var(--danger-bg);
-      border-color: rgba(var(--danger-rgb), 0.25);
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(var(--danger-rgb), 0.15);
+    &:hover { 
+      color: var(--danger); 
+      background: var(--danger-bg); 
+      border-color: rgba(220, 38, 38, 0.2); 
+      
+      svg { filter: drop-shadow(0 0 5px rgba(var(--danger-rgb), 0.55)); }
     }
   }
-
-  &:active { transform: scale(0.94) !important; }
 }
 
 /* ── Modal ─────────────────────────────────────────────── */
@@ -249,38 +228,26 @@
 
 .typeBtn {
   flex: 1;
-  padding: 13px 12px;
+  padding: 12px;
   border-radius: var(--radius-sm);
-  border: 2px solid var(--border);
-  background: var(--bg);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
   color: var(--text-sec);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  transition:
-    border-color 0.18s ease,
-    background 0.18s ease,
-    color 0.15s ease,
-    box-shadow 0.2s ease,
-    transform 0.18s var(--ease-spring);
-  min-height: 48px;
+  transition: all 0.2s ease;
 
   &:hover {
     border-color: var(--accent);
-    background: var(--accent-bg);
     color: var(--text);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
   }
-
-  &:active { transform: scale(0.97); }
 }
 
 .typeBtnActive {
   background: var(--accent-bg);
   color: var(--accent);
-  border-color: rgba(var(--accent-rgb), 0.4);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
+  border-color: rgba(var(--accent-rgb), 0.3);
 }
 
 .modalGrid {

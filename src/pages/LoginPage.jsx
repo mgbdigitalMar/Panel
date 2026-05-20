@@ -146,7 +146,7 @@ export default function LoginPage() {
           <Card className={styles.loginCard}>
             {/* Email */}
             <Input
-              label="Email corporativo"
+              label="Correo corporativo"
               type="email"
               value={email}
               onChange={setEmail}

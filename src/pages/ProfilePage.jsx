@@ -25,7 +25,7 @@ function isPDF(url) {
 }
 
 export default function ProfilePage() {
-  const { user, setCurrentUser } = useAuth();
+  const { user, setCurrentUser, employees } = useAuth();
   const { documents, updateDocumentStatus } = useData();
 
   // Match by real UUID (production) or show all if none match (dev/mock mode)
@@ -168,9 +168,9 @@ export default function ProfilePage() {
                       </div>
                       {doc.description && <p className={styles.docDesc}>{doc.description}</p>}
                       <div className={styles.docMeta}>
-                        <span>Enviado por <strong>{doc.senderName}</strong></span>
+                        <span>Enviado por <strong>{employees?.find(e => String(e.id) === String(doc.senderId))?.name || doc.senderName || 'Administración'}</strong></span>
                         <span>·</span>
-                        <span>{new Date(doc.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                        <span>el {new Date(doc.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                       </div>
                     </div>
 

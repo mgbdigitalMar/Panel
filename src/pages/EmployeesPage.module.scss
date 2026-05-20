@@ -1,13 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: clamp(18px, 2.5vw, 24px);
-  animation: fadeInUp 0.3s var(--ease-out) both;
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  gap: clamp(16px, 2vw, 24px);
 }
 
 .summaryRow {
@@ -23,31 +17,16 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: clamp(16px, 2vw, 20px) clamp(18px, 2.5vw, 24px);
+  padding: 18px 22px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  transition:
-    box-shadow 0.25s var(--ease-out),
-    transform 0.25s var(--ease-out),
-    border-color 0.2s ease;
-  position: relative;
-  overflow: hidden;
-
-  /* Top highlight */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    pointer-events: none;
-  }
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.22s ease, transform 0.2s ease, border-color 0.22s ease;
 
   &:hover {
-    box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--accent-rgb), 0.07);
-    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
     border-color: var(--border-2);
   }
 }
@@ -96,7 +75,7 @@
 }
 
 .deptTab {
-  padding: 7px 14px;
+  padding: 6px 12px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border);
   background: transparent;
@@ -107,30 +86,19 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    color 0.15s ease,
-    transform 0.15s var(--ease-spring),
-    box-shadow 0.18s ease;
-  min-height: 34px;
+  transition: all 0.15s;
 
   &:hover {
-    background: var(--bg-3);
+    background: var(--bg);
     color: var(--text);
-    border-color: var(--border-2);
-    transform: translateY(-1px);
   }
-
-  &:active { transform: scale(0.96); }
 }
 
 .deptTabActive {
   background: var(--accent-bg) !important;
   color: var(--accent) !important;
-  border-color: rgba(var(--accent-rgb), 0.35) !important;
-  font-weight: 700;
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.08);
+  border-color: rgba(var(--accent-rgb), 0.3) !important;
+  font-weight: 600;
 }
 
 .deptCount {
@@ -173,16 +141,13 @@
 }
 
 .empCard {
-  padding: clamp(18px, 2.5vw, 22px);
-  transition:
-    box-shadow 0.25s var(--ease-out),
-    transform 0.25s var(--ease-spring),
-    border-color 0.22s ease;
+  padding: clamp(16px, 2vw, 22px);
+  transition: box-shadow 0.22s var(--ease-out), transform 0.22s var(--ease-out), border-color 0.22s var(--ease-out);
 
   &:hover {
-    box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--accent-rgb), 0.08);
-    transform: translateY(-4px);
-    border-color: rgba(var(--accent-rgb), 0.25);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+    border-color: var(--border-2);
   }
 }
 
@@ -265,10 +230,11 @@
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-fast);
 
   &:hover {
-    background: var(--bg);
+    background: var(--bg-3);
+    border-color: var(--border-2);
     color: var(--text);
   }
 }

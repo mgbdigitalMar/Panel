@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
-   ADMIN PAGE — Premium Responsive Design
+   ADMIN PAGE — Responsive Improvements
    Appended to existing styles: xs/sm/md/lg/xl breakpoints
 ═══════════════════════════════════════════════════════════════════ */
 
@@ -7,12 +7,6 @@
   display: flex;
   flex-direction: column;
   gap: clamp(16px, 2.5vw, 24px);
-  animation: fadeInUp 0.3s var(--ease-out) both;
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Page Controls ─────────────────────────────────────────── */
@@ -20,7 +14,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: clamp(14px, 2vw, 20px);
+  margin-bottom: clamp(16px, 2vw, 24px);
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -35,7 +29,6 @@
   align-self: flex-start;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  box-shadow: var(--shadow-xs);
 
   @media (max-width: 767px) {
     width: 100%;
@@ -44,7 +37,7 @@
 }
 
 .tabBtn {
-  padding: clamp(7px, 1vw, 9px) clamp(12px, 1.5vw, 18px);
+  padding: clamp(7px, 1vw, 9px) clamp(10px, 1.5vw, 16px);
   border: none;
   background: transparent;
   color: var(--text-sec);
@@ -52,10 +45,7 @@
   font-size: clamp(12px, 1vw, 13.5px);
   cursor: pointer;
   border-radius: 6px;
-  transition:
-    background 0.18s ease,
-    color 0.15s ease,
-    box-shadow 0.18s ease;
+  transition: var(--transition-fast);
   white-space: nowrap;
   min-height: 36px;
 
@@ -73,7 +63,7 @@
 
 .tabBtnActive {
   background: var(--card);
-  color: var(--text);
+  color: var(--accent);
   font-weight: 700;
   box-shadow: var(--shadow-sm);
 }
@@ -92,7 +82,7 @@
 .searchWrapper {
   position: relative;
   flex: 1;
-  max-width: 360px;
+  max-width: 340px;
   min-width: 180px;
 
   @media (max-width: 479px) {
@@ -104,42 +94,39 @@
 
 .searchIcon {
   position: absolute;
-  left: 12px;
+  left: 11px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-mut);
   pointer-events: none;
-  transition: color 0.15s ease;
 }
 
 .searchInput {
   width: 100%;
-  padding: 10px 16px 10px 40px;
+  padding: 10px 14px 10px 38px;
   background: var(--bg-2);
   border: 1px solid var(--input-border);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 13.5px;
   outline: none;
-  transition:
-    border-color 0.18s ease,
-    box-shadow 0.18s ease,
-    background 0.18s ease;
+  transition: var(--transition-fast);
   min-height: 40px;
 
-  &:hover:not(:focus) { background: var(--input-bg-hover); }
+  &::placeholder { color: var(--text-mut); }
+
+  &:hover:not(:focus) {
+    border-color: var(--border-2);
+    background: var(--input-bg-hover);
+  }
 
   &:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.13);
-    background: var(--card);
-
-    /* Also highlight icon */
-    & ~ .searchIcon { color: var(--accent); }
+    box-shadow: var(--accent-glow);
   }
 
   @media (max-width: 479px) {
-    font-size: 16px;
+    font-size: 16px; /* prevents iOS zoom */
   }
 }
 
@@ -153,22 +140,16 @@
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  padding: 5px 13px 5px 11px;
+  padding: 4px 12px 4px 10px;
   font-size: 11px;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition:
-    border-color 0.18s ease,
-    background 0.18s ease,
-    transform 0.15s var(--ease-spring);
-  cursor: default;
+  transition: all 0.18s ease;
 
   &:hover {
-    border-color: rgba(var(--accent-rgb), 0.4);
-    background: var(--accent-bg);
+    border-color: var(--accent);
     color: var(--text);
-    transform: translateY(-1px);
   }
 
   span:first-child {
@@ -180,7 +161,7 @@
     color: var(--text);
     font-weight: 700;
     background: var(--bg-3);
-    padding: 2px 7px;
+    padding: 2px 6px;
     border-radius: var(--radius-full);
     font-size: 10px;
   }
@@ -201,13 +182,13 @@
   min-width: 600px;
 
   th {
-    padding: clamp(11px, 1.5vw, 13px) clamp(14px, 2vw, 24px);
+    padding: clamp(10px, 1.5vw, 12px) clamp(14px, 2vw, 24px);
     text-align: left;
     color: var(--text-mut);
     font-weight: 700;
     font-size: 10.5px;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.06em;
     white-space: nowrap;
     border-bottom: 1px solid var(--border);
     background: var(--bg-2);
@@ -220,16 +201,16 @@
     padding: clamp(12px, 1.5vw, 14px) clamp(14px, 2vw, 24px);
     border-bottom: 1px solid var(--border);
     background: var(--card);
-    transition: background 0.15s ease;
+    transition: background 0.15s;
     vertical-align: middle;
   }
 
   /* ── Mobile Card Layout ── */
   @media (max-width: 767px) {
     min-width: 100%;
-
+    
     thead { display: none; }
-
+    
     tbody {
       display: flex;
       flex-direction: column;
@@ -259,23 +240,23 @@
 
       &::before {
         content: attr(data-label);
-        font-size: 10.5px;
+        font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
         color: var(--text-mut);
-        letter-spacing: 0.06em;
+        letter-spacing: 0.05em;
         text-align: left;
-        flex-shrink: 0;
       }
 
       &:last-child { border-bottom: none; }
     }
 
+    /* Make the first cell (Usuario/Documento/Empleado) look like a card header */
     td:first-child {
       background: var(--bg-2);
       border-bottom: 1px solid var(--border);
       padding: 12px 14px;
-      &::before { display: none; }
+      &::before { display: none; } /* Hide label */
     }
   }
 
@@ -316,13 +297,13 @@
   color: var(--text-sec);
   background: var(--bg-2);
   border: 1px solid var(--border);
-  padding: 3px 9px;
+  padding: 3px 8px;
   border-radius: var(--radius-sm);
 }
 
 .iconBtn {
   background: none;
-  border: 1px solid transparent;
+  border: none;
   color: var(--text-mut);
   cursor: pointer;
   width: 32px;
@@ -331,16 +312,12 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  transition: all 0.18s var(--ease-out);
+  transition: all 0.18s ease;
 
   &:hover {
     color: var(--text);
     background: var(--bg-3);
-    border-color: var(--border);
-    transform: scale(1.06);
   }
-
-  &:active { transform: scale(0.94); }
 }
 
 .actionsCell {
@@ -360,65 +337,59 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition:
-    background 0.18s var(--ease-out),
-    border-color 0.18s ease,
-    color 0.15s ease,
-    transform 0.15s var(--ease-spring),
-    box-shadow 0.18s ease;
+  transition: all 0.18s var(--ease-in-out);
   background: transparent;
   color: var(--text-mut);
 
   &.edit {
-    &:hover {
-      color: var(--text);
-      background: var(--bg-3);
-      border-color: var(--border);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-xs);
+    &:hover { 
+      color: var(--text); 
+      background: var(--bg-3); 
+      border-color: var(--border); 
+      
+      svg { filter: drop-shadow(0 0 4px rgba(var(--text-rgb, 200, 200, 200), 0.35)); }
     }
   }
 
   &.download {
-    &:hover {
-      color: var(--accent);
-      background: var(--accent-bg);
-      border-color: rgba(var(--accent-rgb), 0.3);
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(var(--accent-rgb), 0.15);
+    &:hover { 
+      color: var(--accent); 
+      background: var(--accent-bg); 
+      border-color: var(--border); 
+      
+      svg { filter: drop-shadow(0 0 5px rgba(var(--accent-rgb), 0.55)); }
     }
   }
 
   &.delete {
-    &:hover {
-      color: var(--danger);
-      background: var(--danger-bg);
-      border-color: rgba(var(--danger-rgb), 0.3);
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(var(--danger-rgb), 0.15);
+    &:hover { 
+      color: var(--danger); 
+      background: var(--danger-bg); 
+      border-color: rgba(220, 38, 38, 0.2); 
+      
+      svg { filter: drop-shadow(0 0 5px rgba(var(--danger-rgb), 0.55)); }
     }
   }
 
   &.approveBtn {
-    &:hover {
-      color: var(--success);
-      background: var(--success-bg);
-      border-color: rgba(var(--success-rgb), 0.3);
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(var(--success-rgb), 0.15);
+    &:hover { 
+      color: var(--success); 
+      background: var(--success-bg); 
+      border-color: rgba(22, 163, 74, 0.2); 
+      
+      svg { filter: drop-shadow(0 0 5px rgba(var(--success-rgb), 0.55)); }
     }
   }
 
   &.rejectBtn {
-    &:hover {
-      color: var(--danger);
-      background: var(--danger-bg);
-      border-color: rgba(var(--danger-rgb), 0.3);
-      transform: translateY(-1px);
+    &:hover { 
+      color: var(--danger); 
+      background: var(--danger-bg); 
+      border-color: rgba(220, 38, 38, 0.2); 
+      
+      svg { filter: drop-shadow(0 0 5px rgba(var(--danger-rgb), 0.55)); }
     }
   }
-
-  &:active { transform: scale(0.94) !important; }
 }
 
 /* ── Resource Cards Grid ───────────────────────────────────── */
@@ -429,30 +400,15 @@
 }
 
 .resourceCard {
-  padding: clamp(18px, 2.5vw, 26px);
+  padding: clamp(18px, 2.5vw, 24px);
   position: relative;
   border-radius: var(--radius-lg);
-  transition:
-    box-shadow 0.25s var(--ease-out),
-    border-color 0.25s ease,
-    transform 0.25s var(--ease-spring) !important;
-
-  /* Top highlight */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
-    pointer-events: none;
-    z-index: 1;
-    border-radius: inherit;
-  }
+  transition: box-shadow 0.22s ease, border-color 0.22s ease, transform 0.22s ease !important;
 
   &:hover {
     transform: translateY(-3px);
-    border-color: rgba(var(--accent-rgb), 0.3) !important;
-    box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--accent-rgb), 0.08) !important;
+    border-color: var(--accent) !important;
+    box-shadow: var(--shadow-md) !important;
   }
 }
 
@@ -464,14 +420,12 @@
 }
 
 .resourceIcon {
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 46px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-xs);
-  border: 1px solid rgba(0,0,0,0.04);
 }
 
 .resourceTitle {
@@ -501,17 +455,12 @@
   border-radius: var(--radius-full);
   font-size: 11px;
   font-weight: 600;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease,
-    transform 0.15s var(--ease-spring);
+  transition: all 0.15s;
 
   &:hover {
     background: var(--accent-bg);
     border-color: rgba(var(--accent-rgb), 0.3);
     color: var(--accent);
-    transform: translateY(-1px);
   }
 }
 
@@ -534,8 +483,7 @@
 
 .warningBox {
   background: var(--warning-bg);
-  border: 1px solid rgba(var(--warning-rgb), 0.22);
-  border-left: 3px solid var(--warning);
+  border: 1px solid rgba(var(--warning-rgb), 0.2);
   border-radius: var(--radius-sm);
   padding: 12px 16px;
   margin: 20px 0 14px;
@@ -543,15 +491,14 @@
   font-size: 13px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  line-height: 1.5;
+  gap: 8px;
 }
 
 .modalActions {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  margin-top: 24px;
+  margin-top: 20px;
   padding-top: 18px;
   border-top: 1px solid var(--border);
   flex-wrap: wrap;
@@ -570,55 +517,32 @@
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.04em;
-  padding: 3px 10px;
+  padding: 3px 9px;
   border-radius: var(--radius-full);
   text-transform: uppercase;
   white-space: nowrap;
-  border: 1px solid transparent;
 }
 
-.docStatusPending   {
-  background: var(--warning-bg);
-  color: var(--warning);
-  border-color: rgba(var(--warning-rgb), 0.2);
-}
-.docStatusSigned    {
-  background: var(--accent-bg);
-  color: var(--accent);
-  border-color: rgba(var(--accent-rgb), 0.2);
-}
-.docStatusCompleted {
-  background: var(--success-bg);
-  color: var(--success);
-  border-color: rgba(var(--success-rgb), 0.2);
-}
+.docStatusPending   { background: var(--warning-bg);  color: var(--warning); }
+.docStatusSigned    { background: var(--accent-bg);   color: var(--accent);  }
+.docStatusCompleted { background: var(--success-bg);  color: var(--success); }
 
 /* ── File Upload Zone ───────────────────────────────────────── */
 .fileZone {
   border: 2px dashed var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius);
   background: var(--bg);
   cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    transform 0.2s var(--ease-spring),
-    box-shadow 0.2s ease;
+  transition: all 0.2s ease;
   overflow: hidden;
 
-  &:hover {
-    border-color: var(--accent);
-    background: var(--accent-bg);
-    transform: scale(1.005);
-    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.08);
-  }
+  &:hover { border-color: var(--accent); background: var(--accent-bg); }
 }
 
 .fileZoneDrag {
   border-color: var(--accent);
   background: var(--accent-bg);
-  transform: scale(1.02);
-  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.12);
+  transform: scale(1.01);
 }
 
 .fileZoneHasFile {
@@ -632,16 +556,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: clamp(24px, 4vw, 40px) 20px;
+  padding: clamp(24px, 4vw, 36px) 20px;
   text-align: center;
-  gap: 10px;
 }
 
 .filePreview {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 18px;
+  padding: 14px 16px;
 }
 
 .fileName {
@@ -662,9 +585,9 @@
 
 .fileRemove {
   flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radius-sm);
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text-sec);
@@ -672,15 +595,8 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.18s var(--ease-out);
+  transition: all 0.15s;
   margin-left: auto;
 
-  &:hover {
-    background: var(--danger-bg);
-    border-color: rgba(var(--danger-rgb), 0.3);
-    color: var(--danger);
-    transform: scale(1.08);
-  }
-
-  &:active { transform: scale(0.94); }
+  &:hover { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
 }
