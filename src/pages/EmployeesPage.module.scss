@@ -19,21 +19,22 @@
   gap: 16px;
   padding: 18px 22px;
   background: var(--glass-card);
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm), var(--glass-highlight-sm);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card), var(--glass-highlight);
   transition:
-    box-shadow 0.22s var(--ease-out),
-    transform 0.22s var(--ease-out),
-    background 0.22s var(--ease-out),
-    border-color 0.22s var(--ease-out);
+    box-shadow 0.24s var(--ease-cinematic),
+    transform 0.24s var(--ease-cinematic),
+    background 0.24s var(--ease-cinematic),
+    border-color 0.24s var(--ease-cinematic);
 
   &:hover {
-    box-shadow: var(--shadow-md), var(--glass-highlight);
-    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg), var(--glass-highlight);
+    transform: translateY(-4px);
     background: var(--glass-card-hover);
+    border-color: rgba(255,255,255,0.50);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -60,12 +61,13 @@
 
 .summaryCount {
   margin: 0;
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 800;
   color: var(--text);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.05em;
   line-height: 1;
   font-family: var(--font-heading);
+  font-variant-numeric: tabular-nums;
 }
 
 .summaryLabel {
@@ -121,9 +123,9 @@
 .deptTabActive {
   background: var(--accent-bg) !important;
   color: var(--accent) !important;
-  border-color: rgba(var(--accent-rgb), 0.3) !important;
-  font-weight: 600;
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.08);
+  border-color: rgba(var(--accent-rgb), 0.32) !important;
+  font-weight: 700;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.10), var(--glass-highlight-sm);
 }
 
 .deptCount {
@@ -166,18 +168,18 @@
 }
 
 .empCard {
-  padding: clamp(16px, 2vw, 22px);
+  padding: clamp(18px, 2.2vw, 24px);
   transition:
-    box-shadow 0.22s var(--ease-out),
-    transform 0.22s var(--ease-out),
-    background 0.22s var(--ease-out),
-    border-color 0.22s var(--ease-out);
+    box-shadow 0.24s var(--ease-cinematic),
+    transform 0.24s var(--ease-cinematic),
+    background 0.24s var(--ease-cinematic),
+    border-color 0.24s var(--ease-cinematic);
 
   &:hover {
-    box-shadow: var(--shadow-md), var(--glass-highlight);
-    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg), var(--glass-highlight);
+    transform: translateY(-4px);
     background: var(--glass-card-hover) !important;
-    border-color: rgba(255, 255, 255, 0.45) !important;
+    border-color: rgba(255, 255, 255, 0.52) !important;
   }
 }
 
@@ -207,7 +209,7 @@
   font-size: 15px;
   font-weight: 700;
   color: var(--text);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   font-family: var(--font-heading);
 }
 

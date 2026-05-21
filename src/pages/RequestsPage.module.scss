@@ -64,10 +64,10 @@
 
 .tabBtnActive {
   background: var(--glass-card);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 700;
   box-shadow: var(--shadow-sm), var(--glass-highlight-sm);
 
   @media (prefers-reduced-motion: reduce) {
@@ -287,10 +287,10 @@
 }
 
 .typeBtnActive {
-  background: var(--accent-bg);
+  background: var(--accent-bg-2);
   color: var(--accent);
-  border-color: rgba(var(--accent-rgb), 0.3);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.08);
+  border-color: rgba(var(--accent-rgb), 0.32);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.10), var(--glass-highlight-sm);
   transform: translateY(-1px);
 }
 

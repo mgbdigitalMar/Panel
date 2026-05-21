@@ -1,29 +1,45 @@
-/* ── StatCard — Premium KPI card ──────────────────────────────────── */
+/* ── StatCard — Premium KPI card v2 ──────────────────────────────── */
 .statCard {
-  padding: clamp(18px, 2.5vw, 24px);
+  padding: clamp(20px, 2.8vw, 28px);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  border-radius: var(--radius-lg) !important;
+  gap: 18px;
+  border-radius: var(--radius-xl) !important;
   cursor: default;
   overflow: hidden !important;
   will-change: transform;
+  position: relative;
   transition:
-    box-shadow 0.22s var(--ease-out),
-    transform 0.22s var(--ease-out),
-    border-color 0.22s var(--ease-out),
-    background 0.22s var(--ease-out) !important;
+    box-shadow 0.24s var(--ease-cinematic),
+    transform 0.24s var(--ease-cinematic),
+    border-color 0.24s var(--ease-cinematic),
+    background 0.24s var(--ease-cinematic) !important;
+
+  /* Subtle ambient fill orb */
+  &::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -20%;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--card-color, rgba(var(--accent-rgb), 0.08)) 0%, transparent 70%);
+    pointer-events: none;
+    transition: opacity 0.24s ease;
+    opacity: 0.7;
+  }
 
   &:hover {
-    transform: translateY(-3px) !important;
-    box-shadow: var(--shadow-md), var(--glass-highlight) !important;
-    border-color: rgba(255, 255, 255, 0.48) !important;
+    transform: translateY(-4px) !important;
+    box-shadow: var(--shadow-lg), var(--glass-highlight) !important;
+    border-color: rgba(255, 255, 255, 0.52) !important;
     background: var(--glass-card-hover) !important;
+
+    &::after { opacity: 1.2; }
   }
 
-  &:active {
-    transform: translateY(-1px) !important;
-  }
+  &:active { transform: translateY(-2px) !important; }
 }
 
 /* ── Top row: icon + trend ────────────────────────────────────────── */
@@ -32,26 +48,25 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+  position: relative;
+  z-index: 1;
 }
 
 .iconWrapper {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   transition:
-    transform 0.28s var(--ease-spring),
-    box-shadow 0.22s var(--ease-out);
+    transform 0.30s var(--ease-spring),
+    box-shadow 0.24s var(--ease-out);
 
   .statCard:hover & {
-    transform: scale(1.1) rotate(-3deg);
-
-    svg {
-      filter: drop-shadow(0 0 8px currentColor);
-    }
+    transform: scale(1.12) rotate(-4deg);
+    svg { filter: drop-shadow(0 0 10px currentColor); }
   }
 }
 
@@ -60,39 +75,42 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
-  padding: 4px 9px;
+  padding: 4px 10px;
   border-radius: var(--radius-full);
   white-space: nowrap;
   flex-shrink: 0;
+  letter-spacing: 0.01em;
 }
 
 .trendUp {
   background: var(--success-bg);
   color: var(--success);
-  border: 1px solid rgba(var(--success-rgb), 0.15);
+  border: 1px solid rgba(var(--success-rgb), 0.18);
 }
 
 .trendDown {
   background: var(--warning-bg);
   color: var(--warning);
-  border: 1px solid rgba(var(--warning-rgb), 0.15);
+  border: 1px solid rgba(var(--warning-rgb), 0.18);
 }
 
 /* ── Value + labels ───────────────────────────────────────────────── */
 .content {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
+  position: relative;
+  z-index: 1;
 }
 
 .value {
   margin: 0;
-  font-size: clamp(26px, 3.5vw, 36px);
+  font-size: clamp(28px, 4vw, 40px);
   font-weight: 800;
   color: var(--text);
-  letter-spacing: -0.05em;
+  letter-spacing: -0.055em;
   line-height: 1;
   font-family: var(--font-heading);
   font-variant-numeric: tabular-nums;
@@ -103,31 +121,35 @@
   font-size: clamp(12px, 1vw, 13.5px);
   font-weight: 600;
   color: var(--text);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 
 .sub {
   margin: 0;
   font-size: 11.5px;
   color: var(--text-mut);
-  font-weight: 500;
-  margin-top: 2px;
+  font-weight: 400;
+  margin-top: 1px;
 }
 
-/* ── Bottom accent bar — gradient, full-width expand on hover ─────── */
+/* ── Bottom accent bar ────────────────────────────────────────────── */
 .accentBar {
   height: 3px;
   width: 100%;
   margin-top: auto;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-  opacity: 0.75;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  opacity: 0.60;
   transition:
-    opacity 0.22s var(--ease-out),
-    height 0.22s var(--ease-out);
-  background: var(--gradient-accent); /* override per-card via inline style */
+    opacity 0.24s var(--ease-out),
+    height 0.24s var(--ease-out),
+    box-shadow 0.24s var(--ease-out);
+  background: var(--gradient-accent);
+  position: relative;
+  z-index: 1;
 
   .statCard:hover & {
     opacity: 1;
     height: 4px;
+    box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.50);
   }
 }

@@ -43,11 +43,12 @@
 
 .tabBtnActive {
   background: var(--glass-card);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: var(--accent);
   font-weight: 700;
   box-shadow: var(--shadow-sm), var(--glass-highlight-sm);
+  border-radius: 6px;
 
   @media (prefers-reduced-motion: reduce) {
     backdrop-filter: none;
@@ -74,13 +75,13 @@
 
 .newsCard {
   position: relative;
-  padding: clamp(18px, 2.5vw, 28px);
+  padding: clamp(20px, 2.8vw, 30px);
   overflow: hidden;
   transition:
-    box-shadow 0.22s var(--ease-out),
-    border-color 0.22s var(--ease-out),
-    background 0.22s var(--ease-out),
-    transform 0.22s var(--ease-out);
+    box-shadow 0.24s var(--ease-cinematic),
+    border-color 0.24s var(--ease-cinematic),
+    background 0.24s var(--ease-cinematic),
+    transform 0.24s var(--ease-cinematic);
 
   /* Shimmer overlay on hover */
   &::after {
@@ -89,24 +90,24 @@
     inset: 0;
     background: var(--glass-shimmer);
     opacity: 0;
-    transition: opacity 0.25s var(--ease-out);
+    transition: opacity 0.28s var(--ease-out);
     pointer-events: none;
     border-radius: inherit;
   }
 
   &:hover {
-    box-shadow: var(--shadow-md), var(--glass-highlight);
-    border-color: rgba(255, 255, 255, 0.45);
+    box-shadow: var(--shadow-lg), var(--glass-highlight);
+    border-color: rgba(255, 255, 255, 0.50);
     background: var(--glass-card-hover);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
 
     &::after { opacity: 1; }
   }
 }
 
 .newsCardPinned {
-  border-color: rgba(var(--accent-rgb), 0.35) !important;
-  
+  border-color: rgba(var(--accent-rgb), 0.32) !important;
+
   &::before {
     content: '';
     position: absolute;
@@ -116,6 +117,7 @@
     height: 3px;
     background: var(--gradient-accent);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.40);
   }
 }
 

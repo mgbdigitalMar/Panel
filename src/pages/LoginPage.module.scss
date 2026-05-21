@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════
-   LOGIN PAGE — Premium Split Layout
-   Desktop: Branding panel (left) + Form panel (right)
-   Mobile: Single column, centered form
+   LOGIN PAGE — Cinematic Premium Split Layout v2
+   Left: Immersive brand panel with animated orbs
+   Right: Glassmorphic floating form card
 ═══════════════════════════════════════════════════════════════════ */
 
 /* ── Full-screen container ────────────────────────────────────────── */
@@ -20,7 +20,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   LEFT PANEL — Branding
+   LEFT PANEL — Cinematic brand immersion
 ═══════════════════════════════════════════════════════════════════ */
 .brandPanel {
   flex: 1;
@@ -32,34 +32,61 @@
   position: relative;
   overflow: hidden;
 
-  /* Decorative circles */
+  /* Primary orb */
   &::before {
     content: '';
     position: absolute;
-    top: -100px;
-    right: -80px;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+    top: -120px;
+    right: -100px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(76, 117, 255, 0.25) 0%, transparent 65%);
     border-radius: 50%;
     pointer-events: none;
+    animation: float-slow 14s ease-in-out infinite;
   }
 
+  /* Secondary orb */
   &::after {
     content: '';
     position: absolute;
-    bottom: -80px;
-    left: -60px;
-    width: 350px;
-    height: 350px;
-    background: radial-gradient(circle, rgba(34,81,255,0.3) 0%, transparent 70%);
+    bottom: -100px;
+    left: -80px;
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle, rgba(34, 81, 255, 0.35) 0%, transparent 65%);
     border-radius: 50%;
     pointer-events: none;
+    animation: float-slow 18s ease-in-out 5s infinite reverse;
   }
 
-  @media (max-width: 767px) {
-    display: none;
-  }
+  @media (max-width: 767px) { display: none; }
+}
+
+/* Extra animated orb mid-panel */
+.brandOrb {
+  position: absolute;
+  top: 48%;
+  left: 30%;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(139, 120, 255, 0.18) 0%, transparent 65%);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: float 10s ease-in-out 2s infinite;
+  transform: translate(-50%, -50%);
+}
+
+/* Fine grid texture overlay */
+.brandGrid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .brandTop {
@@ -72,7 +99,7 @@
     height: 36px;
     width: auto;
     object-fit: contain;
-    filter: brightness(0) invert(1); /* Force white logo */
+    filter: brightness(0) invert(1);
     opacity: 0.95;
   }
 }
@@ -83,19 +110,27 @@
 }
 
 .brandHeadline {
-  font-size: clamp(28px, 3.5vw, 42px);
+  font-size: clamp(28px, 3.5vw, 44px);
   font-weight: 800;
   color: #ffffff;
-  letter-spacing: -0.05em;
-  line-height: 1.15;
-  margin: 0 0 16px;
+  letter-spacing: -0.055em;
+  line-height: 1.12;
+  margin: 0 0 18px;
   text-wrap: balance;
+
+  /* Subtle aurora shimmer on headline */
+  span {
+    background: linear-gradient(135deg, #fff 0%, rgba(180,200,255,0.9) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
 
 .brandDesc {
   font-size: clamp(14px, 1.2vw, 16px);
-  color: rgba(255, 255, 255, 0.65);
-  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.60);
+  line-height: 1.75;
   margin: 0;
   max-width: 400px;
 }
@@ -103,59 +138,60 @@
 .brandFeatures {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 32px;
+  gap: 14px;
+  margin-top: 36px;
 }
 
 .brandFeature {
   display: flex;
   align-items: center;
-  gap: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  gap: 14px;
+  color: rgba(255, 255, 255, 0.80);
   font-size: 14px;
   font-weight: 500;
+  line-height: 1.4;
 }
 
+/* Glowing accent dot */
 .brandFeatureDot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(130, 170, 255, 0.80);
   flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(130, 170, 255, 0.60);
 }
 
 .brandBottom {
   position: relative;
   z-index: 1;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.28);
   font-size: 12px;
+  letter-spacing: 0.01em;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   RIGHT PANEL — Form (Glassmorphic)
+   RIGHT PANEL — Glassmorphic floating form
 ═══════════════════════════════════════════════════════════════════ */
 .formPanel {
-  width: clamp(340px, 42%, 520px);
+  width: clamp(360px, 44%, 540px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: clamp(24px, 5vw, 64px) clamp(24px, 5vw, 56px);
-  
-  /* Stronger glass for form panel — reads over hero background */
+  padding: clamp(24px, 5vw, 64px) clamp(28px, 5vw, 60px);
   background: var(--glass-card);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border-left: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(48px) saturate(200%);
+  -webkit-backdrop-filter: blur(48px) saturate(200%);
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
-    -4px 0 40px rgba(0, 0, 0, 0.08),
+    -8px 0 60px rgba(0, 0, 0, 0.12),
     var(--glass-highlight);
-
   overflow-y: auto;
 
   @media (max-width: 767px) {
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     border-left: none;
     background: transparent;
     backdrop-filter: none;
@@ -173,13 +209,13 @@
 
 .wrapper {
   width: 100%;
-  max-width: 380px;
+  max-width: 390px;
 }
 
-/* ── Mobile logo (hidden on desktop) ─────────────────────────────── */
+/* ── Mobile logo ─────────────────────────────────────────────────── */
 .logoContainer {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 36px;
   display: none;
 
   @media (max-width: 767px) { display: block; }
@@ -197,31 +233,40 @@
   color: var(--text-mut);
   margin: 0;
   font-size: 13px;
+  letter-spacing: 0.01em;
 }
 
 /* ── Form heading ─────────────────────────────────────────────────── */
 .formHeading {
   margin: 0 0 6px;
-  font-size: clamp(22px, 2.5vw, 28px);
+  font-size: clamp(24px, 2.5vw, 30px);
   font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.045em;
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  [data-theme='dark'] & {
+    background: linear-gradient(135deg, #F0F4FF 0%, #8AA8FF 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
 }
 
 .formSubtext {
   color: var(--text-mut);
-  margin: 0 0 28px;
-  font-size: 14px;
-  line-height: 1.5;
+  margin: 0 0 30px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  font-weight: 400;
 }
 
-/* ── Login card (mobile only frame) ─────────────────────────────── */
+/* ── Login card ─────────────────────────────────────────────────── */
 .loginCard {
-  padding: clamp(20px, 4vw, 28px);
+  padding: clamp(24px, 4vw, 32px);
   border-radius: var(--radius-xl) !important;
-  box-shadow: var(--shadow-lg) !important;
-  
-  /* Glass on mobile */
+  box-shadow: var(--shadow-lg), var(--glass-highlight) !important;
   background: var(--glass-bg) !important;
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -260,7 +305,6 @@
   padding: 4px;
   border-radius: var(--radius-sm);
   transition: color 0.15s;
-  /* Touch target */
   min-width: 44px;
   min-height: 44px;
   align-items: center;
@@ -272,9 +316,10 @@
 /* ── Error box ────────────────────────────────────────────────────── */
 .errorBox {
   background: var(--danger-bg);
-  border: 1px solid rgba(var(--danger-rgb), 0.3);
+  border: 1px solid rgba(var(--danger-rgb), 0.28);
+  border-left: 3px solid var(--danger);
   border-radius: var(--radius);
-  padding: 10px 14px;
+  padding: 11px 14px;
   margin-bottom: 14px;
   color: var(--danger);
   font-size: 13px;
@@ -295,21 +340,32 @@
   text-align: center;
   color: var(--text-mut);
   font-size: 12.5px;
-  margin-top: 20px;
+  margin-top: 22px;
   margin-bottom: 0;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
-/* ── Demo section ─────────────────────────────────────────────────── */
+/* ── Float animations ─────────────────────────────────────────────── */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50%       { transform: translateY(-20px) scale(1.04); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50%       { transform: translate(-50%, -50%) translateY(-14px); }
+}
+
+/* Demo section */
 .demoCard {
   margin-top: 16px;
   padding: 14px;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(var(--border-rgb), 0.50);
+  border: 1px solid rgba(var(--border-rgb), 0.45);
   background: var(--glass-surface);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  box-shadow: var(--shadow-sm), var(--glass-highlight-sm);
+  box-shadow: var(--shadow-xs), var(--glass-highlight-sm);
 
   @media (prefers-reduced-motion: reduce) {
     backdrop-filter: none;
@@ -320,11 +376,11 @@
 
 .demoTitle {
   margin: 0 0 10px;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--text-mut);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
 }
 
 .demoList {
@@ -350,10 +406,9 @@
 
   &:hover {
     background: rgba(var(--bg-rgb), 0.55);
-    border-color: rgba(var(--border-rgb), 0.45);
+    border-color: rgba(var(--border-rgb), 0.40);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    box-shadow: var(--glass-highlight-sm);
   }
 }
 

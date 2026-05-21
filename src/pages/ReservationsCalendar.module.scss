@@ -16,8 +16,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg);
+  border-bottom: 1px solid rgba(var(--border-rgb), 0.35);
+  background: rgba(var(--bg-rgb), 0.55);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
   flex-wrap: wrap;
   gap: 12px;
 
@@ -50,9 +52,10 @@
 }
 
 .viewBtnActive {
-  background: var(--accent) !important;
+  background: var(--gradient-accent) !important;
   color: #fff !important;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 2px 12px rgba(var(--accent-rgb), 0.35);
 }
 
 .navRow {
@@ -94,11 +97,11 @@
 
 .periodLabel {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text);
   min-width: 140px;
   text-align: center;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.025em;
 
   @media (max-width: 768px) {
     min-width: auto;
