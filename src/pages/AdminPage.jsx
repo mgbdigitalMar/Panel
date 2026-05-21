@@ -174,23 +174,20 @@ export default function AdminPage() {
   const handleSendDoc = async () => {
     if (!docForm.title || !docForm.recipientId) return;
 
-    // Validate file size (max 10 MB for base64 fallback)
-    if (docFile && docFile.size > 10 * 1024 * 1024) {
-      setDocUploadStatus('⚠️ El archivo es demasiado grande (máx. 10 MB). Configura Supabase Storage para archivos más grandes.');
-      return;
-    }
+    // No file size limit checked in frontend anymore
 
     setDocSending(true);
     setDocUploadStatus(docFile ? '⏳ Subiendo archivo...' : '');
 
     let fileUrl = null;
     if (docFile) {
-      fileUrl = await uploadDocumentFile(docFile);
-      if (!fileUrl) {
-        setDocUploadStatus('❌ Error al subir el archivo. Inténtalo de nuevo.');
+      const uploadRes = await uploadDocumentFile(docFile);
+      if (uploadRes.error || !uploadRes.url) {
+        setDocUploadStatus(uploadRes.error ? `❌ ${uploadRes.error}` : '❌ Error al subir el archivo. Inténtalo de nuevo.');
         setDocSending(false);
         return;
       }
+      fileUrl = uploadRes.url;
       setDocUploadStatus('✅ Archivo subido correctamente');
     }
 
@@ -203,7 +200,9 @@ export default function AdminPage() {
     });
 
     setDocSending(false);
-    if (result) {
+    if (result && result.error) {
+      setDocUploadStatus(`❌ Error en base de datos: ${result.error.message || 'Error desconocido'}`);
+    } else if (result && result.data) {
       setShowDocModal(false);
       setDocForm({ title: '', description: '', recipientId: '' });
       setDocFile(null);
@@ -919,7 +918,7 @@ export default function AdminPage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.zip"
+                accept="*/*"
                 style={{ display: 'none' }}
                 onChange={e => { if (e.target.files[0]) setDocFile(e.target.files[0]); }}
               />
@@ -943,7 +942,7 @@ export default function AdminPage() {
                   <Upload size={28} style={{ color: 'var(--text-mut)', marginBottom: 8 }} />
                   <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: 'var(--text-sec)' }}>Arrastra un archivo aquí</p>
                   <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-mut)' }}>o haz clic para seleccionar</p>
-                  <p style={{ margin: '6px 0 0', fontSize: 11, color: 'var(--text-mut)' }}>PDF, Word, Excel, imágenes, ZIP &bull; Máx 50 MB</p>
+                  <p style={{ margin: '6px 0 0', fontSize: 11, color: 'var(--text-mut)' }}>Cualquier formato de archivo permitido &bull; Sin límite de tamaño</p>
                 </div>
               )}
             </div>

@@ -14,14 +14,18 @@ const WORK_MODES = {
 };
 const DEFAULT_WORK_MODE = 'Office';
 
-// Detect if a URL is a PDF — handles both storage URLs and base64 data URLs
-function isPDF(url) {
-  if (!url) return false;
-  // Base64 data URL: data:application/pdf;base64,...
-  if (url.startsWith('data:application/pdf')) return true;
-  // Storage URL: ends with .pdf (ignore query params)
+// Check if file is viewable and return its viewer URL
+function getViewerUrl(url) {
+  if (!url) return null;
+  if (url.startsWith('data:')) return url; // Base64 data URL
   const clean = url.split('?')[0].toLowerCase();
-  return clean.endsWith('.pdf');
+  if (clean.match(/\.(pdf|png|jpe?g|gif|webp|svg)$/i)) {
+    return url + '#toolbar=1&navpanes=0';
+  }
+  if (clean.match(/\.(doc|docx|xls|xlsx|ppt|pptx)$/i)) {
+    return `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+  }
+  return null;
 }
 
 export default function ProfilePage() {
@@ -177,8 +181,8 @@ export default function ProfilePage() {
                     <div className={styles.docActions}>
                       {/* View file button */}
                       {hasFile && (
-                        isPDF(doc.fileUrl) ? (
-                          <button className={clsx(styles.docBtn, styles.docBtnView)} onClick={() => setViewerDoc(doc)} title="Ver PDF">
+                        getViewerUrl(doc.fileUrl) ? (
+                          <button className={clsx(styles.docBtn, styles.docBtnView)} onClick={() => setViewerDoc({ ...doc, viewerUrl: getViewerUrl(doc.fileUrl) })} title="Ver documento">
                             <Eye size={14} /><span>Ver</span>
                           </button>
                         ) : (
@@ -245,7 +249,7 @@ export default function ProfilePage() {
               </div>
             </div>
             <iframe
-              src={viewerDoc.fileUrl + '#toolbar=1&navpanes=0'}
+              src={viewerDoc.viewerUrl || viewerDoc.fileUrl}
               className={styles.viewerFrame}
               title={viewerDoc.title}
             />

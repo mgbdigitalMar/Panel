@@ -567,7 +567,12 @@ const [readIds, setReadIds] = useState(() => {
       recipient_id: recipientId,
       status: 'pending',
     }]).select().single()
-    if (error) { console.error('sendDocument:', error); return null }
+    
+    if (error) { 
+      console.error('sendDocument error:', error); 
+      return { error } 
+    }
+    
     await fetchDocuments()
 
     if (recipientId) {
@@ -579,12 +584,12 @@ const [readIds, setReadIds] = useState(() => {
         entityType: 'document', entityId: data?.id
       })
     }
-    return data
+    return { data }
   }
 
   // Upload a File object → first tries Supabase Storage, falls back to base64 data URL
   const uploadDocumentFile = async (file) => {
-    if (!file) return null
+    if (!file) return { url: null }
 
     // ── Strategy 1: Supabase Storage ──────────────────────────
     try {
@@ -593,20 +598,30 @@ const [readIds, setReadIds] = useState(() => {
       const { error: upErr } = await supabase.storage
         .from('documents')
         .upload(path, file, { cacheControl: '3600', upsert: false })
+        
       if (!upErr) {
         const { data: { publicUrl } } = supabase.storage.from('documents').getPublicUrl(path)
-        return publicUrl
+        return { url: publicUrl }
       }
-      console.warn('Supabase Storage no disponible, usando base64:', upErr.message)
+      
+      console.warn('Supabase Storage no disponible:', upErr.message)
+      
+      // If the file is > 2MB, don't fallback to base64, it will crash the DB insert
+      if (file.size > 2 * 1024 * 1024) {
+        return { error: `Error en Storage: ${upErr.message}. Crea el bucket 'documents' como público en Supabase.` }
+      }
     } catch (e) {
-      console.warn('Storage error, usando base64:', e)
+      console.warn('Storage error:', e)
+      if (file.size > 2 * 1024 * 1024) {
+        return { error: 'Error en Storage. Crea el bucket "documents" en Supabase.' }
+      }
     }
 
     // ── Strategy 2: Base64 data URL (works without bucket) ────
     return new Promise((resolve) => {
       const reader = new FileReader()
-      reader.onload = (e) => resolve(e.target.result) // data:application/pdf;base64,...
-      reader.onerror = () => resolve(null)
+      reader.onload = (e) => resolve({ url: e.target.result }) // data:application/pdf;base64,...
+      reader.onerror = () => resolve({ error: 'Error leyendo archivo localmente' })
       reader.readAsDataURL(file)
     })
   }
