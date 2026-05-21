@@ -113,12 +113,34 @@
   color: var(--accent);
   font-weight: 700;
   box-shadow: var(--shadow-sm), var(--glass-highlight-sm);
+  position: relative;
+
+  /* Animated underline indicator */
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 2px;
+    background: var(--gradient-accent);
+    border-radius: var(--radius-full);
+    box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.55);
+    animation: tab-indicator 0.22s var(--ease-cinematic) both;
+  }
 
   @media (prefers-reduced-motion: reduce) {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     background: var(--card);
+    &::after { animation: none; }
   }
+}
+
+@keyframes tab-indicator {
+  from { width: 0%; opacity: 0; }
+  to   { width: 60%; opacity: 1; }
 }
 
 /* ── Form Card ───────────────────────────────────────────────── */
@@ -285,12 +307,35 @@
   transition:
     transform 0.24s var(--ease-cinematic),
     box-shadow 0.24s var(--ease-cinematic),
-    background 0.24s var(--ease-cinematic);
+    background 0.24s var(--ease-cinematic),
+    border-color 0.24s var(--ease-cinematic);
+  position: relative;
+  overflow: hidden;
+
+  /* Shimmer sweep */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(255, 255, 255, 0.055) 50%,
+      transparent 60%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    background-position: -100% 0;
+    pointer-events: none;
+    transition: background-position 0.55s var(--ease-cinematic);
+  }
 
   &:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-md), var(--glass-highlight);
     background: var(--glass-card-hover);
+    &::after { background-position: 200% 0; }
   }
 
   svg { flex-shrink: 0; }
@@ -300,6 +345,7 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     background: var(--card);
+    &::after { display: none; }
   }
 }
 

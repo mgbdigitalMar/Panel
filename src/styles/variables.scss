@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 /* ═══════════════════════════════════════════════════════════════════
    DESIGN TOKENS — Margube Brand System v2
@@ -97,9 +97,12 @@
   --radius-full: 9999px;
 
   /* ── Typography — Brand Font System ──────────────────────────── */
-  --font-body:    'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-heading: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono:    'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+
+  /* ── Font feature settings ────────────────────────────────────── */
+  --font-features: 'cv02', 'cv03', 'cv04', 'cv11';
 
   /* ── Timing Functions ─────────────────────────────────────────── */
   --ease-spring:    cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -161,10 +164,18 @@
 
   /* ── Layout ───────────────────────────────────────────────────── */
   --sidebar-w:           270px;
-  --sidebar-w-collapsed: 72px;
+  --sidebar-w-collapsed: 68px;
   --header-h:            64px;
   --header-h-mobile:     56px;
   --content-max-w:       1600px;
+
+  /* ── Command Palette ──────────────────────────────────────────── */
+  --cmd-bg:       rgba(255, 255, 255, 0.92);
+  --cmd-border:   rgba(221, 225, 240, 0.80);
+  --cmd-item-hover: rgba(34, 81, 255, 0.06);
+
+  /* ── Sidebar collapse ─────────────────────────────────────────── */
+  --sidebar-transition: width 0.26s cubic-bezier(0.22, 1, 0.36, 1);
 
   /* ── Glassmorphism — Light ────────────────────────────────────── */
   --glass-bg:          rgba(255, 255, 255, 0.88);
@@ -192,14 +203,14 @@
 
 /* ─── Dark Theme — Cinematic Deep Glass ──────────────────────────── */
 [data-theme='dark'] {
-  /* ── Backgrounds — Deep cool cinematic slate ─────────────────── */
-  --bg:      #05080F;
-  --bg-2:    #08101C;
-  --bg-3:    #0C1628;
-  --card:    #0A1220;
-  --sidebar: #070D1A;
-  --border:  #141E32;
-  --border-2: #1E2E48;
+  /* ── Backgrounds — Deep cool cinematic slate ───────────────── */
+  --bg:      #060B14;
+  --bg-2:    #09111F;
+  --bg-3:    #0D1929;
+  --card:    #0B1322;
+  --sidebar: #07101C;
+  --border:  #152030;
+  --border-2: #1F3050;
 
   /* ── Text (high contrast, cool-white) ────────────────────────── */
   --text:     #F0F4FF;
@@ -210,9 +221,11 @@
   --accent:       #3E63DD;
   --accent-hover: #5275E8;
   --accent-light: #6E88EC;
+  --accent-fg:    #FFFFFF;
   --accent-bg:    rgba(62, 99, 221, 0.10);
   --accent-bg-2:  rgba(62, 99, 221, 0.18);
   --accent-glow:  0 0 0 3px rgba(62, 99, 221, 0.28);
+  --accent-rgb:   62, 99, 221;
 
   /* ── Luminous glow system (dark) ─────────────────────────────── */
   --luminous:       #5A7FF0;
@@ -279,11 +292,11 @@
   --glass-highlight:    inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255,255,255,0.035);
   --glass-highlight-sm: inset 0 1px 0 rgba(255, 255, 255, 0.055);
 
-  /* ── RGB for rgba() ───────────────────────────────────────────── */
-  --bg-rgb:           5, 8, 15;
-  --sidebar-rgb:      7, 13, 26;
-  --sidebar-opacity:  0.90;
-  --header-opacity:   0.82;
+  /* ── RGB for rgba() ─────────────────────────────────────────── */
+  --bg-rgb:           6, 11, 20;
+  --sidebar-rgb:      7, 16, 28;
+  --sidebar-opacity:  0.92;
+  --header-opacity:   0.84;
 
   /* ── Border RGB (dark) ────────────────────────────────────────── */
   --border-rgb:         20, 30, 50;
@@ -294,7 +307,7 @@
   /* ── Table row hover (dark) ────────────────────────────────────── */
   --table-row-hover:    rgba(var(--accent-rgb), 0.07);
 
-  /* ── Shimmer (dark) ────────────────────────────────────────────── */
+  /* ── Shimmer (dark) ──────────────────────────────────────────── */
   --shimmer-bg:         linear-gradient(
     90deg,
     var(--border) 0%,
@@ -302,4 +315,9 @@
     var(--bg-3)   60%,
     var(--border) 100%
   );
+
+  /* ── Command Palette (dark) ──────────────────────────────────── */
+  --cmd-bg:         rgba(7, 16, 28, 0.96);
+  --cmd-border:     rgba(21, 32, 48, 0.90);
+  --cmd-item-hover: rgba(62, 99, 221, 0.10);
 }

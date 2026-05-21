@@ -27,22 +27,47 @@ const navItems = [
 const adminItems = [
   { id: 'admin', label: 'Administración', icon: Settings },
 ];
+const allItems = [...navItems, ...adminItems];
 
 /* ── Single Nav Link ──────────────────────────────────────────────── */
-function NavLink({ item, onNavigate }) {
+function NavLink({ item, onNavigate, collapsed }) {
   const Icon = item.icon;
   const { page } = useApp();
   const active = page === item.id;
+  const [showTip, setShowTip] = useState(false);
 
   return (
-    <button
-      onClick={() => onNavigate(item.id)}
-      className={clsx(styles.navLink, { [styles.navLinkActive]: active })}
-      aria-current={active ? 'page' : undefined}
-    >
-      <Icon size={17} aria-hidden="true" />
-      <span className={styles.navLabel}>{item.label}</span>
-    </button>
+    <div className={styles.navLinkWrapper}>
+      <button
+        onClick={() => onNavigate(item.id)}
+        className={clsx(styles.navLink, { [styles.navLinkActive]: active })}
+        aria-current={active ? 'page' : undefined}
+        aria-label={collapsed ? item.label : undefined}
+        onMouseEnter={() => collapsed && setShowTip(true)}
+        onMouseLeave={() => setShowTip(false)}
+        onFocus={() => collapsed && setShowTip(true)}
+        onBlur={() => setShowTip(false)}
+      >
+        <Icon size={17} aria-hidden="true" />
+        <span className={styles.navLabel}>{item.label}</span>
+      </button>
+
+      {/* Floating tooltip when collapsed */}
+      <AnimatePresence>
+        {collapsed && showTip && (
+          <motion.div
+            className={styles.navTooltip}
+            initial={{ opacity: 0, x: -6, scale: 0.94 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -4, scale: 0.96 }}
+            transition={{ duration: 0.14 }}
+            role="tooltip"
+          >
+            {item.label}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -58,13 +83,11 @@ export default function Layout({ children }) {
     notifications = [], markNotifRead, markAllNotifsRead,
   } = useData();
 
-  /* ── UI state ──────────────────────────────────────────────────── */
-  const [sideOpen, setSideOpen] = useState(false); // mobile drawer
+  /* ── UI state ────────────────────────────────────────────── */
+  const [sideOpen, setSideOpen] = useState(false);
   const [notiMenu, setNotiMenu] = useState(false);
-  const [userDropdown, setUserDropdown] = useState(false);
 
   const notiMenuRef = useRef(null);
-  const userDropdownRef = useRef(null);
 
   /* ── Idle timer reset ──────────────────────────────────────────── */
   const resetIdle = useCallback(() => setLastActivity(Date.now()), [setLastActivity]);
@@ -75,17 +98,19 @@ export default function Layout({ children }) {
     return () => events.forEach(e => document.removeEventListener(e, resetIdle));
   }, [resetIdle]);
 
-  /* ── Click-outside for dropdowns ──────────────────────────────── */
+  /* ── Click-outside for dropdowns ────────────────────────────── */
   useEffect(() => {
     function handler(e) {
       if (notiMenuRef.current && !notiMenuRef.current.contains(e.target))
         setNotiMenu(false);
-      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target))
-        setUserDropdown(false);
     }
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  /* ── Global keyboard shortcut: ⌘K / Ctrl+K ──────────────────────── */
+  // (kept for future re-enabling, not rendered in topbar)
+  // Command palette available via CommandPalette component
 
   /* ── Navigation handler ─────────────────────────────────────────── */
   const handleNavigate = useCallback((id) => {
@@ -96,6 +121,10 @@ export default function Layout({ children }) {
   /* ── Derived data ──────────────────────────────────────────────── */
   const unreadCount = notifications.filter(n => !n.read).length;
   const handleMarkAllRead = () => markAllNotifsRead?.(user?.id);
+
+  /* ── Breadcrumbs ────────────────────────────────────────────────── */
+  const currentItem = allItems.find(i => i.id === page);
+  const breadcrumbs = currentItem ? ['Margube', currentItem.label] : ['Margube'];
 
   /* ── Sidebar content (shared between desktop + mobile drawer) ──── */
   const sidebarContent = (
@@ -112,6 +141,7 @@ export default function Layout({ children }) {
 
       {/* Navigation */}
       <nav className={styles.navGroup} role="navigation" aria-label="Navegación principal">
+        <p className={styles.navSectionLabel}>Menú</p>
         {navItems.map(i => (
           <NavLink key={i.id} item={i} onNavigate={handleNavigate} />
         ))}
@@ -119,6 +149,7 @@ export default function Layout({ children }) {
         {user?.role === 'admin' && (
           <>
             <div className={styles.navDivider} />
+            <p className={styles.navSectionLabel}>Admin</p>
             {adminItems.map(i => (
               <NavLink key={i.id} item={i} onNavigate={handleNavigate} />
             ))}
@@ -126,7 +157,7 @@ export default function Layout({ children }) {
         )}
       </nav>
 
-      {/* ── User bottom section — Perfil + Logout directos ─────────── */}
+      {/* ── User bottom section ─────────────────────────────────── */}
       <div className={styles.userBottom}>
         {/* Avatar + info */}
         <div className={styles.userCard}>
@@ -169,7 +200,7 @@ export default function Layout({ children }) {
       <div className={styles.bgBlob2} aria-hidden="true" />
       <div className={styles.bgBlob3} aria-hidden="true" />
 
-      {/* ── Desktop sidebar ──────────────────────────────────────── */}
+      {/* ── Desktop sidebar ──────────────────────────────────────────── */}
       <aside
         className={clsx(styles.sidebar, 'hide-mobile')}
         aria-label="Sidebar de navegación"
@@ -202,7 +233,7 @@ export default function Layout({ children }) {
         )}
       </AnimatePresence>
 
-      {/* ── Main content ─────────────────────────────────────────── */}
+      {/* ── Main content ───────────────────────────────────────────────────── */}
       <div className={styles.main}>
 
         {/* ── Topbar ─────────────────────────────────────────────── */}
@@ -217,23 +248,39 @@ export default function Layout({ children }) {
               <Menu size={20} aria-hidden="true" />
             </button>
 
-            {/* Animated page title */}
-            <AnimatePresence mode="wait">
-              <motion.h1
-                key={page}
-                className={styles.pageTitle}
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 6 }}
-                transition={{ duration: 0.18 }}
-              >
-                {[...navItems, ...adminItems].find(i => i.id === page)?.label || 'Margube'}
-              </motion.h1>
-            </AnimatePresence>
+            {/* Page title + breadcrumbs */}
+            <div className={styles.titleBlock}>
+              {/* Breadcrumbs */}
+              <div className={styles.breadcrumbs} aria-label="Breadcrumb" role="navigation">
+                {breadcrumbs.map((crumb, i) => (
+                  <span key={crumb} className={styles.breadcrumbItem}>
+                    {i > 0 && <span className={styles.breadcrumbSep} aria-hidden="true">›</span>}
+                    <span className={i === breadcrumbs.length - 1 ? styles.breadcrumbActive : styles.breadcrumbMuted}>
+                      {crumb}
+                    </span>
+                  </span>
+                ))}
+              </div>
+
+              {/* Animated page title */}
+              <AnimatePresence mode="wait">
+                <motion.h1
+                  key={page}
+                  className={styles.pageTitle}
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 6 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  {allItems.find(i => i.id === page)?.label || 'Margube'}
+                </motion.h1>
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Right actions */}
           <div className={styles.headerRight}>
+
             {/* Theme toggle */}
             <button
               onClick={toggle}
@@ -479,6 +526,7 @@ export default function Layout({ children }) {
                     gap: 8,
                     boxShadow: 'var(--shadow-accent)',
                     transition: 'transform 0.2s var(--ease-out), box-shadow 0.2s ease',
+                    fontFamily: 'inherit',
                   }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(34,81,255,0.4)'; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = 'var(--shadow-accent)'; }}

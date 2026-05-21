@@ -40,6 +40,9 @@ body {
   background: var(--bg);
   color: var(--text);
   transition: background-color 0.35s ease, color 0.35s ease;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01';
+  -webkit-font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01';
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Reduced Motion ───────────────────────────────────────────────── */
@@ -417,6 +420,21 @@ img, svg, video { display: block; max-width: 100%; }
   50%       { transform: scale(1.08); opacity: 1; }
 }
 
+@keyframes slide-in-up {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0) scale(1);       filter: blur(0px); }
+}
+
+@keyframes fade-blur-in {
+  from { opacity: 0; filter: blur(6px); }
+  to   { opacity: 1; filter: blur(0px); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
 /* Skeleton loading — premium shimmer */
 .skeleton {
   background: var(--shimmer-bg);
@@ -748,3 +766,83 @@ img, svg, video { display: block; max-width: 100%; }
   .hide-mobile, .show-mobile, nav, aside, header, footer { display: none !important; }
   a[href]::after { content: ' (' attr(href) ')'; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   INTER TYPOGRAPHY REFINEMENTS
+═══════════════════════════════════════════════════════════════════ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   COMMAND PALETTE UTILITIES
+═══════════════════════════════════════════════════════════════════ */
+
+/* Keyboard shortcut badge — e.g. ⌘K, Esc */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-mut);
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 2px 6px;
+  line-height: 1.4;
+  letter-spacing: 0;
+  flex-shrink: 0;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.10);
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   GLOW BORDER — Animated accent border for premium feel
+═══════════════════════════════════════════════════════════════════ */
+
+.glow-border {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: var(--gradient-accent);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.25s var(--ease-out);
+    filter: blur(8px);
+  }
+
+  &:hover::after { opacity: 0.35; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   STATUS INDICATOR
+═══════════════════════════════════════════════════════════════════ */
+
+.status-online {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--success);
+
+  &::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--success);
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px rgba(var(--success-rgb), 0.18);
+    animation: pulse-dot 2.5s ease-in-out infinite;
+  }
+}
+

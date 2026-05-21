@@ -1,4 +1,9 @@
-/* ── StatCard — Premium KPI card v2 ──────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+   STATCARD — Premium KPI card v3
+   Additions: shimmer sweep, icon radial glow, animated bottom bar,
+              refined hover depth
+═══════════════════════════════════════════════════════════════════ */
+
 .statCard {
   padding: clamp(20px, 2.8vw, 28px);
   display: flex;
@@ -15,19 +20,39 @@
     border-color 0.24s var(--ease-cinematic),
     background 0.24s var(--ease-cinematic) !important;
 
-  /* Subtle ambient fill orb */
+  /* Ambient fill orb (top-right) */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    right: -15%;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--card-color, rgba(var(--accent-rgb), 0.10)) 0%, transparent 70%);
+    pointer-events: none;
+    transition: opacity 0.24s ease, transform 0.40s var(--ease-cinematic);
+    opacity: 0.65;
+  }
+
+  /* Shimmer sweep on hover */
   &::after {
     content: '';
     position: absolute;
-    top: -30%;
-    right: -20%;
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--card-color, rgba(var(--accent-rgb), 0.08)) 0%, transparent 70%);
+    inset: 0;
+    background: linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(255, 255, 255, 0.06) 50%,
+      transparent 60%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    background-position: -100% 0;
     pointer-events: none;
-    transition: opacity 0.24s ease;
-    opacity: 0.7;
+    border-radius: inherit;
+    transition: background-position 0.55s var(--ease-cinematic);
   }
 
   &:hover {
@@ -36,10 +61,15 @@
     border-color: rgba(255, 255, 255, 0.52) !important;
     background: var(--glass-card-hover) !important;
 
-    &::after { opacity: 1.2; }
+    &::before { opacity: 1.0; transform: scale(1.15); }
+    &::after  { background-position: 200% 0; }
   }
 
   &:active { transform: translateY(-2px) !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::after { display: none; }
+  }
 }
 
 /* ── Top row: icon + trend ────────────────────────────────────────── */
@@ -60,9 +90,13 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  position: relative;
+  /* Radial glow behind icon using current color */
+  background: radial-gradient(circle at 50% 60%, rgba(var(--accent-rgb), 0.12) 0%, transparent 75%);
   transition:
     transform 0.30s var(--ease-spring),
-    box-shadow 0.24s var(--ease-out);
+    box-shadow 0.24s var(--ease-out),
+    background 0.24s;
 
   .statCard:hover & {
     transform: scale(1.12) rotate(-4deg);
@@ -114,6 +148,7 @@
   line-height: 1;
   font-family: var(--font-heading);
   font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
 }
 
 .label {
@@ -135,21 +170,32 @@
 /* ── Bottom accent bar ────────────────────────────────────────────── */
 .accentBar {
   height: 3px;
-  width: 100%;
+  width: 0%;
   margin-top: auto;
   border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-  opacity: 0.60;
+  opacity: 0.65;
   transition:
-    opacity 0.24s var(--ease-out),
+    opacity 0.28s var(--ease-out),
     height 0.24s var(--ease-out),
-    box-shadow 0.24s var(--ease-out);
+    box-shadow 0.28s var(--ease-out),
+    width 0.60s var(--ease-cinematic);
   background: var(--gradient-accent);
   position: relative;
   z-index: 1;
+  animation: bar-expand 0.8s var(--ease-cinematic) 0.2s both;
 
   .statCard:hover & {
     opacity: 1;
     height: 4px;
-    box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.50);
+    box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.55), 0 0 40px rgba(var(--accent-rgb), 0.20);
   }
+}
+
+@keyframes bar-expand {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accentBar { animation: none; width: 100%; }
 }
