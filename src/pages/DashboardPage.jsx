@@ -14,25 +14,57 @@ import { motion } from 'framer-motion';
 // ── Chart data helpers ────────────────────────────────────
 const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
-function buildRequestsByMonth(requests) {
+/**
+ * Groups requests by month for a given year.
+ * Returns all 12 months (shows 0 for months with no data).
+ */
+function buildRequestsByMonth(requests, year) {
   const map = {};
   MONTHS.forEach((m, i) => { map[i] = { mes: m, aprobadas: 0, pendientes: 0, rechazadas: 0 }; });
   requests.forEach(r => {
-    const m = new Date(r.createdAt).getMonth();
+    const d = new Date(r.createdAt);
+    if (d.getFullYear() !== year) return;   // only this year
+    const m = d.getMonth();
     if (r.status === 'approved')  map[m].aprobadas++;
     if (r.status === 'pending')   map[m].pendientes++;
     if (r.status === 'rejected')  map[m].rechazadas++;
   });
-  return Object.values(map).slice(0, 6);
+  return Object.values(map);
 }
 
-function buildReservationsByWeek(reservations) {
-  return [
-    { semana: 'Sem 1', reservas: reservations.filter(r => r.date <= '2025-01-07').length },
-    { semana: 'Sem 2', reservas: reservations.filter(r => r.date > '2025-01-07' && r.date <= '2025-01-14').length },
-    { semana: 'Sem 3', reservas: reservations.filter(r => r.date > '2025-01-14' && r.date <= '2025-01-21').length },
-    { semana: 'Sem 4', reservas: reservations.filter(r => r.date > '2025-01-21').length },
-  ];
+/**
+ * Splits reservations of a given year/month into their calendar weeks.
+ * @param {Array}  reservations  - full reservations array
+ * @param {number} year
+ * @param {number} month         - 0-indexed
+ */
+function buildReservationsByWeek(reservations, year, month) {
+  // Get all days in the month
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // Build week buckets: each bucket = one Mon-Sun span that overlaps the month
+  const weeks = [];
+  let weekNum = 1;
+  let d = 1;
+
+  while (d <= daysInMonth) {
+    // Find the Sunday that ends this week (or end of month)
+    const startDate = new Date(year, month, d);
+    const dayOfWeek = startDate.getDay(); // 0 Sun, 1 Mon...
+    const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+    const endDay = Math.min(d + daysUntilSunday, daysInMonth);
+
+    const startStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const endStr   = `${year}-${String(month + 1).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`;
+
+    const count = reservations.filter(r => r.date >= startStr && r.date <= endStr).length;
+    weeks.push({ semana: `Sem ${weekNum}`, reservas: count });
+
+    weekNum++;
+    d = endDay + 1;
+  }
+
+  return weeks;
 }
 
 const CHART_COLORS = {
@@ -57,7 +89,36 @@ export default function DashboardPage() {
   const { reservations, requests } = useData();
   const [news] = useState(MOCK_NEWS);
 
+  // Month navigator — starts on the current real month
   const today = new Date();
+  const currentYear = today.getFullYear();
+
+  const [chartMonth, setChartMonth] = useState(() => ({
+    year:  currentYear,
+    month: today.getMonth(), // 0-indexed
+  }));
+
+  const prevMonth = useCallback(() => {
+    setChartMonth(prev => {
+      const d = new Date(prev.year, prev.month - 1, 1);
+      return { year: d.getFullYear(), month: d.getMonth() };
+    });
+  }, []);
+
+  const nextMonth = useCallback(() => {
+    setChartMonth(prev => {
+      const d = new Date(prev.year, prev.month + 1, 1);
+      const now = new Date();
+      if (d.getFullYear() > now.getFullYear() || (d.getFullYear() === now.getFullYear() && d.getMonth() > now.getMonth())) return prev;
+      return { year: d.getFullYear(), month: d.getMonth() };
+    });
+  }, []);
+
+  // Year navigator for requests chart — starts on current year
+  const [requestsYear, setRequestsYear] = useState(currentYear);
+  const prevYear = useCallback(() => setRequestsYear(y => y - 1), []);
+  const nextYear = useCallback(() => setRequestsYear(y => Math.min(y + 1, currentYear)), [currentYear]);
+  const isCurrentYear = requestsYear === currentYear;
   const upcomingBirthdays = useMemo(() => 
     employees
       .map(e => {
@@ -72,8 +133,24 @@ export default function DashboardPage() {
   , [employees]);
 
   const pendingCount = useMemo(() => requests.filter(r => r.status === 'pending').length, [requests]);
-  const requestsByMonth = useMemo(() => buildRequestsByMonth(requests), [requests]);
-  const reservationsByWeek = useMemo(() => buildReservationsByWeek(reservations), [reservations]);
+  const requestsByMonth = useMemo(() => buildRequestsByMonth(requests, requestsYear), [requests, requestsYear]);
+  const reservationsByWeek = useMemo(
+    () => buildReservationsByWeek(reservations, chartMonth.year, chartMonth.month),
+    [reservations, chartMonth]
+  );
+
+  // Label for the chart subtitle
+  const chartMonthLabel = useMemo(() => {
+    const d = new Date(chartMonth.year, chartMonth.month, 1);
+    return d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
+      .replace(/^./, c => c.toUpperCase()); // capitalize first letter
+  }, [chartMonth]);
+
+  // Is it already the current month? (disable next button)
+  const isCurrentMonth = useMemo(() => {
+    const now = new Date();
+    return chartMonth.year === now.getFullYear() && chartMonth.month === now.getMonth();
+  }, [chartMonth]);
   
   const resourceTypePie = useMemo(() => [
     { name: 'Salas',     value: reservations.filter(r => r.type === 'room').length,    fill: CHART_COLORS.accent   },
@@ -172,12 +249,29 @@ const tooltipStyle = {
           <div className={styles.chartHeader}>
             <div>
               <h3 className={styles.chartTitle}>Solicitudes por mes</h3>
-              <span className={styles.chartSub}>Ene – Jun 2025</span>
+              <span className={styles.chartSub}>{requestsYear}</span>
             </div>
-            <div className={styles.chartLegend}>
-              <span className={styles.legendDot} style={{ background: CHART_COLORS.success }} />Aprobadas
-              <span className={styles.legendDot} style={{ background: CHART_COLORS.warning }} />Pendientes
-              <span className={styles.legendDot} style={{ background: CHART_COLORS.danger }}  />Rechazadas
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              <div className={styles.chartLegend}>
+                <span className={styles.legendDot} style={{ background: CHART_COLORS.success }} />Aprobadas
+                <span className={styles.legendDot} style={{ background: CHART_COLORS.warning }} />Pendientes
+                <span className={styles.legendDot} style={{ background: CHART_COLORS.danger }}  />Rechazadas
+              </div>
+              <div className={styles.monthNav}>
+                <button
+                  className={styles.monthNavBtn}
+                  onClick={prevYear}
+                  aria-label="Año anterior"
+                  title="Año anterior"
+                >‹</button>
+                <button
+                  className={styles.monthNavBtn}
+                  onClick={nextYear}
+                  disabled={isCurrentYear}
+                  aria-label="Año siguiente"
+                  title="Año siguiente"
+                >›</button>
+              </div>
             </div>
           </div>
           <div className={styles.chartBody}>
@@ -234,7 +328,22 @@ const tooltipStyle = {
           <div className={styles.chartHeader}>
             <div>
               <h3 className={styles.chartTitle}>Reservas semanales</h3>
-              <span className={styles.chartSub}>Enero 2025</span>
+              <span className={styles.chartSub}>{chartMonthLabel}</span>
+            </div>
+            <div className={styles.monthNav}>
+              <button
+                className={styles.monthNavBtn}
+                onClick={prevMonth}
+                aria-label="Mes anterior"
+                title="Mes anterior"
+              >‹</button>
+              <button
+                className={styles.monthNavBtn}
+                onClick={nextMonth}
+                disabled={isCurrentMonth}
+                aria-label="Mes siguiente"
+                title="Mes siguiente"
+              >›</button>
             </div>
           </div>
           <div className={styles.chartBody}>

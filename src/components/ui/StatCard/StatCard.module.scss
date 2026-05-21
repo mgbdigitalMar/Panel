@@ -40,14 +40,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      115deg,
-      transparent 0%,
-      transparent 40%,
-      rgba(255, 255, 255, 0.06) 50%,
-      transparent 60%,
-      transparent 100%
-    );
+    background: var(--card-hover-shimmer);
     background-size: 200% 100%;
     background-position: -100% 0;
     pointer-events: none;

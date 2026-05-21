@@ -193,6 +193,7 @@
   --glass-shimmer:      linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.06) 60%, transparent 100%);
   --glass-highlight:    inset 0 1px 0 rgba(255, 255, 255, 0.70), inset 0 0 0 1px rgba(255,255,255,0.18);
   --glass-highlight-sm: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  --card-hover-shimmer: linear-gradient(115deg, transparent 0%, transparent 40%, rgba(255, 255, 255, 0.45) 50%, transparent 60%, transparent 100%);
 
   /* ── RGB for rgba() ────────────────────────────────────────────── */
   --bg-rgb:         238, 241, 250;
@@ -291,6 +292,7 @@
   --glass-shimmer:      linear-gradient(135deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.008) 60%, transparent 100%);
   --glass-highlight:    inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255,255,255,0.035);
   --glass-highlight-sm: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  --card-hover-shimmer: linear-gradient(115deg, transparent 0%, transparent 40%, rgba(255, 255, 255, 0.08) 50%, transparent 60%, transparent 100%);
 
   /* ── RGB for rgba() ─────────────────────────────────────────── */
   --bg-rgb:           6, 11, 20;

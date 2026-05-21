@@ -66,13 +66,13 @@ export default function EmployeesPage() {
         {summary.map(s => {
           const Icon = s.icon;
           return (
-            <div key={s.key} className={styles.summaryCard} style={{ '--c': s.color, '--cbg': s.bg }}>
+            <Card key={s.key} className={styles.summaryCard} style={{ '--c': s.color, '--cbg': s.bg }}>
               <div className={styles.summaryIcon}><Icon size={18} /></div>
               <div>
                 <p className={styles.summaryCount}>{s.count}</p>
                 <p className={styles.summaryLabel}>{s.label}</p>
               </div>
-            </div>
+            </Card>
           );
         })}
       </div>
