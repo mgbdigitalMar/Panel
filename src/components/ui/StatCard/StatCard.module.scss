@@ -11,12 +11,14 @@
   transition:
     box-shadow 0.22s var(--ease-out),
     transform 0.22s var(--ease-out),
-    border-color 0.22s var(--ease-out) !important;
+    border-color 0.22s var(--ease-out),
+    background 0.22s var(--ease-out) !important;
 
   &:hover {
     transform: translateY(-3px) !important;
-    box-shadow: var(--shadow-md) !important;
-    border-color: var(--border-2) !important;
+    box-shadow: var(--shadow-md), var(--glass-highlight) !important;
+    border-color: rgba(255, 255, 255, 0.48) !important;
+    background: var(--glass-card-hover) !important;
   }
 
   &:active {

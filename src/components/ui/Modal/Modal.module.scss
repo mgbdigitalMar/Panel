@@ -24,18 +24,20 @@
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.50);
-  backdrop-filter: blur(10px) saturate(160%);
-  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
 }
 
 .modal {
   position: relative;
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--glass-card);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
   box-shadow:
     var(--shadow-xl),
-    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    var(--glass-highlight);
   width: 100%;
   max-width: 520px;
   max-height: 90vh;
@@ -49,6 +51,14 @@
     max-width: 100%;
     max-height: 95vh;
     border-radius: var(--radius-lg);
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--card);
   }
 }
 
@@ -67,8 +77,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 18px 24px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-2);
+  border-bottom: 1px solid rgba(var(--border-rgb), 0.45);
+  background: rgba(var(--bg-rgb), 0.28);
   flex-shrink: 0;
   gap: 12px;
 }
@@ -82,27 +92,29 @@
 }
 
 .closeBtn {
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-mut);
-  cursor: pointer;
-  padding: 6px;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: var(--glass-input);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(var(--border-rgb), 0.45);
   border-radius: var(--radius-sm);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-fast);
+  color: var(--text-sec);
+  transition: all 0.2s var(--ease-out);
   flex-shrink: 0;
 
   &:hover {
-    background: var(--danger-bg);
-    border-color: rgba(var(--danger-rgb), 0.25);
     color: var(--danger);
-    transform: scale(1.05) rotate(4deg);
-
-    svg { filter: drop-shadow(0 0 4px rgba(var(--danger-rgb), 0.4)); }
+    background: var(--danger-bg);
+    border-color: rgba(220, 38, 38, 0.4);
+    box-shadow: var(--glass-highlight-sm);
+    transform: translateY(-1px);
+    svg { filter: drop-shadow(0 0 4px rgba(var(--danger-rgb), 0.25)); }
   }
 
   &:active {
@@ -131,8 +143,8 @@
 /* Footer with actions — optional */
 .modalFooter {
   padding: 16px 24px;
-  border-top: 1px solid var(--border);
-  background: var(--bg-2);
+  border-top: 1px solid rgba(var(--border-rgb), 0.40);
+  background: rgba(var(--bg-rgb), 0.28);
   display: flex;
   align-items: center;
   justify-content: flex-end;

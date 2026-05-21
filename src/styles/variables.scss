@@ -155,10 +155,21 @@
   --content-max-w:       1600px;
 
   /* ── Glassmorphism ────────────────────────────────────────────── */
-  --glass-bg:     rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.4);
-  --glass-blur:   blur(16px) saturate(140%);
-  --glass-blur-sm: blur(12px) saturate(120%);
+  --glass-bg:          rgba(255, 255, 255, 0.85);
+  --glass-border:      rgba(255, 255, 255, 0.40);
+  --glass-blur:        blur(16px) saturate(140%);
+  --glass-blur-sm:     blur(12px) saturate(120%);
+
+  /* ── Glass depth layers (L1 = lightest, L3 = most opaque) ─────── */
+  --glass-surface:     rgba(255, 255, 255, 0.42);  /* subtle tint: table headers, tags */
+  --glass-card:        rgba(255, 255, 255, 0.72);  /* cards, modals, stat cards */
+  --glass-card-hover:  rgba(255, 255, 255, 0.86);  /* card on hover */
+  --glass-input:       rgba(255, 255, 255, 0.62);  /* form inputs */
+
+  /* ── Glass decorative ─────────────────────────────────────────── */
+  --glass-shimmer:     linear-gradient(135deg, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.04) 60%, transparent 100%);
+  --glass-highlight:   inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 0 0 1px rgba(255,255,255,0.12);
+  --glass-highlight-sm: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 
   /* ── RGB for rgba() usage ─────────────────────────────────────── */
   --bg-rgb:         245, 246, 250;
@@ -230,10 +241,21 @@
   --shadow-card:   0 4px 12px rgba(0,0,0,0.40), 0 0 0 1px rgba(255,255,255,0.02);
 
   /* ── Glassmorphism ────────────────────────────────────────────── */
-  --glass-bg:     rgba(15, 21, 36, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.06);
-  --glass-blur:   blur(20px) saturate(130%);
-  --glass-blur-sm: blur(12px) saturate(110%);
+  --glass-bg:          rgba(15, 21, 36, 0.75);
+  --glass-border:      rgba(255, 255, 255, 0.07);
+  --glass-blur:        blur(20px) saturate(130%);
+  --glass-blur-sm:     blur(12px) saturate(110%);
+
+  /* ── Glass depth layers (dark) ────────────────────────────────── */
+  --glass-surface:     rgba(15, 21, 36, 0.38);  /* table headers, subtle tints */
+  --glass-card:        rgba(15, 21, 36, 0.70);  /* cards, modals */
+  --glass-card-hover:  rgba(15, 21, 36, 0.84);  /* card on hover */
+  --glass-input:       rgba(15, 21, 36, 0.58);  /* form inputs */
+
+  /* ── Glass decorative (dark) ──────────────────────────────────── */
+  --glass-shimmer:     linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 60%, transparent 100%);
+  --glass-highlight:   inset 0 1px 0 rgba(255, 255, 255, 0.10), inset 0 0 0 1px rgba(255,255,255,0.04);
+  --glass-highlight-sm: inset 0 1px 0 rgba(255, 255, 255, 0.07);
 
   /* ── RGB for rgba() ───────────────────────────────────────────── */
   --bg-rgb:           9, 13, 22;

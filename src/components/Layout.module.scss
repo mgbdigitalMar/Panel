@@ -71,10 +71,11 @@
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  /* Subtle inner glow on the right edge */
+  /* Subtle inner glow on the right edge + top light reflection */
   box-shadow:
-    1px 0 0 rgba(255, 255, 255, 0.06),
-    4px 0 24px rgba(0, 0, 0, 0.06);
+    1px 0 0 rgba(255, 255, 255, 0.08),
+    4px 0 24px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.40);
 
   &::-webkit-scrollbar {
     width: 3px;
@@ -264,11 +265,24 @@
   cursor: default;
   overflow: hidden;
   transition: var(--transition-smooth);
+  position: relative;
+
+  /* Subtle top shimmer */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.40), transparent);
+    pointer-events: none;
+  }
 
   &:hover {
     background: rgba(var(--accent-rgb), 0.09);
     border-color: rgba(var(--accent-rgb), 0.20);
-    box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.08) inset;
+    box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.08) inset, var(--glass-highlight-sm);
   }
 }
 
@@ -453,7 +467,9 @@
     color: var(--accent);
     border-color: rgba(var(--accent-rgb), 0.22);
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.18);
+    box-shadow:
+      0 4px 16px rgba(var(--accent-rgb), 0.18),
+      var(--glass-highlight-sm);
 
     svg { filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.55)); }
   }

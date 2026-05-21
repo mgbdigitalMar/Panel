@@ -33,8 +33,10 @@
 .input {
   width: 100%;
   padding: 10px 14px;
-  background: var(--input);
-  border: 1px solid var(--input-border);
+  background: var(--glass-input);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(var(--border-rgb), 0.60);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 14px;
@@ -54,13 +56,13 @@
 
   &:hover:not(:focus):not(:disabled) {
     border-color: var(--border-2);
-    background: var(--input-bg-hover);
+    background: var(--glass-card);
   }
 
   &:focus {
     border-color: var(--input-focus);
     box-shadow: var(--accent-glow);
-    background: var(--input);
+    background: var(--glass-card-hover);
   }
 
   &:disabled {
@@ -69,6 +71,14 @@
     background: var(--bg);
     color: var(--text-mut);
     filter: saturate(0.5);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--input);
   }
 
   /* Leading/trailing icon padding adjustments */

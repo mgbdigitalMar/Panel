@@ -39,7 +39,7 @@
   tbody tr {
     transition: var(--transition-smooth);
     &:hover {
-      background: var(--bg);
+      background: rgba(var(--accent-rgb), 0.035);
       td { color: var(--text); }
     }
   }
@@ -335,14 +335,45 @@ img, svg, video { display: block; max-width: 100%; }
 .text-balance { text-wrap: balance; }
 
 /* ═══════════════════════════════════════════════════════════════════
-   GLASSMORPHISM UTILITY
+   GLASSMORPHISM UTILITIES
 ═══════════════════════════════════════════════════════════════════ */
 
+/* Base glass — sidebar/header level opacity */
 .glass {
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
+}
+
+/* Card glass — panels, modals (slightly less opaque than sidebar) */
+.glass-card {
+  background: var(--glass-card);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-highlight);
+
+  @media (max-width: 767px) {
+    backdrop-filter: blur(8px) saturate(120%);
+    -webkit-backdrop-filter: blur(8px) saturate(120%);
+  }
+}
+
+/* Surface glass — table headers, filter bars, tags */
+.glass-surface {
+  background: var(--glass-surface);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  border: 1px solid rgba(var(--border-rgb), 0.40);
+}
+
+/* Reduce blur for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .glass, .glass-card, .glass-surface {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -572,8 +603,10 @@ img, svg, video { display: block; max-width: 100%; }
 
   &__input {
     padding: 8px 12px;
-    background: var(--card);
-    border: 1px solid var(--input-border);
+    background: var(--glass-input);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(var(--border-rgb), 0.60);
     border-radius: var(--radius-sm);
     color: var(--text);
     font-size: 13px;
@@ -584,17 +617,20 @@ img, svg, video { display: block; max-width: 100%; }
     min-width: 140px;
 
     &::placeholder { color: var(--text-mut); }
-    &:hover:not(:focus) { border-color: var(--border-2); background: var(--input-bg-hover); }
-    &:focus { border-color: var(--accent); box-shadow: var(--accent-glow); }
+    &:hover:not(:focus) { border-color: var(--border-2); background: var(--glass-card); }
+    &:focus { border-color: var(--accent); box-shadow: var(--accent-glow); background: var(--glass-card-hover); }
 
     @media (max-width: 479px) { font-size: 16px; min-width: 0; width: 100%; }
+    @media (prefers-reduced-motion: reduce) { backdrop-filter: none; -webkit-backdrop-filter: none; }
   }
 
   &__clear {
     padding: 8px 14px;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(var(--border-rgb), 0.60);
     border-radius: var(--radius-sm);
-    background: var(--card);
+    background: var(--glass-input);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: var(--text-sec);
     font-size: 12px;
     font-weight: 600;
@@ -606,6 +642,7 @@ img, svg, video { display: block; max-width: 100%; }
     white-space: nowrap;
 
     &:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
+    @media (prefers-reduced-motion: reduce) { backdrop-filter: none; -webkit-backdrop-filter: none; }
   }
 
   &__count {

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth, useData } from '../context';
 import { MOCK_ROOMS, MOCK_VEHICLES } from '../data/mockData';
 import { Avatar, Badge, Modal, Input, Select, Button, Card } from '../components/ui';
-import { Search, Plus, Edit2, Trash2, Eye, EyeOff, Building, Car, FileText, Send, Clock, CheckCircle, PenTool, Upload, X, Timer, Download } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, Eye, EyeOff, Building, Car, FileText, Send, Clock, CheckCircle, Check, PenTool, Upload, X, Timer, Download } from 'lucide-react';
 import styles from './AdminPage.module.scss';
 import clsx from 'clsx';
 import bcrypt from 'bcryptjs';
@@ -716,7 +716,7 @@ export default function AdminPage() {
                                   onClick={() => updateHourCompensationStatus(h.id, 'approved', user?.id, h.employeeId)}
                                   title="Aprobar"
                                 >
-                                  <CheckCircle size={16} />
+                                  <Check size={16} />
                                 </button>
                                 <button
                                   className={clsx(styles.actionBtn, styles.rejectBtn)}
