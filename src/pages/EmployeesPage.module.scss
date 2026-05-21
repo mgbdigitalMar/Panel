@@ -22,11 +22,14 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.22s ease, transform 0.2s ease, border-color 0.22s ease;
+  transition:
+    box-shadow 0.22s var(--ease-out),
+    transform 0.22s var(--ease-out),
+    border-color 0.22s var(--ease-out);
 
   &:hover {
     box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     border-color: var(--border-2);
   }
 }
@@ -99,6 +102,7 @@
   color: var(--accent) !important;
   border-color: rgba(var(--accent-rgb), 0.3) !important;
   font-weight: 600;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.08);
 }
 
 .deptCount {
@@ -142,7 +146,10 @@
 
 .empCard {
   padding: clamp(16px, 2vw, 22px);
-  transition: box-shadow 0.22s var(--ease-out), transform 0.22s var(--ease-out), border-color 0.22s var(--ease-out);
+  transition:
+    box-shadow 0.22s var(--ease-out),
+    transform 0.22s var(--ease-out),
+    border-color 0.22s var(--ease-out);
 
   &:hover {
     box-shadow: var(--shadow-md);
@@ -277,7 +284,7 @@
 
   tbody tr {
     transition: background 0.15s;
-    &:hover { background: var(--bg); }
+    &:hover { background: var(--table-row-hover); }
   }
 
   /* ── Mobile Card Layout ── */

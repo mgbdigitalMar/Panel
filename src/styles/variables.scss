@@ -119,6 +119,24 @@
   /* ── Border RGB (for rgba() usage in table cells) ────────────── */
   --border-rgb:         228, 230, 239;
 
+  /* ── Text RGB (for rgba() drop-shadows) ──────────────────────── */
+  --text-rgb:           7, 16, 51;
+
+  /* ── Unified table row hover ──────────────────────────────────── */
+  --table-row-hover:    rgba(var(--accent-rgb), 0.028);
+
+  /* ── Input sizing token ───────────────────────────────────────── */
+  --input-height:       42px;
+
+  /* ── Shimmer for loading states ───────────────────────────────── */
+  --shimmer-bg:         linear-gradient(
+    90deg,
+    var(--border) 0%,
+    var(--bg-3)   40%,
+    var(--bg-3)   60%,
+    var(--border) 100%
+  );
+
   /* ── Z-index Layers ───────────────────────────────────────────── */
   --z-base:     1;
   --z-elevated: 10;
@@ -225,4 +243,22 @@
 
   /* ── Border RGB (dark) ────────────────────────────────────────── */
   --border-rgb:         30, 41, 59;
+
+  /* ── Text RGB (dark) ─────────────────────────────────────────── */
+  --text-rgb:           248, 250, 252;
+
+  /* ── Table row hover (dark) ───────────────────────────────────── */
+  --table-row-hover:    rgba(var(--accent-rgb), 0.06);
+
+  /* ── Shimmer (dark) ──────────────────────────────────────────── */
+  --shimmer-bg:         linear-gradient(
+    90deg,
+    var(--border) 0%,
+    var(--bg-3)   40%,
+    var(--bg-3)   60%,
+    var(--border) 100%
+  );
+
+  /* ── Nav glow (dark active state) ────────────────────────────── */
+  --nav-glow:           0 0 16px rgba(62, 99, 221, 0.18);
 }

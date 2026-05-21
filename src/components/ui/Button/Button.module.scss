@@ -14,15 +14,46 @@
   position: relative;
   overflow: hidden;
   line-height: 1;
+  isolation: isolate; /* stacking context for ::after shimmer */
+
+  /* ── Shimmer overlay — animates on hover for primary variant ─── */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 35%,
+      rgba(255, 255, 255, 0.18) 50%,
+      transparent 65%
+    );
+    background-size: 200% 100%;
+    background-position: -100% 0;
+    transition: background-position 0.5s var(--ease-out);
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0;
+  }
+
+  &:hover::after {
+    background-position: 200% 0;
+    opacity: 1;
+  }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.45;
     pointer-events: none;
+    filter: saturate(0.4);
   }
 
   &:active:not(:disabled) {
     transform: scale(0.96) !important;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--bg), var(--accent-glow);
   }
 }
 
@@ -53,6 +84,13 @@
 
     svg { filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6)); }
   }
+
+  &:focus-visible {
+    box-shadow:
+      0 0 0 2px var(--bg),
+      0 0 0 4px rgba(var(--accent-rgb), 0.4),
+      var(--shadow-accent);
+  }
 }
 
 .variant-secondary {
@@ -66,6 +104,10 @@
     border-color: var(--border-2);
     box-shadow: var(--shadow-sm);
     transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px rgba(var(--accent-rgb), 0.25);
   }
 }
 
@@ -81,6 +123,10 @@
     
     svg { filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6)); }
   }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px rgba(var(--danger-rgb), 0.35);
+  }
 }
 
 .variant-ghost {
@@ -90,8 +136,13 @@
   &:hover:not(:disabled) {
     background: var(--bg-3);
     color: var(--text);
+    border-color: var(--border);
 
-    svg { filter: drop-shadow(0 0 4px rgba(var(--text-rgb, 200, 200, 200), 0.3)); }
+    svg { filter: drop-shadow(0 0 4px rgba(var(--text-rgb), 0.25)); }
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px rgba(var(--accent-rgb), 0.25);
   }
 }
 
@@ -107,9 +158,23 @@
 
     svg { filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6)); }
   }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px rgba(var(--success-rgb), 0.35);
+  }
 }
 
 /* ── Sizes ─────────────────────────────────────────────────── */
+.size-xs {
+  padding: 3px 8px;
+  font-size: 11px;
+  border-radius: var(--radius-sm);
+  gap: 4px;
+  min-height: 24px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
 .size-sm {
   padding: 6px 12px;
   font-size: 12px;

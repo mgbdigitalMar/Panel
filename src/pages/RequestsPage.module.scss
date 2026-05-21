@@ -58,7 +58,8 @@
   background: var(--card);
   color: var(--text);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: var(--shadow-sm);
+  color: var(--accent);
 }
 
 /* ── Stats ─────────────────────────────────────────────── */
@@ -103,7 +104,7 @@
   tr:last-child td { border-bottom: none; }
   tbody tr {
     transition: background 0.15s;
-    &:hover { background: var(--bg); }
+    &:hover { background: var(--table-row-hover); }
   }
 
   /* ── Mobile Card Layout ── */
@@ -248,6 +249,8 @@
   background: var(--accent-bg);
   color: var(--accent);
   border-color: rgba(var(--accent-rgb), 0.3);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.08);
+  transform: translateY(-1px);
 }
 
 .modalGrid {

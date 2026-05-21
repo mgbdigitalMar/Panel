@@ -178,6 +178,7 @@ export default function HorasPage() {
         {tab === 'nueva' && (
           <motion.div
             key="nueva"
+            className={styles.tabContent}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
@@ -254,7 +255,7 @@ export default function HorasPage() {
                   onClick={handleSubmit}
                   loading={loading}
                   disabled={!form.date || !form.reason || !form.hours || loading}
-                  variant={mode === 'debe' ? 'danger' : 'primary'}
+                  variant={mode === 'debe' ? 'danger' : mode === 'ya' ? 'success' : 'primary'}
                 >
                   {cfg.btnLabel}
                 </Button>
@@ -268,6 +269,7 @@ export default function HorasPage() {
         {tab === 'bolsa' && (
           <motion.div
             key="bolsa"
+            className={styles.tabContent}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}

@@ -10,11 +10,13 @@
   will-change: transform;
   transition:
     box-shadow 0.22s var(--ease-out),
-    transform 0.22s var(--ease-out) !important;
+    transform 0.22s var(--ease-out),
+    border-color 0.22s var(--ease-out) !important;
 
   &:hover {
-    transform: translateY(-2px) !important;
+    transform: translateY(-3px) !important;
     box-shadow: var(--shadow-md) !important;
+    border-color: var(--border-2) !important;
   }
 
   &:active {
@@ -38,12 +40,16 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: transform 0.22s var(--ease-spring);
+  transition:
+    transform 0.28s var(--ease-spring),
+    box-shadow 0.22s var(--ease-out);
 
   .statCard:hover & {
-    transform: scale(1.07) rotate(-2deg);
-    
-    svg { filter: drop-shadow(0 0 6px currentColor); }
+    transform: scale(1.1) rotate(-3deg);
+
+    svg {
+      filter: drop-shadow(0 0 8px currentColor);
+    }
   }
 }
 
@@ -63,11 +69,13 @@
 .trendUp {
   background: var(--success-bg);
   color: var(--success);
+  border: 1px solid rgba(var(--success-rgb), 0.15);
 }
 
 .trendDown {
   background: var(--warning-bg);
   color: var(--warning);
+  border: 1px solid rgba(var(--warning-rgb), 0.15);
 }
 
 /* ── Value + labels ───────────────────────────────────────────────── */
@@ -104,16 +112,20 @@
   margin-top: 2px;
 }
 
-/* ── Bottom accent bar ────────────────────────────────────────────── */
+/* ── Bottom accent bar — gradient, full-width expand on hover ─────── */
 .accentBar {
   height: 3px;
   width: 100%;
   margin-top: auto;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-  opacity: 0.85;
-  transition: opacity 0.2s ease;
+  opacity: 0.75;
+  transition:
+    opacity 0.22s var(--ease-out),
+    height 0.22s var(--ease-out);
+  background: var(--gradient-accent); /* override per-card via inline style */
 
   .statCard:hover & {
     opacity: 1;
+    height: 4px;
   }
 }

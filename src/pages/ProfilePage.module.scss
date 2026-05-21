@@ -29,7 +29,8 @@
   margin-bottom: clamp(20px, 3vw, 32px);
 }
 
-.card, .infoCard {
+.card,
+.infoCard {
   padding: clamp(22px, 3.5vw, 32px);
 
   @media (max-width: 768px) {
@@ -161,8 +162,13 @@
   gap: 12px;
   padding: 40px 0;
   color: var(--text-mut);
-  svg { opacity: 0.35; }
-  p { font-size: 14px; margin: 0; }
+  svg {
+    opacity: 0.35;
+  }
+  p {
+    font-size: 14px;
+    margin: 0;
+  }
 }
 
 .docsList {
@@ -184,12 +190,20 @@
     box-shadow 0.2s var(--ease-out),
     border-left-color 0.2s var(--ease-out);
 
-  &:hover { box-shadow: var(--shadow-sm); }
+  &:hover {
+    box-shadow: var(--shadow-sm);
+  }
 }
 
-.docPending   { border-left-color: var(--warning); }
-.docSigned    { border-left-color: var(--accent); }
-.docCompleted { border-left-color: var(--success); }
+.docPending {
+  border-left-color: var(--warning);
+}
+.docSigned {
+  border-left-color: var(--accent);
+}
+.docCompleted {
+  border-left-color: var(--success);
+}
 
 .docIcon {
   flex-shrink: 0;
@@ -235,9 +249,18 @@
   text-transform: uppercase;
 }
 
-.statusPending   { background: var(--warning-bg);  color: var(--warning); }
-.statusSigned    { background: var(--accent-bg);   color: var(--accent); }
-.statusCompleted { background: var(--success-bg);  color: var(--success); }
+.statusPending {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+.statusSigned {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+.statusCompleted {
+  background: var(--success-bg);
+  color: var(--success);
+}
 
 .docDesc {
   font-size: 13px;
@@ -252,7 +275,10 @@
   gap: 6px;
   font-size: 12px;
   color: var(--text-mut);
-  strong { color: var(--text-sec); font-weight: 600; }
+  strong {
+    color: var(--text-sec);
+    font-weight: 600;
+  }
 }
 
 .docActions {
@@ -312,7 +338,7 @@
 
 .docBtnView {
   background: var(--accent-bg);
-  border-color: rgba(var(--accent-rgb, 99,102,241), 0.3);
+  border-color: rgba(var(--accent-rgb, 99, 102, 241), 0.3);
   color: var(--accent);
   font-weight: 600;
 
@@ -338,15 +364,19 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .viewerModal {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
   width: 100%;
   max-width: 900px;
   height: min(85vh, 800px);
@@ -357,8 +387,14 @@
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .viewerHeader {
@@ -381,8 +417,15 @@
   color: var(--text);
   min-width: 0;
 
-  svg { color: var(--accent); flex-shrink: 0; }
-  span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  svg {
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .viewerHeaderActions {

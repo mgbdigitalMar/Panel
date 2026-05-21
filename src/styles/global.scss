@@ -370,10 +370,252 @@ img, svg, video { display: block; max-width: 100%; }
 
 /* Skeleton loading */
 .skeleton {
-  background: linear-gradient(90deg, var(--border) 25%, var(--bg-3) 50%, var(--border) 75%);
+  background: var(--shimmer-bg);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 1.5s ease-in-out infinite;
   border-radius: var(--radius-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BADGE & STATUS CHIP — Unified semantic pills
+   Usage: <span class="status-chip status-chip--success">Aprobado</span>
+═══════════════════════════════════════════════════════════════════ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  line-height: 1.5;
+
+  /* Dot indicator */
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+    opacity: 0.8;
+  }
+
+  &--success {
+    background: var(--success-bg);
+    color: var(--success);
+    border: 1px solid rgba(var(--success-rgb), 0.15);
+  }
+
+  &--warning {
+    background: var(--warning-bg);
+    color: var(--warning);
+    border: 1px solid rgba(var(--warning-rgb), 0.15);
+  }
+
+  &--danger {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid rgba(var(--danger-rgb), 0.15);
+  }
+
+  &--info {
+    background: var(--info-bg);
+    color: var(--info);
+    border: 1px solid rgba(var(--info-rgb), 0.15);
+  }
+
+  &--accent {
+    background: var(--accent-bg);
+    color: var(--accent);
+    border: 1px solid rgba(var(--accent-rgb), 0.18);
+  }
+
+  &--neutral {
+    background: var(--bg-3);
+    color: var(--text-sec);
+    border: 1px solid var(--border);
+    &::before { opacity: 0.5; }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DIVIDER — semantic separator
+═══════════════════════════════════════════════════════════════════ */
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  border: none;
+  margin: 0;
+  flex-shrink: 0;
+
+  &--subtle {
+    background: rgba(var(--border-rgb), 0.5);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(var(--border-rgb), 0.6),
+      transparent
+    );
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EMPTY STATE — consistent placeholder across pages
+   Usage: <div class="empty-state"><span>Sin resultados</span></div>
+═══════════════════════════════════════════════════════════════════ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: clamp(40px, 6vw, 72px) 24px;
+  text-align: center;
+
+  svg,
+  .empty-state__icon {
+    opacity: 0.22;
+    color: var(--text-sec);
+    flex-shrink: 0;
+  }
+
+  p,
+  .empty-state__title {
+    margin: 0;
+    font-size: clamp(14px, 1.2vw, 16px);
+    font-weight: 600;
+    color: var(--text-sec);
+    letter-spacing: -0.01em;
+  }
+
+  span,
+  .empty-state__sub {
+    font-size: 13px;
+    color: var(--text-mut);
+    line-height: 1.55;
+  }
+
+  /* Optional CTA button inside */
+  .empty-state__action {
+    margin-top: 6px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ICON BOX — colored icon container (used in cards, banners)
+   Usage: <div class="icon-box icon-box--accent"><Icon/></div>
+═══════════════════════════════════════════════════════════════════ */
+
+.icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+
+  &--sm  { width: 34px; height: 34px; }
+  &--md  { width: 44px; height: 44px; border-radius: var(--radius); }
+  &--lg  { width: 54px; height: 54px; border-radius: var(--radius-md); }
+
+  &--accent  { background: var(--accent-bg);  color: var(--accent);  border: 1px solid rgba(var(--accent-rgb), 0.18); }
+  &--success { background: var(--success-bg); color: var(--success); border: 1px solid rgba(var(--success-rgb), 0.15); }
+  &--warning { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(var(--warning-rgb), 0.15); }
+  &--danger  { background: var(--danger-bg);  color: var(--danger);  border: 1px solid rgba(var(--danger-rgb), 0.15); }
+  &--info    { background: var(--info-bg);    color: var(--info);    border: 1px solid rgba(var(--info-rgb), 0.15); }
+  &--neutral { background: var(--bg-3);       color: var(--text-sec); border: 1px solid var(--border); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FILTER BAR — unified search/filter toolbar
+═══════════════════════════════════════════════════════════════════ */
+
+.filter-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--text-mut);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  &__input {
+    padding: 8px 12px;
+    background: var(--card);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: var(--transition-fast);
+    min-height: var(--input-height);
+    min-width: 140px;
+
+    &::placeholder { color: var(--text-mut); }
+    &:hover:not(:focus) { border-color: var(--border-2); background: var(--input-bg-hover); }
+    &:focus { border-color: var(--accent); box-shadow: var(--accent-glow); }
+
+    @media (max-width: 479px) { font-size: 16px; min-width: 0; width: 100%; }
+  }
+
+  &__clear {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    color: var(--text-sec);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    align-self: flex-end;
+    min-height: var(--input-height);
+    white-space: nowrap;
+
+    &:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
+  }
+
+  &__count {
+    font-size: 12.5px;
+    color: var(--text-mut);
+    margin-left: auto;
+    align-self: center;
+    font-weight: 500;
+    white-space: nowrap;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════

@@ -9,11 +9,36 @@
   letter-spacing: -0.02em;
   flex-shrink: 0;
   user-select: none;
-  transition: box-shadow 0.2s var(--ease-out), transform 0.2s var(--ease-out);
+  transition:
+    box-shadow 0.22s var(--ease-out),
+    transform 0.22s var(--ease-out);
   position: relative;
 
   &:hover {
-    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.22);
-    transform: scale(1.05);
+    /* Double ring: card gap + accent ring */
+    box-shadow:
+      0 0 0 2px var(--card),
+      0 0 0 4px rgba(var(--accent-rgb), 0.35);
+    transform: scale(1.06);
   }
+}
+
+/* Online presence indicator dot */
+.avatar--online::after {
+  content: '';
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--success);
+  border: 2px solid var(--card);
+  box-shadow: 0 0 6px rgba(var(--success-rgb), 0.5);
+  animation: presence-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes presence-pulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(var(--success-rgb), 0.5); }
+  50%       { box-shadow: 0 0 10px rgba(var(--success-rgb), 0.75); }
 }

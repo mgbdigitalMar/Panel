@@ -211,6 +211,7 @@
   background: rgba(var(--accent-rgb), 0.09) !important;
   color: var(--accent) !important;
   font-weight: 700;
+  box-shadow: var(--nav-glow);
 
   svg {
     opacity: 1 !important;
@@ -224,7 +225,7 @@
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    height: 20px;
+    height: 22px;
     width: 3px;
     background: var(--gradient-accent);
     border-radius: 0 var(--radius-full) var(--radius-full) 0;
@@ -266,7 +267,8 @@
 
   &:hover {
     background: rgba(var(--accent-rgb), 0.09);
-    border-color: rgba(var(--accent-rgb), 0.16);
+    border-color: rgba(var(--accent-rgb), 0.20);
+    box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.08) inset;
   }
 }
 
@@ -335,6 +337,7 @@
     color: var(--text);
     border-color: var(--border-2);
     transform: translateY(-1px);
+    box-shadow: var(--shadow-xs);
 
     svg { filter: drop-shadow(0 0 4px rgba(var(--accent-rgb), 0.35)); }
   }
