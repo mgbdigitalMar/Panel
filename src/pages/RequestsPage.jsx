@@ -283,7 +283,54 @@ export default function RequestsPage() {
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-mut)', marginBottom: '8px', textTransform: 'uppercase' }}>
                 Documentación justificativa aportada (Opcional)
               </label>
-              <input type="file" onChange={e => setFile(e.target.files[0])} style={{ fontSize: 13, color: 'var(--text)' }} />
+              <div style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 16px',
+                background: 'var(--bg)',
+                border: '1px dashed var(--border)',
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer',
+                transition: 'border-color 0.2s',
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '36px',
+                  height: '36px',
+                  background: 'var(--accent-bg)',
+                  color: 'var(--accent)',
+                  borderRadius: '8px'
+                }}>
+                  <FileText size={20} />
+                </div>
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {file ? file.name : 'Haz clic o arrastra un archivo aquí'}
+                  </p>
+                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-mut)' }}>
+                    {file ? `${(file.size / 1024).toFixed(1)} KB` : 'PDF, JPG, PNG (máx. 5MB)'}
+                  </p>
+                </div>
+                <input 
+                  type="file" 
+                  title=""
+                  onChange={e => setFile(e.target.files[0])} 
+                  style={{ 
+                    position: 'absolute', 
+                    top: 0, left: 0, right: 0, bottom: 0, 
+                    opacity: 0, 
+                    color: 'transparent',
+                    cursor: 'pointer',
+                    width: '100%',
+                    height: '100%',
+                    zIndex: 1
+                  }} 
+                />
+              </div>
             </div>
 
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', userSelect: 'none', background: 'var(--bg)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
