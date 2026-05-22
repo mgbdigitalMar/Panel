@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useAuth, useData } from '../context';
 import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard } from '../components/ui';
 import { Plus, Check, X, FileText, ExternalLink, Download } from 'lucide-react';
@@ -15,6 +15,32 @@ export default function RequestsPage() {
   const [loading, setLoading]     = useState(false);
   const [form, setForm]           = useState({ startDate: '', endDate: '', date: '', reason: '', item: '', amount: '', acceptedTerms: false });
   const [file, setFile]           = useState(null);
+  
+  const [conditionsRead, setConditionsRead] = useState(false);
+  const conditionsRef = useRef(null);
+
+  useEffect(() => {
+    if (showModal && (reqType === 'external' || reqType === 'remoto')) {
+      setConditionsRead(false);
+      setForm(f => ({ ...f, acceptedTerms: false }));
+      
+      setTimeout(() => {
+        if (conditionsRef.current) {
+          const { scrollHeight, clientHeight } = conditionsRef.current;
+          if (scrollHeight <= clientHeight + 5) {
+            setConditionsRead(true);
+          }
+        }
+      }, 100);
+    }
+  }, [reqType, showModal]);
+
+  const handleScrollConditions = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    if (scrollHeight - scrollTop <= clientHeight + 5) {
+      setConditionsRead(true);
+    }
+  };
 
   const allItems = useMemo(() => [
     ...requests,
@@ -229,7 +255,10 @@ export default function RequestsPage() {
                 </div>
               </div>
 
-              <div style={{
+              <div
+                ref={conditionsRef}
+                onScroll={handleScrollConditions}
+                style={{
                 background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px',
                 maxHeight: '200px', overflowY: 'auto', fontSize: '13px', color: 'var(--text-sec)', marginBottom: '16px',
                 display: 'flex', flexDirection: 'column', gap: '12px'
@@ -251,9 +280,31 @@ export default function RequestsPage() {
                 )}
               </div>
 
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', userSelect: 'none' }}>
-                <input type="checkbox" checked={form.acceptedTerms} onChange={e => setForm({ ...form, acceptedTerms: e.target.checked })} style={{ width: '18px', height: '18px', cursor: 'pointer', marginTop: '2px' }} />
-                <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text)' }}>En conformidad con lo anterior, firmo el presente documento como muestra de mi aceptación y compromiso.</span>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: conditionsRead ? 'pointer' : 'not-allowed', userSelect: 'none', opacity: conditionsRead ? 1 : 0.6 }}>
+                <div style={{ position: 'relative', width: 22, height: 22, flexShrink: 0 }}>
+                  <input 
+                    type="checkbox" 
+                    disabled={!conditionsRead} 
+                    checked={form.acceptedTerms} 
+                    onChange={e => setForm({ ...form, acceptedTerms: e.target.checked })} 
+                    style={{ position: 'absolute', opacity: 0, cursor: conditionsRead ? 'pointer' : 'not-allowed', width: '100%', height: '100%', margin: 0, zIndex: 2 }} 
+                  />
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    background: form.acceptedTerms ? 'var(--accent)' : 'var(--bg)',
+                    border: form.acceptedTerms ? '2px solid var(--accent)' : '2px solid var(--border)',
+                    borderRadius: '6px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 0.2s',
+                    boxShadow: form.acceptedTerms ? '0 2px 8px rgba(34,81,255,0.3)' : 'none',
+                    zIndex: 1
+                  }}>
+                    <Check size={14} color="#fff" strokeWidth={3} style={{ opacity: form.acceptedTerms ? 1 : 0, transform: form.acceptedTerms ? 'scale(1)' : 'scale(0.5)', transition: 'all 0.2s' }} />
+                  </div>
+                </div>
+                <span style={{ fontSize: '13px', fontWeight: 500, color: form.acceptedTerms ? 'var(--text)' : 'var(--text-sec)', transition: 'color 0.2s' }}>
+                  {conditionsRead ? 'En conformidad con lo anterior, firmo el presente documento como muestra de mi aceptación y compromiso.' : 'Debes leer las condiciones hasta el final para poder aceptar.'}
+                </span>
               </label>
             </div>
             <div className={styles.modalGrid}>
@@ -333,9 +384,28 @@ export default function RequestsPage() {
               </div>
             </div>
 
-            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', userSelect: 'none', background: 'var(--bg)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)' }}>
-              <input type="checkbox" checked={form.acceptedTerms} onChange={e => setForm({ ...form, acceptedTerms: e.target.checked })} style={{ width: '18px', height: '18px', cursor: 'pointer', marginTop: '2px' }} />
-              <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text)', lineHeight: '1.4' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', userSelect: 'none', background: 'var(--bg)', padding: '12px', borderRadius: '8px', border: form.acceptedTerms ? '1px solid var(--accent)' : '1px solid var(--border)', transition: 'border-color 0.2s' }}>
+              <div style={{ position: 'relative', width: 22, height: 22, flexShrink: 0 }}>
+                <input 
+                  type="checkbox" 
+                  checked={form.acceptedTerms} 
+                  onChange={e => setForm({ ...form, acceptedTerms: e.target.checked })} 
+                  style={{ position: 'absolute', opacity: 0, cursor: 'pointer', width: '100%', height: '100%', margin: 0, zIndex: 2 }} 
+                />
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: form.acceptedTerms ? 'var(--accent)' : 'var(--bg)',
+                  border: form.acceptedTerms ? '2px solid var(--accent)' : '2px solid var(--border)',
+                  borderRadius: '6px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s',
+                  boxShadow: form.acceptedTerms ? '0 2px 8px rgba(34,81,255,0.3)' : 'none',
+                  zIndex: 1
+                }}>
+                  <Check size={14} color="#fff" strokeWidth={3} style={{ opacity: form.acceptedTerms ? 1 : 0, transform: form.acceptedTerms ? 'scale(1)' : 'scale(0.5)', transition: 'all 0.2s' }} />
+                </div>
+              </div>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: form.acceptedTerms ? 'var(--text)' : 'var(--text-sec)', lineHeight: '1.4', transition: 'color 0.2s' }}>
                 Declaro que el motivo indicado corresponde a un asunto personal que no puede realizarse fuera de la jornada laboral.
               </span>
             </label>

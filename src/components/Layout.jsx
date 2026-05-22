@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, Settings, User,
   LogOut, Sun, Moon, Menu, Bell, CheckCircle, XCircle,
-  UsersRound, Timer,
+  UsersRound, Timer, Check,
 } from 'lucide-react';
 
 import logoColor from '../assets/logos/logo-color.png';
@@ -87,6 +87,16 @@ export default function Layout({ children }) {
   /* ── UI state ────────────────────────────────────────────── */
   const [sideOpen, setSideOpen] = useState(false);
   const [notiMenu, setNotiMenu] = useState(false);
+  
+  const [policyRead, setPolicyRead] = useState(false);
+  const [policyTimer, setPolicyTimer] = useState(5);
+
+  useEffect(() => {
+    if (user && user.policyAccepted !== true && policyTimer > 0) {
+      const t = setTimeout(() => setPolicyTimer(p => p - 1), 1000);
+      return () => clearTimeout(t);
+    }
+  }, [user, policyTimer]);
 
   const notiMenuRef = useRef(null);
 
@@ -509,9 +519,37 @@ export default function Layout({ children }) {
                 borderTop: '1px solid var(--border)',
                 background: 'var(--card)',
                 display: 'flex',
-                justifyContent: 'flex-end',
+                alignItems: 'center',
+                justifyContent: 'space-between',
               }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: policyTimer === 0 ? 'pointer' : 'not-allowed', opacity: policyTimer === 0 ? 1 : 0.6, userSelect: 'none' }}>
+                  <div style={{ position: 'relative', width: 22, height: 22 }}>
+                    <input 
+                      type="checkbox" 
+                      disabled={policyTimer > 0} 
+                      checked={policyRead} 
+                      onChange={e => setPolicyRead(e.target.checked)} 
+                      style={{ position: 'absolute', opacity: 0, cursor: policyTimer === 0 ? 'pointer' : 'not-allowed', width: '100%', height: '100%', margin: 0, zIndex: 2 }} 
+                    />
+                    <div style={{
+                      position: 'absolute', inset: 0,
+                      background: policyRead ? 'var(--accent)' : 'var(--bg)',
+                      border: policyRead ? '2px solid var(--accent)' : '2px solid var(--border)',
+                      borderRadius: '6px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 0.2s',
+                      boxShadow: policyRead ? '0 2px 8px rgba(34,81,255,0.3)' : 'none',
+                      zIndex: 1
+                    }}>
+                      <Check size={14} color="#fff" strokeWidth={3} style={{ opacity: policyRead ? 1 : 0, transform: policyRead ? 'scale(1)' : 'scale(0.5)', transition: 'all 0.2s' }} />
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: policyRead ? 'var(--text)' : 'var(--text-sec)', transition: 'color 0.2s' }}>
+                    Confirmo que he leído el documento hasta el final
+                  </span>
+                </label>
                 <button
+                  disabled={!policyRead || policyTimer > 0}
                   onClick={() => setCurrentUser({ id: user.id, policyAccepted: true })}
                   style={{
                     background: 'var(--gradient-accent)',
@@ -521,19 +559,20 @@ export default function Layout({ children }) {
                     borderRadius: 'var(--radius-md)',
                     fontWeight: 700,
                     fontSize: 'clamp(13px,1.2vw,15px)',
-                    cursor: 'pointer',
+                    cursor: (!policyRead || policyTimer > 0) ? 'not-allowed' : 'pointer',
+                    opacity: (!policyRead || policyTimer > 0) ? 0.5 : 1,
                     display: 'flex',
                     alignItems: 'center',
                     gap: 8,
-                    boxShadow: 'var(--shadow-accent)',
+                    boxShadow: (!policyRead || policyTimer > 0) ? 'none' : 'var(--shadow-accent)',
                     transition: 'transform 0.2s var(--ease-out), box-shadow 0.2s ease',
                     fontFamily: 'inherit',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(34,81,255,0.4)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = 'var(--shadow-accent)'; }}
+                  onMouseEnter={e => { if (policyRead && policyTimer === 0) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(34,81,255,0.4)'; } }}
+                  onMouseLeave={e => { if (policyRead && policyTimer === 0) { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = 'var(--shadow-accent)'; } }}
                 >
                   <CheckCircle size={17} aria-hidden="true" />
-                  He leído y acepto el procedimiento
+                  {policyTimer > 0 ? `Espera ${policyTimer}s...` : 'Confirmar lectura'}
                 </button>
               </div>
             </motion.div>
