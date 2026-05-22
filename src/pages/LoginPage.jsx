@@ -145,16 +145,18 @@ export default function LoginPage() {
           {/* On mobile, wrap in a card for visual grouping */}
           <Card className={styles.loginCard}>
             {/* Email */}
-            <Input
-              label="Correo corporativo"
-              type="email"
-              value={email}
-              onChange={setEmail}
-              placeholder="nombre@margube.com"
-              required
-              autoComplete="email"
-              id="login-email"
-            />
+            <div className={styles.inputGroup} style={{ marginTop: '8px' }}>
+              <Input
+                label="Correo corporativo"
+                type="email"
+                value={email}
+                onChange={setEmail}
+                placeholder="nombre@margube.com"
+                required
+                autoComplete="email"
+                id="login-email"
+              />
+            </div>
 
             {/* Password */}
             <div className={styles.inputGroup}>

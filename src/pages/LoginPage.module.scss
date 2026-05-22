@@ -273,12 +273,13 @@
   border: 1px solid var(--glass-border) !important;
 
   @media (min-width: 768px) {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    padding: 0 !important;
+    /* The user requested margin around the entire form box. We keep the card padding. */
+    /* But we can optionally make the background transparent if we still want it flush, or keep the card. */
+    padding: 32px;
+    
+    label {
+      margin-left: 8px;
+    }
   }
 }
 

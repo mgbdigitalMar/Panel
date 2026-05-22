@@ -85,14 +85,15 @@ button, input, select, textarea {
 img, svg, video { display: block; max-width: 100%; }
 
 /* ── Custom Scrollbar ─────────────────────────────────────────────── */
-::-webkit-scrollbar            { width: 4px; height: 4px; }
+::-webkit-scrollbar            { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track      { background: transparent; }
 ::-webkit-scrollbar-thumb      {
-  background: var(--border-2);
+  background: rgba(var(--text-rgb), 0.15);
+  border: 2px solid var(--bg);
   border-radius: var(--radius-full);
-  &:hover { background: var(--text-mut); }
+  &:hover { background: rgba(var(--text-rgb), 0.3); }
 }
-* { scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
+* { scrollbar-width: thin; scrollbar-color: rgba(var(--text-rgb), 0.15) transparent; }
 
 /* ── Focus Ring — Accessibility ───────────────────────────────────── */
 :focus-visible {

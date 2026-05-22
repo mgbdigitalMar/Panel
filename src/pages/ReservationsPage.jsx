@@ -162,54 +162,64 @@ export default function ReservationsPage() {
           <div style={{ padding: '20px 24px 0' }}>
             <h3 style={{ margin: '0 0 0', fontSize: 14, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-heading)' }}>Historial de reservas</h3>
           </div>
-          <div className={styles.tableWrapper}>
-            <table className="table">
-              <thead>
-                <tr>
-                  {['Recurso', 'Tipo', 'Solicitante', 'Fecha', 'Horario', 'Propósito', 'Estado', 'Acciones'].map(h => (
-                    <th key={h}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map(r => (
-                  <tr key={r.id}>
-                    <td data-label="Recurso" style={{ color: 'var(--text)', fontWeight: 600 }}>{r.resourceName}</td>
-                    <td data-label="Tipo">
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: r.type === 'vehicle' ? 'var(--warning)' : 'var(--accent)' }}>
-                        {r.type === 'vehicle' ? <Car size={13} /> : <Building size={13} />}
-                        {r.type === 'vehicle' ? 'Vehículo' : 'Sala'}
-                      </span>
-                    </td>
-                    <td data-label="Solicitante" style={{ color: 'var(--text-sec)' }}>{r.employeeName}</td>
-                    <td data-label="Fecha" style={{ color: 'var(--text-sec)', whiteSpace: 'nowrap' }}>{r.date}</td>
-                    <td data-label="Horario" style={{ color: 'var(--text-sec)', whiteSpace: 'nowrap' }}>{r.timeStart}–{r.timeEnd}</td>
-                    <td data-label="Propósito" style={{ color: 'var(--text-sec)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.purpose}</td>
-                    <td data-label="Estado"><Badge status={r.status} /></td>
-                    <td data-label="Acciones">
-                      <div className={styles.actionsCell} style={{ gap: 4 }}>
-                        {user.role === 'admin' && r.status === 'pending' && (
-                          <>
-                            <button className={clsx(styles.actionBtn, styles.approveBtn)} onClick={() => handleApprove(r.id)} title="Aprobar">
-                              <Check size={16} />
-                            </button>
-                            <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => handleReject(r.id)} title="Rechazar">
+          {filtered.length === 0 ? (
+            <div className="empty-state">
+              <div className="icon-box icon-box--lg icon-box--accent empty-state__icon" style={{ opacity: 1 }}>
+                <Building size={24} />
+              </div>
+              <h3 className="empty-state__title">No hay reservas</h3>
+              <p className="empty-state__sub">No se han encontrado reservas en este momento.</p>
+            </div>
+          ) : (
+            <div className={styles.tableWrapper}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    {['Recurso', 'Tipo', 'Solicitante', 'Fecha', 'Horario', 'Propósito', 'Estado', 'Acciones'].map(h => (
+                      <th key={h}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map(r => (
+                    <tr key={r.id}>
+                      <td data-label="Recurso" style={{ color: 'var(--text)', fontWeight: 600 }}>{r.resourceName}</td>
+                      <td data-label="Tipo">
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: r.type === 'vehicle' ? 'var(--warning)' : 'var(--accent)' }}>
+                          {r.type === 'vehicle' ? <Car size={13} /> : <Building size={13} />}
+                          {r.type === 'vehicle' ? 'Vehículo' : 'Sala'}
+                        </span>
+                      </td>
+                      <td data-label="Solicitante" style={{ color: 'var(--text-sec)' }}>{r.employeeName}</td>
+                      <td data-label="Fecha" style={{ color: 'var(--text-sec)', whiteSpace: 'nowrap' }}>{r.date}</td>
+                      <td data-label="Horario" style={{ color: 'var(--text-sec)', whiteSpace: 'nowrap' }}>{r.timeStart}–{r.timeEnd}</td>
+                      <td data-label="Propósito" style={{ color: 'var(--text-sec)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.purpose}</td>
+                      <td data-label="Estado"><Badge status={r.status} /></td>
+                      <td data-label="Acciones">
+                        <div className={styles.actionsCell} style={{ gap: 4 }}>
+                          {user.role === 'admin' && r.status === 'pending' && (
+                            <>
+                              <button className={clsx(styles.actionBtn, styles.approveBtn)} onClick={() => handleApprove(r.id)} title="Aprobar">
+                                <Check size={16} />
+                              </button>
+                              <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => handleReject(r.id)} title="Rechazar">
+                                <X size={16} />
+                              </button>
+                            </>
+                          )}
+                          {(user.role === 'admin' || r.employeeId === user.id) && r.status !== 'pending' && (
+                            <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => handleDelete(r.id)} title="Eliminar">
                               <X size={16} />
                             </button>
-                          </>
-                        )}
-                        {(user.role === 'admin' || r.employeeId === user.id) && r.status !== 'pending' && (
-                          <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => handleDelete(r.id)} title="Eliminar">
-                            <X size={16} />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </Card>
       )}
 

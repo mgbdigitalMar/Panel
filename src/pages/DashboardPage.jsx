@@ -162,6 +162,21 @@ export default function DashboardPage() {
   const emoji    = hour < 13 ? '☀️' : hour < 20 ? '🌤️' : '🌙';
   const todayStr = today.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
+  // Calculate workday progress
+  const currentMinutes = hour * 60 + today.getMinutes();
+  const dayOfWeek = today.getDay(); // 0: Sunday, 6: Saturday
+  let workdayProgress = 0;
+  
+  if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+    const workdayStart = 8 * 60; // 08:00
+    const workdayEnd = dayOfWeek === 5 ? (14 * 60 + 30) : (17 * 60); // 14:30 on Friday, 17:00 otherwise
+    if (currentMinutes >= workdayStart && currentMinutes <= workdayEnd) {
+      workdayProgress = ((currentMinutes - workdayStart) / (workdayEnd - workdayStart)) * 100;
+    } else if (currentMinutes > workdayEnd) {
+      workdayProgress = 100;
+    }
+  }
+
 const tooltipStyle = {
     background: 'var(--card)',
     border: '1px solid var(--border)',
@@ -183,13 +198,23 @@ const tooltipStyle = {
       <motion.div variants={item} className={styles.welcomeBanner}>
         <div className={styles.welcomeLeft}>
           <span className={styles.welcomeEmoji}>{emoji}</span>
-          <div>
+          <div style={{ flex: 1 }}>
             <h2 className={styles.welcomeTitle}>
               {greeting}, {user?.name?.split(' ')[0]}
             </h2>
             <p className={styles.welcomeSub}>
               {todayStr.charAt(0).toUpperCase() + todayStr.slice(1)} · Todo bajo control en Margube
             </p>
+            {/* Workday Progress Bar */}
+            <div style={{ marginTop: 14, width: '100%', maxWidth: 280 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(255,255,255,0.85)', marginBottom: 6, fontWeight: 600 }}>
+                <span>Progreso de jornada laboral</span>
+                <span>{Math.round(workdayProgress)}%</span>
+              </div>
+              <div style={{ width: '100%', height: 6, background: 'rgba(255,255,255,0.2)', borderRadius: 4, overflow: 'hidden' }}>
+                <div style={{ width: `${workdayProgress}%`, height: '100%', background: '#fff', borderRadius: 4, transition: 'width 1s ease-out' }} />
+              </div>
+            </div>
           </div>
         </div>
         <div className={styles.welcomeActions}>

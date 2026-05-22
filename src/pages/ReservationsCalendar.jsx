@@ -119,7 +119,7 @@ export default function ReservationsCalendar() {
                         title={`${r.resourceName} — ${r.timeStart}–${r.timeEnd}`}
                       >
                         {r.type === 'room' ? <Building size={10} /> : <Car size={10} />}
-                        <span>{r.resourceName.split(' ')[1] || r.resourceName}</span>
+                        <span>{r.resourceName.split(' ')[1] || r.resourceName} - {r.employeeName || 'Alguien'}</span>
                       </div>
                     ))}
                     {dayRes.length > 3 && (
@@ -172,7 +172,9 @@ export default function ReservationsCalendar() {
                           }}
                           title={`${r.resourceName} — ${r.employeeName}`}
                         >
-                          <span className={styles.eventName}>{r.resourceName.split(' ')[0]} {r.resourceName.split(' ')[1]}</span>
+                          <span className={styles.eventName}>
+                            {r.resourceName.split(' ')[0]} {r.resourceName.split(' ')[1]} · {r.employeeName || 'Alguien'}
+                          </span>
                         </div>
                       ))}
                     </div>

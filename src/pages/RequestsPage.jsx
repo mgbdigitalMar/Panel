@@ -160,60 +160,70 @@ export default function RequestsPage() {
 
       {/* Table */}
       <Card>
-        <div className={styles.tableWrapper}>
-          <table className="table">
-            <thead>
-              <tr>
-                {['Empleado', 'Tipo', 'Detalle', 'Fecha solicitud', 'Estado', user.role === 'admin' ? 'Acciones' : null].filter(Boolean).map(h => (
-                  <th key={h}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(r => (
-                <tr key={r.id}>
-                  <td data-label="Empleado">
-                    <div className={styles.userCell}>
-                      <Avatar initials={(r.employeeName || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()} size={32} />
-                      <span className={styles.userName}>{r.employeeName || '—'}</span>
-                    </div>
-                  </td>
-                  <td data-label="Tipo">
-                    <Badge status={r.type} label={r.type === 'asuntos_propios' ? 'Asuntos Propios' : r.type === 'remoto' ? 'Remoto' : r.type === 'external' ? 'Trabajo Externo' : 'Compra'} />
-                  </td>
-                  <td data-label="Detalle" style={{ color: 'var(--text-sec)' }}>
-                    {r.type === 'asuntos_propios'
-                      ? `${r.date} (1 día)`
-                      : r.type === 'external' || r.type === 'remoto'
-                      ? `${r.startDate} → ${r.endDate} (${r.days || '?'} días)`
-                      : `${r.item} — ${r.amount}€`}
-                    {r.fileUrl && (
-                      <a href={r.fileUrl} download="justificante" style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 8, color: 'var(--accent)', verticalAlign: 'middle' }} title="Descargar justificante">
-                        <Download size={14} />
-                      </a>
-                    )}
-                  </td>
-                  <td data-label="Fecha solicitud" style={{ color: 'var(--text-mut)' }}>{r.createdAt}</td>
-                  <td data-label="Estado"><Badge status={r.status} /></td>
-                  {user.role === 'admin' && (
-                    <td data-label="Acciones">
-                      {r.status === 'pending' && (
-                        <div className={styles.actionsCell}>
-                          <button className={clsx(styles.actionBtn, styles.approveBtn)} onClick={() => changeStatus(r.id, 'approved', r.employeeId, r.type)} title="Aprobar">
-                            <Check size={16} />
-                          </button>
-                          <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => changeStatus(r.id, 'rejected', r.employeeId, r.type)} title="Rechazar">
-                            <X size={16} />
-                          </button>
-                        </div>
+        {filtered.length === 0 ? (
+          <div className="empty-state">
+            <div className="icon-box icon-box--lg icon-box--accent empty-state__icon" style={{ opacity: 1 }}>
+              <FileText size={24} />
+            </div>
+            <h3 className="empty-state__title">No hay solicitudes</h3>
+            <p className="empty-state__sub">No se han encontrado solicitudes en esta categoría.</p>
+          </div>
+        ) : (
+          <div className={styles.tableWrapper}>
+            <table className="table">
+              <thead>
+                <tr>
+                  {['Empleado', 'Tipo', 'Detalle', 'Fecha solicitud', 'Estado', user.role === 'admin' ? 'Acciones' : null].filter(Boolean).map(h => (
+                    <th key={h}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(r => (
+                  <tr key={r.id}>
+                    <td data-label="Empleado">
+                      <div className={styles.userCell}>
+                        <Avatar initials={(r.employeeName || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()} size={32} />
+                        <span className={styles.userName}>{r.employeeName || '—'}</span>
+                      </div>
+                    </td>
+                    <td data-label="Tipo">
+                      <Badge status={r.type} label={r.type === 'asuntos_propios' ? 'Asuntos Propios' : r.type === 'remoto' ? 'Remoto' : r.type === 'external' ? 'Trabajo Externo' : 'Compra'} />
+                    </td>
+                    <td data-label="Detalle" style={{ color: 'var(--text-sec)' }}>
+                      {r.type === 'asuntos_propios'
+                        ? `${r.date} (1 día)`
+                        : r.type === 'external' || r.type === 'remoto'
+                        ? `${r.startDate} → ${r.endDate} (${r.days || '?'} días)`
+                        : `${r.item} — ${r.amount}€`}
+                      {r.fileUrl && (
+                        <a href={r.fileUrl} download="justificante" style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 8, color: 'var(--accent)', verticalAlign: 'middle' }} title="Descargar justificante">
+                          <Download size={14} />
+                        </a>
                       )}
                     </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <td data-label="Fecha solicitud" style={{ color: 'var(--text-mut)' }}>{r.createdAt}</td>
+                    <td data-label="Estado"><Badge status={r.status} /></td>
+                    {user.role === 'admin' && (
+                      <td data-label="Acciones">
+                        {r.status === 'pending' && (
+                          <div className={styles.actionsCell}>
+                            <button className={clsx(styles.actionBtn, styles.approveBtn)} onClick={() => changeStatus(r.id, 'approved', r.employeeId, r.type)} title="Aprobar">
+                              <Check size={16} />
+                            </button>
+                            <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => changeStatus(r.id, 'rejected', r.employeeId, r.type)} title="Rechazar">
+                              <X size={16} />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Card>
 
       {/* New request modal */}
