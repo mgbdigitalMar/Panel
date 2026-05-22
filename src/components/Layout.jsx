@@ -20,7 +20,7 @@ const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'reservations', label: 'Reservas', icon: Calendar },
   { id: 'requests', label: 'Solicitudes', icon: Inbox },
-  { id: 'horas', label: 'Horas Extra', icon: Timer },
+  { id: 'horas', label: 'Control de Tiempo', icon: Timer },
   { id: 'news', label: 'Noticias y Eventos', icon: Newspaper },
   { id: 'employees', label: 'Equipo', icon: UsersRound },
 ];
@@ -81,6 +81,7 @@ export default function Layout({ children }) {
   const {
     liveNotifs = [],
     notifications = [], markNotifRead, markAllNotifsRead,
+    onboardingDocUrl,
   } = useData();
 
   /* ── UI state ────────────────────────────────────────────── */
@@ -498,9 +499,9 @@ export default function Layout({ children }) {
               </div>
               <div style={{ flex: 1, background: '#f5f5f5', position: 'relative' }}>
                 <iframe
-                  src="/Procedimiento normas internas 2026.pdf#toolbar=0"
+                  src={onboardingDocUrl ? `${onboardingDocUrl}#toolbar=0` : "/Procedimiento normas internas 2026.pdf#toolbar=0"}
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
-                  title="Procedimiento normas internas 2026"
+                  title="Procedimiento de normas internas"
                 />
               </div>
               <div style={{

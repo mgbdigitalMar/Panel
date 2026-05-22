@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth, useData } from '../context';
 import { Badge, Modal, Select, Input, Textarea, Button, Card } from '../components/ui';
-import { Building, Car, Check, X, Plus } from 'lucide-react';
+import { Building, Car, Check, X, Plus, Download } from 'lucide-react';
 import styles from './ReservationsPage.module.scss';
 import clsx from 'clsx';
 import ReservationsCalendar from './ReservationsCalendar';
@@ -17,6 +17,31 @@ export default function ReservationsPage() {
   const [form, setForm]         = useState({ type: 'room', resourceId: '', date: '', timeStart: '', timeEnd: '', purpose: '' });
 
   const filtered = tab === 'all' ? reservations : tab === 'mine' ? reservations.filter(r => r.employeeId === user.id) : reservations.filter(r => r.type === tab);
+
+  const exportReservationsCSV = (rows) => {
+    const headers = ['Recurso', 'Tipo', 'Solicitante', 'Fecha', 'Horario', 'Propósito', 'Estado'];
+    const lines = [
+      headers.join(';'),
+      ...rows.map(r => {
+        const typeLabel = r.type === 'vehicle' ? 'Vehículo' : 'Sala';
+        const status = r.status === 'confirmed' ? 'Confirmada' : r.status === 'cancelled' ? 'Cancelada' : 'Pendiente';
+        return [
+          r.resourceName || '—',
+          typeLabel,
+          r.employeeName || '—',
+          r.date,
+          `${r.timeStart}-${r.timeEnd}`,
+          `"${(r.purpose || '').replace(/"/g, '""')}"`,
+          status
+        ].join(';');
+      }),
+    ];
+    const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = `reservas-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+  };
 
   const handleCreate = async () => {
     if (!form.resourceId || !form.date || !form.timeStart || !form.timeEnd || !form.purpose) {
@@ -69,7 +94,14 @@ export default function ReservationsPage() {
           {tabBtn('calendar', '📅 Calendario')}
         </div>
         {tab !== 'calendar' && (
-          <Button icon={Plus} onClick={() => setShowModal(true)}>Nueva reserva</Button>
+          <div style={{ display: 'flex', gap: 12 }}>
+            {filtered.length > 0 && (
+              <Button icon={Download} variant="ghost" onClick={() => exportReservationsCSV(filtered)}>
+                Descargar Excel
+              </Button>
+            )}
+            <Button icon={Plus} onClick={() => setShowModal(true)}>Nueva reserva</Button>
+          </div>
         )}
       </div>
 

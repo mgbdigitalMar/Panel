@@ -72,6 +72,47 @@ export default function AdminPage() {
   const [docFile, setDocFile] = useState(null);   // the actual File object
   const [docDrag, setDocDrag] = useState(false);  // drag-over state
   const fileInputRef = useRef(null);
+  
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  const [onboardingFile, setOnboardingFile] = useState(null);
+  const [onboardingUploading, setOnboardingUploading] = useState(false);
+  const [onboardingUploadStatus, setOnboardingUploadStatus] = useState('');
+
+  const handleUpdateOnboarding = async () => {
+    if (!onboardingFile) return;
+    setOnboardingUploading(true);
+    setOnboardingUploadStatus('⏳ Subiendo archivo al servidor...');
+    const { url, error } = await uploadDocumentFile(onboardingFile);
+    if (error || !url) {
+      setOnboardingUploadStatus('❌ Error al subir: ' + (error || 'Desconocido'));
+      setOnboardingUploading(false);
+      return;
+    }
+    
+    // Guardar en la tabla documents
+    const { error: dbError } = await supabase.from('documents').insert([{
+      title: '__ONBOARDING_DOC__',
+      description: 'Documento de inicio dinámico',
+      file_url: url,
+      sender_id: user.id,
+      recipient_id: null,
+      status: 'completed',
+    }]);
+    
+    if (dbError) {
+      setOnboardingUploadStatus('❌ Error guardando configuración: ' + dbError.message);
+    } else {
+      setOnboardingUploadStatus('✅ Documento actualizado correctamente');
+      setTimeout(() => {
+        refresh();
+        setShowOnboardingModal(false);
+        setOnboardingFile(null);
+        setOnboardingUploadStatus('');
+      }, 1500);
+    }
+    setOnboardingUploading(false);
+  };
+
 
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'office' });
   const [resForm, setResForm] = useState({ id: null, name: '', capacity: '', floor: '', equipment: '', model: '', plate: '', year: '', type: 'Turismo' });
@@ -240,9 +281,14 @@ export default function AdminPage() {
           </Button>
         )}
         {tab === 'documents' && (
-          <Button icon={Send} onClick={() => setShowDocModal(true)}>
-            Enviar documento
-          </Button>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <Button icon={Upload} variant="ghost" onClick={() => setShowOnboardingModal(true)}>
+              Actualizar doc. inicio
+            </Button>
+            <Button icon={Send} onClick={() => setShowDocModal(true)}>
+              Enviar documento
+            </Button>
+          </div>
         )}
         {tab === 'bolsahoras' && filteredHours.length > 0 && (
           <Button icon={Download} variant="ghost" onClick={() => exportHoursCSV(filteredHours)}>
@@ -513,10 +559,10 @@ export default function AdminPage() {
                 Documentos enviados
               </p>
               <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-mut)' }}>
-                {(documents || []).length} documento{(documents || []).length !== 1 ? 's' : ''}
+                {(documents || []).filter(d => d.title !== '__ONBOARDING_DOC__').length} documento(s)
               </span>
             </div>
-            {(!documents || documents.length === 0) ? (
+            {(!documents || documents.filter(d => d.title !== '__ONBOARDING_DOC__').length === 0) ? (
               <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-mut)' }}>
                 <FileText size={40} strokeWidth={1} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.35 }} />
                 <p style={{ margin: 0, fontSize: 14 }}>No se han enviado documentos todavía</p>
@@ -532,7 +578,7 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(documents || []).map(doc => {
+                    {(documents || []).filter(d => d.title !== '__ONBOARDING_DOC__').map(doc => {
                       const recipient = employees.find(e => String(e.id) === String(doc.recipientId));
                       const recipName   = recipient?.name   || doc.recipientName || '—';
                       const recipAvatar = recipient?.avatar  || recipName.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
@@ -979,6 +1025,59 @@ export default function AdminPage() {
               : docUploadStatus.startsWith('✅') ? 'var(--success)' : 'var(--text-sec)',
           }}>
             {docUploadStatus}
+          </p>
+        )}
+      </Modal>
+
+      {/* Onboarding Modal */}
+      <Modal open={showOnboardingModal} onClose={() => { setShowOnboardingModal(false); setOnboardingFile(null); setOnboardingUploadStatus(''); }} title="Actualizar Documento de Inicio">
+        <div style={{ marginBottom: 16 }}>
+          <p style={{ fontSize: 13, color: 'var(--text-sec)', marginBottom: 16 }}>
+            El documento que subas aquí será mostrado a los usuarios cuando inicien sesión por primera vez y deban aceptar las políticas de la empresa.
+          </p>
+          <div
+            style={{
+              border: '2px dashed var(--border)',
+              borderRadius: 'var(--radius-md)',
+              padding: '24px',
+              textAlign: 'center',
+              background: 'var(--bg-2)',
+              cursor: 'pointer',
+              transition: 'var(--transition-fast)'
+            }}
+            onClick={() => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = 'application/pdf';
+              input.onchange = e => { if (e.target.files[0]) setOnboardingFile(e.target.files[0]); };
+              input.click();
+            }}
+          >
+            {onboardingFile ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, color: 'var(--accent)' }}>
+                <FileText size={24} />
+                <div style={{ textAlign: 'left' }}>
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>{onboardingFile.name}</p>
+                  <p style={{ margin: 0, fontSize: 12 }}>{(onboardingFile.size / 1024).toFixed(0)} KB</p>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <Upload size={28} style={{ color: 'var(--text-mut)', margin: '0 auto 8px' }} />
+                <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: 'var(--text-sec)' }}>Haz clic para seleccionar un PDF</p>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className={styles.modalActions}>
+          <Button variant="ghost" onClick={() => { setShowOnboardingModal(false); setOnboardingFile(null); setOnboardingUploadStatus(''); }}>Cancelar</Button>
+          <Button icon={Upload} onClick={handleUpdateOnboarding} loading={onboardingUploading} disabled={!onboardingFile || onboardingUploading}>
+            Actualizar Documento
+          </Button>
+        </div>
+        {onboardingUploadStatus && (
+          <p style={{ marginTop: 12, fontSize: 13, fontWeight: 600, textAlign: 'center', color: onboardingUploadStatus.startsWith('❌') ? 'var(--danger)' : 'var(--success)' }}>
+            {onboardingUploadStatus}
           </p>
         )}
       </Modal>

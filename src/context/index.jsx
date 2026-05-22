@@ -636,6 +636,14 @@ const [readIds, setReadIds] = useState(() => {
   }
 
   const deleteDocument = async (id) => {
+    const doc = documents.find(d => String(d.id) === String(id));
+    if (doc?.fileUrl && doc.fileUrl.includes('/storage/v1/object/public/documents/')) {
+      const path = doc.fileUrl.split('/documents/')[1];
+      if (path) {
+        const { error: storageError } = await supabase.storage.from('documents').remove([path]);
+        if (storageError) console.warn('Could not delete file from storage:', storageError.message);
+      }
+    }
     const { error } = await supabase.from('documents').delete().eq('id', id)
     if (error) { console.error('deleteDocument:', error); return }
     await fetchDocuments()
@@ -722,21 +730,24 @@ const [readIds, setReadIds] = useState(() => {
   const setRequests     = (fn) => setRequestsState(fn)
   const setReservations = (fn) => setReservationsState(fn)
 
-  const contextValue = useMemo(() => ({
-    requests, setRequests, reservations, setReservations,
-    rooms, vehicles,
-    documents, sendDocument, updateDocumentStatus, uploadDocumentFile, deleteDocument,
-    hourCompensations, createHourCompensation, updateHourCompensationStatus,
-    personalDays, createPersonalDay, updatePersonalDayStatus,
-    notifications, markNotifRead, markAllNotifsRead,
-    loadingData,
-    createRequest, updateRequestStatus,
-    createReservation, updateReservationStatus, deleteReservation,
-    readIds, markRead, markAllRead,
-    density, toggleDensity,
-    liveNotifs,
-    refresh: () => Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations(), fetchPersonalDays()]),
-  }), [
+  const contextValue = useMemo(() => {
+    const onboardingDocUrl = documents?.find(d => d.title === '__ONBOARDING_DOC__')?.fileUrl || null;
+    return {
+      requests, setRequests, reservations, setReservations,
+      rooms, vehicles,
+      documents, sendDocument, updateDocumentStatus, uploadDocumentFile, deleteDocument, onboardingDocUrl,
+      hourCompensations, createHourCompensation, updateHourCompensationStatus,
+      personalDays, createPersonalDay, updatePersonalDayStatus,
+      notifications, markNotifRead, markAllNotifsRead,
+      loadingData,
+      createRequest, updateRequestStatus,
+      createReservation, updateReservationStatus, deleteReservation,
+      readIds, markRead, markAllRead,
+      density, toggleDensity,
+      liveNotifs,
+      refresh: () => Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations(), fetchPersonalDays()]),
+    };
+  }, [
     requests, reservations, rooms, vehicles, documents, hourCompensations, personalDays,
     notifications, loadingData, readIds, density, liveNotifs
   ])

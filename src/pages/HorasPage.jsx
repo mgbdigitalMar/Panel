@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useAuth, useData } from '../context';
-import { Card, Button, Input } from '../components/ui';
-import { Clock, Inbox, CheckCircle, XCircle, Download, Timer, PenTool, TrendingDown, TrendingUp, Minus } from 'lucide-react';
+import { Card, Button, Input, Modal, Avatar } from '../components/ui';
+import { Clock, Inbox, CheckCircle, XCircle, Download, Timer, PenTool, TrendingDown, TrendingUp, Minus, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import styles from './HorasPage.module.scss';
@@ -25,6 +25,27 @@ function exportToCSV(rows, filename) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
+  a.click();
+}
+
+function exportAllUsersCSV(stats) {
+  const headers = ['Empleado', 'Departamento', 'En Bolsa (A favor)', 'Pendiente', 'Debo (Deuda)', 'Compensado (Ya)', 'Balance Neto'];
+  const lines = [
+    headers.join(';'),
+    ...stats.map(s => [
+      s.employee.name,
+      s.employee.dept || 'Sin departamento',
+      String(s.bolsa).replace('.', ','),
+      String(s.pending).replace('.', ','),
+      String(s.debe).replace('.', ','),
+      String(s.ya).replace('.', ','),
+      String(s.balance).replace('.', ',')
+    ].join(';')),
+  ];
+  const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `control-tiempo-usuarios-${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
 }
 
@@ -62,7 +83,7 @@ const MODE_CONFIG = {
 };
 
 export default function HorasPage() {
-  const { user } = useAuth();
+  const { user, employees = [] } = useAuth();
   const { hourCompensations = [], createHourCompensation } = useData();
 
   const [tab, setTab]   = useState('nueva');
@@ -74,6 +95,56 @@ export default function HorasPage() {
   // Filters for "Mi Bolsa"
   const [filterFrom, setFilterFrom] = useState('');
   const [filterTo,   setFilterTo]   = useState('');
+
+  // Admin User History States
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userSearch, setUserSearch] = useState('');
+
+  // User Stats Calculation for Admin
+  const userStats = useMemo(() => {
+    if (!employees || employees.length === 0) return [];
+    return employees.map(emp => {
+      const empAll = hourCompensations.filter(h => String(h.employeeId) === String(emp.id));
+      
+      const bolsa = empAll
+        .filter(h => h.type === 'bolsa' && h.status === 'approved')
+        .reduce((sum, h) => sum + h.hours, 0);
+
+      const pending = empAll
+        .filter(h => h.type === 'bolsa' && h.status === 'pending')
+        .reduce((sum, h) => sum + h.hours, 0);
+
+      const debe = empAll
+        .filter(h => h.type === 'debe')
+        .reduce((sum, h) => sum + h.hours, 0);
+
+      const ya = empAll
+        .filter(h => h.type === 'ya')
+        .reduce((sum, h) => sum + h.hours, 0);
+
+      const balance = bolsa + ya - debe;
+
+      return {
+        employee: emp,
+        bolsa,
+        pending,
+        debe,
+        ya,
+        balance,
+        totalRequests: empAll.length,
+        history: empAll.sort((a, b) => b.date.localeCompare(a.date))
+      };
+    });
+  }, [employees, hourCompensations]);
+
+  const filteredUserStats = useMemo(() => {
+    if (!userSearch) return userStats;
+    const q = userSearch.toLowerCase();
+    return userStats.filter(stat => 
+      stat.employee.name.toLowerCase().includes(q) ||
+      (stat.employee.dept && stat.employee.dept.toLowerCase().includes(q))
+    );
+  }, [userStats, userSearch]);
 
   const myAll = useMemo(
     () => hourCompensations.filter(h => String(h.employeeId) === String(user?.id)),
@@ -151,8 +222,8 @@ export default function HorasPage() {
       <div className={styles.header}>
         <div className={styles.headerIcon}><Timer size={22} /></div>
         <div>
-          <h1>Horas Extra</h1>
-          <p>Registra compensaciones, bolsa de horas y horas que debes a la empresa</p>
+          <h1>Control de Tiempo</h1>
+          <p>Registra compensaciones, bolsa de horas, horas que debes y consulta el historial</p>
         </div>
       </div>
 
@@ -161,6 +232,7 @@ export default function HorasPage() {
         <div className={styles.tabsRow}>
           {tabBtn('nueva', '＋ Nueva solicitud')}
           {tabBtn('bolsa', '🗂 Mi Registro')}
+          {user?.role === 'admin' && tabBtn('usuarios', '👥 Historial de Usuarios')}
         </div>
         {tab === 'bolsa' && allRows.length > 0 && (
           <Button
@@ -375,7 +447,204 @@ export default function HorasPage() {
             )}
           </motion.div>
         )}
+
+        {/* ── HISTORIAL DE USUARIOS (ADMIN) ── */}
+        {tab === 'usuarios' && user?.role === 'admin' && (
+          <motion.div
+            key="usuarios"
+            className={styles.tabContent}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.2 }}
+          >
+            {/* Search */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div className={styles.userSearchWrapper} style={{ margin: 0, flex: 1 }}>
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Buscar empleado o departamento..."
+                  value={userSearch}
+                  onChange={e => setUserSearch(e.target.value)}
+                />
+              </div>
+              {filteredUserStats.length > 0 && (
+                <Button icon={Download} variant="ghost" onClick={() => exportAllUsersCSV(filteredUserStats)}>
+                  Descargar Excel Completo
+                </Button>
+              )}
+            </div>
+
+            {/* Table of user stats */}
+            {filteredUserStats.length === 0 ? (
+              <Card className={styles.emptyCard}>
+                <Inbox size={44} strokeWidth={1} />
+                <p>No se encontraron empleados</p>
+              </Card>
+            ) : (
+              <Card style={{ padding: 0, overflow: 'hidden' }}>
+                <div className={styles.tableWrapper}>
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Empleado</th>
+                        <th>En Bolsa (A favor)</th>
+                        <th>Pendiente</th>
+                        <th>Debo (Deuda)</th>
+                        <th>Compensado (Ya)</th>
+                        <th>Balance Neto</th>
+                        <th style={{ textAlign: 'right' }}>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUserStats.map(stat => {
+                        const empName = stat.employee.name;
+                        const empAvatar = stat.employee.avatar || empName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                        const isNegative = stat.balance < 0;
+                        return (
+                          <tr key={stat.employee.id}>
+                            <td data-label="Empleado">
+                              <div className={styles.userCell}>
+                                <Avatar initials={empAvatar} size={32} />
+                                <div className={styles.userInfo}>
+                                  <strong>{empName}</strong>
+                                  <span>{stat.employee.dept || 'Sin departamento'}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td data-label="En Bolsa">
+                              <span className={clsx(styles.hoursChip, styles.hoursChipBolsa)}>
+                                {stat.bolsa.toFixed(1)}h
+                              </span>
+                            </td>
+                            <td data-label="Pendiente">
+                              <span style={{ color: 'var(--text-sec)', fontSize: 13 }}>
+                                {stat.pending.toFixed(1)}h
+                              </span>
+                            </td>
+                            <td data-label="Debo">
+                              <span className={clsx(styles.hoursChip, styles.hoursChipDebe)}>
+                                {stat.debe.toFixed(1)}h
+                              </span>
+                            </td>
+                            <td data-label="Compensado">
+                              <span className={clsx(styles.hoursChip, styles.hoursChipYa)} style={{ background: 'var(--success-bg)', color: 'var(--success)' }}>
+                                {stat.ya.toFixed(1)}h
+                              </span>
+                            </td>
+                            <td data-label="Balance Neto">
+                              <span className={clsx(styles.hoursChip, isNegative ? styles.hoursChipDebe : '')}>
+                                {stat.balance >= 0 ? '+' : ''}{stat.balance.toFixed(1)}h
+                              </span>
+                            </td>
+                            <td data-label="Acciones" style={{ textAlign: 'right' }}>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setSelectedUser(stat)}
+                              >
+                                Ver Historial
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            )}
+          </motion.div>
+        )}
       </AnimatePresence>
+
+      {/* Detail Modal */}
+      {selectedUser && (
+        <Modal
+          open={!!selectedUser}
+          onClose={() => setSelectedUser(null)}
+          title={`Historial de ${selectedUser.employee.name}`}
+          className={styles.historyModal}
+        >
+          {/* Quick stats in modal */}
+          <div className={styles.modalStatsGrid}>
+            <div className={clsx(styles.modalStatCard, styles.statApproved)}>
+              <strong>{selectedUser.bolsa.toFixed(1)}h</strong>
+              <span>En Bolsa</span>
+            </div>
+            <div className={clsx(styles.modalStatCard, styles.statPending)}>
+              <strong>{selectedUser.pending.toFixed(1)}h</strong>
+              <span>Pendiente</span>
+            </div>
+            <div className={clsx(styles.modalStatCard, styles.statRejected)}>
+              <strong>{selectedUser.debe.toFixed(1)}h</strong>
+              <span>Debo</span>
+            </div>
+            <div className={clsx(styles.modalStatCard, styles.statApproved)} style={{ borderLeft: '2px solid var(--success)' }}>
+              <strong>{selectedUser.ya.toFixed(1)}h</strong>
+              <span>Compensado (Ya)</span>
+            </div>
+            <div className={clsx(styles.modalStatCard, selectedUser.balance >= 0 ? styles.statApproved : styles.statRejected)}>
+              <strong>{selectedUser.balance >= 0 ? '+' : ''}{selectedUser.balance.toFixed(1)}h</strong>
+              <span>Balance Neto</span>
+            </div>
+          </div>
+
+          {/* Table history */}
+          {selectedUser.history.length === 0 ? (
+            <div className={styles.modalEmpty}>
+              <Inbox size={36} strokeWidth={1} />
+              <p>No hay registros para este usuario</p>
+            </div>
+          ) : (
+            <>
+              <div className={styles.modalActionsRow}>
+                <Button
+                  icon={Download}
+                  variant="ghost"
+                  onClick={() => exportToCSV(selectedUser.history, `horas-${selectedUser.employee.name.replace(/\s+/g, '_')}-${new Date().toISOString().slice(0,10)}.csv`)}
+                >
+                  Descargar Excel
+                </Button>
+              </div>
+              <div className={styles.modalTableWrapper}>
+                <table className="table" style={{ minWidth: '100%' }}>
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Tipo</th>
+                      <th>Motivo</th>
+                      <th>Horas</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedUser.history.map(h => (
+                      <tr key={h.id} className={h.type === 'debe' ? styles.rowDebe : ''}>
+                        <td className={styles.dateCell}>
+                          {new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </td>
+                        <td>{typeBadge(h.type)}</td>
+                        <td className={styles.reasonCell}>{h.reason}</td>
+                        <td>
+                          <span className={clsx(styles.hoursChip, h.type === 'debe' ? styles.hoursChipDebe : '')}>
+                            {h.type === 'debe' ? '-' : '+'}{h.hours}h
+                          </span>
+                        </td>
+                        <td>{statusBadge(h.status)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+          <div className={styles.modalFooter}>
+            <Button onClick={() => setSelectedUser(null)}>Cerrar</Button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

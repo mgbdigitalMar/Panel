@@ -595,3 +595,161 @@
   p   { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-sec); }
   span{ font-size: 13px; color: var(--text-mut); }
 }
+
+/* ── Historial de Usuarios (Admin) ───────────────────────────── */
+.userSearchWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--glass-input);
+  border: 1px solid rgba(var(--border-rgb), 0.60);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 400px;
+  min-height: 38px;
+  transition: var(--transition-fast);
+
+  svg {
+    color: var(--text-mut) !important;
+    flex-shrink: 0;
+  }
+
+  input {
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 13.5px;
+    width: 100%;
+    outline: none;
+    font-family: inherit;
+
+    &::placeholder {
+      color: var(--text-mut);
+    }
+  }
+
+  &:focus-within {
+    border-color: var(--accent);
+    box-shadow: var(--accent-glow);
+    background: var(--glass-card-hover);
+  }
+}
+
+.userCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .userInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: left;
+    
+    strong {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    span {
+      font-size: 11px;
+      color: var(--text-mut);
+    }
+  }
+}
+
+/* ── Modal Historial Detallado ───────────────────────────────── */
+.historyModal {
+  width: 100%;
+  max-width: 860px;
+}
+
+.modalStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+
+  @media (max-width: 767px) {
+    grid-template-columns: repeat(2, 1fr);
+    & > *:last-child {
+      grid-column: span 2;
+    }
+  }
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    & > *:last-child {
+      grid-column: span 1;
+    }
+  }
+}
+
+.modalStatCard {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+
+  strong {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  span {
+    font-size: 11px;
+    color: var(--text-mut);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+}
+
+.modalActionsRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.modalEmpty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-mut);
+
+  svg {
+    margin: 0 auto 12px;
+    display: block;
+    opacity: 0.35;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+.modalTableWrapper {
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+

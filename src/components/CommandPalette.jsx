@@ -13,7 +13,7 @@ const ALL_ITEMS = [
   { id: 'dashboard',    label: 'Dashboard',          icon: LayoutDashboard, section: 'Navegación', desc: 'Vista general de la empresa' },
   { id: 'reservations', label: 'Reservas',            icon: Calendar,        section: 'Navegación', desc: 'Salas y vehículos' },
   { id: 'requests',     label: 'Solicitudes',         icon: Inbox,           section: 'Navegación', desc: 'Vacaciones, remoto, compras' },
-  { id: 'horas',        label: 'Horas Extra',         icon: Timer,           section: 'Navegación', desc: 'Registro de horas compensadas' },
+  { id: 'horas',        label: 'Control de Tiempo',   icon: Timer,           section: 'Navegación', desc: 'Registro de horas compensadas y deudas' },
   { id: 'news',         label: 'Noticias y Eventos',  icon: Newspaper,       section: 'Navegación', desc: 'Noticias del equipo' },
   { id: 'employees',    label: 'Equipo',              icon: UsersRound,      section: 'Navegación', desc: 'Directorio de empleados' },
   { id: 'profile',      label: 'Mi Perfil',           icon: User,            section: 'Mi cuenta',  desc: 'Configuración personal' },

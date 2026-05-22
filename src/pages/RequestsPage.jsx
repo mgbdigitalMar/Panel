@@ -34,6 +34,34 @@ export default function RequestsPage() {
     return allItems.filter(r => r.type === tab);
   }, [allItems, tab, user?.id]);
 
+  const exportRequestsCSV = (rows) => {
+    const headers = ['Empleado', 'Tipo', 'Detalle', 'Estado', 'Fecha solicitud'];
+    const lines = [
+      headers.join(';'),
+      ...rows.map(r => {
+        const typeLabel = r.type === 'asuntos_propios' ? 'Asuntos Propios' : r.type === 'remoto' ? 'Remoto' : r.type === 'external' ? 'Trabajo Externo' : 'Compra';
+        const detail = r.type === 'asuntos_propios'
+          ? `${r.date} (1 día)`
+          : r.type === 'external' || r.type === 'remoto'
+          ? `${r.startDate} a ${r.endDate} (${r.days || '?'} días)`
+          : `${r.item} - ${r.amount}€`;
+        const status = r.status === 'approved' ? 'Aprobada' : r.status === 'rejected' ? 'Rechazada' : 'Pendiente';
+        return [
+          r.employeeName || '—',
+          typeLabel,
+          `"${detail.replace(/"/g, '""')}"`,
+          status,
+          r.createdAt
+        ].join(';');
+      }),
+    ];
+    const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = `solicitudes-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+  };
+
   const handleCreate = async () => {
     setLoading(true);
     if (reqType === 'asuntos_propios') {
@@ -87,7 +115,14 @@ export default function RequestsPage() {
           {tabBtn('remoto', 'Remoto')}
           {tabBtn('external', 'Trabajo Externo')}
         </div>
-        <Button icon={Plus} onClick={() => setShowModal(true)}>Nueva solicitud</Button>
+        <div style={{ display: 'flex', gap: 12 }}>
+          {filtered.length > 0 && (
+            <Button icon={Download} variant="ghost" onClick={() => exportRequestsCSV(filtered)}>
+              Descargar Excel
+            </Button>
+          )}
+          <Button icon={Plus} onClick={() => setShowModal(true)}>Nueva solicitud</Button>
+        </div>
       </div>
 
       {/* Stats */}
