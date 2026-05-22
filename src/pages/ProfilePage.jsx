@@ -45,11 +45,10 @@ export default function ProfilePage() {
   const { user, setCurrentUser, employees } = useAuth();
   const { documents, updateDocumentStatus } = useData();
 
-  // Match by real UUID (production) or show all if none match (dev/mock mode)
-  const myDocsFiltered = (documents || []).filter(
-    (d) => String(d.recipientId) === String(user?.id),
+  // Only show documents explicitly sent to the current user
+  const myDocs = (documents || []).filter(
+    (d) => String(d.recipientId) === String(user?.id)
   );
-  const myDocs = myDocsFiltered.length > 0 ? myDocsFiltered : documents || [];
 
   const [updatingDoc, setUpdatingDoc] = useState(null);
 
