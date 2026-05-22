@@ -92,9 +92,8 @@
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.045em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.2;
   text-shadow: 0 2px 20px rgba(0,0,0,0.30);
 }
 
@@ -103,9 +102,8 @@
   font-size: clamp(12px, 1.2vw, 14px);
   color: rgba(255,255,255,0.65);
   font-weight: 400;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.4;
 }
 
 .welcomeActions {
