@@ -38,11 +38,7 @@ export const MOCK_REQUESTS = [
   { id: 6, type: 'vacation', employeeId: 5, employeeName: 'Pedro López',   startDate: '2025-02-24', endDate: '2025-02-28', days: 5,   reason: 'Viaje de negocios',             status: 'pending',  createdAt: '2025-01-20' },
 ]
 
-export const MOCK_DOCUMENTS = [
-  { id: 'd1', title: 'Contrato de trabajo 2025', description: 'Revisa y firma tu contrato actualizado para el ejercicio 2025.', file_url: null, sender_id: 1, senderName: 'Carlos Ruiz', recipient_id: 2, recipientName: 'Laura Gómez', status: 'pending', created_at: '2025-01-20T09:00:00Z' },
-  { id: 'd2', title: 'Política de Teletrabajo', description: 'Documento con las nuevas normas de teletrabajo aprobadas en Enero 2025.', file_url: null, sender_id: 1, senderName: 'Carlos Ruiz', recipient_id: 3, recipientName: 'Miguel Torres', status: 'signed', created_at: '2025-01-15T11:30:00Z' },
-  { id: 'd3', title: 'NDA — Proyecto Atlántida', description: 'Acuerdo de confidencialidad para el proyecto Atlántida. Requiere firma antes del 31/01.', file_url: null, sender_id: 1, senderName: 'Carlos Ruiz', recipient_id: 4, recipientName: 'Ana Fernández', status: 'completed', created_at: '2025-01-10T08:00:00Z' },
-]
+export const MOCK_DOCUMENTS = []
 
 export const MOCK_HOUR_COMPENSATIONS = [
   { id: 'hc1', employee_id: 2, employeeName: 'Laura Gómez',   date: '2025-01-10', reason: 'Reunión de urgencia fuera de horario', hours: 2,   type: 'ya',    status: 'approved',  created_at: '2025-01-10T22:00:00Z' },

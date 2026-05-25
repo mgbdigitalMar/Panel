@@ -155,7 +155,7 @@ const [readIds, setReadIds] = useState(() => {
         sender_id, recipient_id
       `)
       .order('created_at', { ascending: false })
-    if (error || !data || data.length === 0) {
+    if (error || !data) {
       // Fallback to mock data (table may not exist yet or be empty)
       if (error) console.error('documents:', error)
       setDocuments(MOCK_DOCUMENTS.map(d => ({
@@ -195,7 +195,7 @@ const [readIds, setReadIds] = useState(() => {
         employee_id, reviewed_by
       `)
       .order('created_at', { ascending: false })
-    if (error || !data || data.length === 0) {
+    if (error || !data) {
       if (error) console.error('hour_compensations:', error)
       setHourCompensations(MOCK_HOUR_COMPENSATIONS.map(h => ({
         id: h.id,
@@ -232,7 +232,7 @@ const [readIds, setReadIds] = useState(() => {
         employee_id, reviewed_by
       `)
       .order('created_at', { ascending: false })
-    if (error || !data || data.length === 0) {
+    if (error || !data) {
       if (error) console.error('personal_days:', error)
       setPersonalDays([])
       return
@@ -780,7 +780,6 @@ export function AuthProvider({ children, navigate }) {
       id:         profile.id,
       name:       profile.name,
       email:      profile.email,
-      password_hash: profile.password_hash,
       role:       profile.role,
       dept:       profile.department,
       phone:      profile.phone,

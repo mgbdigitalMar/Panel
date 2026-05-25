@@ -565,7 +565,7 @@ export default function AdminPage() {
             {(!documents || documents.filter(d => d.title !== '__ONBOARDING_DOC__').length === 0) ? (
               <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-mut)' }}>
                 <FileText size={40} strokeWidth={1} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.35 }} />
-                <p style={{ margin: 0, fontSize: 14 }}>No se han enviado documentos todavía</p>
+                <p style={{ margin: 0, fontSize: 14 }}>No se ha enviado ningún documento</p>
               </div>
             ) : (
               <div className={styles.tableWrapper}>
@@ -849,7 +849,6 @@ export default function AdminPage() {
               label="Equipamiento (separado por comas)" 
               value={resForm.equipment} 
               onChange={v => setResForm({ ...resForm, equipment: v })} 
-              placeholder="Proyector, TV, Videoconferencia, Pizarra digital, Audio..."
             />
           </>
         ) : (
@@ -934,14 +933,12 @@ export default function AdminPage() {
             label="Título del documento"
             value={docForm.title}
             onChange={v => setDocForm({ ...docForm, title: v })}
-            placeholder="Ej: Contrato 2025, NDA Proyecto X..."
             required
           />
           <Input
             label="Descripción (opcional)"
             value={docForm.description}
             onChange={v => setDocForm({ ...docForm, description: v })}
-            placeholder="Instrucciones o descripción breve"
           />
 
           {/* ── File Upload Zone ── */}
