@@ -180,7 +180,7 @@ export default function RequestsPage() {
               </thead>
               <tbody>
                 {filtered.map(r => (
-                  <tr key={r.id}>
+                  <tr key={r.id} className="glass-table-row">
                     <td data-label="Empleado">
                       <div className={styles.userCell}>
                         <Avatar initials={(r.employeeName || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()} size={32} />

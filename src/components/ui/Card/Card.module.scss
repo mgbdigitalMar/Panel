@@ -1,8 +1,4 @@
 .card {
-  background: var(--glass-card);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   box-shadow:
     var(--shadow-card),
@@ -31,25 +27,7 @@
     z-index: 1;
   }
 
-  /* Premium hover shine/shimmer sweep effect */
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--card-hover-shimmer);
-    background-size: 200% 100%;
-    background-position: -100% 0;
-    pointer-events: none;
-    border-radius: inherit;
-    transition: background-position 0.55s var(--ease-cinematic);
-    z-index: 2;
-  }
 
-  &:hover {
-    &::after {
-      background-position: 200% 0;
-    }
-  }
 
   @media (max-width: 767px) {
     backdrop-filter: blur(10px) saturate(130%);
@@ -60,9 +38,6 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     background: var(--card);
-    &::after {
-      display: none;
-    }
   }
 }
 

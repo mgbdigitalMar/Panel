@@ -272,8 +272,8 @@
 .navLink {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 10px 14px;
   border-radius: var(--radius);
   cursor: pointer;
   border: none;
@@ -282,12 +282,12 @@
   background: transparent;
   color: var(--text-mut);
   font-weight: 500;
-  font-size: 13.5px;
+  font-size: 13px;
   letter-spacing: -0.01em;
   transition: all 0.18s var(--ease-cinematic);
   position: relative;
   white-space: nowrap;
-  min-height: 44px;
+  min-height: 42px;
   font-family: inherit;
 
   svg {
@@ -332,11 +332,11 @@
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    height: 20px;
-    width: 3px;
+    height: 18px;
+    width: 2px;
     background: var(--gradient-accent);
     border-radius: 0 var(--radius-full) var(--radius-full) 0;
-    box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.70), 0 0 32px rgba(var(--accent-rgb), 0.30);
+    box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.60), 0 0 24px rgba(var(--accent-rgb), 0.25);
   }
 }
 

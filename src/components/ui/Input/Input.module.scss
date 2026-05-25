@@ -63,7 +63,7 @@
 
   &:focus {
     border-color: var(--input-focus);
-    box-shadow: var(--accent-glow);
+    box-shadow: 0 0 0 1px var(--input-focus), 0 0 0 3px rgba(var(--accent-rgb), 0.15);
     background: var(--glass-card-hover);
   }
 

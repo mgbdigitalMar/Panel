@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useAuth, useApp, useData } from '../context';
 import { MOCK_NEWS } from '../data/mockData';
 import { Avatar, Badge, StatCard, Card } from '../components/ui';
@@ -10,6 +10,7 @@ import styles from './DashboardPage.module.scss';
 import { Users, Calendar, Inbox, Newspaper, Pin, Gift, Car, Building, ArrowRight } from 'lucide-react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
+import { staggerContainer, staggerItem } from '../utils/motion';
 
 // ── Chart data helpers ────────────────────────────────────
 const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
@@ -74,14 +75,7 @@ const CHART_COLORS = {
   danger:  '#DC2626',
 };
 
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07 } },
-};
-const item = {
-  hidden: { opacity: 0, y: 16 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
-};
+
 
 export default function DashboardPage() {
   const { user, employees } = useAuth();
@@ -90,7 +84,13 @@ export default function DashboardPage() {
   const [news] = useState(MOCK_NEWS);
 
   // Month navigator — starts on the current real month
-  const today = new Date();
+  const [today, setToday] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setToday(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
   const currentYear = today.getFullYear();
 
   const [chartMonth, setChartMonth] = useState(() => ({
@@ -190,12 +190,12 @@ const tooltipStyle = {
   return (
     <motion.div
       className={styles.page}
-      variants={container}
+      variants={staggerContainer}
       initial="hidden"
       animate="show"
     >
       {/* ── Welcome Banner ──────────────────────── */}
-      <motion.div variants={item} className={styles.welcomeBanner}>
+      <motion.div variants={staggerItem} className={clsx(styles.welcomeBanner, 'glass-panel')}>
         <div className={styles.welcomeLeft}>
           <span className={styles.welcomeEmoji}>{emoji}</span>
           <div style={{ flex: 1 }}>
@@ -218,17 +218,17 @@ const tooltipStyle = {
           </div>
         </div>
         <div className={styles.welcomeActions}>
-          <button className={styles.bannerBtn} onClick={() => navigate('reservations')}>
+          <button className={clsx(styles.bannerBtn, 'glass-button')} onClick={() => navigate('reservations')}>
             <Calendar size={14} /> Nueva reserva
           </button>
-          <button className={styles.bannerBtnSecondary} onClick={() => navigate('requests')}>
+          <button className={clsx(styles.bannerBtnSecondary, 'glass-button-secondary')} onClick={() => navigate('requests')}>
             <Inbox size={14} /> Ver solicitudes
           </button>
         </div>
       </motion.div>
 
       {/* ── KPI Cards ───────────────────────────────── */}
-      <motion.div variants={item} className={styles.gridCards}>
+      <motion.div variants={staggerItem} className={styles.gridCards}>
         <StatCard
           label="Empleados activos"
           value={employees.length}
@@ -268,7 +268,7 @@ const tooltipStyle = {
       </motion.div>
 
       {/* ── Charts ──────────────────────────────── */}
-      <motion.div variants={item} className={styles.chartsRow}>
+      <motion.div variants={staggerItem} className={styles.chartsRow}>
         {/* Bar chart */}
         <Card className={styles.chartCard}>
           <div className={styles.chartHeader}>
@@ -391,7 +391,7 @@ const tooltipStyle = {
       </motion.div>
 
       {/* ── Content row ─────────────────────────── */}
-      <motion.div variants={item} className={styles.gridContent}>
+      <motion.div variants={staggerItem} className={styles.gridContent}>
         {/* News feed */}
         <Card>
           <div className={styles.cardPad}>
@@ -455,7 +455,7 @@ const tooltipStyle = {
       </motion.div>
 
       {/* ── Recent reservations table ─────────── */}
-      <motion.div variants={item}>
+      <motion.div variants={staggerItem}>
         <Card>
           <div className={styles.cardPad}>
             <div className={styles.cardHeader}>
@@ -474,9 +474,9 @@ const tooltipStyle = {
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <motion.tbody variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-50px" }}>
                 {reservations.slice(0, 6).map(r => (
-                  <tr key={r.id}>
+                  <motion.tr variants={staggerItem} key={r.id} className="glass-table-row">
                     <td data-label="Recurso" className={styles.tdBold}>{r.resourceName}</td>
                     <td data-label="Tipo">
                       <span className={styles.typeBadge} style={{ color: r.type === 'vehicle' ? 'var(--warning)' : 'var(--accent)' }}>
@@ -488,9 +488,9 @@ const tooltipStyle = {
                     <td data-label="Fecha">{r.date}</td>
                     <td data-label="Horario">{r.timeStart}–{r.timeEnd}</td>
                     <td data-label="Estado"><Badge status={r.status} /></td>
-                  </tr>
+                  </motion.tr>
                 ))}
-              </tbody>
+              </motion.tbody>
             </table>
           </div>
         </Card>

@@ -29,7 +29,7 @@ export function Modal({ open, onClose, title, children, className }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className={clsx(styles.modal, className)}
+            className={clsx(styles.modal, 'glass-panel', className)}
           >
             <div className={styles.header}>
               <h2 className={styles.title}>{title}</h2>

@@ -1,11 +1,21 @@
 import clsx from 'clsx';
 import styles from './Card.module.scss';
 import { forwardRef } from 'react';
+import { motion } from 'framer-motion';
+import { hoverLift } from '../../../utils/motion';
 
 export const Card = forwardRef(({ className, children, ...props }, ref) => (
-  <div ref={ref} className={clsx(styles.card, className)} {...props}>
+  <motion.div 
+    ref={ref} 
+    className={clsx(styles.card, 'glass-panel', className)}
+    variants={hoverLift}
+    initial="rest"
+    whileHover="hover"
+    whileTap="tap"
+    {...props}
+  >
     {children}
-  </div>
+  </motion.div>
 ));
 Card.displayName = 'Card';
 

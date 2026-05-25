@@ -14,7 +14,7 @@ export function Textarea({ label, value, onChange, placeholder, rows = 3, requir
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
-        className={clsx(inputStyles.input)}
+        className={clsx(inputStyles.input, 'glass-input')}
         style={{ resize: 'vertical' }}
       />
     </div>

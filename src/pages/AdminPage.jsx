@@ -345,7 +345,7 @@ export default function AdminPage() {
                 </thead>
                 <tbody>
                   {filtered.map(emp => (
-                    <tr key={emp.id}>
+                    <tr key={emp.id} className="glass-table-row">
                       <td data-label="Usuario">
                         <div className={styles.userCell}>
                           <Avatar initials={emp.avatar} size={42} />
@@ -583,7 +583,7 @@ export default function AdminPage() {
                       const recipName   = recipient?.name   || doc.recipientName || '—';
                       const recipAvatar = recipient?.avatar  || recipName.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
                       return (
-                        <tr key={doc.id}>
+                        <tr key={doc.id} className="glass-table-row">
                           <td data-label="Documento">
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               <div style={{ width: 34, height: 34, borderRadius: 8, background: 'var(--accent-bg)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -721,7 +721,7 @@ export default function AdminPage() {
                       const empName = emp?.name || h.employeeName || 'Empleado';
                       const empAvatar = emp?.avatar || empName.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
                       return (
-                        <tr key={h.id}>
+                        <tr key={h.id} className="glass-table-row">
                           <td data-label="Empleado">
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <Avatar initials={empAvatar} size={30} />

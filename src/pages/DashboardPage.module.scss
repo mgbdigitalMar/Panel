@@ -22,8 +22,8 @@
   flex-wrap: wrap;
   position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow-lg), var(--shadow-accent);
-  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: var(--shadow-md), 0 4px 20px rgba(var(--accent-rgb), 0.20);
+  border: 1px solid rgba(255,255,255,0.10);
 
   /* Large ambient orb */
   &::before {
@@ -91,10 +91,10 @@
   font-size: clamp(18px, 3vw, 28px);
   font-weight: 800;
   color: #ffffff;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.04em;
   white-space: normal;
   line-height: 1.2;
-  text-shadow: 0 2px 20px rgba(0,0,0,0.30);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
 .welcomeSub {
@@ -378,9 +378,9 @@
 
 .feedItem {
   display: flex;
-  gap: clamp(10px, 1.5vw, 14px);
+  gap: clamp(12px, 1.5vw, 16px);
   align-items: flex-start;
-  padding: clamp(10px, 1.5vw, 13px) clamp(6px, 1vw, 10px);
+  padding: clamp(12px, 1.5vw, 16px) clamp(8px, 1vw, 12px);
   border-bottom: 1px solid rgba(var(--border-rgb), 0.40);
   border-radius: var(--radius-sm);
   transition: background 0.16s var(--ease-out), border-color 0.16s, padding-left 0.18s var(--ease-out);
