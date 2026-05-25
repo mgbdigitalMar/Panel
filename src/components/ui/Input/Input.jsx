@@ -1,7 +1,6 @@
 import clsx from 'clsx';
 import styles from './Input.module.scss';
 import { motion, AnimatePresence } from 'framer-motion';
-import { inputShake } from '../../../utils/motion';
 
 export function Input({ 
   label, 
@@ -22,16 +21,13 @@ export function Input({
           {label} {required && <span className={styles.asterisk}>*</span>}
         </label>
       )}
-      <motion.input
+      <input
         type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
-        className={clsx(styles.input, 'glass-input', { [styles.hasError]: !!error })}
-        variants={inputShake}
-        initial="initial"
-        animate={error ? "error" : "initial"}
+        className={clsx(styles.input, { [styles.hasError]: !!error })}
       />
       <AnimatePresence>
         {(hint || error) && (

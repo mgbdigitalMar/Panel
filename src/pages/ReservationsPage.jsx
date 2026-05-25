@@ -182,7 +182,7 @@ export default function ReservationsPage() {
                 </thead>
                 <tbody>
                   {filtered.map(r => (
-                    <tr key={r.id} className="glass-table-row">
+                    <tr key={r.id}>
                       <td data-label="Recurso" style={{ color: 'var(--text)', fontWeight: 600 }}>{r.resourceName}</td>
                       <td data-label="Tipo">
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: r.type === 'vehicle' ? 'var(--warning)' : 'var(--accent)' }}>

@@ -82,7 +82,7 @@ export default function LoginPage() {
           initial="hidden"
           animate="show"
         >
-          <motion.h2 variants={fadeUp} className={clsx(styles.brandHeadline, 'glass-text-glow')}>
+          <motion.h2 variants={fadeUp} className={styles.brandHeadline}>
             Tu espacio de trabajo,<br />todo en un lugar
           </motion.h2>
           <motion.p variants={fadeUp} className={styles.brandDesc}>
@@ -126,7 +126,7 @@ export default function LoginPage() {
 
           {/* Form heading */}
           <motion.h1
-            className={clsx(styles.formHeading, 'glass-text-glow')}
+            className={styles.formHeading}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, duration: 0.4 }}
@@ -171,7 +171,7 @@ export default function LoginPage() {
                   onChange={e => setPass(e.target.value)}
                   placeholder="••••••••"
                   onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                  className={clsx(inputStyles.input, 'glass-input')}
+                  className={clsx(inputStyles.input)}
                   style={{ paddingRight: '52px' }}
                   autoComplete="current-password"
                 />

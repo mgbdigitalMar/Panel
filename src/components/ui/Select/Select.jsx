@@ -12,7 +12,7 @@ export function Select({ label, value, onChange, options, required, className })
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
-        className={clsx(inputStyles.input, 'glass-input')}
+        className={inputStyles.input}
       >
         {options.map(o => (
           <option key={o.value} value={o.value}>{o.label}</option>

@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import styles from './Button.module.scss';
 import { Loader2 } from 'lucide-react';
-import { buttonPress } from '../../../utils/motion';
 
 export function Button({ 
   children, 
@@ -18,10 +17,8 @@ export function Button({
   return (
     <motion.button
       type={type}
-      variants={buttonPress}
-      initial="rest"
-      whileHover={!disabled && !loading ? "hover" : "rest"}
-      whileTap={!disabled && !loading ? "tap" : "rest"}
+      whileHover={!disabled && !loading ? { scale: 1.02 } : {}}
+      whileTap={!disabled && !loading ? { scale: 0.98 } : {}}
       onClick={onClick}
       disabled={disabled || loading}
       className={clsx(

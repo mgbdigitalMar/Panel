@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTheme, useAuth, useApp, useData } from '../context';
 import { motion, AnimatePresence } from 'framer-motion';
-import { pageTransitions } from '../utils/motion';
 import clsx from 'clsx';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, Settings, User,
@@ -214,7 +213,7 @@ export default function Layout({ children }) {
 
       {/* ── Desktop sidebar ──────────────────────────────────────────── */}
       <aside
-        className={clsx(styles.sidebar, 'hide-mobile', 'glass-navbar')}
+        className={clsx(styles.sidebar, 'hide-mobile')}
         aria-label="Sidebar de navegación"
       >
         {sidebarContent}
@@ -249,11 +248,11 @@ export default function Layout({ children }) {
       <div className={styles.main}>
 
         {/* ── Topbar ─────────────────────────────────────────────── */}
-        <header className={clsx(styles.header, 'glass-navbar')} role="banner">
+        <header className={styles.header} role="banner">
           <div className={styles.headerLeft}>
             {/* Mobile hamburger */}
             <button
-              className={clsx(styles.iconBtn, 'show-mobile', 'glass-button-secondary')}
+              className={clsx(styles.iconBtn, 'show-mobile')}
               onClick={() => setSideOpen(true)}
               aria-label="Abrir menú"
             >
@@ -296,7 +295,7 @@ export default function Layout({ children }) {
             {/* Theme toggle */}
             <button
               onClick={toggle}
-              className={clsx(styles.iconBtn, 'glass-button-secondary')}
+              className={styles.iconBtn}
               aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
               title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
             >
@@ -310,7 +309,7 @@ export default function Layout({ children }) {
             <div style={{ position: 'relative' }} ref={notiMenuRef}>
               <button
                 onClick={() => setNotiMenu(v => !v)}
-                className={clsx(styles.iconBtn, styles.bellBtn, 'glass-button-secondary')}
+                className={clsx(styles.iconBtn, styles.bellBtn)}
                 aria-label={`Notificaciones${unreadCount > 0 ? ` (${unreadCount} sin leer)` : ''}`}
                 aria-expanded={notiMenu}
               >
@@ -335,7 +334,7 @@ export default function Layout({ children }) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.96 }}
                     transition={{ duration: 0.15 }}
-                    className={clsx(styles.dropdown, styles.notiDropdown, 'glass-panel')}
+                    className={clsx(styles.dropdown, styles.notiDropdown)}
                     role="dialog"
                     aria-label="Panel de notificaciones"
                   >
@@ -400,10 +399,10 @@ export default function Layout({ children }) {
           <AnimatePresence mode="wait">
             <motion.div
               key={page}
-              variants={pageTransitions}
-              initial="initial"
-              animate="animate"
-              exit="exit"
+              initial={{ opacity: 0, y: 18, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.98 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
               style={{ width: '100%' }}
             >
               {children}

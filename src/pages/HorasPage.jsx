@@ -3,7 +3,6 @@ import { useAuth, useData } from '../context';
 import { Card, Button, Input, Modal, Avatar } from '../components/ui';
 import { Clock, Inbox, CheckCircle, XCircle, Download, Timer, PenTool, TrendingDown, TrendingUp, Minus, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { staggerContainer, staggerItem } from '../utils/motion';
 import clsx from 'clsx';
 import styles from './HorasPage.module.scss';
 
@@ -419,9 +418,9 @@ export default function HorasPage() {
                         ))}
                       </tr>
                     </thead>
-                    <motion.tbody variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true }}>
+                    <tbody>
                       {allRows.map(h => (
-                        <motion.tr variants={staggerItem} key={h.id} className={clsx('glass-table-row', h.type === 'debe' ? styles.rowDebe : '')}>
+                        <tr key={h.id} className={h.type === 'debe' ? styles.rowDebe : ''}>
                           <td className={styles.dateCell} data-label="Fecha">
                             {new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                           </td>
@@ -439,9 +438,9 @@ export default function HorasPage() {
                               : <span style={{ color: 'var(--text-mut)' }}>—</span>
                             }
                           </td>
-                        </motion.tr>
+                        </tr>
                       ))}
-                    </motion.tbody>
+                    </tbody>
                   </table>
                 </div>
               </Card>
@@ -489,22 +488,22 @@ export default function HorasPage() {
                   <table className="table">
                     <thead>
                       <tr>
-                          <th>Empleado</th>
-                          <th>Bolsa</th>
-                          <th>Pendiente</th>
-                          <th>Debo</th>
-                          <th>Compensado</th>
-                          <th>Balance</th>
-                          <th style={{ textAlign: 'right' }}>Acciones</th>
+                        <th>Empleado</th>
+                        <th>En Bolsa (A favor)</th>
+                        <th>Pendiente</th>
+                        <th>Debo (Deuda)</th>
+                        <th>Compensado (Ya)</th>
+                        <th>Balance Neto</th>
+                        <th style={{ textAlign: 'right' }}>Acciones</th>
                       </tr>
                     </thead>
-                    <motion.tbody variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true }}>
+                    <tbody>
                       {filteredUserStats.map(stat => {
                         const empName = stat.employee.name;
                         const empAvatar = stat.employee.avatar || empName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                         const isNegative = stat.balance < 0;
                         return (
-                          <motion.tr variants={staggerItem} key={stat.employee.id} className="glass-table-row">
+                          <tr key={stat.employee.id}>
                             <td data-label="Empleado">
                               <div className={styles.userCell}>
                                 <Avatar initials={empAvatar} size={32} />
@@ -514,7 +513,7 @@ export default function HorasPage() {
                                 </div>
                               </div>
                             </td>
-                            <td data-label="Bolsa">
+                            <td data-label="En Bolsa">
                               <span className={clsx(styles.hoursChip, styles.hoursChipBolsa)}>
                                 {stat.bolsa.toFixed(1)}h
                               </span>
@@ -534,7 +533,7 @@ export default function HorasPage() {
                                 {stat.ya.toFixed(1)}h
                               </span>
                             </td>
-                            <td data-label="Balance">
+                            <td data-label="Balance Neto">
                               <span className={clsx(styles.hoursChip, isNegative ? styles.hoursChipDebe : '')}>
                                 {stat.balance >= 0 ? '+' : ''}{stat.balance.toFixed(1)}h
                               </span>
@@ -548,10 +547,10 @@ export default function HorasPage() {
                                 Ver Historial
                               </Button>
                             </td>
-                          </motion.tr>
+                          </tr>
                         );
                       })}
-                    </motion.tbody>
+                    </tbody>
                   </table>
                 </div>
               </Card>
@@ -620,23 +619,23 @@ export default function HorasPage() {
                       <th>Estado</th>
                     </tr>
                   </thead>
-                  <motion.tbody variants={staggerContainer} initial="hidden" animate="show">
+                  <tbody>
                     {selectedUser.history.map(h => (
-                      <motion.tr variants={staggerItem} key={h.id} className={clsx('glass-table-row', h.type === 'debe' ? styles.rowDebe : '')}>
-                        <td className={styles.dateCell} data-label="Fecha">
+                      <tr key={h.id} className={h.type === 'debe' ? styles.rowDebe : ''}>
+                        <td className={styles.dateCell}>
                           {new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </td>
-                        <td data-label="Tipo">{typeBadge(h.type)}</td>
-                        <td className={styles.reasonCell} data-label="Motivo">{h.reason}</td>
-                        <td data-label="Horas">
+                        <td>{typeBadge(h.type)}</td>
+                        <td className={styles.reasonCell}>{h.reason}</td>
+                        <td>
                           <span className={clsx(styles.hoursChip, h.type === 'debe' ? styles.hoursChipDebe : '')}>
                             {h.type === 'debe' ? '-' : '+'}{h.hours}h
                           </span>
                         </td>
-                        <td data-label="Estado">{statusBadge(h.status)}</td>
-                      </motion.tr>
+                        <td>{statusBadge(h.status)}</td>
+                      </tr>
                     ))}
-                  </motion.tbody>
+                  </tbody>
                 </table>
               </div>
             </>
