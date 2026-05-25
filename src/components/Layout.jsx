@@ -213,7 +213,7 @@ export default function Layout({ children }) {
 
       {/* ── Desktop sidebar ──────────────────────────────────────────── */}
       <aside
-        className={clsx(styles.sidebar, 'hide-mobile')}
+        className={clsx(styles.sidebar, 'hide-tablet')}
         aria-label="Sidebar de navegación"
       >
         {sidebarContent}
@@ -232,9 +232,9 @@ export default function Layout({ children }) {
               onClick={() => setSideOpen(false)}
             />
             <motion.aside
-              initial={{ x: '-100%' }}
+              initial={{ x: 'calc(-100% - 12px)' }}
               animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
+              exit={{ x: 'calc(-100% - 12px)' }}
               transition={{ type: 'spring', damping: 28, stiffness: 380, bounce: 0 }}
               className={styles.sidebarMobileContent}
             >
@@ -252,7 +252,7 @@ export default function Layout({ children }) {
           <div className={styles.headerLeft}>
             {/* Mobile hamburger */}
             <button
-              className={clsx(styles.iconBtn, 'show-mobile')}
+              className={clsx(styles.iconBtn, 'show-tablet')}
               onClick={() => setSideOpen(true)}
               aria-label="Abrir menú"
             >

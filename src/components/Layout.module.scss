@@ -167,14 +167,15 @@
   background: rgba(var(--sidebar-rgb), 0.94);
   backdrop-filter: blur(40px) saturate(240%);
   -webkit-backdrop-filter: blur(40px) saturate(240%);
-  border-right: 1px solid rgba(var(--border-rgb), 0.30);
+  border: 1px solid rgba(var(--border-rgb), 0.4);
+  border-radius: var(--radius-xl);
   position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
+  top: 12px;
+  left: 12px;
+  bottom: 12px;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-2xl);
+  box-shadow: var(--shadow-2xl), var(--glass-highlight-sm);
 }
 
 /* Inner padding wrapper */
@@ -740,10 +741,10 @@
 
 /* ── Icon buttons — circular glass ───────────────────────────────── */
 .iconBtn {
-  background: rgba(var(--sidebar-rgb), 0.30);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(var(--border-rgb), 0.30);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid transparent;
   border-radius: var(--radius-full);
   width: 38px;
   height: 38px;
@@ -823,10 +824,10 @@
   gap: 8px;
   padding: 4px 10px 4px 4px;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(var(--border-rgb), 0.35);
-  background: rgba(var(--sidebar-rgb), 0.30);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid transparent;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   cursor: pointer;
   transition: var(--transition-smooth);
   color: var(--text-sec);
@@ -1146,44 +1147,8 @@
    RESPONSIVE
 ═══════════════════════════════════════════════════════════════════ */
 
-/* Tablet: auto-collapse sidebar on hover */
-@media (max-width: 1023px) and (min-width: 768px) {
-  .sidebar {
-    width: 72px;
-    transition: width 0.28s var(--ease-cinematic);
-
-    &:hover {
-      width: var(--sidebar-w);
-      box-shadow: var(--shadow-xl), inset -1px 0 0 rgba(var(--accent-rgb), 0.10);
-      z-index: calc(var(--z-sidebar) + 1);
-    }
-
-    &:not(:hover) {
-      .navLabel,
-      .userInfo,
-      .userActions span,
-      .navSectionLabel {
-        display: none;
-      }
-
-      .navLink {
-        justify-content: center;
-        padding: 11px;
-      }
-
-      .userCard { justify-content: center; }
-      .userActions { grid-template-columns: 1fr; }
-      .userActionBtn { justify-content: center; }
-    }
-  }
-
-  .collapseBtn { display: none; }
-  .main { margin-left: calc(72px + clamp(8px, 2vw, 24px)); }
-  .mainCollapsed { margin-left: calc(72px + clamp(8px, 2vw, 24px)); }
-}
-
-/* Mobile: hide sidebar, use drawer */
-@media (max-width: 767px) {
+/* Tablet and Mobile: hide sidebar, use drawer */
+@media (max-width: 1023px) {
   .sidebar { display: none; }
   .main { margin-left: 0 !important; }
   .mainCollapsed { margin-left: 0 !important; }
