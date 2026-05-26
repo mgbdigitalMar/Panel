@@ -51,6 +51,19 @@ export function ThemeProvider({ children }) {
 }
 export function useTheme() { return useContext(ThemeCtx) }
 
+export function applyAccentCSS(value, rgb) {
+  const r = document.documentElement;
+  r.style.setProperty('--accent',          value);
+  r.style.setProperty('--accent-hover',    value);
+  r.style.setProperty('--accent-light',    value);
+  r.style.setProperty('--accent-rgb',      rgb);
+  r.style.setProperty('--accent-bg',       `rgba(${rgb}, 0.07)`);
+  r.style.setProperty('--accent-bg-2',     `rgba(${rgb}, 0.13)`);
+  r.style.setProperty('--accent-glow',     `0 0 0 3px rgba(${rgb}, 0.22)`);
+  r.style.setProperty('--gradient-accent', `linear-gradient(135deg, ${value} 0%, ${value}cc 100%)`);
+  r.style.setProperty('--nav-bg',          `rgba(${rgb}, 0.08)`);
+  r.style.setProperty('--shadow-accent',   `0 8px 28px -4px rgba(${rgb}, 0.32), 0 2px 8px rgba(${rgb}, 0.18)`);
+}
 
 // ─── DATA CONTEXT (Requests + Reservations via Supabase) ──────
 export const DataCtx = createContext()
@@ -892,6 +905,15 @@ export function AuthProvider({ children, navigate }) {
           if (!error && data) {
             const mapped = mapProfile(data)
             setUser(mapped)
+            
+            // Apply per-user accent color on load
+            try {
+              const uVal = localStorage.getItem(`margube-accent-val-${mapped.id}`)
+              const uRgb = localStorage.getItem(`margube-accent-rgb-${mapped.id}`)
+              if (uVal && uRgb && uVal !== '#2251ff') applyAccentCSS(uVal, uRgb)
+              else applyAccentCSS('#2251ff', '34, 81, 255') // Reset to default if none
+            } catch {}
+
             await loadAllEmployees()
             if (mapped.firstLogin === true || mapped.firstLogin === 'true') navigate('changePassword')
             else navigate('dashboard')
@@ -910,6 +932,7 @@ export function AuthProvider({ children, navigate }) {
     const clearSession = () => {
       localStorage.removeItem('margube_session')
       localStorage.removeItem('margube_tabId')
+      applyAccentCSS('#2251ff', '34, 81, 255') // Reset to default on logout
       bc.postMessage({ type: 'logout' })
       setUser(null)
       navigate('login')
@@ -1045,6 +1068,15 @@ export function AuthProvider({ children, navigate }) {
 
     const mapped = mapProfile(profileRow)
     setUser(mapped)
+    
+    // Apply per-user accent color on explicit login
+    try {
+      const uVal = localStorage.getItem(`margube-accent-val-${mapped.id}`)
+      const uRgb = localStorage.getItem(`margube-accent-rgb-${mapped.id}`)
+      if (uVal && uRgb && uVal !== '#2251ff') applyAccentCSS(uVal, uRgb)
+      else applyAccentCSS('#2251ff', '34, 81, 255')
+    } catch {}
+
     // Guardamos evidencia de conexión activa localmente + tab ID
     const tabId = localStorage.getItem('margube_tabId')
     localStorage.setItem('margube_session', JSON.stringify({ id: mapped.id, tabId, lastActivity: Date.now() }))

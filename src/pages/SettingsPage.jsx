@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useTheme, useData, useAuth } from '../context';
+import { useTheme, useData, useAuth, applyAccentCSS } from '../context';
 import { Card } from '../components/ui';
 import {
   Sun, Moon, Monitor, Layers, BellRing, BellOff, Volume2, VolumeX,
@@ -44,41 +44,20 @@ const ACCENT_PRESETS = [
   { name: 'Coral',        value: '#ef4444', rgb: '239, 68, 68' },
 ];
 
-function applyAccentCSS(value, rgb) {
-  const r = document.documentElement;
-  r.style.setProperty('--accent',          value);
-  r.style.setProperty('--accent-hover',    value);
-  r.style.setProperty('--accent-light',    value);
-  r.style.setProperty('--accent-rgb',      rgb);
-  r.style.setProperty('--accent-bg',       `rgba(${rgb}, 0.07)`);
-  r.style.setProperty('--accent-bg-2',     `rgba(${rgb}, 0.13)`);
-  r.style.setProperty('--accent-glow',     `0 0 0 3px rgba(${rgb}, 0.22)`);
-  r.style.setProperty('--gradient-accent', `linear-gradient(135deg, ${value} 0%, ${value}cc 100%)`);
-  r.style.setProperty('--nav-bg',          `rgba(${rgb}, 0.08)`);
-  r.style.setProperty('--shadow-accent',   `0 8px 28px -4px rgba(${rgb}, 0.32), 0 2px 8px rgba(${rgb}, 0.18)`);
-}
-
 // ── Main Page ─────────────────────────────────────────────────────────
 export default function SettingsPage() {
   const { mode, setMode } = useTheme();
   const { user } = useAuth();
 
   // ── Accent color ──────────────────────────────────────────────────
-  const [accent, setAccent] = useState(() => getLS('margube-accent-value', '#2251ff'));
+  const [accent, setAccent] = useState(() => getLS(`margube-accent-val-${user?.id}`, '#2251ff'));
 
   const handleAccent = useCallback((value, rgb) => {
     setAccent(value);
-    setLS('margube-accent-value', value);
-    setLS('margube-accent-rgb', rgb);
+    setLS(`margube-accent-val-${user?.id}`, value);
+    setLS(`margube-accent-rgb-${user?.id}`, rgb);
     applyAccentCSS(value, rgb);
-  }, []);
-
-  // Re-apply saved accent on mount (after Vercel hydration)
-  useEffect(() => {
-    const val = getLS('margube-accent-value', null);
-    const rgb = getLS('margube-accent-rgb', null);
-    if (val && rgb && val !== '#2251ff') applyAccentCSS(val, rgb);
-  }, []);
+  }, [user]);
 
   // ── Browser notifications ─────────────────────────────────────────
   const [browserNotifs, setBrowserNotifs] = useState(() => getLS('margube-browser-notifs', false));
