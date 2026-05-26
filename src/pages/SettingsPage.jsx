@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useTheme, useData, useAuth, applyAccentCSS } from '../context';
+import { useTheme, useData, useAuth } from '../context';
 import { Card } from '../components/ui';
 import {
   Sun, Moon, Monitor, Layers, BellRing, BellOff, Volume2, VolumeX,
@@ -32,32 +32,10 @@ function Toggle({ checked, onChange, id }) {
   );
 }
 
-// ── Accent presets ────────────────────────────────────────────────────
-const ACCENT_PRESETS = [
-  { name: 'Azul Margube', value: '#2251ff', rgb: '34, 81, 255' },
-  { name: 'Índigo',       value: '#6366f1', rgb: '99, 102, 241' },
-  { name: 'Violeta',      value: '#8b5cf6', rgb: '139, 92, 246' },
-  { name: 'Rosa',         value: '#ec4899', rgb: '236, 72, 153' },
-  { name: 'Ámbar',        value: '#f59e0b', rgb: '245, 158, 11' },
-  { name: 'Esmeralda',    value: '#10b981', rgb: '16, 185, 129' },
-  { name: 'Cian',         value: '#06b6d4', rgb: '6, 182, 212' },
-  { name: 'Coral',        value: '#ef4444', rgb: '239, 68, 68' },
-];
-
 // ── Main Page ─────────────────────────────────────────────────────────
 export default function SettingsPage() {
   const { mode, setMode } = useTheme();
   const { user } = useAuth();
-
-  // ── Accent color ──────────────────────────────────────────────────
-  const [accent, setAccent] = useState(() => getLS(`margube-accent-val-${user?.id}`, '#2251ff'));
-
-  const handleAccent = useCallback((value, rgb) => {
-    setAccent(value);
-    setLS(`margube-accent-val-${user?.id}`, value);
-    setLS(`margube-accent-rgb-${user?.id}`, rgb);
-    applyAccentCSS(value, rgb);
-  }, [user]);
 
   // ── Browser notifications ─────────────────────────────────────────
   const [browserNotifs, setBrowserNotifs] = useState(() => getLS('margube-browser-notifs', false));
@@ -142,28 +120,6 @@ export default function SettingsPage() {
                       <Check size={10} strokeWidth={3} />
                     </span>
                   )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className={styles.sep} />
-
-          {/* Color de acento */}
-          <div className={styles.field}>
-            <label className={styles.fieldLabel}>Color de acento</label>
-            <p className={styles.fieldDesc}>Color principal de botones, enlaces y elementos activos</p>
-            <div className={styles.accentRow}>
-              {ACCENT_PRESETS.map(({ name, value, rgb }) => (
-                <button
-                  key={value}
-                  title={name}
-                  onClick={() => handleAccent(value, rgb)}
-                  className={clsx(styles.accentDot, { [styles.accentDotActive]: accent === value })}
-                  style={{ background: value }}
-                  aria-label={name}
-                >
-                  {accent === value && <Check size={11} color="#fff" strokeWidth={3} />}
                 </button>
               ))}
             </div>
