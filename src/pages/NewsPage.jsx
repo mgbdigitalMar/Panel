@@ -66,12 +66,8 @@ export default function NewsPage() {
 
         {user.role === 'admin' && (
           <div className={styles.cardActions}>
-            <button onClick={() => handleEdit(item)} className={styles.actionBtn}>
-              <Edit2 size={16} />
-            </button>
-            <button onClick={() => handleDelete(item.id)} className={clsx(styles.actionBtn, styles.delete)}>
-              <Trash2 size={16} />
-            </button>
+            <Button variant="action" iconOnly icon={Edit2} onClick={() => handleEdit(item)} title="Editar" />
+            <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => handleDelete(item.id)} title="Eliminar" />
           </div>
         )}
       </div>

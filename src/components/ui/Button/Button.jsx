@@ -12,19 +12,27 @@ export function Button({
   disabled,
   loading = false,
   className,
-  type = 'button'
+  type = 'button',
+  iconOnly = false,
+  title,
+  ...props
 }) {
+  const Component = props.href ? motion.a : motion.button;
+
   return (
-    <motion.button
-      type={type}
+    <Component
+      type={props.href ? undefined : type}
+      title={title}
       whileHover={!disabled && !loading ? { scale: 1.02 } : {}}
       whileTap={!disabled && !loading ? { scale: 0.98 } : {}}
       onClick={onClick}
       disabled={disabled || loading}
+      {...props}
       className={clsx(
         styles.button,
         styles[`variant-${variant}`],
         styles[`size-${size}`],
+        iconOnly && styles.iconOnly,
         className
       )}
     >
@@ -34,7 +42,7 @@ export function Button({
         <IconComponent size={16} />
       ) : null}
       
-      {children && <span>{children}</span>}
-    </motion.button>
+      {children && !iconOnly && <span>{children}</span>}
+    </Component>
   );
 }

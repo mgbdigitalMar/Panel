@@ -199,18 +199,12 @@ export default function ReservationsPage() {
                         <div className={styles.actionsCell} style={{ gap: 4 }}>
                           {user.role === 'admin' && r.status === 'pending' && (
                             <>
-                              <button className={clsx(styles.actionBtn, styles.approveBtn)} onClick={() => handleApprove(r.id)} title="Aprobar">
-                                <Check size={16} />
-                              </button>
-                              <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => handleReject(r.id)} title="Rechazar">
-                                <X size={16} />
-                              </button>
+                              <Button variant="action-success" iconOnly icon={Check} onClick={() => handleApprove(r.id)} title="Aprobar" />
+                              <Button variant="action-danger" iconOnly icon={X} onClick={() => handleReject(r.id)} title="Rechazar" />
                             </>
                           )}
                           {(user.role === 'admin' || r.employeeId === user.id) && r.status !== 'pending' && (
-                            <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => handleDelete(r.id)} title="Eliminar">
-                              <X size={16} />
-                            </button>
+                            <Button variant="action-danger" iconOnly icon={X} onClick={() => handleDelete(r.id)} title="Eliminar" />
                           )}
                         </div>
                       </td>

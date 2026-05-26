@@ -425,12 +425,8 @@ export default function AdminPage() {
 
                       <td data-label="Acciones">
                         <div className={styles.actionsCell}>
-                          <button className={clsx(styles.actionBtn, styles.edit)} onClick={() => handleEdit(emp)} title="Editar empleado">
-                            <Edit2 size={16} />
-                          </button>
-                          <button className={clsx(styles.actionBtn, styles.delete)} onClick={() => handleDelete(emp.id)} title="Dar de baja">
-                            <Trash2 size={16} />
-                          </button>
+                          <Button variant="action" iconOnly icon={Edit2} onClick={() => handleEdit(emp)} title="Editar empleado" />
+                          <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => handleDelete(emp.id)} title="Dar de baja" />
                         </div>
                       </td>
                     </tr>
@@ -460,7 +456,7 @@ export default function AdminPage() {
                     <Building size={22} />
                   </div>
                   <div className={clsx(styles.actionsCell)} style={{ marginLeft: 'auto', gap: 4 }}>
-                    <button className={clsx(styles.actionBtn, styles.edit)} onClick={() => {
+                    <Button variant="action" iconOnly icon={Edit2} onClick={() => {
                       setResType('room');
                       setResForm({ 
                         id: room.id, 
@@ -471,15 +467,11 @@ export default function AdminPage() {
                       });
                       setEditingRes(true);
                       setShowResModal(true);
-                    }} title="Editar">
-                      <Edit2 size={16} />
-                    </button>
-                    <button className={clsx(styles.actionBtn, styles.delete)} onClick={async () => {
+                    }} title="Editar" />
+                    <Button variant="action-danger" iconOnly icon={Trash2} onClick={async () => {
                       const { error } = await supabase.from('rooms').delete().eq('id', room.id);
                       if (!error) refresh();
-                    }} title="Eliminar">
-                      <Trash2 size={16} />
-                    </button>
+                    }} title="Eliminar" />
                   </div>
                 </div>
                 <h4 className={styles.resourceTitle}>{room.name}</h4>
@@ -511,7 +503,7 @@ export default function AdminPage() {
                     <Car size={22} />
                   </div>
                   <div className={clsx(styles.actionsCell)} style={{ marginLeft: 'auto', gap: 4 }}>
-                    <button className={clsx(styles.actionBtn, styles.edit)} onClick={() => {
+                    <Button variant="action" iconOnly icon={Edit2} onClick={() => {
                       setResType('vehicle');
                       setResForm({ 
                         id: v.id,
@@ -522,15 +514,11 @@ export default function AdminPage() {
                       });
                       setEditingRes(true);
                       setShowResModal(true);
-                    }} title="Editar">
-                      <Edit2 size={16} />
-                    </button>
-                    <button className={clsx(styles.actionBtn, styles.delete)} onClick={async () => {
+                    }} title="Editar" />
+                    <Button variant="action-danger" iconOnly icon={Trash2} onClick={async () => {
                       const { error } = await supabase.from('vehicles').delete().eq('id', v.id);
                       if (!error) refresh();
-                    }} title="Eliminar">
-                      <Trash2 size={16} />
-                    </button>
+                    }} title="Eliminar" />
                   </div>
                 </div>
                 <h4 className={styles.resourceTitle}>{v.model}</h4>
@@ -623,24 +611,22 @@ export default function AdminPage() {
                           <td data-label="Acciones">
                             <div className={styles.actionsCell}>
                               {doc.fileUrl && (
-                                <a href={doc.fileUrl} download={doc.title || "documento"}
-                                  className={clsx(styles.actionBtn, styles.download)}
+                                <Button
+                                  variant="action-download" iconOnly icon={Download}
+                                  href={doc.fileUrl}
+                                  download={doc.title || "documento"}
                                   title="Descargar archivo"
-                                >
-                                  <Download size={16} />
-                                </a>
+                                />
                               )}
-                              <button
+                              <Button
+                                variant="action-danger" iconOnly icon={Trash2}
                                 onClick={async () => {
                                   if (window.confirm('¿Estás seguro de que deseas eliminar este documento?')) {
                                     await deleteDocument(doc.id);
                                   }
                                 }}
-                                className={clsx(styles.actionBtn, styles.delete)}
                                 title="Eliminar documento"
-                              >
-                                <Trash2 size={16} />
-                              </button>
+                              />
                             </div>
                           </td>
                         </tr>
@@ -690,12 +676,13 @@ export default function AdminPage() {
                   style={{ padding: '7px 10px', background: 'var(--bg)', border: '1px solid var(--input-border)', borderRadius: 'var(--radius-sm)', color: 'var(--text)', fontSize: 13, outline: 'none' }} />
               </div>
               {(hoursFilterEmp || hoursFilterFrom || hoursFilterTo) && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => { setHoursFilterEmp(''); setHoursFilterFrom(''); setHoursFilterTo(''); }}
-                  style={{ padding: '7px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', background: 'transparent', color: 'var(--text-sec)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
                 >
                   Limpiar
-                </button>
+                </Button>
               )}
               <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-mut)', alignSelf: 'flex-end', paddingBottom: 8 }}>
                 {filteredHours.length} solicitud{filteredHours.length !== 1 ? 'es' : ''} &bull; {filteredHours.reduce((s, h) => s + (h.status === 'approved' ? h.hours : 0), 0).toFixed(1)}h aprobadas
@@ -756,20 +743,16 @@ export default function AdminPage() {
                           <td data-label="Acciones">
                             {h.status === 'pending' ? (
                               <div className={styles.actionsCell}>
-                                <button
-                                  className={clsx(styles.actionBtn, styles.approveBtn)}
+                                <Button
+                                  variant="action-success" iconOnly icon={Check}
                                   onClick={() => updateHourCompensationStatus(h.id, 'approved', user?.id, h.employeeId)}
                                   title="Aprobar"
-                                >
-                                  <Check size={16} />
-                                </button>
-                                <button
-                                  className={clsx(styles.actionBtn, styles.rejectBtn)}
+                                />
+                                <Button
+                                  variant="action-danger" iconOnly icon={X}
                                   onClick={() => updateHourCompensationStatus(h.id, 'rejected', user?.id, h.employeeId)}
                                   title="Rechazar"
-                                >
-                                  <X size={16} />
-                                </button>
+                                />
                               </div>
                             ) : (
                               <span style={{ fontSize: 12, color: 'var(--text-mut)' }}>

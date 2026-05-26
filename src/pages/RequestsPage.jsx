@@ -208,12 +208,8 @@ export default function RequestsPage() {
                       <td data-label="Acciones">
                         {r.status === 'pending' && (
                           <div className={styles.actionsCell}>
-                            <button className={clsx(styles.actionBtn, styles.approveBtn)} onClick={() => changeStatus(r.id, 'approved', r.employeeId, r.type)} title="Aprobar">
-                              <Check size={16} />
-                            </button>
-                            <button className={clsx(styles.actionBtn, styles.rejectBtn)} onClick={() => changeStatus(r.id, 'rejected', r.employeeId, r.type)} title="Rechazar">
-                              <X size={16} />
-                            </button>
+                            <Button variant="action-success" iconOnly icon={Check} onClick={() => changeStatus(r.id, 'approved', r.employeeId, r.type)} title="Aprobar" />
+                            <Button variant="action-danger" iconOnly icon={X} onClick={() => changeStatus(r.id, 'rejected', r.employeeId, r.type)} title="Rechazar" />
                           </div>
                         )}
                       </td>

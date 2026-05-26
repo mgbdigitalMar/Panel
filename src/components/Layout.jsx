@@ -11,7 +11,7 @@ import {
 import logoColor from '../assets/logos/logo-color.png';
 import logoWhite from '../assets/logos/logo-white.png';
 
-import { Avatar } from './ui';
+import { Avatar, Button } from './ui';
 import OnboardingModal from './OnboardingModal';
 import styles from './Layout.module.scss';
 
@@ -181,24 +181,28 @@ export default function Layout({ children }) {
 
         {/* Quick action buttons — always visible */}
         <div className={styles.userActions}>
-          <button
-            className={styles.userActionBtn}
+          <Button
+            variant="action"
+            size="sm"
+            icon={User}
             onClick={() => handleNavigate('profile')}
             title="Mi perfil"
             aria-label="Ir a mi perfil"
+            style={{ width: '100%', justifyContent: 'center' }}
           >
-            <User size={15} aria-hidden="true" />
-            <span>Perfil</span>
-          </button>
-          <button
-            className={clsx(styles.userActionBtn, styles.userActionLogout)}
+            Perfil
+          </Button>
+          <Button
+            variant="action-danger"
+            size="sm"
+            icon={LogOut}
             onClick={() => logout()}
             title="Cerrar sesión"
             aria-label="Cerrar sesión"
+            style={{ width: '100%', justifyContent: 'center' }}
           >
-            <LogOut size={15} aria-hidden="true" />
-            <span>Salir</span>
-          </button>
+            Salir
+          </Button>
         </div>
       </div>
     </div>
@@ -251,13 +255,14 @@ export default function Layout({ children }) {
         <header className={styles.header} role="banner">
           <div className={styles.headerLeft}>
             {/* Mobile hamburger */}
-            <button
-              className={clsx(styles.iconBtn, 'show-tablet')}
+            <Button
+              variant="ghost"
+              iconOnly
+              icon={Menu}
+              className="show-tablet"
               onClick={() => setSideOpen(true)}
               aria-label="Abrir menú"
-            >
-              <Menu size={20} aria-hidden="true" />
-            </button>
+            />
 
             {/* Page title + breadcrumbs */}
             <div className={styles.titleBlock}>
@@ -293,39 +298,38 @@ export default function Layout({ children }) {
           <div className={styles.headerRight}>
 
             {/* Theme toggle */}
-            <button
+            <Button
+              variant="ghost"
+              iconOnly
+              icon={theme === 'dark' ? Sun : Moon}
               onClick={toggle}
-              className={styles.iconBtn}
               aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
               title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
-            >
-              {theme === 'dark'
-                ? <Sun size={17} aria-hidden="true" />
-                : <Moon size={17} aria-hidden="true" />
-              }
-            </button>
+            />
 
             {/* Notifications */}
             <div style={{ position: 'relative' }} ref={notiMenuRef}>
-              <button
+              <Button
+                variant="ghost"
+                iconOnly
+                icon={Bell}
                 onClick={() => setNotiMenu(v => !v)}
-                className={clsx(styles.iconBtn, styles.bellBtn)}
+                className={styles.bellBtn}
                 aria-label={`Notificaciones${unreadCount > 0 ? ` (${unreadCount} sin leer)` : ''}`}
                 aria-expanded={notiMenu}
-              >
-                <Bell size={17} aria-hidden="true" />
-                {unreadCount > 0 && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-                    className={styles.badge}
-                    aria-hidden="true"
-                  >
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </motion.span>
-                )}
-              </button>
+              />
+              {unreadCount > 0 && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                  className={styles.badge}
+                  aria-hidden="true"
+                  style={{ pointerEvents: 'none', position: 'absolute', top: -2, right: -2 }}
+                >
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </motion.span>
+              )}
 
               <AnimatePresence>
                 {notiMenu && (
@@ -341,9 +345,9 @@ export default function Layout({ children }) {
                     <div className={styles.dropdownHeader}>
                       <p>Notificaciones</p>
                       {unreadCount > 0 && (
-                        <button className={styles.markReadBtn} onClick={handleMarkAllRead}>
+                        <Button variant="ghost" size="sm" onClick={handleMarkAllRead}>
                           Marcar todo leído
-                        </button>
+                        </Button>
                       )}
                     </div>
 
@@ -548,32 +552,15 @@ export default function Layout({ children }) {
                     Confirmo que he leído el documento hasta el final
                   </span>
                 </label>
-                <button
+                <Button
+                  variant="primary"
+                  size="lg"
+                  icon={CheckCircle}
                   disabled={!policyRead || policyTimer > 0}
                   onClick={() => setCurrentUser({ id: user.id, policyAccepted: true })}
-                  style={{
-                    background: 'var(--gradient-accent)',
-                    color: '#fff',
-                    border: 'none',
-                    padding: 'clamp(10px,1.5vw,14px) clamp(18px,2.5vw,28px)',
-                    borderRadius: 'var(--radius-md)',
-                    fontWeight: 700,
-                    fontSize: 'clamp(13px,1.2vw,15px)',
-                    cursor: (!policyRead || policyTimer > 0) ? 'not-allowed' : 'pointer',
-                    opacity: (!policyRead || policyTimer > 0) ? 0.5 : 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    boxShadow: (!policyRead || policyTimer > 0) ? 'none' : 'var(--shadow-accent)',
-                    transition: 'transform 0.2s var(--ease-out), box-shadow 0.2s ease',
-                    fontFamily: 'inherit',
-                  }}
-                  onMouseEnter={e => { if (policyRead && policyTimer === 0) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(34,81,255,0.4)'; } }}
-                  onMouseLeave={e => { if (policyRead && policyTimer === 0) { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = 'var(--shadow-accent)'; } }}
                 >
-                  <CheckCircle size={17} aria-hidden="true" />
                   {policyTimer > 0 ? `Espera ${policyTimer}s...` : 'Confirmar lectura'}
-                </button>
+                </Button>
               </div>
             </motion.div>
           </div>

@@ -331,8 +331,10 @@ export default function ProfilePage() {
                       {/* View file button */}
                       {hasFile &&
                         (getViewerUrl(doc.fileUrl) ? (
-                          <button
-                            className={clsx(styles.docBtn, styles.docBtnView)}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            icon={Eye}
                             onClick={() =>
                               setViewerDoc({
                                 ...doc,
@@ -341,40 +343,40 @@ export default function ProfilePage() {
                             }
                             title="Ver documento"
                           >
-                            <Eye size={14} />
-                            <span>Ver</span>
-                          </button>
+                            Ver
+                          </Button>
                         ) : (
-                          <a
+                          <Button
                             href={doc.fileUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={clsx(styles.docBtn, styles.docBtnView)}
+                            variant="ghost"
+                            size="sm"
+                            icon={ExternalLink}
                             title="Abrir archivo"
                           >
-                            <ExternalLink size={14} />
-                            <span>Abrir</span>
-                          </a>
+                            Abrir
+                          </Button>
                         ))}
                       {/* Download button */}
                       {hasFile && (
-                        <a
+                        <Button
                           href={doc.fileUrl}
                           download
-                          className={styles.docBtn}
+                          variant="ghost"
+                          size="sm"
+                          iconOnly
+                          icon={Download}
                           title="Descargar"
-                        >
-                          <Download size={14} />
-                        </a>
+                        />
                       )}
                       {/* Status actions */}
                       {isPending && (
                         <>
-                          <button
-                            className={clsx(
-                              styles.docBtn,
-                              styles.docBtnComplete,
-                            )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            icon={CheckCircle}
                             disabled={isUpdating}
                             onClick={async () => {
                               setUpdatingDoc(doc.id);
@@ -383,11 +385,12 @@ export default function ProfilePage() {
                             }}
                             title="Marcar como completado"
                           >
-                            <CheckCircle size={14} />
-                            <span>Completar</span>
-                          </button>
-                          <button
-                            className={clsx(styles.docBtn, styles.docBtnSign)}
+                            Completar
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            icon={PenTool}
                             disabled={isUpdating}
                             onClick={async () => {
                               setUpdatingDoc(doc.id);
@@ -396,9 +399,8 @@ export default function ProfilePage() {
                             }}
                             title="Marcar como firmado"
                           >
-                            <PenTool size={14} />
-                            <span>Firmar</span>
-                          </button>
+                            Firmar
+                          </Button>
                         </>
                       )}
                     </div>
@@ -437,30 +439,33 @@ export default function ProfilePage() {
                 <span>{viewerDoc.title}</span>
               </div>
               <div className={styles.viewerHeaderActions}>
-                <a
+                <Button
                   href={viewerDoc.fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={styles.viewerAction}
+                  variant="ghost"
+                  size="sm"
+                  iconOnly
+                  icon={ExternalLink}
                   title="Abrir en nueva pestaña"
-                >
-                  <ExternalLink size={16} />
-                </a>
-                <a
+                />
+                <Button
                   href={viewerDoc.fileUrl}
                   download
-                  className={styles.viewerAction}
+                  variant="ghost"
+                  size="sm"
+                  iconOnly
+                  icon={Download}
                   title="Descargar"
-                >
-                  <Download size={16} />
-                </a>
-                <button
-                  className={styles.viewerClose}
+                />
+                <Button
+                  variant="action-danger"
+                  size="sm"
+                  iconOnly
+                  icon={X}
                   onClick={() => setViewerDoc(null)}
                   title="Cerrar"
-                >
-                  <X size={18} />
-                </button>
+                />
               </div>
             </div>
             <iframe

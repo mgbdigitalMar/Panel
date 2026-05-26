@@ -202,50 +202,7 @@
   flex-shrink: 0;
 }
 
-.actionBtn {
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  background: var(--glass-input);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(var(--border-rgb), 0.45);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-sec);
-  transition: all 0.2s var(--ease-out);
-  flex-shrink: 0;
 
-  &:hover {
-    color: var(--text);
-    background: var(--glass-card);
-    border-color: rgba(var(--border-rgb), 0.70);
-    box-shadow: var(--glass-highlight-sm);
-    transform: translateY(-1px);
-    svg { filter: drop-shadow(0 0 4px rgba(var(--text-rgb), 0.25)); }
-  }
-
-  &:active {
-    transform: scale(0.94);
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px rgba(var(--accent-rgb), 0.3);
-  }
-
-  &.delete {
-    &:hover {
-      color: var(--danger);
-      background: var(--danger-bg);
-      border-color: rgba(220, 38, 38, 0.4);
-      svg { filter: drop-shadow(0 0 4px rgba(var(--danger-rgb), 0.25)); }
-    }
-  }
-}
 
 .typeButtons {
   display: flex;

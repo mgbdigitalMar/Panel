@@ -392,9 +392,9 @@ export default function HorasPage() {
                   <input type="date" className={styles.filterInput} value={filterTo} onChange={e => setFilterTo(e.target.value)} />
                 </div>
                 {(filterFrom || filterTo) && (
-                  <button className={styles.clearFilter} onClick={() => { setFilterFrom(''); setFilterTo(''); }}>
+                  <Button variant="ghost" onClick={() => { setFilterFrom(''); setFilterTo(''); }}>
                     Limpiar
-                  </button>
+                  </Button>
                 )}
                 <span className={styles.filterCount}>{allRows.length} registro{allRows.length !== 1 ? 's' : ''}</span>
               </div>

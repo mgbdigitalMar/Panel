@@ -1,13 +1,13 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useAuth, useApp, useData } from '../context';
 import { MOCK_NEWS } from '../data/mockData';
-import { Avatar, Badge, StatCard, Card } from '../components/ui';
+import { Avatar, Badge, StatCard, Card, Button } from '../components/ui';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import styles from './DashboardPage.module.scss';
-import { Users, Calendar, Inbox, Newspaper, Pin, Gift, Car, Building, ArrowRight } from 'lucide-react';
+import { Users, Calendar, Inbox, Newspaper, Pin, Gift, Car, Building, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 
@@ -218,12 +218,12 @@ const tooltipStyle = {
           </div>
         </div>
         <div className={styles.welcomeActions}>
-          <button className={styles.bannerBtn} onClick={() => navigate('reservations')}>
-            <Calendar size={14} /> Nueva reserva
-          </button>
-          <button className={styles.bannerBtnSecondary} onClick={() => navigate('requests')}>
-            <Inbox size={14} /> Ver solicitudes
-          </button>
+          <Button variant="primary" onClick={() => navigate('reservations')} icon={Calendar}>
+            Nueva reserva
+          </Button>
+          <Button variant="secondary" onClick={() => navigate('requests')} icon={Inbox}>
+            Ver solicitudes
+          </Button>
         </div>
       </motion.div>
 
@@ -283,19 +283,19 @@ const tooltipStyle = {
                 <span className={styles.legendDot} style={{ background: CHART_COLORS.danger }}  />Rechazadas
               </div>
               <div className={styles.monthNav}>
-                <button
-                  className={styles.monthNavBtn}
+                <Button
+                  variant="ghost" size="sm" iconOnly icon={ChevronLeft}
                   onClick={prevYear}
                   aria-label="Año anterior"
                   title="Año anterior"
-                >‹</button>
-                <button
-                  className={styles.monthNavBtn}
+                />
+                <Button
+                  variant="ghost" size="sm" iconOnly icon={ChevronRight}
                   onClick={nextYear}
                   disabled={isCurrentYear}
                   aria-label="Año siguiente"
                   title="Año siguiente"
-                >›</button>
+                />
               </div>
             </div>
           </div>
@@ -356,19 +356,19 @@ const tooltipStyle = {
               <span className={styles.chartSub}>{chartMonthLabel}</span>
             </div>
             <div className={styles.monthNav}>
-              <button
-                className={styles.monthNavBtn}
+              <Button
+                variant="ghost" size="sm" iconOnly icon={ChevronLeft}
                 onClick={prevMonth}
                 aria-label="Mes anterior"
                 title="Mes anterior"
-              >‹</button>
-              <button
-                className={styles.monthNavBtn}
+              />
+              <Button
+                variant="ghost" size="sm" iconOnly icon={ChevronRight}
                 onClick={nextMonth}
                 disabled={isCurrentMonth}
                 aria-label="Mes siguiente"
                 title="Mes siguiente"
-              >›</button>
+              />
             </div>
           </div>
           <div className={styles.chartBody}>
@@ -397,9 +397,9 @@ const tooltipStyle = {
           <div className={styles.cardPad}>
             <div className={styles.cardHeader}>
               <h3 className={styles.sectionTitle}>Noticias y Eventos</h3>
-              <button onClick={() => navigate('news')} className={styles.viewAllBtn}>
-                Ver todo <ArrowRight size={12} />
-              </button>
+              <Button variant="ghost" size="sm" onClick={() => navigate('news')}>
+                Ver todo <ArrowRight size={14} />
+              </Button>
             </div>
             <div className={styles.feedList}>
               {news.slice(0, 4).map(n => (
@@ -460,9 +460,9 @@ const tooltipStyle = {
           <div className={styles.cardPad}>
             <div className={styles.cardHeader}>
               <h3 className={styles.sectionTitle}>Reservas recientes</h3>
-              <button onClick={() => navigate('reservations')} className={styles.viewAllBtn}>
-                Ver todo <ArrowRight size={12} />
-              </button>
+              <Button variant="ghost" size="sm" onClick={() => navigate('reservations')}>
+                Ver todo <ArrowRight size={14} />
+              </Button>
             </div>
           </div>
           <div className={styles.tableWrapper}>
