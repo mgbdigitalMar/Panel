@@ -14,6 +14,7 @@ const AdminPage          = lazy(() => import('./pages/AdminPage'))
 const EmployeesPage      = lazy(() => import('./pages/EmployeesPage'))
 const ProfilePage        = lazy(() => import('./pages/ProfilePage'))
 const HorasPage          = lazy(() => import('./pages/HorasPage'))
+const SettingsPage       = lazy(() => import('./pages/SettingsPage'))
 
 // Loading screen while Supabase restores the session
 function LoadingScreen() {
@@ -57,6 +58,7 @@ function AppShell() {
                       {page === 'profile'      && <ProfilePage />}
                       {page === 'employees'    && <EmployeesPage />}
                       {page === 'admin'        && (user?.role === 'admin' ? <AdminPage /> : <DashboardPage />)}
+                      {page === 'settings'     && <SettingsPage />}
                     </Layout>
                   )}
                 </Suspense>

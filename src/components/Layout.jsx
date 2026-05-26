@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, Settings, User,
-  LogOut, Sun, Moon, Menu, Bell, CheckCircle, XCircle,
-  UsersRound, Timer, Check,
+  LogOut, Menu, Bell, CheckCircle, XCircle,
+  UsersRound, Timer, Check, SlidersHorizontal,
 } from 'lucide-react';
 
 import logoColor from '../assets/logos/logo-color.png';
@@ -27,7 +27,8 @@ const navItems = [
 const adminItems = [
   { id: 'admin', label: 'Administración', icon: Settings },
 ];
-const allItems = [...navItems, ...adminItems];
+const settingsItem = { id: 'settings', label: 'Ajustes', icon: SlidersHorizontal };
+const allItems = [...navItems, ...adminItems, settingsItem];
 
 /* ── Single Nav Link ──────────────────────────────────────────────── */
 function NavLink({ item, onNavigate, collapsed }) {
@@ -296,15 +297,14 @@ export default function Layout({ children }) {
 
           {/* Right actions */}
           <div className={styles.headerRight}>
-
-            {/* Theme toggle */}
+            {/* Settings button — where theme toggle used to be */}
             <Button
               variant="ghost"
               iconOnly
-              icon={theme === 'dark' ? Sun : Moon}
-              onClick={toggle}
-              aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
-              title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+              icon={SlidersHorizontal}
+              onClick={() => handleNavigate('settings')}
+              aria-label="Ajustes"
+              title="Ajustes"
             />
 
             {/* Notifications */}

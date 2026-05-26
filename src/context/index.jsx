@@ -6,20 +6,48 @@ import { MOCK_DOCUMENTS, MOCK_HOUR_COMPENSATIONS } from '../data/mockData'
 // ─── THEME CONTEXT ────────────────────────────────────────────
 export const ThemeCtx = createContext()
 
+// Resolves the actual applied theme ('dark'|'light') from mode
+function resolveTheme(mode) {
+  if (mode === 'system') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  return mode;
+}
+
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => {
-    const saved = localStorage.getItem('app-theme')
-    return saved || 'dark'
+  // mode = 'light' | 'dark' | 'system'
+  const [mode, setModeState] = useState(() => {
+    try { return localStorage.getItem('app-theme-mode') || 'dark'; } catch { return 'dark'; }
   })
-  
-  const toggle = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'))
-  
+
+  const applyMode = (m) => {
+    const resolved = resolveTheme(m);
+    document.documentElement.setAttribute('data-theme', resolved);
+    try { localStorage.setItem('app-theme-mode', m); } catch {}
+  }
+
+  // Apply on mount
+  useEffect(() => { applyMode(mode); }, []);
+
+  // Re-apply whenever mode changes
+  useEffect(() => { applyMode(mode); }, [mode]);
+
+  // Listen to OS preference changes when mode === 'system'
   useEffect(() => {
-    localStorage.setItem('app-theme', theme)
-    document.documentElement.setAttribute('data-theme', theme)
-  }, [theme])
-  
-  return <ThemeCtx.Provider value={{ theme, toggle }}>{children}</ThemeCtx.Provider>
+    if (mode !== 'system') return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => applyMode('system');
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [mode]);
+
+  const setMode = (m) => setModeState(m);
+  // Legacy toggle kept for any remaining usages
+  const toggle = () => setModeState(prev => prev === 'dark' ? 'light' : 'dark');
+  // theme = resolved applied value (for icon logic, etc.)
+  const theme = resolveTheme(mode);
+
+  return <ThemeCtx.Provider value={{ theme, mode, setMode, toggle }}>{children}</ThemeCtx.Provider>
 }
 export function useTheme() { return useContext(ThemeCtx) }
 
@@ -45,9 +73,6 @@ const [readIds, setReadIds] = useState(() => {
   }
 })
   const [liveNotifs, setLiveNotifs]        = useState([])  // Real-time toasts
-  const [density, setDensity]              = useState(
-    () => localStorage.getItem('margube-density') || 'normal'
-  )
 
   // ── Persistent Notifications (DB) ────────────────────────
   const fetchNotifications = async (userId) => {
@@ -759,13 +784,6 @@ const [readIds, setReadIds] = useState(() => {
     localStorage.setItem('margube_readNotifs', JSON.stringify(Array.from(readIds)));
   }, [readIds]);
 
-  // ── Density ───────────────────────────────────────────────
-  const toggleDensity = () => setDensity(prev => {
-    const next = prev === 'normal' ? 'compact' : 'normal'
-    localStorage.setItem('margube-density', next)
-    return next
-  })
-
   // Legacy setters kept for compatibility
   const setRequests     = (fn) => setRequestsState(fn)
   const setReservations = (fn) => setReservationsState(fn)
@@ -783,13 +801,12 @@ const [readIds, setReadIds] = useState(() => {
       createRequest, updateRequestStatus, deleteRequest, deleteEmployeeData,
       createReservation, updateReservationStatus, deleteReservation,
       readIds, markRead, markAllRead,
-      density, toggleDensity,
       liveNotifs,
       refresh: () => Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations(), fetchPersonalDays()]),
     };
   }, [
     requests, reservations, rooms, vehicles, documents, hourCompensations, personalDays,
-    notifications, loadingData, readIds, density, liveNotifs
+    notifications, loadingData, readIds, liveNotifs
   ])
 
   return (
