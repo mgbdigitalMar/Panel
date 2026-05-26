@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context';
 import { MOCK_NEWS } from '../data/mockData';
-import { Avatar, Badge, Modal, Input, Select, Textarea, Button, Card } from '../components/ui';
+import { Avatar, Badge, Modal, Input, Select, Textarea, Button, Card, ConfirmModal } from '../components/ui';
 import { Edit2, Trash2, Pin, Plus } from 'lucide-react';
 import styles from './NewsPage.module.scss';
 import clsx from 'clsx';
@@ -13,6 +13,7 @@ export default function NewsPage() {
   const [tab, setTab]             = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem]   = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
   const [form, setForm] = useState({ type: 'news', title: '', content: '', category: 'Empresa', pinned: false });
 
   const filtered = tab === 'all' ? news : news.filter(n => n.type === tab);
@@ -41,7 +42,10 @@ export default function NewsPage() {
     setShowModal(true);
   };
 
-  const handleDelete = id => setNews(news.filter(n => n.id !== id));
+  const handleDelete = id => {
+    setNews(news.filter(n => n.id !== id));
+    setItemToDelete(null);
+  };
 
   const NewsCard = ({ item }) => (
     <Card className={clsx(styles.newsCard, { [styles.newsCardPinned]: item.pinned })}>
@@ -67,7 +71,7 @@ export default function NewsPage() {
         {user.role === 'admin' && (
           <div className={styles.cardActions}>
             <Button variant="action" iconOnly icon={Edit2} onClick={() => handleEdit(item)} title="Editar" />
-            <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => handleDelete(item.id)} title="Eliminar" />
+            <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => setItemToDelete(item.id)} title="Eliminar" />
           </div>
         )}
       </div>
@@ -153,6 +157,14 @@ export default function NewsPage() {
           <Button onClick={handleSave}>{editItem ? 'Actualizar' : 'Publicar'}</Button>
         </div>
       </Modal>
+
+      <ConfirmModal 
+        isOpen={!!itemToDelete} 
+        onClose={() => setItemToDelete(null)} 
+        onConfirm={() => handleDelete(itemToDelete)} 
+        title="Eliminar publicación"
+        message="¿Estás seguro de que deseas eliminar esta noticia/evento? Esta acción no se puede deshacer."
+      />
     </div>
   );
 }

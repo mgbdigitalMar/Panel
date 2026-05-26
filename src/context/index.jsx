@@ -478,6 +478,23 @@ const [readIds, setReadIds] = useState(() => {
     }
   }
 
+  const deleteRequest = async (id, type) => {
+    if (type === 'asuntos_propios') {
+      const p = personalDays.find(d => String(d.id) === String(id));
+      if (p?.fileUrl && p.fileUrl.includes('/storage/v1/object/public/documents/')) {
+        const path = p.fileUrl.split('/documents/')[1];
+        if (path) await supabase.storage.from('documents').remove([path]);
+      }
+      const { error } = await supabase.from('personal_days').delete().eq('id', id);
+      if (error) console.error('deleteRequest (personal_day):', error);
+      else await fetchPersonalDays();
+    } else {
+      const { error } = await supabase.from('requests').delete().eq('id', id);
+      if (error) console.error('deleteRequest:', error);
+      else await fetchRequests();
+    }
+  }
+
   const createPersonalDay = async ({ employeeId, date, reason, fileUrl }) => {
     const { data, error } = await supabase.from('personal_days').insert([{
       employee_id: employeeId,
@@ -700,6 +717,29 @@ const [readIds, setReadIds] = useState(() => {
     }
   }
 
+  const deleteHourCompensation = async (id) => {
+    const { error } = await supabase.from('hour_compensations').delete().eq('id', id);
+    if (error) console.error('deleteHourCompensation:', error);
+    else await fetchHourCompensations();
+  }
+
+  const deleteEmployeeData = async (employeeId) => {
+    const empDocs = documents.filter(d => String(d.senderId) === String(employeeId) || String(d.recipientId) === String(employeeId));
+    for (const doc of empDocs) {
+      if (doc.fileUrl && doc.fileUrl.includes('/storage/v1/object/public/documents/')) {
+        const path = doc.fileUrl.split('/documents/')[1];
+        if (path) await supabase.storage.from('documents').remove([path]);
+      }
+    }
+    const empDays = personalDays.filter(p => String(p.employeeId) === String(employeeId));
+    for (const p of empDays) {
+      if (p.fileUrl && p.fileUrl.includes('/storage/v1/object/public/documents/')) {
+        const path = p.fileUrl.split('/documents/')[1];
+        if (path) await supabase.storage.from('documents').remove([path]);
+      }
+    }
+  }
+
 
 // ── Notification read state ───────────────────────────────
   const markRead = (id) => setReadIds(prev => {
@@ -736,11 +776,11 @@ const [readIds, setReadIds] = useState(() => {
       requests, setRequests, reservations, setReservations,
       rooms, vehicles,
       documents, sendDocument, updateDocumentStatus, uploadDocumentFile, deleteDocument, onboardingDocUrl,
-      hourCompensations, createHourCompensation, updateHourCompensationStatus,
+      hourCompensations, createHourCompensation, updateHourCompensationStatus, deleteHourCompensation,
       personalDays, createPersonalDay, updatePersonalDayStatus,
       notifications, markNotifRead, markAllNotifsRead,
       loadingData,
-      createRequest, updateRequestStatus,
+      createRequest, updateRequestStatus, deleteRequest, deleteEmployeeData,
       createReservation, updateReservationStatus, deleteReservation,
       readIds, markRead, markAllRead,
       density, toggleDensity,

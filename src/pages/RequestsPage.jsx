@@ -1,13 +1,13 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useAuth, useData } from '../context';
-import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard } from '../components/ui';
-import { Plus, Check, X, FileText, ExternalLink, Download } from 'lucide-react';
+import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard, ConfirmModal } from '../components/ui';
+import { Plus, Check, X, FileText, ExternalLink, Download, Trash2 } from 'lucide-react';
 import styles from './RequestsPage.module.scss';
 import clsx from 'clsx';
 
 export default function RequestsPage() {
   const { user, employees } = useAuth();
-  const { requests, createRequest, updateRequestStatus, personalDays, createPersonalDay, updatePersonalDayStatus, uploadDocumentFile } = useData();
+  const { requests, createRequest, updateRequestStatus, deleteRequest, personalDays, createPersonalDay, updatePersonalDayStatus, uploadDocumentFile } = useData();
   
   const [tab, setTab]             = useState('all');
   const [showModal, setShowModal] = useState(false);
@@ -15,6 +15,7 @@ export default function RequestsPage() {
   const [loading, setLoading]     = useState(false);
   const [form, setForm]           = useState({ startDate: '', endDate: '', date: '', reason: '', item: '', amount: '', acceptedTerms: false });
   const [file, setFile]           = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
   
   const [conditionsRead, setConditionsRead] = useState(false);
   const conditionsRef = useRef(null);
@@ -206,12 +207,15 @@ export default function RequestsPage() {
                     <td data-label="Estado"><Badge status={r.status} /></td>
                     {user.role === 'admin' && (
                       <td data-label="Acciones">
-                        {r.status === 'pending' && (
-                          <div className={styles.actionsCell}>
-                            <Button variant="action-success" iconOnly icon={Check} onClick={() => changeStatus(r.id, 'approved', r.employeeId, r.type)} title="Aprobar" />
-                            <Button variant="action-danger" iconOnly icon={X} onClick={() => changeStatus(r.id, 'rejected', r.employeeId, r.type)} title="Rechazar" />
-                          </div>
-                        )}
+                        <div className={styles.actionsCell}>
+                          {r.status === 'pending' && (
+                            <>
+                              <Button variant="action-success" iconOnly icon={Check} onClick={() => changeStatus(r.id, 'approved', r.employeeId, r.type)} title="Aprobar" />
+                              <Button variant="action-danger" iconOnly icon={X} onClick={() => changeStatus(r.id, 'rejected', r.employeeId, r.type)} title="Rechazar" />
+                            </>
+                          )}
+                          <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => setItemToDelete({ id: r.id, type: r.type })} title="Eliminar" />
+                        </div>
                       </td>
                     )}
                   </tr>
@@ -429,6 +433,19 @@ export default function RequestsPage() {
           <Button onClick={handleCreate} disabled={loading || ((reqType === 'external' || reqType === 'remoto' || reqType === 'asuntos_propios') && !form.acceptedTerms)}>{loading ? 'Enviando...' : 'Enviar solicitud'}</Button>
         </div>
       </Modal>
+
+      <ConfirmModal 
+        isOpen={!!itemToDelete} 
+        onClose={() => setItemToDelete(null)} 
+        onConfirm={async () => {
+          if (itemToDelete) {
+            await deleteRequest(itemToDelete.id, itemToDelete.type);
+            setItemToDelete(null);
+          }
+        }} 
+        title="Eliminar solicitud"
+        message="¿Estás seguro de que deseas eliminar esta solicitud? Esta acción no se puede deshacer."
+      />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth, useData } from '../context';
-import { Badge, Modal, Select, Input, Textarea, Button, Card } from '../components/ui';
-import { Building, Car, Check, X, Plus, Download } from 'lucide-react';
+import { Badge, Modal, Select, Input, Textarea, Button, Card, ConfirmModal } from '../components/ui';
+import { Building, Car, Check, X, Plus, Download, Trash2 } from 'lucide-react';
 import styles from './ReservationsPage.module.scss';
 import clsx from 'clsx';
 import ReservationsCalendar from './ReservationsCalendar';
@@ -14,6 +14,7 @@ export default function ReservationsPage() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading]   = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [itemToDelete, setItemToDelete] = useState(null);
   const [form, setForm]         = useState({ type: 'room', resourceId: '', date: '', timeStart: '', timeEnd: '', purpose: '' });
 
   const filtered = tab === 'all' ? reservations : tab === 'mine' ? reservations.filter(r => r.employeeId === user.id) : reservations.filter(r => r.type === tab);
@@ -203,8 +204,8 @@ export default function ReservationsPage() {
                               <Button variant="action-danger" iconOnly icon={X} onClick={() => handleReject(r.id)} title="Rechazar" />
                             </>
                           )}
-                          {(user.role === 'admin' || r.employeeId === user.id) && r.status !== 'pending' && (
-                            <Button variant="action-danger" iconOnly icon={X} onClick={() => handleDelete(r.id)} title="Eliminar" />
+                          {(user.role === 'admin' || (r.employeeId === user.id && r.status !== 'pending')) && (
+                            <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => setItemToDelete(r.id)} title="Eliminar" />
                           )}
                         </div>
                       </td>
@@ -255,6 +256,19 @@ export default function ReservationsPage() {
           <Button onClick={handleCreate} disabled={loading}>{loading ? 'Guardando...' : 'Crear reserva'}</Button>
         </div>
       </Modal>
+
+      <ConfirmModal 
+        isOpen={!!itemToDelete} 
+        onClose={() => setItemToDelete(null)} 
+        onConfirm={async () => {
+          if (itemToDelete) {
+            await handleDelete(itemToDelete);
+            setItemToDelete(null);
+          }
+        }} 
+        title="Eliminar reserva"
+        message="¿Estás seguro de que deseas eliminar esta reserva? Esta acción no se puede deshacer."
+      />
     </div>
   );
 }

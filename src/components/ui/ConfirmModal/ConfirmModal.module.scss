@@ -1,0 +1,44 @@
+.confirmContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.iconWrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.75rem;
+}
+
+.message {
+  font-size: 0.9375rem;
+  color: var(--text-sec);
+  line-height: 1.5;
+  margin: 0 0 2rem;
+  max-width: 320px;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  justify-content: center;
+
+  button {
+    min-width: 120px;
+  }
+}

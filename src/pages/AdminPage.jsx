@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth, useData } from '../context';
 import { MOCK_ROOMS, MOCK_VEHICLES } from '../data/mockData';
-import { Avatar, Badge, Modal, Input, Select, Button, Card } from '../components/ui';
+import { Avatar, Badge, Modal, Input, Select, Button, Card, ConfirmModal } from '../components/ui';
 import { Search, Plus, Edit2, Trash2, Eye, EyeOff, Building, Car, FileText, Send, Clock, CheckCircle, Check, PenTool, Upload, X, Timer, Download } from 'lucide-react';
 import styles from './AdminPage.module.scss';
 import clsx from 'clsx';
@@ -23,7 +23,7 @@ const DEPARTMENTS = [
 
 export default function AdminPage() {
   const { user, employees, setEmployees } = useAuth();
-  const { rooms, vehicles, documents, sendDocument, uploadDocumentFile, deleteDocument, hourCompensations = [], updateHourCompensationStatus, refresh } = useData();
+  const { rooms, vehicles, documents, sendDocument, uploadDocumentFile, deleteDocument, hourCompensations = [], updateHourCompensationStatus, deleteHourCompensation, deleteEmployeeData, refresh } = useData();
 
   // Admin Bolsa Horas filters
   const [hoursFilterFrom, setHoursFilterFrom] = useState('');
@@ -61,6 +61,7 @@ export default function AdminPage() {
   
   const [tab, setTab]             = useState('employees');
   const [showModal, setShowModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [editEmp, setEditEmp]     = useState(null);
   const [showPassFor, setShowPassFor] = useState(null);
   const [search, setSearch]       = useState('');
@@ -195,9 +196,20 @@ export default function AdminPage() {
     setShowModal(true); 
   };
   
-  const handleDelete = async (id) => {
-    const { error } = await supabase.from('profiles').delete().eq('id', id);
-    if (!error) setEmployees(employees.filter(e => e.id !== id));
+  const handleDelete = (id) => {
+    setDeleteConfirm({
+      title: 'Eliminar empleado',
+      message: '¿Estás seguro de que deseas eliminar este empleado y todos sus archivos asociados? Esta acción no se puede deshacer.',
+      action: async () => {
+        await deleteEmployeeData(id);
+        const { error } = await supabase.from('profiles').delete().eq('id', id);
+        if (!error) {
+          setEmployees(employees.filter(e => e.id !== id));
+        } else {
+          alert('Error al eliminar empleado: ' + error.message);
+        }
+      }
+    });
   };
 
   const tabBtn = (id, label) => (
@@ -468,9 +480,15 @@ export default function AdminPage() {
                       setEditingRes(true);
                       setShowResModal(true);
                     }} title="Editar" />
-                    <Button variant="action-danger" iconOnly icon={Trash2} onClick={async () => {
-                      const { error } = await supabase.from('rooms').delete().eq('id', room.id);
-                      if (!error) refresh();
+                    <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => {
+                      setDeleteConfirm({
+                        title: 'Eliminar sala',
+                        message: '¿Estás seguro de que deseas eliminar esta sala? Esta acción no se puede deshacer.',
+                        action: async () => {
+                          const { error } = await supabase.from('rooms').delete().eq('id', room.id);
+                          if (!error) refresh();
+                        }
+                      });
                     }} title="Eliminar" />
                   </div>
                 </div>
@@ -515,9 +533,15 @@ export default function AdminPage() {
                       setEditingRes(true);
                       setShowResModal(true);
                     }} title="Editar" />
-                    <Button variant="action-danger" iconOnly icon={Trash2} onClick={async () => {
-                      const { error } = await supabase.from('vehicles').delete().eq('id', v.id);
-                      if (!error) refresh();
+                    <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => {
+                      setDeleteConfirm({
+                        title: 'Eliminar vehículo',
+                        message: '¿Estás seguro de que deseas eliminar este vehículo? Esta acción no se puede deshacer.',
+                        action: async () => {
+                          const { error } = await supabase.from('vehicles').delete().eq('id', v.id);
+                          if (!error) refresh();
+                        }
+                      });
                     }} title="Eliminar" />
                   </div>
                 </div>
@@ -620,10 +644,14 @@ export default function AdminPage() {
                               )}
                               <Button
                                 variant="action-danger" iconOnly icon={Trash2}
-                                onClick={async () => {
-                                  if (window.confirm('¿Estás seguro de que deseas eliminar este documento?')) {
-                                    await deleteDocument(doc.id);
-                                  }
+                                onClick={() => {
+                                  setDeleteConfirm({
+                                    title: 'Eliminar documento',
+                                    message: '¿Estás seguro de que deseas eliminar este documento?',
+                                    action: async () => {
+                                      await deleteDocument(doc.id);
+                                    }
+                                  });
                                 }}
                                 title="Eliminar documento"
                               />
@@ -741,24 +769,39 @@ export default function AdminPage() {
                             </span>
                           </td>
                           <td data-label="Acciones">
-                            {h.status === 'pending' ? (
-                              <div className={styles.actionsCell}>
-                                <Button
-                                  variant="action-success" iconOnly icon={Check}
-                                  onClick={() => updateHourCompensationStatus(h.id, 'approved', user?.id, h.employeeId)}
-                                  title="Aprobar"
-                                />
-                                <Button
-                                  variant="action-danger" iconOnly icon={X}
-                                  onClick={() => updateHourCompensationStatus(h.id, 'rejected', user?.id, h.employeeId)}
-                                  title="Rechazar"
-                                />
-                              </div>
-                            ) : (
-                              <span style={{ fontSize: 12, color: 'var(--text-mut)' }}>
-                                {h.reviewerName ? `por ${h.reviewerName}` : '—'}
-                              </span>
-                            )}
+                            <div className={styles.actionsCell}>
+                              {h.status === 'pending' ? (
+                                <>
+                                  <Button
+                                    variant="action-success" iconOnly icon={Check}
+                                    onClick={() => updateHourCompensationStatus(h.id, 'approved', user?.id, h.employeeId)}
+                                    title="Aprobar"
+                                  />
+                                  <Button
+                                    variant="action-danger" iconOnly icon={X}
+                                    onClick={() => updateHourCompensationStatus(h.id, 'rejected', user?.id, h.employeeId)}
+                                    title="Rechazar"
+                                  />
+                                </>
+                              ) : (
+                                <span style={{ fontSize: 12, color: 'var(--text-mut)' }}>
+                                  {h.reviewerName ? `por ${h.reviewerName}` : '—'}
+                                </span>
+                              )}
+                              <Button
+                                variant="action-danger" iconOnly icon={Trash2}
+                                onClick={() => {
+                                  setDeleteConfirm({
+                                    title: 'Eliminar registro',
+                                    message: '¿Estás seguro de que deseas eliminar este registro de horas extras?',
+                                    action: async () => {
+                                      await deleteHourCompensation(h.id);
+                                    }
+                                  });
+                                }}
+                                title="Eliminar registro"
+                              />
+                            </div>
                           </td>
                         </tr>
                       );
@@ -818,6 +861,19 @@ export default function AdminPage() {
           <Button onClick={handleSaveEmployee}>{editEmp ? 'Guardar cambios' : 'Crear empleado'}</Button>
         </div>
       </Modal>
+
+      <ConfirmModal 
+        isOpen={!!deleteConfirm} 
+        onClose={() => setDeleteConfirm(null)} 
+        onConfirm={async () => {
+          if (deleteConfirm && deleteConfirm.action) {
+            await deleteConfirm.action();
+            setDeleteConfirm(null);
+          }
+        }} 
+        title={deleteConfirm?.title || ''}
+        message={deleteConfirm?.message || ''}
+      />
 
       {/* Resources modal */}
       <Modal open={showResModal} onClose={() => { setShowResModal(false); setEditingRes(false); }} title={editingRes ? 'Editar' : 'Nuevo ' + (resType === 'room' ? 'sala' : 'vehículo')}>
