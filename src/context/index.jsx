@@ -124,7 +124,7 @@ const [readIds, setReadIds] = useState(() => {
           body: JSON.stringify({
             to: emp.email,
             subject: title,
-            html: `<p>Hola ${emp.name},</p><p>Tienes una nueva notificación en Margube Intranet:</p><p><strong>${title}</strong></p><p>${body || ''}</p><p><a href="https://margube-intranet.vercel.app">Ir a la Intranet</a></p>`
+            html: `<p>Hola ${emp.name},</p><p>Tienes una nueva notificación en Margube Intranet:</p><p><strong>${title}</strong></p><p>${body || ''}</p><p><a href="https://margube.vercel.app/">Ir a la Intranet</a></p>`
           })
         }).catch(err => console.error('Error enviando email vía Resend:', err))
       }
@@ -330,7 +330,7 @@ const [readIds, setReadIds] = useState(() => {
           body: JSON.stringify({
             to: admin.email,
             subject: title,
-            html: `<p>Hola ${admin.name},</p><p>Tienes una nueva notificación para administradores:</p><p><strong>${title}</strong></p><p>${body || ''}</p><p><a href="https://margube-intranet.vercel.app">Ir a la Intranet</a></p>`
+            html: `<p>Hola ${admin.name},</p><p>Tienes una nueva notificación para administradores:</p><p><strong>${title}</strong></p><p>${body || ''}</p><p><a href="https://margube.vercel.app/">Ir a la Intranet</a></p>`
           })
         }).catch(err => console.error('Error enviando email a admin:', err))
       }

@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     }
 
     const { data, error } = await resend.emails.send({
-      from: 'Margube Intranet <onboarding@resend.dev>',
+      from: 'Margube Intranet <intranet@notificaciones.margube.com>',
       to,
       subject,
       html,
