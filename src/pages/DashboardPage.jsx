@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useAuth, useApp, useData } from '../context';
-import { MOCK_NEWS } from '../data/mockData';
 import { Avatar, Badge, StatCard, Card, Button } from '../components/ui';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -86,8 +85,7 @@ const item = {
 export default function DashboardPage() {
   const { user, employees } = useAuth();
   const { navigate } = useApp();
-  const { reservations, requests } = useData();
-  const [news] = useState(MOCK_NEWS);
+  const { reservations, requests, news } = useData();
 
   // Month navigator — starts on the current real month
   const today = new Date();
@@ -412,7 +410,7 @@ const tooltipStyle = {
                       {n.pinned && <Pin size={10} color="var(--accent)" />}
                       <p className={styles.feedTitle}>{n.title}</p>
                     </div>
-                    <p className={styles.feedMeta}>{n.date} · {n.author}</p>
+                    <p className={styles.feedMeta}>{n.date} · {n.authorName}</p>
                   </div>
                   <Badge status={n.type} />
                 </div>

@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '../context';
-import { MOCK_NEWS } from '../data/mockData';
+import { useAuth, useData } from '../context';
 import { Avatar, Badge, Modal, Input, Select, Textarea, Button, Card, ConfirmModal } from '../components/ui';
 import { Edit2, Trash2, Pin, Plus } from 'lucide-react';
 import styles from './NewsPage.module.scss';
@@ -8,8 +7,7 @@ import clsx from 'clsx';
 
 export default function NewsPage() {
   const { user } = useAuth();
-  
-  const [news, setNews]           = useState(MOCK_NEWS);
+  const { news, createNews, updateNews, deleteNews } = useData();
   const [tab, setTab]             = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem]   = useState(null);
@@ -20,16 +18,21 @@ export default function NewsPage() {
   const pinned   = filtered.filter(n => n.pinned);
   const regular  = filtered.filter(n => !n.pinned);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.title || !form.content) return;
+    const payload = {
+      title: form.title,
+      content: form.content,
+      type: form.type,
+      category: form.category,
+      pinned: form.pinned,
+    };
     if (editItem) {
-      setNews(news.map(n => n.id === editItem.id ? { ...n, ...form } : n));
+      await updateNews(editItem.id, payload);
     } else {
-      setNews([{
-        id: Date.now(), ...form,
-        author: user.name, authorAvatar: user.avatar,
-        date: new Date().toISOString().split('T')[0],
-      }, ...news]);
+      payload.author_id = user.id;
+      payload.published_at = new Date().toISOString().split('T')[0];
+      await createNews(payload);
     }
     setShowModal(false);
     setEditItem(null);
@@ -42,8 +45,8 @@ export default function NewsPage() {
     setShowModal(true);
   };
 
-  const handleDelete = id => {
-    setNews(news.filter(n => n.id !== id));
+  const handleDelete = async id => {
+    await deleteNews(id);
     setItemToDelete(null);
   };
 
@@ -64,7 +67,7 @@ export default function NewsPage() {
           <p className={styles.newsContent}>{item.content}</p>
           <div className={styles.authorRow}>
             <Avatar initials={item.authorAvatar} size={26} />
-            <span className={styles.authorMeta}>{item.author} · {item.date}</span>
+            <span className={styles.authorMeta}>{item.authorName} · {item.date}</span>
           </div>
         </div>
 

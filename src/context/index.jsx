@@ -61,6 +61,7 @@ export function DataProvider({ children }) {
   const [vehicles, setVehicles]              = useState([])
   const [documents, setDocuments]            = useState([])
   const [hourCompensations, setHourCompensations] = useState([])
+  const [news, setNews]                      = useState([])
   const [personalDays, setPersonalDays]      = useState([]) // New personal days state
   const [notifications, setNotifications]    = useState([]) // Persistent DB notifications
   const [loadingData, setLoadingData]        = useState(true)
@@ -295,6 +296,28 @@ const [readIds, setReadIds] = useState(() => {
     })))
   }
 
+  async function fetchNews() {
+    const { data, error } = await supabase
+      .from('news')
+      .select('*, author:profiles!news_author_id_fkey(name, avatar_initials)')
+      .order('published_at', { ascending: false })
+    if (error) { console.error('news:', error); return }
+    setNews(data.map(n => ({
+      id: n.id,
+      type: n.type,
+      title: n.title,
+      content: n.content,
+      authorId: n.author_id,
+      authorName: n.author?.name || 'Usuario eliminado',
+      authorAvatar: n.author?.avatar_initials || '??',
+      date: n.published_at,
+      pinned: n.pinned,
+      category: n.category,
+      isActive: n.is_active,
+      createdAt: n.created_at
+    })))
+  }
+
   const auth = useContext(AuthCtx)
   const user = auth?.user
   const employees = auth?.employees || []
@@ -346,7 +369,7 @@ const [readIds, setReadIds] = useState(() => {
   }, [user?.id])
 
   useEffect(() => {
-    Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations(), fetchPersonalDays()])
+    Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations(), fetchPersonalDays(), fetchNews()])
       .finally(() => setLoadingData(false))
 
     // ── Supabase Realtime subscriptions ─────────────────────
@@ -446,6 +469,14 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
+    // News realtime
+    const newsChannel = supabase
+      .channel('realtime-news')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'news' }, () => {
+        fetchNews()
+      })
+      .subscribe()
+
     // Notifications realtime
     const notifChannel = supabase
       .channel('realtime-notifications')
@@ -471,6 +502,7 @@ const [readIds, setReadIds] = useState(() => {
       supabase.removeChannel(vehicleChannel)
       supabase.removeChannel(documentChannel)
       supabase.removeChannel(hoursChannel)
+      supabase.removeChannel(newsChannel)
       supabase.removeChannel(notifChannel)
       supabase.removeChannel(presenceChannel)
     }
@@ -805,6 +837,23 @@ const [readIds, setReadIds] = useState(() => {
     else await fetchHourCompensations();
   }
 
+  // ── News helpers ──────────────────────────────
+  const createNews = async (payload) => {
+    const { error } = await supabase.from('news').insert([payload])
+    if (error) { console.error('createNews:', error); return }
+    await fetchNews()
+  }
+  const updateNews = async (id, payload) => {
+    const { error } = await supabase.from('news').update(payload).eq('id', id)
+    if (error) { console.error('updateNews:', error); return }
+    await fetchNews()
+  }
+  const deleteNews = async (id) => {
+    const { error } = await supabase.from('news').delete().eq('id', id)
+    if (error) { console.error('deleteNews:', error); return }
+    await fetchNews()
+  }
+
   const deleteEmployeeData = async (employeeId) => {
     const empDocs = documents.filter(d => String(d.senderId) === String(employeeId) || String(d.recipientId) === String(employeeId));
     for (const doc of empDocs) {
@@ -853,17 +902,18 @@ const [readIds, setReadIds] = useState(() => {
       documents, sendDocument, updateDocumentStatus, uploadDocumentFile, deleteDocument, onboardingDocUrl,
       hourCompensations, createHourCompensation, updateHourCompensationStatus, deleteHourCompensation,
       personalDays, createPersonalDay, updatePersonalDayStatus,
+      news, createNews, updateNews, deleteNews,
       notifications, markNotifRead, markAllNotifsRead,
       loadingData,
       createRequest, updateRequestStatus, deleteRequest, deleteEmployeeData,
       createReservation, updateReservationStatus, deleteReservation,
       readIds, markRead, markAllRead,
       liveNotifs,
-      refresh: () => Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations(), fetchPersonalDays()]),
+      refresh: () => Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations(), fetchPersonalDays(), fetchNews()]),
     };
   }, [
     requests, reservations, rooms, vehicles, documents, hourCompensations, personalDays,
-    notifications, loadingData, readIds, liveNotifs
+    news, notifications, loadingData, readIds, liveNotifs
   ])
 
   return (
