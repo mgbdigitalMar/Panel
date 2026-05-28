@@ -72,6 +72,7 @@ const [readIds, setReadIds] = useState(() => {
   }
 })
   const [liveNotifs, setLiveNotifs]        = useState([])  // Real-time toasts
+  const [onlineUserIds, setOnlineUserIds]  = useState(new Set()) // Track online users for email fallback
 
   // ── Persistent Notifications (DB) ────────────────────────
   const fetchNotifications = async (userId) => {
@@ -107,7 +108,27 @@ const [readIds, setReadIds] = useState(() => {
       entity_id: entityId || null,
       read: false,
     }])
-    if (error) console.warn('Could not insert notification:', error.message)
+    if (error) {
+      console.warn('Could not insert notification:', error.message)
+      return
+    }
+
+    // Si el usuario no está en línea, enviarle un email
+    if (userId && !onlineUserIds.has(String(userId))) {
+      const auth = employees || []
+      const emp = auth.find(e => String(e.id) === String(userId))
+      if (emp && emp.email) {
+        fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: emp.email,
+            subject: title,
+            html: `<p>Hola ${emp.name},</p><p>Tienes una nueva notificación en Margube Intranet:</p><p><strong>${title}</strong></p><p>${body || ''}</p><p><a href="https://margube-intranet.vercel.app">Ir a la Intranet</a></p>`
+          })
+        }).catch(err => console.error('Error enviando email vía Resend:', err))
+      }
+    }
   }
 
   // ── Fetch helpers ─────────────────────────────────────────
@@ -279,7 +300,8 @@ const [readIds, setReadIds] = useState(() => {
   const employees = auth?.employees || []
 
   const notifyAdmins = async ({ title, body, type = 'info', entityType, entityId }) => {
-    const adminIds = employees.filter(e => e.role === 'admin').map(e => e.id)
+    const admins = employees.filter(e => e.role === 'admin')
+    const adminIds = admins.map(e => e.id)
     if (adminIds.length === 0) return
     
     // Create notifications for each admin
@@ -294,7 +316,25 @@ const [readIds, setReadIds] = useState(() => {
     }))
     
     const { error } = await supabase.from('notifications').insert(notifs)
-    if (error) console.warn('Could not notify admins:', error.message)
+    if (error) {
+      console.warn('Could not notify admins:', error.message)
+      return
+    }
+
+    // Email fallback para admins desconectados
+    for (const admin of admins) {
+      if (!onlineUserIds.has(String(admin.id)) && admin.email) {
+        fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: admin.email,
+            subject: title,
+            html: `<p>Hola ${admin.name},</p><p>Tienes una nueva notificación para administradores:</p><p><strong>${title}</strong></p><p>${body || ''}</p><p><a href="https://margube-intranet.vercel.app">Ir a la Intranet</a></p>`
+          })
+        }).catch(err => console.error('Error enviando email a admin:', err))
+      }
+    }
   }
 
   useEffect(() => {
@@ -310,6 +350,23 @@ const [readIds, setReadIds] = useState(() => {
       .finally(() => setLoadingData(false))
 
     // ── Supabase Realtime subscriptions ─────────────────────
+    // Presence for online users
+    const presenceChannel = supabase.channel('online-users', {
+      config: { presence: { key: user?.id } },
+    })
+
+    presenceChannel
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState()
+        const ids = new Set(Object.keys(state))
+        setOnlineUserIds(ids)
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED' && user?.id) {
+          await presenceChannel.track({ online_at: new Date().toISOString() })
+        }
+      })
+
     const pushNotif = (icon, msg) => {
       const id = Date.now()
       setLiveNotifs(prev => [{ id, icon, msg }, ...prev.slice(0, 4)])
@@ -415,6 +472,7 @@ const [readIds, setReadIds] = useState(() => {
       supabase.removeChannel(documentChannel)
       supabase.removeChannel(hoursChannel)
       supabase.removeChannel(notifChannel)
+      supabase.removeChannel(presenceChannel)
     }
   }, [user?.id])
 
