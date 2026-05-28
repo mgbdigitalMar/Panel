@@ -399,20 +399,19 @@ const tooltipStyle = {
                 Ver todo <ArrowRight size={14} />
               </Button>
             </div>
-            <div className={styles.feedList}>
-              {news.slice(0, 4).map(n => (
-                <div key={n.id} className={styles.feedItem}>
-                  <div className={clsx(styles.feedIcon, n.type === 'event' ? styles.feedIconEvent : styles.feedIconNews)}>
-                    {n.type === 'event' ? <Calendar size={15} /> : <Newspaper size={15} />}
-                  </div>
-                  <div className={styles.feedContent}>
+            <div className={styles.timelineContainer}>
+              {news.slice(0, 5).map(n => (
+                <div key={n.id} className={clsx(styles.timelineItem, n.type === 'event' && styles.timelineEventItem)}>
+                  <p className={styles.timelineDate}>
+                    {new Date(n.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                  <div className={styles.timelineContentBox}>
                     <div className={styles.feedTitleRow}>
                       {n.pinned && <Pin size={10} color="var(--accent)" />}
-                      <p className={styles.feedTitle}>{n.title}</p>
+                      <p className={styles.timelineTitle}>{n.title}</p>
                     </div>
-                    <p className={styles.feedMeta}>{n.date} · {n.authorName}</p>
+                    <p className={styles.timelineMeta}>Por {n.authorName}</p>
                   </div>
-                  <Badge status={n.type} />
                 </div>
               ))}
             </div>
