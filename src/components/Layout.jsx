@@ -92,6 +92,24 @@ export default function Layout({ children }) {
   const [policyRead, setPolicyRead] = useState(false);
   const [policyTimer, setPolicyTimer] = useState(5);
 
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('margube_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleCollapse = () => {
+    setCollapsed(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('margube_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
+
   useEffect(() => {
     if (user && user.policyAccepted !== true && policyTimer > 0) {
       const t = setTimeout(() => setPolicyTimer(p => p - 1), 1000);
@@ -139,75 +157,78 @@ export default function Layout({ children }) {
   const breadcrumbs = currentItem ? ['Margube', currentItem.label] : ['Margube'];
 
   /* ── Sidebar content (shared between desktop + mobile drawer) ──── */
-  const sidebarContent = (
-    <div className={styles.sidebarInner}>
-      {/* Logo */}
-      <div className={styles.logoArea}>
-        <div className={styles.logoMark}>
-          <img
-            src={theme === 'dark' ? logoWhite : logoColor}
-            alt="Margube"
-          />
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className={styles.navGroup} role="navigation" aria-label="Navegación principal">
-        <p className={styles.navSectionLabel}>Menú</p>
-        {navItems.map(i => (
-          <NavLink key={i.id} item={i} onNavigate={handleNavigate} />
-        ))}
-
-        {user?.role === 'admin' && (
-          <>
-            <div className={styles.navDivider} />
-            <p className={styles.navSectionLabel}>Admin</p>
-            {adminItems.map(i => (
-              <NavLink key={i.id} item={i} onNavigate={handleNavigate} />
-            ))}
-          </>
-        )}
-      </nav>
-
-      {/* ── User bottom section ─────────────────────────────────── */}
-      <div className={styles.userBottom}>
-        {/* Avatar + info */}
-        <div className={styles.userCard}>
-          <Avatar initials={user?.avatar || '??'} size={34} />
-          <div className={styles.userInfo}>
-            <p className={styles.userName}>{user?.name}</p>
-            <p>{user?.dept}</p>
+  const getSidebarContent = (isMobile = false) => {
+    const isCollapsed = !isMobile && collapsed;
+    return (
+      <div className={styles.sidebarInner}>
+        {/* Logo */}
+        <div className={styles.logoArea}>
+          <div className={styles.logoMark}>
+            <img
+              src={theme === 'dark' ? logoWhite : logoColor}
+              alt="Margube"
+            />
           </div>
         </div>
 
-        {/* Quick action buttons — always visible */}
-        <div className={styles.userActions}>
-          <Button
-            variant="action"
-            size="sm"
-            icon={User}
-            onClick={() => handleNavigate('profile')}
-            title="Mi perfil"
-            aria-label="Ir a mi perfil"
-            style={{ width: '100%', justifyContent: 'center' }}
-          >
-            Perfil
-          </Button>
-          <Button
-            variant="action-danger"
-            size="sm"
-            icon={LogOut}
-            onClick={() => logout()}
-            title="Cerrar sesión"
-            aria-label="Cerrar sesión"
-            style={{ width: '100%', justifyContent: 'center' }}
-          >
-            Salir
-          </Button>
+        {/* Navigation */}
+        <nav className={styles.navGroup} role="navigation" aria-label="Navegación principal">
+          <p className={styles.navSectionLabel}>Menú</p>
+          {navItems.map(i => (
+            <NavLink key={i.id} item={i} onNavigate={handleNavigate} collapsed={isCollapsed} />
+          ))}
+
+          {user?.role === 'admin' && (
+            <>
+              <div className={styles.navDivider} />
+              <p className={styles.navSectionLabel}>Admin</p>
+              {adminItems.map(i => (
+                <NavLink key={i.id} item={i} onNavigate={handleNavigate} collapsed={isCollapsed} />
+              ))}
+            </>
+          )}
+        </nav>
+
+        {/* ── User bottom section ─────────────────────────────────── */}
+        <div className={styles.userBottom}>
+          {/* Avatar + info */}
+          <div className={styles.userCard}>
+            <Avatar initials={user?.avatar || '??'} size={34} />
+            <div className={styles.userInfo}>
+              <p className={styles.userName}>{user?.name}</p>
+              <p>{user?.dept}</p>
+            </div>
+          </div>
+
+          {/* Quick action buttons — always visible */}
+          <div className={styles.userActions}>
+            <Button
+              variant="action"
+              size="sm"
+              icon={User}
+              onClick={() => handleNavigate('profile')}
+              title="Mi perfil"
+              aria-label="Ir a mi perfil"
+              style={{ width: '100%', justifyContent: 'center' }}
+            >
+              <span>Perfil</span>
+            </Button>
+            <Button
+              variant="action-danger"
+              size="sm"
+              icon={LogOut}
+              onClick={() => logout()}
+              title="Cerrar sesión"
+              aria-label="Cerrar sesión"
+              style={{ width: '100%', justifyContent: 'center' }}
+            >
+              <span>Salir</span>
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className={styles.layout}>
@@ -218,10 +239,17 @@ export default function Layout({ children }) {
 
       {/* ── Desktop sidebar ──────────────────────────────────────────── */}
       <aside
-        className={clsx(styles.sidebar, 'hide-tablet')}
+        className={clsx(styles.sidebar, { [styles.sidebarCollapsed]: collapsed }, 'hide-tablet')}
         aria-label="Sidebar de navegación"
       >
-        {sidebarContent}
+        {getSidebarContent(false)}
+        <button
+          onClick={toggleCollapse}
+          className={styles.collapseBtn}
+          aria-label={collapsed ? 'Ampliar menú' : 'Colapsar menú'}
+        >
+          {collapsed ? '›' : '‹'}
+        </button>
       </aside>
 
       {/* ── Mobile drawer ────────────────────────────────────────── */}
@@ -243,14 +271,14 @@ export default function Layout({ children }) {
               transition={{ type: 'spring', damping: 28, stiffness: 380, bounce: 0 }}
               className={styles.sidebarMobileContent}
             >
-              {sidebarContent}
+              {getSidebarContent(true)}
             </motion.aside>
           </div>
         )}
       </AnimatePresence>
 
       {/* ── Main content ───────────────────────────────────────────────────── */}
-      <div className={styles.main}>
+      <div className={clsx(styles.main, { [styles.mainCollapsed]: collapsed })}>
 
         {/* ── Topbar ─────────────────────────────────────────────── */}
         <header className={styles.header} role="banner">

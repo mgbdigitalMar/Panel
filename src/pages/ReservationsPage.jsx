@@ -95,7 +95,7 @@ export default function ReservationsPage() {
           {tabBtn('calendar', '📅 Calendario')}
         </div>
         {tab !== 'calendar' && (
-          <div style={{ display: 'flex', gap: 12 }}>
+          <div className={styles.headerRight}>
             {filtered.length > 0 && (
               <Button icon={Download} variant="ghost" onClick={() => exportReservationsCSV(filtered)}>
                 Descargar Excel
@@ -111,13 +111,13 @@ export default function ReservationsPage() {
 
       {/* Room cards */}
       {tab !== 'vehicle' && tab !== 'calendar' && (
-        <div style={{ marginBottom: 24 }}>
+        <div className={styles.sectionContainer}>
           <h3 className={styles.sectionLabel}>Salas disponibles</h3>
           <div className={styles.resourceGrid}>
             {rooms.map(room => (
               <Card key={room.id} className={styles.resourceCard}>
                 <div className={styles.resourceHeader}>
-                  <div className={styles.resourceIcon} style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
+                  <div className={clsx(styles.resourceIcon, styles.iconAccent)}>
                     <Building size={22} />
                   </div>
                   <Badge status="neutral" label="Disponible" className="variant-success" />
@@ -137,20 +137,20 @@ export default function ReservationsPage() {
 
       {/* Vehicle cards */}
       {tab !== 'room' && tab !== 'calendar' && (
-        <div style={{ marginBottom: 24 }}>
+        <div className={styles.sectionContainer}>
           <h3 className={styles.sectionLabel}>Vehículos de empresa</h3>
           <div className={styles.resourceGrid}>
             {vehicles.map(v => (
               <Card key={v.id} className={styles.resourceCard}>
                 <div className={styles.resourceHeader}>
-                  <div className={styles.resourceIcon} style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>
+                  <div className={clsx(styles.resourceIcon, styles.iconWarning)}>
                     <Car size={22} />
                   </div>
                   <Badge status="neutral" label="Disponible" className="variant-success" />
                 </div>
                 <h4 className={styles.resourceTitle}>{v.model}</h4>
                 <p className={styles.resourceMeta}>Matrícula: <strong>{v.plate}</strong></p>
-                <p className={styles.resourceMeta} style={{ margin: 0 }}>{v.type} · {v.year}</p>
+                <p className={clsx(styles.resourceMeta, styles.noMargin)}>{v.type} · {v.year}</p>
               </Card>
             ))}
           </div>
@@ -160,12 +160,12 @@ export default function ReservationsPage() {
       {/* Reservations table */}
       {tab !== 'calendar' && (
         <Card>
-          <div style={{ padding: '20px 24px 0' }}>
-            <h3 style={{ margin: '0 0 0', fontSize: 14, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-heading)' }}>Historial de reservas</h3>
+          <div className={styles.tableCardHeader}>
+            <h3 className={styles.tableCardTitle}>Historial de reservas</h3>
           </div>
           {filtered.length === 0 ? (
             <div className="empty-state">
-              <div className="icon-box icon-box--lg icon-box--accent empty-state__icon" style={{ opacity: 1 }}>
+              <div className={clsx("icon-box icon-box--lg icon-box--accent empty-state__icon", styles.opaqueIcon)}>
                 <Building size={24} />
               </div>
               <h3 className="empty-state__title">No hay reservas</h3>
@@ -184,20 +184,20 @@ export default function ReservationsPage() {
                 <tbody>
                   {filtered.map(r => (
                     <tr key={r.id}>
-                      <td data-label="Recurso" style={{ color: 'var(--text)', fontWeight: 600 }}>{r.resourceName}</td>
+                      <td data-label="Recurso" className={styles.resourceNameCell}>{r.resourceName}</td>
                       <td data-label="Tipo">
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: r.type === 'vehicle' ? 'var(--warning)' : 'var(--accent)' }}>
+                        <span className={clsx(styles.typeBadge, r.type === 'vehicle' ? styles.typeBadgeVehicle : styles.typeBadgeRoom)}>
                           {r.type === 'vehicle' ? <Car size={13} /> : <Building size={13} />}
                           {r.type === 'vehicle' ? 'Vehículo' : 'Sala'}
                         </span>
                       </td>
-                      <td data-label="Solicitante" style={{ color: 'var(--text-sec)' }}>{r.employeeName}</td>
-                      <td data-label="Fecha" style={{ color: 'var(--text-sec)', whiteSpace: 'nowrap' }}>{r.date}</td>
-                      <td data-label="Horario" style={{ color: 'var(--text-sec)', whiteSpace: 'nowrap' }}>{r.timeStart}–{r.timeEnd}</td>
-                      <td data-label="Propósito" style={{ color: 'var(--text-sec)', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.purpose}</td>
+                      <td data-label="Solicitante" className={styles.textSec}>{r.employeeName}</td>
+                      <td data-label="Fecha" className={clsx(styles.textSec, styles.noMargin)}>{r.date}</td>
+                      <td data-label="Horario" className={clsx(styles.textSec, styles.noMargin)}>{r.timeStart}–{r.timeEnd}</td>
+                      <td data-label="Propósito" className={styles.purposeCell}>{r.purpose}</td>
                       <td data-label="Estado"><Badge status={r.status} /></td>
                       <td data-label="Acciones">
-                        <div className={styles.actionsCell} style={{ gap: 4 }}>
+                        <div className={styles.actionsCell}>
                           {user.role === 'admin' && r.status === 'pending' && (
                             <>
                               <Button variant="action-success" iconOnly icon={Check} onClick={() => handleApprove(r.id)} title="Aprobar" />
@@ -238,15 +238,7 @@ export default function ReservationsPage() {
           <Input label="Hora fin"    value={form.timeEnd}   onChange={v => setForm({ ...form, timeEnd: v })}   type="time" required />
         </div>
         {errorMsg && (
-          <div style={{ 
-            color: 'var(--danger)', 
-            background: 'var(--danger-bg)', 
-            border: '1px solid var(--danger)', 
-            borderRadius: '8px', 
-            padding: '12px', 
-            marginBottom: '16px',
-            fontSize: '14px'
-          }}>
+          <div className={styles.errorAlert}>
             {errorMsg}
           </div>
         )}

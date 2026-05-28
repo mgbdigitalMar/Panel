@@ -19,6 +19,16 @@ import styles from "./ProfilePage.module.scss";
 import clsx from "clsx";
 import { supabase } from "../utils/supabase";
 import bcrypt from "bcryptjs";
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07 } },
+};
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
+};
 
 const WORK_MODES = {
   Office: { label: "Oficina" },
@@ -135,13 +145,9 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1>Mi Perfil</h1>
-        <p>Actualiza tu información personal</p>
-      </div>
-
-      <div className={styles.cards}>
+      <motion.div className={styles.cards} variants={container} initial="hidden" animate="show">
         {/* User Info */}
+        <motion.div variants={item}>
         <Card className={styles.infoCard}>
           <div className={styles.cardHeader}>
             <User size={20} />
@@ -178,8 +184,10 @@ export default function ProfilePage() {
             </div>
           </div>
         </Card>
+        </motion.div>
 
         {/* Work Mode */}
+        <motion.div variants={item}>
         <Card className={styles.card}>
           <div className={styles.cardHeader}>
             <Shield size={20} />
@@ -198,8 +206,10 @@ export default function ProfilePage() {
             disabled={workModeLoading}
           />
         </Card>
+        </motion.div>
 
         {/* Password */}
+        <motion.div variants={item}>
         <Card className={styles.card}>
           <div className={styles.cardHeader}>
             <Lock size={20} />
@@ -238,8 +248,10 @@ export default function ProfilePage() {
             </Button>
           </div>
         </Card>
+        </motion.div>
 
         {/* Mis Documentos */}
+        <motion.div variants={item}>
         <Card className={styles.docsCard}>
           <div className={styles.cardHeader}>
             <FileText size={20} />
@@ -410,7 +422,8 @@ export default function ProfilePage() {
             </div>
           )}
         </Card>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {message && (
         <div

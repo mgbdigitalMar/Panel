@@ -25,7 +25,7 @@ function WorkModeBadge({ mode }) {
 }
 
 export default function EmployeesPage() {
-  const { user, employees, setEmployees } = useAuth();
+  const { user, employees, setEmployees, setCurrentUser } = useAuth();
   const [filter, setFilter] = useState('all');
   const [view, setView] = useState('grid');
 
@@ -39,13 +39,17 @@ export default function EmployeesPage() {
     try {
       // Optimistic local update
       setEmployees(employees.map(e => e.id === empId ? { ...e, workMode: mode } : e));
-      // Persist to Supabase with confirmation
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({ work_mode: mode })
-        .eq('id', empId);
-      if (error) throw error;
-      console.log('Work mode updated successfully:', data);
+      if (empId === user?.id) {
+        await setCurrentUser({ id: empId, workMode: mode });
+      } else {
+        // Persist to Supabase with confirmation
+        const { error } = await supabase
+          .from('profiles')
+          .update({ work_mode: mode })
+          .eq('id', empId);
+        if (error) throw error;
+      }
+      console.log('Work mode updated successfully');
     } catch (err) {
       console.error('Failed to update work_mode:', err);
       // Revert on error

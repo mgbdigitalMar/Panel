@@ -7,6 +7,16 @@ import {
 } from 'lucide-react';
 import styles from './SettingsPage.module.scss';
 import clsx from 'clsx';
+import { motion } from 'framer-motion';
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07 } },
+};
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
+};
 
 // ── localStorage helpers ──────────────────────────────────────────────
 function getLS(key, fallback) {
@@ -80,15 +90,10 @@ export default function SettingsPage() {
 
   return (
     <div className={styles.page}>
-      {/* Header */}
-      <div className={styles.pageHeader}>
-        <h1>Ajustes</h1>
-        <p>Personaliza tu experiencia en la plataforma</p>
-      </div>
-
-      <div className={styles.stack}>
+      <motion.div className={styles.stack} variants={container} initial="hidden" animate="show">
 
         {/* ── APARIENCIA ── */}
+        <motion.div variants={item}>
         <Card className={styles.card}>
           <div className={styles.cardHeader}>
             <div className={clsx(styles.cardIcon, styles.iconAccent)}>
@@ -125,8 +130,10 @@ export default function SettingsPage() {
             </div>
           </div>
         </Card>
+        </motion.div>
 
         {/* ── NOTIFICACIONES ── */}
+        <motion.div variants={item}>
         <Card className={styles.card}>
           <div className={styles.cardHeader}>
             <div className={clsx(styles.cardIcon, styles.iconSuccess)}>
@@ -174,8 +181,10 @@ export default function SettingsPage() {
             <Toggle checked={soundsOn} onChange={handleSounds} id="sounds-toggle" />
           </div>
         </Card>
+        </motion.div>
 
         {/* ── CUENTA ── */}
+        <motion.div variants={item}>
         <Card className={styles.card}>
           <div className={styles.cardHeader}>
             <div className={clsx(styles.cardIcon, styles.iconInfo)}>
@@ -213,8 +222,9 @@ export default function SettingsPage() {
             Para modificar tu información personal, ve a la página de <strong>Perfil</strong>.
           </div>
         </Card>
+        </motion.div>
 
-      </div>
+      </motion.div>
     </div>
   );
 }

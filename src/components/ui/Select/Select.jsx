@@ -1,11 +1,11 @@
 import clsx from 'clsx';
 import inputStyles from '../Input/Input.module.scss';
 
-export function Select({ label, value, onChange, options, required, className }) {
+export function Select({ label, value, onChange, options, required, className, ...props }) {
   return (
     <div className={clsx(inputStyles.container, className)}>
       {label && (
-        <label className={inputStyles.label}>
+        <label className={inputStyles.label} htmlFor={props.id}>
           {label} {required && <span className={inputStyles.asterisk}>*</span>}
         </label>
       )}
@@ -13,6 +13,7 @@ export function Select({ label, value, onChange, options, required, className })
         value={value}
         onChange={e => onChange(e.target.value)}
         className={inputStyles.input}
+        {...props}
       >
         {options.map(o => (
           <option key={o.value} value={o.value}>{o.label}</option>

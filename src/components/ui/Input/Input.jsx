@@ -12,12 +12,13 @@ export function Input({
   disabled, 
   hint,
   error,
-  className
+  className,
+  ...props
 }) {
   return (
     <div className={clsx(styles.container, className)}>
       {label && (
-        <label className={styles.label}>
+        <label className={styles.label} htmlFor={props.id}>
           {label} {required && <span className={styles.asterisk}>*</span>}
         </label>
       )}
@@ -28,6 +29,7 @@ export function Input({
         placeholder={placeholder}
         disabled={disabled}
         className={clsx(styles.input, { [styles.hasError]: !!error })}
+        {...props}
       />
       <AnimatePresence>
         {(hint || error) && (

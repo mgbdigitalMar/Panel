@@ -198,7 +198,7 @@ const tooltipStyle = {
       <motion.div variants={item} className={styles.welcomeBanner}>
         <div className={styles.welcomeLeft}>
           <span className={styles.welcomeEmoji}>{emoji}</span>
-          <div style={{ flex: 1 }}>
+          <div className={styles.welcomeText}>
             <h2 className={styles.welcomeTitle}>
               {greeting}, {user?.name?.split(' ')[0]}
             </h2>
@@ -206,13 +206,13 @@ const tooltipStyle = {
               {todayStr.charAt(0).toUpperCase() + todayStr.slice(1)} · Todo bajo control en Margube
             </p>
             {/* Workday Progress Bar */}
-            <div style={{ marginTop: 14, width: '100%', maxWidth: 280 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(255,255,255,0.85)', marginBottom: 6, fontWeight: 600 }}>
+            <div className={styles.progressContainer}>
+              <div className={styles.progressText}>
                 <span>Progreso de jornada laboral</span>
                 <span>{Math.round(workdayProgress)}%</span>
               </div>
-              <div style={{ width: '100%', height: 6, background: 'rgba(255,255,255,0.2)', borderRadius: 4, overflow: 'hidden' }}>
-                <div style={{ width: `${workdayProgress}%`, height: '100%', background: '#fff', borderRadius: 4, transition: 'width 1s ease-out' }} />
+              <div className={styles.progressTrack}>
+                <div className={styles.progressBar} style={{ width: `${workdayProgress}%` }} />
               </div>
             </div>
           </div>
@@ -276,11 +276,11 @@ const tooltipStyle = {
               <h3 className={styles.chartTitle}>Solicitudes por mes</h3>
               <span className={styles.chartSub}>{requestsYear}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <div className={styles.chartHeaderActions}>
               <div className={styles.chartLegend}>
-                <span className={styles.legendDot} style={{ background: CHART_COLORS.success }} />Aprobadas
-                <span className={styles.legendDot} style={{ background: CHART_COLORS.warning }} />Pendientes
-                <span className={styles.legendDot} style={{ background: CHART_COLORS.danger }}  />Rechazadas
+                <span className={styles.legendDot} style={{ '--dot-bg': CHART_COLORS.success }} />Aprobadas
+                <span className={styles.legendDot} style={{ '--dot-bg': CHART_COLORS.warning }} />Pendientes
+                <span className={styles.legendDot} style={{ '--dot-bg': CHART_COLORS.danger }}  />Rechazadas
               </div>
               <div className={styles.monthNav}>
                 <Button
@@ -339,7 +339,7 @@ const tooltipStyle = {
             <div className={styles.pieLegend}>
               {resourceTypePie.map(p => (
                 <div key={p.name} className={styles.pieLegendItem}>
-                  <span className={styles.pieColor} style={{ background: p.fill }} />
+                  <span className={styles.pieColor} style={{ '--dot-bg': p.fill }} />
                   <span>{p.name}</span>
                   <strong>{p.value}</strong>
                 </div>
@@ -404,10 +404,7 @@ const tooltipStyle = {
             <div className={styles.feedList}>
               {news.slice(0, 4).map(n => (
                 <div key={n.id} className={styles.feedItem}>
-                  <div className={styles.feedIcon} style={{
-                    background: n.type === 'event' ? 'var(--warning-bg)' : 'var(--accent-bg)',
-                    color: n.type === 'event' ? 'var(--warning)' : 'var(--accent)'
-                  }}>
+                  <div className={clsx(styles.feedIcon, n.type === 'event' ? styles.feedIconEvent : styles.feedIconNews)}>
                     {n.type === 'event' ? <Calendar size={15} /> : <Newspaper size={15} />}
                   </div>
                   <div className={styles.feedContent}>
@@ -428,23 +425,20 @@ const tooltipStyle = {
         <Card>
           <div className={styles.cardPad}>
             <div className={clsx(styles.cardHeader)}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Gift size={15} color="#EC4899" />
-                <h3 className={styles.sectionTitle} style={{ margin: 0 }}>Próximos cumpleaños</h3>
+              <div className={styles.birthdayHeader}>
+                <Gift size={15} className={styles.birthdayIcon} />
+                <h3 className={styles.sectionTitle}>Próximos cumpleaños</h3>
               </div>
             </div>
             <div className={styles.feedList}>
               {upcomingBirthdays.map(e => (
-                <div key={e.id} className={styles.feedItem} style={{ alignItems: 'center' }}>
+                <div key={e.id} className={clsx(styles.feedItem, styles.feedItemCentered)}>
                   <Avatar initials={e.avatar} size={34} />
                   <div className={styles.feedContent}>
                     <p className={styles.feedTitle}>{e.name}</p>
                     <p className={styles.feedMeta}>{e.bdDisplay} · {e.dept}</p>
                   </div>
-                  <span className={styles.daysChip} style={{
-                    background: e.daysLeft <= 7 ? '#EC498918' : 'var(--accent-bg)',
-                    color: e.daysLeft <= 7 ? '#EC4899' : 'var(--accent)',
-                  }}>
+                  <span className={clsx(styles.daysChip, e.daysLeft <= 7 ? styles.daysChipUrgent : styles.daysChipNormal)}>
                     {e.daysLeft === 0 ? '¡Hoy! 🎉' : `en ${e.daysLeft}d`}
                   </span>
                 </div>
@@ -479,7 +473,7 @@ const tooltipStyle = {
                   <tr key={r.id}>
                     <td data-label="Recurso" className={styles.tdBold}>{r.resourceName}</td>
                     <td data-label="Tipo">
-                      <span className={styles.typeBadge} style={{ color: r.type === 'vehicle' ? 'var(--warning)' : 'var(--accent)' }}>
+                      <span className={clsx(styles.typeBadge, r.type === 'vehicle' ? styles.typeBadgeVehicle : styles.typeBadgeRoom)}>
                         {r.type === 'vehicle' ? <Car size={13} /> : <Building size={13} />}
                         {r.type === 'vehicle' ? 'Vehículo' : 'Sala'}
                       </span>

@@ -725,3 +725,36 @@
   border-top: 1px solid var(--border);
 }
 
+.tableCard {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.textMut {
+  color: var(--text-mut);
+}
+
+.adminSearchHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.userSearchWrapperFlex {
+  margin: 0 !important;
+  flex: 1 !important;
+  width: 100% !important;
+}
+
+.pendingHoursCell {
+  color: var(--text-sec);
+  font-size: 13px;
+}
+
+.hoursChipYa {
+  background: var(--success-bg) !important;
+  color: var(--success) !important;
+}
+
+

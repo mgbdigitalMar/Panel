@@ -91,7 +91,7 @@ export default function NewsPage() {
   return (
     <div>
       {/* Header */}
-      <div className={styles.header}>
+      <div className={styles.pageControls}>
         <div className={styles.tabs}>
           {tabBtn('all', 'Todo')}
           {tabBtn('news', 'Noticias')}

@@ -1147,15 +1147,12 @@ export function AuthProvider({ children, navigate }) {
     await loadAllEmployees()
   }
 
-  const setEmployees = async (updater) => {
-    // Support both array replacement and function updater
+  const setEmployees = (updater) => {
     if (typeof updater === 'function') {
       setEmployeesState(updater)
     } else {
       setEmployeesState(updater)
     }
-    // Persist workMode changes
-    await loadAllEmployees()
   }
 
   const contextValue = useMemo(() => ({

@@ -293,7 +293,7 @@ export default function AdminPage() {
           </Button>
         )}
         {tab === 'documents' && (
-          <div style={{ display: 'flex', gap: 12 }}>
+          <div className={styles.headerRight}>
             <Button icon={Upload} variant="ghost" onClick={() => setShowOnboardingModal(true)}>
               Actualizar doc. inicio
             </Button>
@@ -319,7 +319,7 @@ export default function AdminPage() {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
-          <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <Card className={styles.tableCard}>
             <div className={styles.tableHeaderSection}>
               <div className={styles.searchWrapper}>
                 <Search className={styles.searchIcon} size={16} />
@@ -362,22 +362,22 @@ export default function AdminPage() {
                         <div className={styles.userCell}>
                           <Avatar initials={emp.avatar} size={42} />
                           <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                            <div className={styles.userNameContainer}>
                               <p className={styles.userName}>{emp.name}</p>
                               {emp.role === 'admin' && <Badge status="admin" />}
                             </div>
-                            <p className={styles.userPhone} style={{ letterSpacing: 0 }}>{emp.phone || 'Sin teléfono'}</p>
+                            <p className={styles.userPhone}>{emp.phone || 'Sin teléfono'}</p>
                           </div>
                         </div>
                       </td>
 
                       <td data-label="Puesto">
-                        <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--text)', fontSize: 13 }}>{emp.position || 'Sin cargo'}</p>
-                        <p style={{ margin: 0, fontSize: 12, color: 'var(--text-sec)' }}>{emp.dept}</p>
+                        <p className={styles.positionTitle}>{emp.position || 'Sin cargo'}</p>
+                        <p className={styles.positionDept}>{emp.dept}</p>
                       </td>
 
                       <td data-label="Contacto">
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start' }}>
+                        <div className={styles.contactWrapper}>
                           <Badge 
                             status="neutral" 
                             label={emp.firstLogin ? 'Primer acceso pendiente' : 'Activo'} 
@@ -391,20 +391,12 @@ export default function AdminPage() {
                             return isExterno ? (
                               <a 
                                 href={`mailto:${emp.email}`} 
-                                style={{ 
-                                  color: isMe ? 'var(--accent)' : 'var(--text)', 
-                                  textDecoration: 'none',
-                                  fontWeight: 500,
-                                  fontSize: 13
-                                }}
+                                className={clsx(styles.contactLink, isMe ? styles.contactLinkMe : styles.contactLinkOther)}
                               >
                                 {emp.email}
                               </a>
                             ) : (
-                              <span style={{ 
-                                color: isMe ? 'var(--accent)' : 'var(--text-sec)',
-                                fontSize: 13
-                              }}>
+                              <span className={clsx(styles.contactEmailText, isMe ? styles.contactEmailMe : styles.contactEmailOther)}>
                                 {emp.email}
                               </span>
                             );
@@ -419,16 +411,7 @@ export default function AdminPage() {
                           const isRemote = mode === 'remote' || mode === 'remoto';
                           
                           return (
-                            <span className="work-mode-badge" style={{
-                              background: isOffice ? 'var(--accent-bg)' : isRemote ? 'var(--success-bg)' : 'var(--warning-bg)',
-                              color: isOffice ? 'var(--accent)' : isRemote ? 'var(--success)' : 'var(--warning)',
-                              padding: '4px 10px',
-                              borderRadius: 'var(--radius-full)',
-                              fontSize: '11px',
-                              fontWeight: '700',
-                              letterSpacing: '0.02em',
-                              display: 'inline-block'
-                            }}>
+                            <span className={clsx(styles.workModeBadge, isOffice ? styles.workModeOffice : isRemote ? styles.workModeRemote : styles.workModeExternal)}>
                               {isOffice ? 'OFICINA' : isRemote ? 'REMOTO' : 'EXTERNO'}
                             </span>
                           );
@@ -464,10 +447,10 @@ export default function AdminPage() {
             {rooms.map(room => (
               <Card key={room.id} className={styles.resourceCard}>
                 <div className={styles.resourceHeader}>
-                  <div className={styles.resourceIcon} style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
+                  <div className={clsx(styles.resourceIcon, styles.iconAccent)}>
                     <Building size={22} />
                   </div>
-                  <div className={clsx(styles.actionsCell)} style={{ marginLeft: 'auto', gap: 4 }}>
+                  <div className={clsx(styles.actionsCell, styles.actionsCellRight)}>
                     <Button variant="action" iconOnly icon={Edit2} onClick={() => {
                       setResType('room');
                       setResForm({ 
@@ -517,10 +500,10 @@ export default function AdminPage() {
             {vehicles.map(v => (
               <Card key={v.id} className={styles.resourceCard}>
                 <div className={styles.resourceHeader}>
-                  <div className={styles.resourceIcon} style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>
+                  <div className={clsx(styles.resourceIcon, styles.iconWarning)}>
                     <Car size={22} />
                   </div>
-                  <div className={clsx(styles.actionsCell)} style={{ marginLeft: 'auto', gap: 4 }}>
+                  <div className={clsx(styles.actionsCell, styles.actionsCellRight)}>
                     <Button variant="action" iconOnly icon={Edit2} onClick={() => {
                       setResType('vehicle');
                       setResForm({ 
@@ -547,7 +530,7 @@ export default function AdminPage() {
                 </div>
                 <h4 className={styles.resourceTitle}>{v.model}</h4>
                 <p className={styles.resourceMeta}>Matrícula: <strong>{v.plate}</strong></p>
-                <p className={styles.resourceMeta} style={{ margin: 0 }}>{v.type} · {v.year}</p>
+                <p className={clsx(styles.resourceMeta, styles.resourceMetaNoMargin)}>{v.type} · {v.year}</p>
               </Card>
             ))}
           </div>
@@ -565,19 +548,19 @@ export default function AdminPage() {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
-          <Card style={{ padding: 0, overflow: 'hidden' }}>
-            <div className={styles.tableHeaderSection} style={{ padding: '16px 20px' }}>
-              <p style={{ margin: 0, fontWeight: 600, fontSize: 15, color: 'var(--text)' }}>
+          <Card className={styles.tableCard}>
+            <div className={clsx(styles.tableHeaderSection, styles.tableHeaderPadding)}>
+              <p className={styles.documentTableHeaderTitle}>
                 Documentos enviados
               </p>
-              <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-mut)' }}>
+              <span className={styles.documentTableHeaderCount}>
                 {(documents || []).filter(d => d.title !== '__ONBOARDING_DOC__').length} documento(s)
               </span>
             </div>
             {(!documents || documents.filter(d => d.title !== '__ONBOARDING_DOC__').length === 0) ? (
-              <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-mut)' }}>
-                <FileText size={40} strokeWidth={1} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.35 }} />
-                <p style={{ margin: 0, fontSize: 14 }}>No se ha enviado ningún documento</p>
+              <div className={styles.documentEmptyState}>
+                <FileText size={40} strokeWidth={1} className={styles.emptyStateIcon} />
+                <p className={styles.emptyStateText}>No se ha enviado ningún documento</p>
               </div>
             ) : (
               <div className={styles.tableWrapper}>
@@ -597,24 +580,24 @@ export default function AdminPage() {
                       return (
                         <tr key={doc.id}>
                           <td data-label="Documento">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <div style={{ width: 34, height: 34, borderRadius: 8, background: 'var(--accent-bg)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <div className={styles.flexCenterGap10}>
+                              <div className={styles.docIconWrapper}>
                                 <FileText size={16} />
                               </div>
                               <div>
-                                <p style={{ margin: '0 0 2px', fontWeight: 600, fontSize: 13, color: 'var(--text)' }}>{doc.title}</p>
+                                <p className={styles.docTitleText}>{doc.title}</p>
                                 {doc.description && (
-                                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-sec)', maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.description}</p>
+                                  <p className={styles.docDescText}>{doc.description}</p>
                                 )}
                               </div>
                             </div>
                           </td>
                           <td data-label="Destinatario">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div className={styles.flexCenterGap8}>
                               <Avatar initials={recipAvatar} size={28} />
                               <div>
-                                <span style={{ fontSize: 13, color: 'var(--text)', fontWeight: 600, display: 'block' }}>{recipName}</span>
-                                {recipient?.dept && <span style={{ fontSize: 11, color: 'var(--text-mut)' }}>{recipient.dept}</span>}
+                                <span className={styles.recipName}>{recipName}</span>
+                                {recipient?.dept && <span className={styles.recipDept}>{recipient.dept}</span>}
                               </div>
                             </div>
                           </td>
@@ -629,7 +612,7 @@ export default function AdminPage() {
                               {doc.status === 'completed' && <><CheckCircle size={11} /> Completado</>}
                             </span>
                           </td>
-                          <td data-label="Fecha" style={{ fontSize: 13, color: 'var(--text-sec)' }}>
+                          <td data-label="Fecha" className={styles.docDate}>
                             {new Date(doc.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                           </td>
                           <td data-label="Acciones">
@@ -679,29 +662,29 @@ export default function AdminPage() {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
-          <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <Card className={styles.tableCard}>
             {/* Filters */}
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-mut)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Empleado</label>
+            <div className={styles.filtersHeader}>
+              <div className={styles.filterField}>
+                <label className={styles.filterLabel}>Empleado</label>
                 <select
                   value={hoursFilterEmp}
                   onChange={e => setHoursFilterEmp(e.target.value)}
-                  style={{ padding: '7px 10px', background: 'var(--bg)', border: '1px solid var(--input-border)', borderRadius: 'var(--radius-sm)', color: 'var(--text)', fontSize: 13, outline: 'none' }}
+                  className={styles.filterSelect}
                 >
                   <option value="">Todos</option>
                   {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                 </select>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-mut)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Desde</label>
+              <div className={styles.filterField}>
+                <label className={styles.filterLabel}>Desde</label>
                 <input type="date" value={hoursFilterFrom} onChange={e => setHoursFilterFrom(e.target.value)}
-                  style={{ padding: '7px 10px', background: 'var(--bg)', border: '1px solid var(--input-border)', borderRadius: 'var(--radius-sm)', color: 'var(--text)', fontSize: 13, outline: 'none' }} />
+                  className={styles.filterDateInput} />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-mut)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hasta</label>
+              <div className={styles.filterField}>
+                <label className={styles.filterLabel}>Hasta</label>
                 <input type="date" value={hoursFilterTo} onChange={e => setHoursFilterTo(e.target.value)}
-                  style={{ padding: '7px 10px', background: 'var(--bg)', border: '1px solid var(--input-border)', borderRadius: 'var(--radius-sm)', color: 'var(--text)', fontSize: 13, outline: 'none' }} />
+                  className={styles.filterDateInput} />
               </div>
               {(hoursFilterEmp || hoursFilterFrom || hoursFilterTo) && (
                 <Button
@@ -712,15 +695,15 @@ export default function AdminPage() {
                   Limpiar
                 </Button>
               )}
-              <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-mut)', alignSelf: 'flex-end', paddingBottom: 8 }}>
+              <span className={styles.filterSummaryText}>
                 {filteredHours.length} solicitud{filteredHours.length !== 1 ? 'es' : ''} &bull; {filteredHours.reduce((s, h) => s + (h.status === 'approved' ? h.hours : 0), 0).toFixed(1)}h aprobadas
               </span>
             </div>
 
             {filteredHours.length === 0 ? (
-              <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-mut)' }}>
-                <Timer size={40} strokeWidth={1} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.35 }} />
-                <p style={{ margin: 0, fontSize: 14 }}>No hay solicitudes de bolsa con los filtros aplicados</p>
+              <div className={styles.documentEmptyState}>
+                <Timer size={40} strokeWidth={1} className={styles.emptyStateIcon} />
+                <p className={styles.emptyStateText}>No hay solicitudes de bolsa con los filtros aplicados</p>
               </div>
             ) : (
               <div className={styles.tableWrapper}>
@@ -738,31 +721,31 @@ export default function AdminPage() {
                       return (
                         <tr key={h.id}>
                           <td data-label="Empleado">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div className={styles.flexCenterGap8}>
                               <Avatar initials={empAvatar} size={30} />
                               <div>
-                                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'block' }}>{empName}</span>
-                                {emp?.dept && <span style={{ fontSize: 11, color: 'var(--text-mut)' }}>{emp.dept}</span>}
+                                <span className={styles.recipName}>{empName}</span>
+                                {emp?.dept && <span className={styles.recipDept}>{emp.dept}</span>}
                               </div>
                             </div>
                           </td>
-                          <td data-label="Fecha" style={{ fontSize: 13, color: 'var(--text)', whiteSpace: 'nowrap' }}>
+                          <td data-label="Fecha" className={styles.boldDateCell}>
                             {new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                           </td>
-                          <td data-label="Motivo" style={{ fontSize: 13, color: 'var(--text-sec)', maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <td data-label="Motivo" className={styles.reasonCell}>
                             {h.reason}
                           </td>
                           <td data-label="Horas">
-                            <span style={{ background: 'var(--accent-bg)', color: 'var(--accent)', fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 999 }}>
+                            <span className={styles.hoursPill}>
                               {h.hours}h
                             </span>
                           </td>
                           <td data-label="Estado">
                             <span className={clsx(styles.docStatusBadge, {
-                              [styles.docStatusPending]:   h.status === 'pending',
-                              [styles.docStatusCompleted]: h.status === 'approved',
-                              [styles.docStatusSigned]:    h.status === 'rejected',
-                            })} style={h.status === 'rejected' ? { background: 'var(--danger-bg)', color: 'var(--danger)' } : {}}>
+                              [styles.statusPending]:   h.status === 'pending',
+                              [styles.statusApproved]:  h.status === 'approved',
+                              [styles.statusRejected]:  h.status === 'rejected',
+                            })}>
                               {h.status === 'pending'  && <><Clock size={11} /> Pendiente</>}
                               {h.status === 'approved' && <><CheckCircle size={11} /> Aprobada</>}
                               {h.status === 'rejected' && <><X size={11} /> Rechazada</>}
@@ -784,7 +767,7 @@ export default function AdminPage() {
                                   />
                                 </>
                               ) : (
-                                <span style={{ fontSize: 12, color: 'var(--text-mut)' }}>
+                                <span className={styles.reviewerNameText}>
                                   {h.reviewerName ? `por ${h.reviewerName}` : '—'}
                                 </span>
                               )}
@@ -877,10 +860,10 @@ export default function AdminPage() {
 
       {/* Resources modal */}
       <Modal open={showResModal} onClose={() => { setShowResModal(false); setEditingRes(false); }} title={editingRes ? 'Editar' : 'Nuevo ' + (resType === 'room' ? 'sala' : 'vehículo')}>
-{resType === 'room' ? (
+        {resType === 'room' ? (
           <>
             <Input label="Nombre de la sala" value={resForm.name} onChange={v => setResForm({ ...resForm, name: v })} required />
-            <div className={styles.modalGrid} style={{ marginTop: 16 }}>
+            <div className={clsx(styles.modalGrid, styles.modalGridMarginTop)}>
               <Input label="Capacidad (personas)" value={resForm.capacity} onChange={v => setResForm({ ...resForm, capacity: v })} type="number" required />
               <Input label="Planta" value={resForm.floor} onChange={v => setResForm({ ...resForm, floor: v })} type="number" required />
             </div>
@@ -894,7 +877,7 @@ export default function AdminPage() {
           <>
             <Input label="Modelo del vehículo" value={resForm.model} onChange={v => setResForm({ ...resForm, model: v })} required />
             <Input label="Matrícula" value={resForm.plate} onChange={v => setResForm({ ...resForm, plate: v })} required />
-            <div className={styles.modalGrid} style={{ marginTop: 16 }}>
+            <div className={clsx(styles.modalGrid, styles.modalGridMarginTop)}>
               <Input label="Año" value={resForm.year} onChange={v => setResForm({ ...resForm, year: v })} type="number" />
               <Select 
                 label="Tipo" 
@@ -967,7 +950,7 @@ export default function AdminPage() {
         onClose={() => { setShowDocModal(false); setDocForm({ title: '', description: '', recipientId: '' }); setDocFile(null); }}
         title="Enviar documento"
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <div className={styles.modalFlexColGap18}>
           <Input
             label="Título del documento"
             value={docForm.title}
@@ -982,7 +965,7 @@ export default function AdminPage() {
 
           {/* ── File Upload Zone ── */}
           <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-mut)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
+            <label className={styles.uploadLabel}>
               Archivo adjunto
             </label>
             <div
@@ -1001,13 +984,13 @@ export default function AdminPage() {
                 ref={fileInputRef}
                 type="file"
                 accept="*/*"
-                style={{ display: 'none' }}
+                className={styles.hiddenInput}
                 onChange={e => { if (e.target.files[0]) setDocFile(e.target.files[0]); }}
               />
               {docFile ? (
                 <div className={styles.filePreview}>
-                  <FileText size={22} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <FileText size={22} className={styles.filePreviewIcon} />
+                  <div className={styles.fileInfo}>
                     <p className={styles.fileName}>{docFile.name}</p>
                     <p className={styles.fileSize}>{(docFile.size / 1024).toFixed(0)} KB</p>
                   </div>
@@ -1021,10 +1004,10 @@ export default function AdminPage() {
                 </div>
               ) : (
                 <div className={styles.filePrompt}>
-                  <Upload size={28} style={{ color: 'var(--text-mut)', marginBottom: 8 }} />
-                  <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: 'var(--text-sec)' }}>Arrastra un archivo aquí</p>
-                  <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-mut)' }}>o haz clic para seleccionar</p>
-                  <p style={{ margin: '6px 0 0', fontSize: 11, color: 'var(--text-mut)' }}>Cualquier formato de archivo permitido &bull; Sin límite de tamaño</p>
+                  <Upload size={28} className={styles.uploadIcon} />
+                  <p className={styles.filePromptTitle}>Arrastra un archivo aquí</p>
+                  <p className={styles.filePromptSub}>o haz clic para seleccionar</p>
+                  <p className={styles.filePromptDesc}>Cualquier formato de archivo permitido &bull; Sin límite de tamaño</p>
                 </div>
               )}
             </div>
@@ -1052,14 +1035,11 @@ export default function AdminPage() {
           </Button>
         </div>
         {docUploadStatus && (
-          <p style={{
-            margin: '8px 0 0',
-            fontSize: 13,
-            fontWeight: 600,
-            color: docUploadStatus.startsWith('❌') || docUploadStatus.startsWith('⚠️')
-              ? 'var(--danger)'
-              : docUploadStatus.startsWith('✅') ? 'var(--success)' : 'var(--text-sec)',
-          }}>
+          <p className={clsx(styles.uploadStatusText, {
+            [styles.statusTextDanger]: docUploadStatus.startsWith('❌') || docUploadStatus.startsWith('⚠️'),
+            [styles.statusTextSuccess]: docUploadStatus.startsWith('✅'),
+            [styles.statusTextNeutral]: !docUploadStatus.startsWith('❌') && !docUploadStatus.startsWith('⚠️') && !docUploadStatus.startsWith('✅')
+          })}>
             {docUploadStatus}
           </p>
         )}
@@ -1067,20 +1047,12 @@ export default function AdminPage() {
 
       {/* Onboarding Modal */}
       <Modal open={showOnboardingModal} onClose={() => { setShowOnboardingModal(false); setOnboardingFile(null); setOnboardingUploadStatus(''); }} title="Actualizar Documento de Inicio">
-        <div style={{ marginBottom: 16 }}>
-          <p style={{ fontSize: 13, color: 'var(--text-sec)', marginBottom: 16 }}>
+        <div className={styles.onboardingContainer}>
+          <p className={styles.onboardingInfo}>
             El documento que subas aquí será mostrado a los usuarios cuando inicien sesión por primera vez y deban aceptar las políticas de la empresa.
           </p>
           <div
-            style={{
-              border: '2px dashed var(--border)',
-              borderRadius: 'var(--radius-md)',
-              padding: '24px',
-              textAlign: 'center',
-              background: 'var(--bg-2)',
-              cursor: 'pointer',
-              transition: 'var(--transition-fast)'
-            }}
+            className={styles.onboardingDropzone}
             onClick={() => {
               const input = document.createElement('input');
               input.type = 'file';
@@ -1090,17 +1062,17 @@ export default function AdminPage() {
             }}
           >
             {onboardingFile ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, color: 'var(--accent)' }}>
+              <div className={styles.onboardingFilePreview}>
                 <FileText size={24} />
-                <div style={{ textAlign: 'left' }}>
-                  <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>{onboardingFile.name}</p>
-                  <p style={{ margin: 0, fontSize: 12 }}>{(onboardingFile.size / 1024).toFixed(0)} KB</p>
+                <div className={styles.onboardingFileText}>
+                  <p className={styles.onboardingFileName}>{onboardingFile.name}</p>
+                  <p className={styles.onboardingFileSize}>{(onboardingFile.size / 1024).toFixed(0)} KB</p>
                 </div>
               </div>
             ) : (
               <div>
-                <Upload size={28} style={{ color: 'var(--text-mut)', margin: '0 auto 8px' }} />
-                <p style={{ margin: 0, fontWeight: 600, fontSize: 14, color: 'var(--text-sec)' }}>Haz clic para seleccionar un PDF</p>
+                <Upload size={28} className={styles.onboardingUploadIcon} />
+                <p className={styles.onboardingUploadPrompt}>Haz clic para seleccionar un PDF</p>
               </div>
             )}
           </div>
@@ -1112,7 +1084,10 @@ export default function AdminPage() {
           </Button>
         </div>
         {onboardingUploadStatus && (
-          <p style={{ marginTop: 12, fontSize: 13, fontWeight: 600, textAlign: 'center', color: onboardingUploadStatus.startsWith('❌') ? 'var(--danger)' : 'var(--success)' }}>
+          <p className={clsx(styles.onboardingStatusText, {
+            [styles.statusTextDanger]: onboardingUploadStatus.startsWith('❌'),
+            [styles.statusTextSuccess]: !onboardingUploadStatus.startsWith('❌')
+          })}>
             {onboardingUploadStatus}
           </p>
         )}

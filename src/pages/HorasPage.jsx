@@ -218,14 +218,7 @@ export default function HorasPage() {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerIcon}><Timer size={22} /></div>
-        <div>
-          <h1>Control de Tiempo</h1>
-          <p>Registra compensaciones, bolsa de horas, horas que debes y consulta el historial</p>
-        </div>
-      </div>
+
 
       {/* Tabs */}
       <div className={styles.pageControls}>
@@ -408,7 +401,7 @@ export default function HorasPage() {
                 <span>Usa "Nueva solicitud" para añadir horas</span>
               </Card>
             ) : (
-              <Card style={{ padding: 0, overflow: 'hidden' }}>
+              <Card className={styles.tableCard}>
                 <div className={styles.tableWrapper}>
                   <table className="table">
                     <thead>
@@ -435,7 +428,7 @@ export default function HorasPage() {
                           <td className={styles.reviewCell} data-label="Revisado">
                             {h.reviewerName
                               ? <><strong>{h.reviewerName}</strong><span>{h.reviewedAt ? new Date(h.reviewedAt).toLocaleDateString('es-ES') : ''}</span></>
-                              : <span style={{ color: 'var(--text-mut)' }}>—</span>
+                              : <span className={styles.textMut}>—</span>
                             }
                           </td>
                         </tr>
@@ -459,8 +452,8 @@ export default function HorasPage() {
             transition={{ duration: 0.2 }}
           >
             {/* Search */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <div className={styles.userSearchWrapper} style={{ margin: 0, flex: 1 }}>
+            <div className={styles.adminSearchHeader}>
+              <div className={clsx(styles.userSearchWrapper, styles.userSearchWrapperFlex)}>
                 <Search size={16} />
                 <input
                   type="text"
@@ -483,7 +476,7 @@ export default function HorasPage() {
                 <p>No se encontraron empleados</p>
               </Card>
             ) : (
-              <Card style={{ padding: 0, overflow: 'hidden' }}>
+              <Card className={styles.tableCard}>
                 <div className={styles.tableWrapper}>
                   <table className="table">
                     <thead>
@@ -503,7 +496,7 @@ export default function HorasPage() {
                         const empAvatar = stat.employee.avatar || empName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                         const isNegative = stat.balance < 0;
                         return (
-                          <tr key={stat.employee.id}>
+                           <tr key={stat.employee.id}>
                             <td data-label="Empleado">
                               <div className={styles.userCell}>
                                 <Avatar initials={empAvatar} size={32} />
@@ -519,7 +512,7 @@ export default function HorasPage() {
                               </span>
                             </td>
                             <td data-label="Pendiente">
-                              <span style={{ color: 'var(--text-sec)', fontSize: 13 }}>
+                              <span className={styles.pendingHoursCell}>
                                 {stat.pending.toFixed(1)}h
                               </span>
                             </td>
@@ -529,7 +522,7 @@ export default function HorasPage() {
                               </span>
                             </td>
                             <td data-label="Compensado">
-                              <span className={clsx(styles.hoursChip, styles.hoursChipYa)} style={{ background: 'var(--success-bg)', color: 'var(--success)' }}>
+                              <span className={clsx(styles.hoursChip, styles.hoursChipYa)}>
                                 {stat.ya.toFixed(1)}h
                               </span>
                             </td>

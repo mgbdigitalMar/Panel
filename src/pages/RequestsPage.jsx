@@ -93,7 +93,16 @@ export default function RequestsPage() {
     setLoading(true);
     if (reqType === 'asuntos_propios') {
       let fileUrl = null;
-      if (file) fileUrl = await uploadDocumentFile(file);
+      if (file) {
+        const uploadRes = await uploadDocumentFile(file);
+        if (uploadRes && !uploadRes.error) {
+          fileUrl = uploadRes.url;
+        } else if (uploadRes?.error) {
+          alert(`Error al subir el archivo: ${uploadRes.error}`);
+          setLoading(false);
+          return;
+        }
+      }
       await createPersonalDay({ employeeId: user.id, date: form.date, reason: form.reason, fileUrl });
     } else {
       let payload;
@@ -142,7 +151,7 @@ export default function RequestsPage() {
           {tabBtn('remoto', 'Remoto')}
           {tabBtn('external', 'Trabajo Externo')}
         </div>
-        <div style={{ display: 'flex', gap: 12 }}>
+        <div className={styles.controlsRight}>
           {filtered.length > 0 && (
             <Button icon={Download} variant="ghost" onClick={() => exportRequestsCSV(filtered)}>
               Descargar Excel
@@ -163,7 +172,7 @@ export default function RequestsPage() {
       <Card>
         {filtered.length === 0 ? (
           <div className="empty-state">
-            <div className="icon-box icon-box--lg icon-box--accent empty-state__icon" style={{ opacity: 1 }}>
+            <div className={clsx("icon-box icon-box--lg icon-box--accent empty-state__icon", styles.opaqueIcon)}>
               <FileText size={24} />
             </div>
             <h3 className="empty-state__title">No hay solicitudes</h3>
@@ -191,19 +200,19 @@ export default function RequestsPage() {
                     <td data-label="Tipo">
                       <Badge status={r.type} label={r.type === 'asuntos_propios' ? 'Asuntos Propios' : r.type === 'remoto' ? 'Remoto' : r.type === 'external' ? 'Trabajo Externo' : 'Compra'} />
                     </td>
-                    <td data-label="Detalle" style={{ color: 'var(--text-sec)' }}>
+                    <td data-label="Detalle" className={styles.detailCell}>
                       {r.type === 'asuntos_propios'
                         ? `${r.date} (1 día)`
                         : r.type === 'external' || r.type === 'remoto'
                         ? `${r.startDate} → ${r.endDate} (${r.days || '?'} días)`
                         : `${r.item} — ${r.amount}€`}
                       {r.fileUrl && (
-                        <a href={r.fileUrl} download="justificante" style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 8, color: 'var(--accent)', verticalAlign: 'middle' }} title="Descargar justificante">
+                        <a href={r.fileUrl} download="justificante" className={styles.downloadLink} title="Descargar justificante">
                           <Download size={14} />
                         </a>
                       )}
                     </td>
-                    <td data-label="Fecha solicitud" style={{ color: 'var(--text-mut)' }}>{r.createdAt}</td>
+                    <td data-label="Fecha solicitud" className={styles.dateCell}>{r.createdAt}</td>
                     <td data-label="Estado"><Badge status={r.status} /></td>
                     {user.role === 'admin' && (
                       <td data-label="Acciones">
@@ -242,77 +251,55 @@ export default function RequestsPage() {
 
         {reqType === 'external' || reqType === 'remoto' ? (
           <>
-            <div style={{ 
-              background: 'var(--accent-bg)', 
-              padding: '16px', 
-              borderRadius: 'var(--radius-md)', 
-              marginBottom: '20px',
-              border: '1px solid var(--accent-border)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <div style={{ 
-                  width: '36px', height: '36px', borderRadius: '8px', 
-                  background: 'var(--accent)', color: 'white', 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center' 
-                }}>
+            <div className={styles.modalAlert}>
+              <div className={styles.modalAlertHeader}>
+                <div className={styles.modalAlertIcon}>
                   <FileText size={20} />
                 </div>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>
+                  <h4 className={styles.modalAlertTitle}>
                     {reqType === 'external' ? 'Condiciones de Trabajo Externo' : 'Condiciones de Remoto'}
                   </h4>
-                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-sec)' }}>Lee y acepta las siguientes condiciones</p>
+                  <p className={styles.modalAlertSubtitle}>Lee y acepta las siguientes condiciones</p>
                 </div>
               </div>
 
               <div
                 ref={conditionsRef}
                 onScroll={handleScrollConditions}
-                style={{
-                background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '16px',
-                maxHeight: '200px', overflowY: 'auto', fontSize: '13px', color: 'var(--text-sec)', marginBottom: '16px',
-                display: 'flex', flexDirection: 'column', gap: '12px'
-              }}>
+                className={styles.conditionsBox}
+              >
                 {reqType === 'remoto' && (
                   <>
-                    <div><h5 style={{ margin: '0 0 4px 0', color: 'var(--text)' }}>1. He sido informado/a de las condiciones aplicables:</h5><p style={{ margin: 0 }}>Comunicación previa a rrhh@margube.com, con traslado a Dirección para su aprobación.</p></div>
-                    <div><h5 style={{ margin: '0 0 4px 0', color: 'var(--text)' }}>2. Normas durante el trabajo remoto:</h5><ul style={{ margin: 0, paddingLeft: '20px' }}><li>Avisar cambios.</li><li>Mantener horario presencial.</li><li>Control horario con ubicación activada.</li><li>Teams conectado todo el día.</li><li>Reflejar en calendario corporativo.</li><li>Registrar horas en Cinegia.</li></ul></div>
-                    <div><h5 style={{ margin: '0 0 4px 0', color: 'var(--text)' }}>3. Modificación de días</h5><p style={{ margin: 0 }}>Podrán ser modificados por la dirección.</p></div>
-                    <div><h5 style={{ margin: '0 0 4px 0', color: 'var(--text)' }}>4. Consecuencias del incumplimiento</h5><p style={{ margin: 0 }}>Pérdida del derecho a solicitar remoto.</p></div>
+                    <div><h5 className={styles.conditionTitle}>1. He sido informado/a de las condiciones aplicables:</h5><p>Comunicación previa a rrhh@margube.com, con traslado a Dirección para su aprobación.</p></div>
+                    <div><h5 className={styles.conditionTitle}>2. Normas durante el trabajo remoto:</h5><ul className={styles.conditionList}><li>Avisar cambios.</li><li>Mantener horario presencial.</li><li>Control horario con ubicación activada.</li><li>Teams conectado todo el día.</li><li>Reflejar en calendario corporativo.</li><li>Registrar horas en Cinegia.</li></ul></div>
+                    <div><h5 className={styles.conditionTitle}>3. Modificación de días</h5><p>Podrán ser modificados por la dirección.</p></div>
+                    <div><h5 className={styles.conditionTitle}>4. Consecuencias del incumplimiento</h5><p>Pérdida del derecho a solicitar remoto.</p></div>
                   </>
                 )}
                 {reqType === 'external' && (
                   <>
-                    <div><h5 style={{ margin: '0 0 4px 0', color: 'var(--text)' }}>1. He sido informado/a de las condiciones aplicables:</h5><p style={{ margin: 0 }}>Comunicación previa. Máximo 4 solicitudes/año. Máximo 20 días anuales.</p></div>
-                    <div><h5 style={{ margin: '0 0 4px 0', color: 'var(--text)' }}>2. Normas durante el trabajo externo:</h5><ul style={{ margin: 0, paddingLeft: '20px' }}><li>Avisar cambios.</li><li>Mantener horario.</li><li>Control horario con ubicación.</li><li>Teams conectado.</li><li>Reflejar en calendario.</li><li>Registrar horas en Cinegia.</li></ul></div>
-                    <div><h5 style={{ margin: '0 0 4px 0', color: 'var(--text)' }}>3. Consecuencias del incumplimiento</h5><p style={{ margin: 0 }}>Pérdida del derecho a solicitar trabajo externo.</p></div>
+                    <div><h5 className={styles.conditionTitle}>1. He sido informado/a de las condiciones aplicables:</h5><p>Comunicación previa. Máximo 4 solicitudes/año. Máximo 20 días anuales.</p></div>
+                    <div><h5 className={styles.conditionTitle}>2. Normas durante el trabajo externo:</h5><ul className={styles.conditionList}><li>Avisar cambios.</li><li>Mantener horario.</li><li>Control horario con ubicación.</li><li>Teams conectado.</li><li>Reflejar en calendario.</li><li>Registrar horas en Cinegia.</li></ul></div>
+                    <div><h5 className={styles.conditionTitle}>3. Consecuencias del incumplimiento</h5><p>Pérdida del derecho a solicitar trabajo externo.</p></div>
                   </>
                 )}
               </div>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: conditionsRead ? 'pointer' : 'not-allowed', userSelect: 'none', opacity: conditionsRead ? 1 : 0.6 }}>
-                <div style={{ position: 'relative', width: 22, height: 22, flexShrink: 0 }}>
+              <label className={clsx(styles.checkboxLabel, conditionsRead ? styles.checkboxLabelEnabled : styles.checkboxLabelDisabled)}>
+                <div className={styles.checkboxContainer}>
                   <input 
                     type="checkbox" 
                     disabled={!conditionsRead} 
                     checked={form.acceptedTerms} 
                     onChange={e => setForm({ ...form, acceptedTerms: e.target.checked })} 
-                    style={{ position: 'absolute', opacity: 0, cursor: conditionsRead ? 'pointer' : 'not-allowed', width: '100%', height: '100%', margin: 0, zIndex: 2 }} 
+                    className={styles.checkboxInput} 
                   />
-                  <div style={{
-                    position: 'absolute', inset: 0,
-                    background: form.acceptedTerms ? 'var(--accent)' : 'var(--bg)',
-                    border: form.acceptedTerms ? '2px solid var(--accent)' : '2px solid var(--border)',
-                    borderRadius: '6px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: 'all 0.2s',
-                    boxShadow: form.acceptedTerms ? '0 2px 8px rgba(34,81,255,0.3)' : 'none',
-                    zIndex: 1
-                  }}>
-                    <Check size={14} color="#fff" strokeWidth={3} style={{ opacity: form.acceptedTerms ? 1 : 0, transform: form.acceptedTerms ? 'scale(1)' : 'scale(0.5)', transition: 'all 0.2s' }} />
+                  <div className={clsx(styles.checkboxVisual, { [styles.checkboxVisualChecked]: form.acceptedTerms })}>
+                    <Check size={14} color="#fff" strokeWidth={3} className={styles.checkboxCheckIcon} style={{ opacity: form.acceptedTerms ? 1 : 0, transform: form.acceptedTerms ? 'scale(1)' : 'scale(0.5)' }} />
                   </div>
                 </div>
-                <span style={{ fontSize: '13px', fontWeight: 500, color: form.acceptedTerms ? 'var(--text)' : 'var(--text-sec)', transition: 'color 0.2s' }}>
+                <span className={clsx(styles.checkboxText, { [styles.checkboxTextChecked]: form.acceptedTerms })}>
                   {conditionsRead ? 'En conformidad con lo anterior, firmo el presente documento como muestra de mi aceptación y compromiso.' : 'Debes leer las condiciones hasta el final para poder aceptar.'}
                 </span>
               </label>
@@ -325,54 +312,28 @@ export default function RequestsPage() {
           </>
         ) : reqType === 'asuntos_propios' ? (
           <>
-            <div style={{ 
-              background: 'var(--warning-bg)', 
-              padding: '16px', 
-              borderRadius: 'var(--radius-md)', 
-              marginBottom: '20px',
-              border: '1px solid var(--warning)'
-            }}>
-              <h4 style={{ margin: '0 0 8px 0', color: 'var(--warning)', fontSize: 14 }}>Solicitud de Día de Asuntos Propios</h4>
-              <p style={{ margin: 0, fontSize: 12, color: 'var(--text-sec)', lineHeight: 1.5 }}>
+            <div className={styles.modalWarningAlert}>
+              <h4 className={styles.modalWarningTitle}>Solicitud de Día de Asuntos Propios</h4>
+              <p className={styles.modalWarningSubtitle}>
                 Rellena la fecha y el motivo. Puedes adjuntar documentación justificativa si procede.
               </p>
             </div>
             <Input label="Día solicitado" value={form.date} onChange={v => setForm({ ...form, date: v })} type="date" required />
             <Textarea label="Motivo de la solicitud" value={form.reason} onChange={v => setForm({ ...form, reason: v })} placeholder="Describir brevemente el motivo..." required />
             
-            <div style={{ marginTop: '16px', marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-mut)', marginBottom: '8px', textTransform: 'uppercase' }}>
+            <div className={styles.uploadGroup}>
+              <label className={styles.uploadLabel}>
                 Documentación justificativa aportada (Opcional)
               </label>
-              <div style={{
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '12px 16px',
-                background: 'var(--bg)',
-                border: '1px dashed var(--border)',
-                borderRadius: 'var(--radius-md)',
-                cursor: 'pointer',
-                transition: 'border-color 0.2s',
-              }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '36px',
-                  height: '36px',
-                  background: 'var(--accent-bg)',
-                  color: 'var(--accent)',
-                  borderRadius: '8px'
-                }}>
+              <div className={styles.uploadDropzone}>
+                <div className={styles.uploadIconContainer}>
                   <FileText size={20} />
                 </div>
-                <div style={{ flex: 1, overflow: 'hidden' }}>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div className={styles.uploadTextContainer}>
+                  <p className={styles.uploadFileName}>
                     {file ? file.name : 'Haz clic o arrastra un archivo aquí'}
                   </p>
-                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-mut)' }}>
+                  <p className={styles.uploadFileSpecs}>
                     {file ? `${(file.size / 1024).toFixed(1)} KB` : 'PDF, JPG, PNG (máx. 5MB)'}
                   </p>
                 </div>
@@ -380,42 +341,24 @@ export default function RequestsPage() {
                   type="file" 
                   title=""
                   onChange={e => setFile(e.target.files[0])} 
-                  style={{ 
-                    position: 'absolute', 
-                    top: 0, left: 0, right: 0, bottom: 0, 
-                    opacity: 0, 
-                    color: 'transparent',
-                    cursor: 'pointer',
-                    width: '100%',
-                    height: '100%',
-                    zIndex: 1
-                  }} 
+                  className={styles.uploadInput}
                 />
               </div>
             </div>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', userSelect: 'none', background: 'var(--bg)', padding: '12px', borderRadius: '8px', border: form.acceptedTerms ? '1px solid var(--accent)' : '1px solid var(--border)', transition: 'border-color 0.2s' }}>
-              <div style={{ position: 'relative', width: 22, height: 22, flexShrink: 0 }}>
+            <label className={clsx(styles.declarationLabel, { [styles.declarationLabelChecked]: form.acceptedTerms })}>
+              <div className={styles.checkboxContainer}>
                 <input 
                   type="checkbox" 
                   checked={form.acceptedTerms} 
                   onChange={e => setForm({ ...form, acceptedTerms: e.target.checked })} 
-                  style={{ position: 'absolute', opacity: 0, cursor: 'pointer', width: '100%', height: '100%', margin: 0, zIndex: 2 }} 
+                  className={styles.checkboxInput}
                 />
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  background: form.acceptedTerms ? 'var(--accent)' : 'var(--bg)',
-                  border: form.acceptedTerms ? '2px solid var(--accent)' : '2px solid var(--border)',
-                  borderRadius: '6px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'all 0.2s',
-                  boxShadow: form.acceptedTerms ? '0 2px 8px rgba(34,81,255,0.3)' : 'none',
-                  zIndex: 1
-                }}>
-                  <Check size={14} color="#fff" strokeWidth={3} style={{ opacity: form.acceptedTerms ? 1 : 0, transform: form.acceptedTerms ? 'scale(1)' : 'scale(0.5)', transition: 'all 0.2s' }} />
+                <div className={clsx(styles.checkboxVisual, { [styles.checkboxVisualChecked]: form.acceptedTerms })}>
+                  <Check size={14} color="#fff" strokeWidth={3} className={styles.checkboxCheckIcon} style={{ opacity: form.acceptedTerms ? 1 : 0, transform: form.acceptedTerms ? 'scale(1)' : 'scale(0.5)' }} />
                 </div>
               </div>
-              <span style={{ fontSize: '13px', fontWeight: 500, color: form.acceptedTerms ? 'var(--text)' : 'var(--text-sec)', lineHeight: '1.4', transition: 'color 0.2s' }}>
+              <span className={clsx(styles.checkboxText, { [styles.checkboxTextChecked]: form.acceptedTerms })}>
                 Declaro que el motivo indicado corresponde a un asunto personal que no puede realizarse fuera de la jornada laboral.
               </span>
             </label>

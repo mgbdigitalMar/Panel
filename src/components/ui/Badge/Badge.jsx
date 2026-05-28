@@ -7,6 +7,7 @@ export function Badge({ status, label, className }) {
     pending:   { variant: 'warning', text: 'Pendiente'  },
     approved:  { variant: 'success', text: 'Aprobado'   },
     rejected:  { variant: 'danger',  text: 'Rechazado'  },
+    cancelled: { variant: 'danger',  text: 'Cancelado'  },
     admin:     { variant: 'accent',  text: 'Admin'      },
     employee:  { variant: 'neutral', text: 'Empleado'   },
     news:      { variant: 'accent',  text: 'Noticia'    },

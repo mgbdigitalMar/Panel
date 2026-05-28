@@ -612,3 +612,455 @@
 
   &:hover { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
 }
+
+.headerRight {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.tableCard {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.userNameContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.positionTitle {
+  margin: 0 0 4px;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.positionDept {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-sec);
+}
+
+.contactWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.contactLink {
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.contactLinkMe {
+  color: var(--accent);
+}
+
+.contactLinkOther {
+  color: var(--text);
+}
+
+.contactEmailText {
+  font-size: 13px;
+}
+
+.contactEmailMe {
+  color: var(--accent);
+}
+
+.contactEmailOther {
+  color: var(--text-sec);
+}
+
+.workModeBadge {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  display: inline-block;
+}
+
+.workModeOffice {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.workModeRemote {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.workModeExternal {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.actionsCellRight {
+  margin-left: auto;
+  gap: 4px;
+}
+
+.tableHeaderPadding {
+  padding: 16px 20px !important;
+}
+
+.documentTableHeaderTitle {
+  margin: 0;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.documentTableHeaderCount {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-mut);
+}
+
+.documentEmptyState {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-mut);
+}
+
+.emptyStateIcon {
+  margin: 0 auto 12px;
+  display: block;
+  opacity: 0.35;
+}
+
+.emptyStateText {
+  margin: 0;
+  font-size: 14px;
+}
+
+.flexCenterGap10 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.docIconWrapper {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.docTitleText {
+  margin: 0 0 2px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.docDescText {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-sec);
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flexCenterGap8 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recipName {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 600;
+  display: block;
+}
+
+.recipDept {
+  font-size: 11px;
+  color: var(--text-mut);
+}
+
+.docDate {
+  font-size: 13px;
+  color: var(--text-sec);
+}
+
+.filtersHeader {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filterLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-mut);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filterSelect {
+  padding: 7px 10px;
+  background: var(--bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: var(--transition-fast);
+  &:focus { border-color: var(--accent); }
+}
+
+.filterDateInput {
+  padding: 7px 10px;
+  background: var(--bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: var(--transition-fast);
+  &:focus { border-color: var(--accent); }
+}
+
+.filterSummaryText {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-mut);
+  align-self: flex-end;
+  padding-bottom: 8px;
+}
+
+.boldDateCell {
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.reasonCell {
+  font-size: 13px;
+  color: var(--text-sec);
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hoursPill {
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.statusRejected {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.statusApproved {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.statusPending {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.iconAccent {
+  background: var(--accent-bg) !important;
+  color: var(--accent) !important;
+}
+
+.iconWarning {
+  background: var(--warning-bg) !important;
+  color: var(--warning) !important;
+}
+
+.modalGridMarginTop {
+  margin-top: 16px;
+}
+
+.uploadLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-mut);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.fileInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.uploadIcon {
+  color: var(--text-mut);
+  margin-bottom: 8px;
+}
+
+.filePromptTitle {
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-sec);
+}
+
+.filePromptSub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-mut);
+}
+
+.filePromptDesc {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--text-mut);
+}
+
+.uploadStatusText {
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.statusTextDanger {
+  color: var(--danger);
+}
+
+.statusTextSuccess {
+  color: var(--success);
+}
+
+.statusTextNeutral {
+  color: var(--text-sec);
+}
+
+.onboardingContainer {
+  margin-bottom: 16px;
+}
+
+.onboardingInfo {
+  font-size: 13px;
+  color: var(--text-sec);
+  margin-bottom: 16px;
+}
+
+.onboardingDropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  text-align: center;
+  background: var(--bg-2);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  &:hover {
+    border-color: var(--accent);
+    background: var(--input-bg-hover);
+  }
+}
+
+.onboardingFilePreview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--accent);
+}
+
+.onboardingFileText {
+  text-align: left;
+}
+
+.onboardingFileName {
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.onboardingFileSize {
+  margin: 0;
+  font-size: 12px;
+}
+
+.onboardingUploadIcon {
+  color: var(--text-mut);
+  margin: 0 auto 8px;
+}
+
+.onboardingUploadPrompt {
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-sec);
+}
+
+.onboardingStatusText {
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.statusTextDanger {
+  color: var(--danger);
+}
+
+.statusTextSuccess {
+  color: var(--success);
+}
+
+.resourceMetaNoMargin {
+  margin: 0 !important;
+}
+
+.reviewerNameText {
+  font-size: 12px;
+  color: var(--text-mut);
+}
+
+.modalFlexColGap18 {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.hiddenInput {
+  display: none !important;
+}
+
+.filePreviewIcon {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+
+
+
