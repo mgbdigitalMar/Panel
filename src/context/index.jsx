@@ -74,6 +74,26 @@ const [readIds, setReadIds] = useState(() => {
 })
   const [liveNotifs, setLiveNotifs]        = useState([])  // Real-time toasts
 
+  // ── Storage cleanup helper ─────────────────────────────────
+  // Extracts the file path from a Supabase Storage URL and removes it from the bucket
+  const removeStorageFile = async (fileUrl) => {
+    if (!fileUrl || !fileUrl.includes('/storage/v1/object/public/documents/')) return
+    try {
+      // URL format: .../storage/v1/object/public/documents/<path>
+      const marker = '/storage/v1/object/public/documents/'
+      const idx = fileUrl.indexOf(marker)
+      if (idx === -1) return
+      let path = fileUrl.substring(idx + marker.length)
+      // Remove any query params (e.g. ?t=123)
+      const qIdx = path.indexOf('?')
+      if (qIdx !== -1) path = path.substring(0, qIdx)
+      if (!path) return
+      const { error } = await supabase.storage.from('documents').remove([decodeURIComponent(path)])
+      if (error) console.warn('Storage delete error:', error.message)
+    } catch (e) {
+      console.warn('removeStorageFile error:', e)
+    }
+  }
 
   // ── Persistent Notifications (DB) ────────────────────────
   const fetchNotifications = async (userId) => {
@@ -574,10 +594,7 @@ const [readIds, setReadIds] = useState(() => {
   const deleteRequest = async (id, type) => {
     if (type === 'asuntos_propios') {
       const p = personalDays.find(d => String(d.id) === String(id));
-      if (p?.fileUrl && p.fileUrl.includes('/storage/v1/object/public/documents/')) {
-        const path = p.fileUrl.split('/documents/')[1];
-        if (path) await supabase.storage.from('documents').remove([path]);
-      }
+      await removeStorageFile(p?.fileUrl)
       const { error } = await supabase.from('personal_days').delete().eq('id', id);
       if (error) console.error('deleteRequest (personal_day):', error);
       else await fetchPersonalDays();
@@ -747,13 +764,7 @@ const [readIds, setReadIds] = useState(() => {
 
   const deleteDocument = async (id) => {
     const doc = documents.find(d => String(d.id) === String(id));
-    if (doc?.fileUrl && doc.fileUrl.includes('/storage/v1/object/public/documents/')) {
-      const path = doc.fileUrl.split('/documents/')[1];
-      if (path) {
-        const { error: storageError } = await supabase.storage.from('documents').remove([path]);
-        if (storageError) console.warn('Could not delete file from storage:', storageError.message);
-      }
-    }
+    await removeStorageFile(doc?.fileUrl)
     const { error } = await supabase.from('documents').delete().eq('id', id)
     if (error) { console.error('deleteDocument:', error); return }
     await fetchDocuments()
@@ -836,17 +847,11 @@ const [readIds, setReadIds] = useState(() => {
   const deleteEmployeeData = async (employeeId) => {
     const empDocs = documents.filter(d => String(d.senderId) === String(employeeId) || String(d.recipientId) === String(employeeId));
     for (const doc of empDocs) {
-      if (doc.fileUrl && doc.fileUrl.includes('/storage/v1/object/public/documents/')) {
-        const path = doc.fileUrl.split('/documents/')[1];
-        if (path) await supabase.storage.from('documents').remove([path]);
-      }
+      await removeStorageFile(doc.fileUrl)
     }
     const empDays = personalDays.filter(p => String(p.employeeId) === String(employeeId));
     for (const p of empDays) {
-      if (p.fileUrl && p.fileUrl.includes('/storage/v1/object/public/documents/')) {
-        const path = p.fileUrl.split('/documents/')[1];
-        if (path) await supabase.storage.from('documents').remove([path]);
-      }
+      await removeStorageFile(p.fileUrl)
     }
   }
 
