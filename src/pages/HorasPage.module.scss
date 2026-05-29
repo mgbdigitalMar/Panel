@@ -125,6 +125,27 @@
   pointer-events: none;
 }
 
+/* Tab count badge */
+.tabCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: var(--radius-full);
+  background: rgba(var(--text-rgb), 0.08);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-sec);
+  line-height: 1;
+
+  .tabBtnActive & {
+    background: rgba(var(--accent-rgb), 0.12);
+    color: var(--accent);
+  }
+}
+
 @keyframes tab-indicator {
   from { width: 0%; opacity: 0; }
   to   { width: 60%; opacity: 1; }
@@ -271,6 +292,20 @@
 }
 
 .successMsg { font-size: 13px; font-weight: 600; color: var(--success); }
+
+/* Animated success toast */
+.successToast {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--success-bg);
+  border: 1px solid rgba(var(--success-rgb), 0.2);
+  color: var(--success);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
 
 /* ── Stats Row ───────────────────────────────────────────────── */
 .statsRow {
@@ -562,10 +597,33 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
+}
 
-  svg { color: var(--text-mut); opacity: 0.25; }
-  p   { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-sec); }
-  span{ font-size: 13px; color: var(--text-mut); }
+.emptyStateIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-mut);
+  margin-bottom: 8px;
+  animation: bounce-in 0.5s var(--ease-spring);
+}
+
+.emptyStateTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.emptyStateSub {
+  font-size: 13.5px;
+  color: var(--text-sec);
 }
 
 /* ── Historial de Usuarios (Admin) ───────────────────────────── */

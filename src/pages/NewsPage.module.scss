@@ -60,6 +60,26 @@
   pointer-events: none;
 }
 
+.tabCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: var(--radius-full);
+  background: rgba(var(--text-rgb), 0.08);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-sec);
+  line-height: 1;
+
+  .tabBtnActive & {
+    background: rgba(var(--accent-rgb), 0.12);
+    color: var(--accent);
+  }
+}
+
 @keyframes tab-indicator {
   from { width: 0%; opacity: 0; }
   to   { width: 60%; opacity: 1; }
@@ -79,6 +99,47 @@
   flex-direction: column;
   gap: 16px;
   margin-bottom: 32px;
+}
+
+/* Empty state */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(48px, 8vw, 80px) 24px;
+  text-align: center;
+  gap: 16px;
+}
+
+.emptyIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  background: var(--accent-bg);
+  border: 1px solid rgba(var(--accent-rgb), 0.20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  margin-bottom: 8px;
+  animation: bounce-in 0.5s var(--ease-spring);
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.emptyDesc {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-mut);
+  max-width: 280px;
+  line-height: 1.5;
 }
 
 .newsCard {
@@ -115,6 +176,7 @@
 
 .newsCardPinned {
   border-color: rgba(var(--accent-rgb), 0.32) !important;
+  box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0) !important;
 
   &::before {
     content: '';
@@ -126,7 +188,17 @@
     background: var(--gradient-accent);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.40);
+    animation: shimmer-bar 3s ease-in-out infinite;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::before { animation: none; }
+  }
+}
+
+@keyframes shimmer-bar {
+  0%, 100% { opacity: 1; box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.40); }
+  50%       { opacity: 0.7; box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.70); }
 }
 
 .cardTop {
@@ -212,7 +284,7 @@
 
 .typeBtn {
   flex: 1;
-  padding: 11px;
+  padding: 12px 16px;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(var(--border-rgb), 0.50);
   background: var(--glass-surface);
@@ -224,6 +296,10 @@
   font-family: inherit;
   cursor: pointer;
   transition: var(--transition-smooth);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 
   &:hover {
     border-color: var(--accent);

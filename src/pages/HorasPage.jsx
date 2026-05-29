@@ -204,13 +204,14 @@ export default function HorasPage() {
     return <span className={clsx(styles.typeBadge, styles.typeDebe)}>Debo</span>;
   };
 
-  const tabBtn = (id, label) => (
+  const tabBtn = (id, label, count) => (
     <button
       key={id}
       onClick={() => setTab(id)}
       className={clsx(styles.tabBtn, { [styles.tabBtnActive]: tab === id })}
     >
       {label}
+      {count > 0 && <span className={styles.tabCount}>{count}</span>}
     </button>
   );
 
@@ -223,9 +224,9 @@ export default function HorasPage() {
       {/* Tabs */}
       <div className={styles.pageControls}>
         <div className={styles.tabsRow}>
-          {tabBtn('nueva', '＋ Nueva solicitud')}
-          {tabBtn('bolsa', '🗂 Mi Registro')}
-          {user?.role === 'admin' && tabBtn('usuarios', '👥 Historial de Usuarios')}
+          {tabBtn('nueva', '➕ Nueva solicitud', 0)}
+          {tabBtn('bolsa', '🗂 Mi Registro', myAll.length)}
+          {user?.role === 'admin' && tabBtn('usuarios', '👥 Historial de Usuarios', userStats.filter(s => s.pending > 0).length)}
         </div>
         {tab === 'bolsa' && allRows.length > 0 && (
           <Button
@@ -324,7 +325,20 @@ export default function HorasPage() {
                 >
                   {cfg.btnLabel}
                 </Button>
-                {success && <span className={styles.successMsg}>{success}</span>}
+                <AnimatePresence mode="wait">
+                  {success && (
+                    <motion.div
+                      className={styles.successToast}
+                      initial={{ opacity: 0, x: -8, scale: 0.96 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      exit={{ opacity: 0, x: 8, scale: 0.96 }}
+                      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                      role="status"
+                    >
+                      {success}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </Card>
           </motion.div>
@@ -396,9 +410,11 @@ export default function HorasPage() {
             {/* Table */}
             {allRows.length === 0 ? (
               <Card className={styles.emptyCard}>
-                <Inbox size={44} strokeWidth={1} />
-                <p>No hay registros aún</p>
-                <span>Usa "Nueva solicitud" para añadir horas</span>
+                <div className={styles.emptyStateIcon}>
+                  <Inbox size={28} strokeWidth={1.5} />
+                </div>
+                <p className={styles.emptyStateTitle}>No hay registros aún</p>
+                <span className={styles.emptyStateSub}>Usa "Nueva solicitud" para añadir horas</span>
               </Card>
             ) : (
               <Card className={styles.tableCard}>

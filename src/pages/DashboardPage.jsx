@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useAuth, useApp, useData } from '../context';
 import { Avatar, Badge, StatCard, Card, Button } from '../components/ui';
 import {
@@ -6,7 +6,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import styles from './DashboardPage.module.scss';
-import { Users, Calendar, Inbox, Newspaper, Pin, Gift, Car, Building, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Users, Calendar, Inbox, Newspaper, Pin, Gift, Car, Building, ArrowRight, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 
@@ -72,6 +72,43 @@ const CHART_COLORS = {
   warning: '#D97706',
   danger:  '#DC2626',
 };
+
+// ── Animated counter hook ──────────────────────────────────────────
+function useCountUp(target, duration = 800) {
+  const [count, setCount] = useState(0);
+  const raf = useRef(null);
+  useEffect(() => {
+    let start = null;
+    const from = 0;
+    const step = (ts) => {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      setCount(Math.round(from + (target - from) * ease));
+      if (progress < 1) raf.current = requestAnimationFrame(step);
+    };
+    raf.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf.current);
+  }, [target, duration]);
+  return count;
+}
+
+// ── Custom glassmorphic tooltip ────────────────────────────────────
+function GlassTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  return (
+    <div className={styles.customTooltip}>
+      {label && <p className={styles.tooltipLabel}>{label}</p>}
+      {payload.map((entry, i) => (
+        <div key={i} className={styles.tooltipRow}>
+          <span className={styles.tooltipDot} style={{ background: entry.color }} />
+          <span className={styles.tooltipName}>{entry.name}</span>
+          <span className={styles.tooltipValue}>{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const container = {
   hidden: {},
@@ -185,6 +222,21 @@ const tooltipStyle = {
     padding: '8px 12px',
   };
 
+  // Animated counters
+  const empCount      = useCountUp(employees.length);
+  const todayStr2     = new Date().toISOString().split('T')[0];
+  const todayResCount = useCountUp(reservations.filter(r => r.date === todayStr2).length);
+  const pendCount     = useCountUp(pendingCount);
+  const newsCount     = useCountUp(news.length);
+
+  // Motivational text based on hour
+  const motivations = hour < 13
+    ? ['¡Buena jornada por delante!', 'Empieza el día con energía', 'El equipo te espera']
+    : hour < 17
+    ? ['Sigue así, ¡casi lo tienes!', 'La tarde avanza bien', '¡Gran trabajo hoy!']
+    : ['El día fue productivo', '¡Buen trabajo hoy!', 'Descansa y recarga'];
+  const motivation = motivations[today.getDate() % motivations.length];
+
   return (
     <motion.div
       className={styles.page}
@@ -201,7 +253,10 @@ const tooltipStyle = {
               {greeting}, {user?.name?.split(' ')[0]}
             </h2>
             <p className={styles.welcomeSub}>
-              {todayStr.charAt(0).toUpperCase() + todayStr.slice(1)} · Todo bajo control en Margube
+              {todayStr.charAt(0).toUpperCase() + todayStr.slice(1)}
+            </p>
+            <p className={styles.welcomeMotivation}>
+              ✦ {motivation}
             </p>
             {/* Workday Progress Bar */}
             <div className={styles.progressContainer}>
@@ -229,7 +284,7 @@ const tooltipStyle = {
       <motion.div variants={item} className={styles.gridCards}>
         <StatCard
           label="Empleados activos"
-          value={employees.length}
+          value={empCount}
           icon="Users"
           color="var(--accent)"
           sub="Total en plantilla"
@@ -238,7 +293,7 @@ const tooltipStyle = {
         />
         <StatCard
           label="Reservas hoy"
-          value={reservations.filter(r => r.date === '2025-01-20').length}
+          value={todayResCount}
           icon="Calendar"
           color="var(--success)"
           sub="Salas y vehículos"
@@ -247,7 +302,7 @@ const tooltipStyle = {
         />
         <StatCard
           label="Solicitudes pendientes"
-          value={pendingCount}
+          value={pendCount}
           icon="Inbox"
           color="var(--warning)"
           sub="Requieren revisión"
@@ -256,7 +311,7 @@ const tooltipStyle = {
         />
         <StatCard
           label="Noticias activas"
-          value={news.length}
+          value={newsCount}
           icon="Newspaper"
           color="#EC4899"
           sub="Publicadas este mes"
@@ -303,7 +358,7 @@ const tooltipStyle = {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                 <XAxis dataKey="mes" tick={{ fontSize: 11, fill: 'var(--text-mut)' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: 'var(--text-mut)' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'var(--bg-3)' }} />
+                <Tooltip content={<GlassTooltip />} cursor={{ fill: 'rgba(var(--accent-rgb), 0.06)' }} />
                 <Bar dataKey="aprobadas"  fill={CHART_COLORS.success} radius={[4, 4, 0, 0]} />
                 <Bar dataKey="pendientes" fill={CHART_COLORS.warning} radius={[4, 4, 0, 0]} />
                 <Bar dataKey="rechazadas" fill={CHART_COLORS.danger}  radius={[4, 4, 0, 0]} />
@@ -375,12 +430,12 @@ const tooltipStyle = {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                 <XAxis dataKey="semana" tick={{ fontSize: 11, fill: 'var(--text-mut)' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: 'var(--text-mut)' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip content={<GlassTooltip />} />
                 <Line
                   type="monotone" dataKey="reservas"
                   stroke={CHART_COLORS.accent} strokeWidth={2.5}
                   dot={{ r: 4, fill: CHART_COLORS.accent, strokeWidth: 0 }}
-                  activeDot={{ r: 6, fill: CHART_COLORS.accent }}
+                  activeDot={{ r: 6, fill: CHART_COLORS.accent, strokeWidth: 0, filter: 'drop-shadow(0 0 6px rgba(99,91,255,0.5))' }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -436,7 +491,9 @@ const tooltipStyle = {
                     <p className={styles.feedMeta}>{e.bdDisplay} · {e.dept}</p>
                   </div>
                   <span className={clsx(styles.daysChip, e.daysLeft <= 7 ? styles.daysChipUrgent : styles.daysChipNormal)}>
-                    {e.daysLeft === 0 ? '¡Hoy! 🎉' : `en ${e.daysLeft}d`}
+                    {e.daysLeft === 0 ? (
+                      <span className={styles.birthdayToday}>🎉 ¡Hoy!</span>
+                    ) : `en ${e.daysLeft}d`}
                   </span>
                 </div>
               ))}
@@ -466,9 +523,14 @@ const tooltipStyle = {
                 </tr>
               </thead>
               <tbody>
-                {reservations.slice(0, 6).map(r => (
-                  <tr key={r.id}>
-                    <td data-label="Recurso" className={styles.tdBold}>{r.resourceName}</td>
+                {reservations.slice(0, 6).map(r => {
+                  const isToday = r.date === todayStr2;
+                  return (
+                  <tr key={r.id} className={clsx({ [styles.rowToday]: isToday })}>
+                    <td data-label="Recurso" className={styles.tdBold}>
+                      {r.resourceName}
+                      {isToday && <span className={styles.todayBadge}>hoy</span>}
+                    </td>
                     <td data-label="Tipo">
                       <span className={clsx(styles.typeBadge, r.type === 'vehicle' ? styles.typeBadgeVehicle : styles.typeBadgeRoom)}>
                         {r.type === 'vehicle' ? <Car size={13} /> : <Building size={13} />}
@@ -480,7 +542,8 @@ const tooltipStyle = {
                     <td data-label="Horario">{r.timeStart}–{r.timeEnd}</td>
                     <td data-label="Estado"><Badge status={r.status} /></td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

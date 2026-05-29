@@ -1,9 +1,10 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useAuth, useData } from '../context';
 import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard, ConfirmModal } from '../components/ui';
-import { Plus, Check, X, FileText, ExternalLink, Download, Trash2 } from 'lucide-react';
+import { Plus, Check, X, FileText, ExternalLink, Download, Trash2, Home, Briefcase, ShoppingCart, Calendar } from 'lucide-react';
 import styles from './RequestsPage.module.scss';
 import clsx from 'clsx';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function RequestsPage() {
   const { user, employees } = useAuth();
@@ -129,15 +130,25 @@ export default function RequestsPage() {
     }
   };
 
-  const tabBtn = (id, label) => (
+  const tabBtn = (id, label) => {
+    const count = id === 'all' ? allItems.length
+      : id === 'mine' ? allItems.filter(r => r.employeeId === user?.id).length
+      : allItems.filter(r => r.type === id).length;
+    const pending = id === 'all' ? allItems.filter(r => r.status === 'pending').length
+      : id === 'mine' ? allItems.filter(r => r.employeeId === user?.id && r.status === 'pending').length
+      : 0;
+    return (
     <button 
       key={id} 
       onClick={() => setTab(id)}
       className={clsx(styles.tabBtn, { [styles.tabBtnActive]: tab === id })}
     >
       {label}
+      {count > 0 && <span className={styles.tabCount}>{count}</span>}
+      {pending > 0 && id !== tab && <span className={styles.tabPending}>{pending}</span>}
     </button>
-  );
+    );
+  };
 
   return (
     <div className={styles.container}>
@@ -189,8 +200,16 @@ export default function RequestsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(r => (
-                  <tr key={r.id}>
+                <AnimatePresence mode="sync">
+                {filtered.map((r, i) => (
+                  <motion.tr
+                    key={r.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.22, delay: i * 0.03, ease: [0.16, 1, 0.3, 1] }}
+                    className={clsx({ [styles.rowPending]: r.status === 'pending' })}
+                  >
                     <td data-label="Empleado">
                       <div className={styles.userCell}>
                         <Avatar initials={(r.employeeName || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()} size={32} />
@@ -227,8 +246,9 @@ export default function RequestsPage() {
                         </div>
                       </td>
                     )}
-                  </tr>
+                  </motion.tr>
                 ))}
+                </AnimatePresence>
               </tbody>
             </table>
           </div>
@@ -238,13 +258,20 @@ export default function RequestsPage() {
       {/* New request modal */}
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Nueva solicitud">
         <div className={styles.typeButtons}>
-          {[{ id: 'asuntos_propios', label: '📝 Asuntos Propios' }, { id: 'purchase', label: '🛒 Compra' }, { id: 'remoto', label: '🏠 Remoto' }, { id: 'external', label: '📍 Trabajo Externo' }].map(rt => (
+          {[
+            { id: 'asuntos_propios', label: 'Asuntos Propios', icon: Calendar, desc: 'Día personal' },
+            { id: 'purchase',        label: 'Compra',          icon: ShoppingCart, desc: 'Artículo o servicio' },
+            { id: 'remoto',          label: 'Remoto',          icon: Home,         desc: 'Trabajo desde casa' },
+            { id: 'external',        label: 'Externo',         icon: Briefcase,    desc: 'Trabajo fuera de oficina' },
+          ].map(rt => (
             <button 
               key={rt.id} 
               onClick={() => setReqType(rt.id)}
               className={clsx(styles.typeBtn, { [styles.typeBtnActive]: reqType === rt.id })}
             >
-              {rt.label}
+              <rt.icon size={16} className={styles.typeBtnIcon} />
+              <span className={styles.typeBtnLabel}>{rt.label}</span>
+              <span className={styles.typeBtnDesc}>{rt.desc}</span>
             </button>
           ))}
         </div>

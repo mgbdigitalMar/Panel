@@ -389,6 +389,53 @@
   flex-shrink: 0;
 }
 
+/* ── Nav badge (pending count pill) ────────────────────────────────── */
+.navBadge {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  box-shadow: 0 0 8px rgba(var(--danger-rgb), 0.55);
+  flex-shrink: 0;
+  animation: bounce-in 0.4s var(--ease-spring);
+}
+
+.navBadgeDot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--danger);
+  border: 2px solid var(--sidebar);
+  box-shadow: 0 0 6px rgba(var(--danger-rgb), 0.65);
+  flex-shrink: 0;
+}
+
+.navTooltipBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 0 3px;
+  margin-left: 6px;
+}
+
 /* ── Collapse toggle button ──────────────────────────────────────── */
 .collapseBtn {
   position: absolute;
@@ -570,6 +617,35 @@
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
+}
+
+/* ── Live clock ──────────────────────────────────────────────────── */
+.liveClock {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(var(--border-rgb), 0.35);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+  color: var(--text-sec);
+  font-family: var(--font-mono);
+  background: rgba(var(--bg-rgb), 0.40);
+  transition: all 0.2s var(--ease-out);
+  cursor: default;
+
+  svg { opacity: 0.55; flex-shrink: 0; }
+
+  &:hover {
+    border-color: rgba(var(--accent-rgb), 0.25);
+    color: var(--text);
+    background: rgba(var(--accent-rgb), 0.05);
+  }
+
+  @media (max-width: 900px) { display: none; }
 }
 
 /* ── Title block (breadcrumbs + h1) ────────────────────────────── */

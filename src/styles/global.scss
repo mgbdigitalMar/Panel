@@ -63,6 +63,7 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.03em;
   color: var(--text);
   text-wrap: pretty;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
 h1 { font-size: clamp(24px, 3.5vw + 0.5rem, 48px); letter-spacing: -0.04em; }
@@ -98,8 +99,9 @@ img, svg, video { display: block; max-width: 100%; }
 /* ── Focus Ring — Accessibility ───────────────────────────────────── */
 :focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px rgba(var(--accent-rgb), 0.35);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px rgba(var(--accent-rgb), 0.40), 0 0 16px rgba(var(--accent-rgb), 0.15);
   border-radius: inherit;
+  transition: box-shadow 0.15s var(--ease-out);
 }
 
 /* ── Selection ────────────────────────────────────────────────────── */
@@ -427,6 +429,11 @@ img, svg, video { display: block; max-width: 100%; }
   to   { opacity: 1; transform: translateY(0) scale(1);       filter: blur(0px); }
 }
 
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 @keyframes fade-blur-in {
   from { opacity: 0; filter: blur(6px); }
   to   { opacity: 1; filter: blur(0px); }
@@ -435,6 +442,31 @@ img, svg, video { display: block; max-width: 100%; }
 @keyframes scale-in {
   from { opacity: 0; transform: scale(0.96); }
   to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%       { transform: translateX(-6px); }
+  30%       { transform: translateX(5px); }
+  45%       { transform: translateX(-4px); }
+  60%       { transform: translateX(3px); }
+  75%       { transform: translateX(-2px); }
+}
+
+@keyframes bounce-in {
+  0%   { opacity: 0; transform: scale(0.7); }
+  60%  { opacity: 1; transform: scale(1.05); }
+  80%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+@keyframes ripple-out {
+  to { transform: scale(4); opacity: 0; }
+}
+
+@keyframes number-count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Skeleton loading — premium shimmer */
@@ -848,3 +880,84 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   RIPPLE EFFECT UTILITY
+═══════════════════════════════════════════════════════════════════ */
+
+.ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  transform: scale(0);
+  animation: ripple-out var(--ripple-duration, 600ms) var(--ripple-easing, cubic-bezier(0, 0, 0.2, 1)) forwards;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HOVER LIFT — Interactive card elevation
+═══════════════════════════════════════════════════════════════════ */
+
+.hover-lift {
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s var(--ease-out);
+
+  &:hover {
+    transform: translateY(-3px) scale(var(--scale-subtle, 1.008));
+    box-shadow: var(--shadow-lg);
+  }
+
+  &:active { transform: translateY(0) scale(var(--scale-press, 0.965)); }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    &:hover, &:active { transform: none; }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SHAKE — Error feedback animation
+═══════════════════════════════════════════════════════════════════ */
+
+.shake {
+  animation: shake 0.45s var(--ease-out);
+
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   COUNTER ANIMATION UTILITY
+═══════════════════════════════════════════════════════════════════ */
+
+.count-up {
+  animation: number-count-up 0.5s var(--ease-spring) both;
+  display: inline-block;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   NUMBER INPUT — hide spinners
+═══════════════════════════════════════════════════════════════════ */
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] { -moz-appearance: textfield; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PREMIUM GRADIENT TEXT UTILITY
+═══════════════════════════════════════════════════════════════════ */
+
+.gradient-heading {
+  font-family: var(--font-heading);
+  background: var(--gradient-aurora);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}

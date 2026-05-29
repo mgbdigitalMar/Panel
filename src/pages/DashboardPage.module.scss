@@ -106,6 +106,15 @@
   line-height: 1.4;
 }
 
+.welcomeMotivation {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.50);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  font-style: italic;
+}
+
 .welcomeActions {
   display: flex;
   gap: 10px;
@@ -676,3 +685,90 @@
   color: var(--accent);
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   CUSTOM GLASS TOOLTIP
+═══════════════════════════════════════════════════════════════════ */
+
+.customTooltip {
+  background: var(--glass-card);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  box-shadow: var(--shadow-lg), var(--glass-highlight);
+  min-width: 120px;
+  animation: slide-down 0.15s var(--ease-out);
+}
+
+.tooltipLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-mut);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0 0 8px;
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.tooltipDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tooltipName {
+  font-size: 12px;
+  color: var(--text-sec);
+  font-weight: 500;
+  flex: 1;
+  text-transform: capitalize;
+}
+
+.tooltipValue {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TABLE — Today row highlight + badge
+═══════════════════════════════════════════════════════════════════ */
+
+.rowToday {
+  background: rgba(var(--success-rgb), 0.04) !important;
+  
+  td { border-bottom-color: rgba(var(--success-rgb), 0.12) !important; }
+}
+
+.todayBadge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--success);
+  background: var(--success-bg);
+  border: 1px solid rgba(var(--success-rgb), 0.22);
+  border-radius: var(--radius-full);
+  padding: 1px 6px;
+  vertical-align: middle;
+}
+
+/* Birthday today animation */
+.birthdayToday {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  animation: bounce-in 0.6s var(--ease-spring);
+}

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useAuth, useData } from '../context';
 import { Avatar, Badge, Modal, Input, Select, Textarea, Button, Card, ConfirmModal } from '../components/ui';
-import { Edit2, Trash2, Pin, Plus } from 'lucide-react';
+import { Edit2, Trash2, Pin, Plus, Newspaper } from 'lucide-react';
 import styles from './NewsPage.module.scss';
 import clsx from 'clsx';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function NewsPage() {
   const { user } = useAuth();
@@ -51,6 +52,13 @@ export default function NewsPage() {
   };
 
   const NewsCard = ({ item }) => (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+    >
     <Card className={clsx(styles.newsCard, { [styles.newsCardPinned]: item.pinned })}>
       <div className={styles.cardTop}>
         <div style={{ flex: 1 }}>
@@ -79,17 +87,24 @@ export default function NewsPage() {
         )}
       </div>
     </Card>
+    </motion.div>
   );
 
-  const tabBtn = (id, label) => (
+  const tabBtn = (id, label) => {
+    const count = id === 'all' ? news.length : news.filter(n => n.type === id).length;
+    return (
     <button 
       key={id} 
       onClick={() => setTab(id)}
       className={clsx(styles.tabBtn, { [styles.tabBtnActive]: tab === id })}
     >
       {label}
+      {count > 0 && (
+        <span className={styles.tabCount}>{count}</span>
+      )}
     </button>
-  );
+    );
+  };
 
   return (
     <div>
@@ -111,9 +126,11 @@ export default function NewsPage() {
       {pinned.length > 0 && (
         <>
           <p className={styles.sectionTitle}>Destacado</p>
-          <div className={styles.newsList}>
-            {pinned.map(n => <NewsCard key={n.id} item={n} />)}
-          </div>
+          <AnimatePresence mode="popLayout">
+            <div className={styles.newsList}>
+              {pinned.map(n => <NewsCard key={n.id} item={n} />)}
+            </div>
+          </AnimatePresence>
         </>
       )}
 
@@ -121,10 +138,34 @@ export default function NewsPage() {
       {regular.length > 0 && (
         <>
           {pinned.length > 0 && <p className={styles.sectionTitle}>Reciente</p>}
-          <div className={styles.newsList}>
-            {regular.map(n => <NewsCard key={n.id} item={n} />)}
-          </div>
+          <AnimatePresence mode="popLayout">
+            <div className={styles.newsList}>
+              {regular.map(n => <NewsCard key={n.id} item={n} />)}
+            </div>
+          </AnimatePresence>
         </>
+      )}
+
+      {/* Empty state */}
+      {filtered.length === 0 && (
+        <Card>
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>
+              <Newspaper size={26} />
+            </div>
+            <p className={styles.emptyTitle}>Sin publicaciones</p>
+            <p className={styles.emptyDesc}>
+              {tab === 'all'
+                ? 'No hay noticias ni eventos publicados aún.'
+                : `No hay ${tab === 'news' ? 'noticias' : 'eventos'} publicados aún.`}
+            </p>
+            {user.role === 'admin' && (
+              <Button icon={Plus} onClick={() => { setEditItem(null); setForm({ type: tab === 'event' ? 'event' : 'news', title: '', content: '', category: 'Empresa', pinned: false }); setShowModal(true); }}>
+                Publicar ahora
+              </Button>
+            )}
+          </div>
+        </Card>
       )}
 
       {/* Publish / Edit modal */}

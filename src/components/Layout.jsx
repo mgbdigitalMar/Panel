@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, Settings, User,
   LogOut, Menu, Bell, CheckCircle, XCircle,
-  UsersRound, Timer, Check, SlidersHorizontal,
+  UsersRound, Timer, Check, SlidersHorizontal, Clock,
 } from 'lucide-react';
 
 import logoColor from '../assets/logos/logo-color.png';
@@ -17,12 +17,12 @@ import styles from './Layout.module.scss';
 
 /* ── Navigation items ─────────────────────────────────────────────── */
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'reservations', label: 'Reservas', icon: Calendar },
-  { id: 'requests', label: 'Solicitudes', icon: Inbox },
-  { id: 'horas', label: 'Control de Tiempo', icon: Timer },
-  { id: 'news', label: 'Noticias y Eventos', icon: Newspaper },
-  { id: 'employees', label: 'Equipo', icon: UsersRound },
+  { id: 'dashboard',    label: 'Dashboard',         icon: LayoutDashboard },
+  { id: 'reservations', label: 'Reservas',           icon: Calendar },
+  { id: 'requests',     label: 'Solicitudes',        icon: Inbox,       badgeKey: 'requests' },
+  { id: 'horas',        label: 'Control de Tiempo',  icon: Timer },
+  { id: 'news',         label: 'Noticias y Eventos', icon: Newspaper },
+  { id: 'employees',    label: 'Equipo',             icon: UsersRound },
 ];
 const adminItems = [
   { id: 'admin', label: 'Administración', icon: Settings },
@@ -30,8 +30,18 @@ const adminItems = [
 const settingsItem = { id: 'settings', label: 'Ajustes', icon: SlidersHorizontal };
 const allItems = [...navItems, ...adminItems, settingsItem];
 
-/* ── Single Nav Link ──────────────────────────────────────────────── */
-function NavLink({ item, onNavigate, collapsed }) {
+/* ── Live clock hook ───────────────────────────────────────────────────── */
+function useClock() {
+  const [time, setTime] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return time;
+}
+
+/* ═ Single Nav Link ═════════════════════════════════════════════════════ */
+function NavLink({ item, onNavigate, collapsed, badge }) {
   const Icon = item.icon;
   const { page } = useApp();
   const active = page === item.id;
@@ -51,6 +61,14 @@ function NavLink({ item, onNavigate, collapsed }) {
       >
         <Icon size={17} aria-hidden="true" />
         <span className={styles.navLabel}>{item.label}</span>
+        {badge > 0 && !collapsed && (
+          <span className={styles.navBadge} aria-label={`${badge} pendientes`}>
+            {badge > 9 ? '9+' : badge}
+          </span>
+        )}
+        {badge > 0 && collapsed && (
+          <span className={styles.navBadgeDot} aria-label={`${badge} pendientes`} />
+        )}
       </button>
 
       {/* Floating tooltip when collapsed */}
@@ -65,6 +83,7 @@ function NavLink({ item, onNavigate, collapsed }) {
             role="tooltip"
           >
             {item.label}
+            {badge > 0 && <span className={styles.navTooltipBadge}>{badge}</span>}
           </motion.div>
         )}
       </AnimatePresence>
@@ -83,7 +102,15 @@ export default function Layout({ children }) {
     liveNotifs = [],
     notifications = [], markNotifRead, markAllNotifsRead,
     onboardingDocUrl,
+    requests = [],
   } = useData();
+
+  const now = useClock();
+  const clockStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+  /* ── Pending counts for nav badges ─────────────────────────────────── */
+  const pendingRequestsCount = requests.filter(r => r.status === 'pending').length;
+  const navBadges = { requests: pendingRequestsCount };
 
   /* ── UI state ────────────────────────────────────────────── */
   const [sideOpen, setSideOpen] = useState(false);
@@ -175,7 +202,13 @@ export default function Layout({ children }) {
         <nav className={styles.navGroup} role="navigation" aria-label="Navegación principal">
           <p className={styles.navSectionLabel}>Menú</p>
           {navItems.map(i => (
-            <NavLink key={i.id} item={i} onNavigate={handleNavigate} collapsed={isCollapsed} />
+            <NavLink
+              key={i.id}
+              item={i}
+              onNavigate={handleNavigate}
+              collapsed={isCollapsed}
+              badge={i.badgeKey ? navBadges[i.badgeKey] || 0 : 0}
+            />
           ))}
 
           {user?.role === 'admin' && (
@@ -183,7 +216,7 @@ export default function Layout({ children }) {
               <div className={styles.navDivider} />
               <p className={styles.navSectionLabel}>Admin</p>
               {adminItems.map(i => (
-                <NavLink key={i.id} item={i} onNavigate={handleNavigate} collapsed={isCollapsed} />
+                <NavLink key={i.id} item={i} onNavigate={handleNavigate} collapsed={isCollapsed} badge={0} />
               ))}
             </>
           )}
@@ -325,6 +358,12 @@ export default function Layout({ children }) {
 
           {/* Right actions */}
           <div className={styles.headerRight}>
+            {/* Live clock */}
+            <div className={styles.liveClock} aria-label="Hora actual">
+              <Clock size={13} aria-hidden="true" />
+              <span>{clockStr}</span>
+            </div>
+
             {/* Settings button — where theme toggle used to be */}
             <Button
               variant="ghost"

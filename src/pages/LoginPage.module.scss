@@ -63,6 +63,38 @@
   @media (max-width: 767px) { display: none; }
 }
 
+/* Decorative floating particles */
+.particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  animation: particle-float calc(8s + var(--i, 0) * 2s) ease-in-out calc(var(--i, 0) * 1.2s) infinite;
+
+  &:nth-child(1) { width: 4px;  height: 4px;  background: rgba(180, 200, 255, 0.6);  left: 20%; top: 25%; }
+  &:nth-child(2) { width: 6px;  height: 6px;  background: rgba(130, 160, 255, 0.4);  left: 65%; top: 15%; }
+  &:nth-child(3) { width: 3px;  height: 3px;  background: rgba(255, 255, 255, 0.5);  left: 40%; top: 60%; }
+  &:nth-child(4) { width: 5px;  height: 5px;  background: rgba(100, 140, 255, 0.45); left: 80%; top: 45%; }
+  &:nth-child(5) { width: 4px;  height: 4px;  background: rgba(160, 190, 255, 0.5);  left: 15%; top: 70%; }
+  &:nth-child(6) { width: 7px;  height: 7px;  background: rgba(130, 170, 255, 0.30); left: 55%; top: 80%; }
+
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}
+
+@keyframes particle-float {
+  0%   { opacity: 0; transform: translateY(0) scale(0); }
+  20%  { opacity: 1; }
+  80%  { opacity: 0.6; }
+  100% { opacity: 0; transform: translateY(-60px) scale(1.2); }
+}
+
 /* Extra animated orb mid-panel */
 .brandOrb {
   position: absolute;
@@ -145,21 +177,34 @@
 .brandFeature {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   color: rgba(255, 255, 255, 0.80);
   font-size: 14px;
   font-weight: 500;
   line-height: 1.4;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s var(--ease-out), color 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.95);
+  }
 }
 
-/* Glowing accent dot */
-.brandFeatureDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(130, 170, 255, 0.80);
+/* Glowing icon pill */
+.brandFeatureIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: rgba(180, 200, 255, 0.15);
+  border: 1px solid rgba(180, 200, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 0 10px rgba(130, 170, 255, 0.60);
+  color: rgba(200, 220, 255, 0.90);
+  box-shadow: 0 0 12px rgba(130, 170, 255, 0.20);
 }
 
 .brandBottom {

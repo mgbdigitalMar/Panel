@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useAuth, useTheme } from '../context';
 import logoColor from '../assets/logos/logo-color.png';
 import logoWhite from '../assets/logos/logo-white.png';
 import { Card, Button, Input } from '../components/ui';
-import { Eye, EyeOff, Shield, Users, Zap, Calendar } from 'lucide-react';
+import { Eye, EyeOff, Shield, Users, Zap, Calendar, AlertCircle } from 'lucide-react';
 import styles from './LoginPage.module.scss';
 import clsx from 'clsx';
 import inputStyles from '../components/ui/Input/Input.module.scss';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 /* ── Brand features list ──────────────────────────────────────────── */
 const FEATURES = [
@@ -42,10 +42,12 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [err,      setErr]      = useState('');
   const [loading,  setLoading]  = useState(false);
+  const [errKey,   setErrKey]   = useState(0); // increment to retrigger shake
 
-  const handleLogin = async () => {
+  const handleLogin = useCallback(async () => {
     if (!email || !pass) {
       setErr('Por favor, introduce email y contraseña.');
+      setErrKey(k => k + 1);
       return;
     }
     setLoading(true);
@@ -53,14 +55,15 @@ export default function LoginPage() {
     const res = await login(email, pass);
     if (!res.ok) {
       setErr(res.msg ? `Error: ${res.msg}` : 'Email o contraseña incorrectos.');
+      setErrKey(k => k + 1);
       setLoading(false);
     }
-  };
+  }, [email, pass, login]);
 
   return (
     <div className={styles.container}>
 
-      {/* ── Left: Branding panel (desktop only) ─────────────────── */}
+      {/* ── Left: Branding panel (desktop only) ─────────────────────── */}
       <motion.div
         className={styles.brandPanel}
         initial={{ opacity: 0, x: -20 }}
@@ -68,6 +71,13 @@ export default function LoginPage() {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         aria-hidden="true"
       >
+        {/* Decorative particles */}
+        <div className={styles.particles} aria-hidden="true">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className={styles.particle} style={{ '--i': i }} />
+          ))}
+        </div>
+
         {/* Brand logo */}
         <div className={styles.brandTop}>
           <div className={styles.brandLogo}>
@@ -92,7 +102,9 @@ export default function LoginPage() {
           <motion.div variants={fadeUp} className={styles.brandFeatures}>
             {FEATURES.map(({ icon: Icon, text }) => (
               <div key={text} className={styles.brandFeature}>
-                <div className={styles.brandFeatureDot} />
+                <div className={styles.brandFeatureIcon}>
+                  <Icon size={13} />
+                </div>
                 <span>{text}</span>
               </div>
             ))}
@@ -187,16 +199,21 @@ export default function LoginPage() {
             </div>
 
             {/* Error message */}
-            {err && (
-              <motion.div
-                className={styles.errorBox}
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                role="alert"
-              >
-                {err}
-              </motion.div>
-            )}
+            <AnimatePresence mode="wait">
+              {err && (
+                <motion.div
+                  key={errKey}
+                  className={styles.errorBox}
+                  initial={{ opacity: 0, scale: 0.97, x: -4 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  role="alert"
+                >
+                  <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <span>{err}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Submit */}
             <Button

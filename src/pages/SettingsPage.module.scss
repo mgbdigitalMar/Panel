@@ -371,3 +371,16 @@
 
   strong { color: var(--accent); font-weight: 600; }
 }
+
+/* ── Online/mode indicator ───────────────────────────────────────── */
+.accountOnline {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 5px;
+  color: var(--success) !important;
+}
+
+/* Enhanced toggle glow */
+.toggle:focus-visible {
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px rgba(var(--accent-rgb), 0.40), var(--glow-accent-sm);
+}

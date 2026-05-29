@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTheme, useData, useAuth } from '../context';
-import { Card } from '../components/ui';
+import { Card, Avatar } from '../components/ui';
 import {
   Sun, Moon, Monitor, Layers, BellRing, BellOff, Volume2, VolumeX,
-  Palette, Check, User, Building,
+  Palette, Check, User, Building, Wifi,
 } from 'lucide-react';
 import styles from './SettingsPage.module.scss';
 import clsx from 'clsx';
@@ -190,10 +190,16 @@ export default function SettingsPage() {
             <div className={clsx(styles.cardIcon, styles.iconInfo)}>
               <User size={17} />
             </div>
-            <div>
+            <div style={{ flex: 1 }}>
               <h2 className={styles.cardTitle}>Tu cuenta</h2>
               <p className={styles.cardSub}>Información de tu perfil en la plataforma</p>
             </div>
+            {/* Avatar in header */}
+            <Avatar
+              initials={user?.avatar || user?.name?.slice(0, 2)}
+              size={38}
+              online
+            />
           </div>
 
           <div className={styles.accountGrid}>
@@ -213,7 +219,10 @@ export default function SettingsPage() {
             </div>
             <div className={styles.accountItem}>
               <span className={styles.accountLabel}>Modo de trabajo</span>
-              <span className={styles.accountValue}>{user?.workMode || 'Oficina'}</span>
+              <span className={clsx(styles.accountValue, styles.accountOnline)}>
+                <Wifi size={12} style={{ flexShrink: 0 }} />
+                {user?.workMode || 'Oficina'}
+              </span>
             </div>
           </div>
 

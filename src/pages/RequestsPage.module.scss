@@ -71,6 +71,40 @@
   pointer-events: none;
 }
 
+/* Tab count badge */
+.tabCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: var(--radius-full);
+  background: rgba(var(--text-rgb), 0.08);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-sec);
+  line-height: 1;
+}
+
+/* Pending sub-badge (red dot) */
+.tabPending {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  box-shadow: 0 0 6px rgba(var(--danger-rgb), 0.50);
+  animation: bounce-in 0.4s var(--ease-spring);
+}
+
 /* ── Stats ─────────────────────────────────────────────── */
 .statsGrid {
   display: grid;
@@ -219,9 +253,9 @@
 
 .typeBtn {
   flex: 1;
-  padding: 12px;
+  padding: 14px 12px 12px;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(var(--border-rgb), 0.50);
+  border: 1.5px solid rgba(var(--border-rgb), 0.50);
   background: var(--glass-surface);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -229,13 +263,19 @@
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--ease-out);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
 
   &:hover {
     border-color: var(--accent);
     color: var(--text);
     background: var(--glass-card);
     box-shadow: var(--glass-highlight-sm);
+    transform: translateY(-1px);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -245,12 +285,34 @@
   }
 }
 
+.typeBtnIcon {
+  margin-bottom: 2px;
+  transition: color 0.2s;
+}
+
+.typeBtnLabel {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.typeBtnDesc {
+  font-size: 10.5px;
+  color: var(--text-mut);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
 .typeBtnActive {
-  background: var(--accent-bg-2);
-  color: var(--accent);
-  border-color: rgba(var(--accent-rgb), 0.32);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.10), var(--glass-highlight-sm);
+  background: var(--accent-bg-2) !important;
+  color: var(--accent) !important;
+  border-color: rgba(var(--accent-rgb), 0.35) !important;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.10), var(--glass-highlight-sm) !important;
   transform: translateY(-1px);
+
+  .typeBtnLabel { color: var(--accent); }
+  .typeBtnIcon  { color: var(--accent); }
 }
 
 .modalGrid {
@@ -299,6 +361,18 @@
   margin-left: 8px;
   color: var(--accent);
   vertical-align: middle;
+  opacity: 0.7;
+  transition: opacity 0.15s, transform 0.15s;
+
+  &:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+}
+
+/* Pending row — subtle amber left bar */
+.rowPending td:first-child {
+  box-shadow: inset 3px 0 0 var(--warning);
 }
 
 .dateCell {
