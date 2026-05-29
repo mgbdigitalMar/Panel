@@ -73,7 +73,7 @@ const [readIds, setReadIds] = useState(() => {
   }
 })
   const [liveNotifs, setLiveNotifs]        = useState([])  // Real-time toasts
-  const [onlineUserIds, setOnlineUserIds]  = useState(new Set()) // Track online users for email fallback
+
 
   // ── Persistent Notifications (DB) ────────────────────────
   const fetchNotifications = async (userId) => {
@@ -111,24 +111,6 @@ const [readIds, setReadIds] = useState(() => {
     }])
     if (error) {
       console.warn('Could not insert notification:', error.message)
-      return
-    }
-
-    // Si el usuario no está en línea, enviarle un email
-    if (userId && !onlineUserIds.has(String(userId))) {
-      const auth = employees || []
-      const emp = auth.find(e => String(e.id) === String(userId))
-      if (emp && emp.email) {
-        fetch('/api/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: emp.email,
-            subject: title,
-            html: `<p>Hola ${emp.name},</p><p>Tienes una nueva notificación en Margube Intranet:</p><p><strong>${title}</strong></p><p>${body || ''}</p><p><a href="https://margube.vercel.app/">Ir a la Intranet</a></p>`
-          })
-        }).catch(err => console.error('Error enviando email vía Resend:', err))
-      }
     }
   }
 
@@ -341,22 +323,6 @@ const [readIds, setReadIds] = useState(() => {
     const { error } = await supabase.from('notifications').insert(notifs)
     if (error) {
       console.warn('Could not notify admins:', error.message)
-      return
-    }
-
-    // Email fallback para admins desconectados
-    for (const admin of admins) {
-      if (!onlineUserIds.has(String(admin.id)) && admin.email) {
-        fetch('/api/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: admin.email,
-            subject: title,
-            html: `<p>Hola ${admin.name},</p><p>Tienes una nueva notificación para administradores:</p><p><strong>${title}</strong></p><p>${body || ''}</p><p><a href="https://margube.vercel.app/">Ir a la Intranet</a></p>`
-          })
-        }).catch(err => console.error('Error enviando email a admin:', err))
-      }
     }
   }
 
@@ -368,27 +334,15 @@ const [readIds, setReadIds] = useState(() => {
     }
   }, [user?.id])
 
+  const refetchAll = () => Promise.all([
+    fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(),
+    fetchDocuments(), fetchHourCompensations(), fetchPersonalDays(), fetchNews(),
+  ])
+
   useEffect(() => {
-    Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations(), fetchPersonalDays(), fetchNews()])
-      .finally(() => setLoadingData(false))
+    refetchAll().finally(() => setLoadingData(false))
 
     // ── Supabase Realtime subscriptions ─────────────────────
-    // Presence for online users
-    const presenceChannel = supabase.channel('online-users', {
-      config: { presence: { key: user?.id } },
-    })
-
-    presenceChannel
-      .on('presence', { event: 'sync' }, () => {
-        const state = presenceChannel.presenceState()
-        const ids = new Set(Object.keys(state))
-        setOnlineUserIds(ids)
-      })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED' && user?.id) {
-          await presenceChannel.track({ online_at: new Date().toISOString() })
-        }
-      })
 
     const pushNotif = (icon, msg) => {
       const id = Date.now()
@@ -397,79 +351,93 @@ const [readIds, setReadIds] = useState(() => {
       setTimeout(() => setLiveNotifs(prev => prev.filter(n => n.id !== id)), 6000)
     }
 
+    // Requests — all events
     const requestChannel = supabase
       .channel('realtime-requests')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'requests' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'requests' }, (payload) => {
         fetchRequests()
-        pushNotif('📋', 'Nueva solicitud recibida')
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'requests' }, (payload) => {
-        fetchRequests()
-        const s = payload.new.status
-        if (s === 'approved') pushNotif('✅', 'Una solicitud ha sido aprobada')
-        else if (s === 'rejected') pushNotif('❌', 'Una solicitud ha sido rechazada')
+        if (payload.eventType === 'INSERT') pushNotif('📋', 'Nueva solicitud recibida')
+        else if (payload.eventType === 'UPDATE') {
+          const s = payload.new?.status
+          if (s === 'approved') pushNotif('✅', 'Una solicitud ha sido aprobada')
+          else if (s === 'rejected') pushNotif('❌', 'Una solicitud ha sido rechazada')
+        }
       })
       .subscribe()
 
+    // Reservations — all events
     const reservationChannel = supabase
       .channel('realtime-reservations')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reservations' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations' }, (payload) => {
         fetchReservations()
-        pushNotif('📅', 'Nueva reserva pendiente de revisión')
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'reservations' }, (payload) => {
-        fetchReservations()
-        const s = payload.new.status
-        if (s === 'confirmed') pushNotif('✅', 'Tu reserva ha sido confirmada')
-        else if (s === 'cancelled') pushNotif('❌', 'Tu reserva ha sido cancelada')
+        if (payload.eventType === 'INSERT') pushNotif('📅', 'Nueva reserva pendiente de revisión')
+        else if (payload.eventType === 'UPDATE') {
+          const s = payload.new?.status
+          if (s === 'confirmed') pushNotif('✅', 'Tu reserva ha sido confirmada')
+          else if (s === 'cancelled') pushNotif('❌', 'Tu reserva ha sido cancelada')
+        }
       })
       .subscribe()
 
-    // Rooms realtime
+    // Rooms — all events
     const roomChannel = supabase
       .channel('realtime-rooms')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'rooms' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, (payload) => {
         fetchRooms()
-        pushNotif('🏢', 'Nueva sala disponible')
+        if (payload.eventType === 'INSERT') pushNotif('🏢', 'Nueva sala disponible')
+        else if (payload.eventType === 'UPDATE') pushNotif('🏢', 'Sala actualizada')
+        else if (payload.eventType === 'DELETE') pushNotif('🏢', 'Una sala ha sido eliminada')
       })
       .subscribe()
 
-    // Vehicles realtime  
+    // Vehicles — all events
     const vehicleChannel = supabase
       .channel('realtime-vehicles')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'vehicles' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vehicles' }, (payload) => {
         fetchVehicles()
-        pushNotif('🚗', 'Nuevo vehículo disponible')
+        if (payload.eventType === 'INSERT') pushNotif('🚗', 'Nuevo vehículo disponible')
+        else if (payload.eventType === 'UPDATE') pushNotif('🚗', 'Vehículo actualizado')
+        else if (payload.eventType === 'DELETE') pushNotif('🚗', 'Un vehículo ha sido eliminado')
       })
       .subscribe()
 
-    // Documents realtime
+    // Documents — all events
     const documentChannel = supabase
       .channel('realtime-documents')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'documents' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, (payload) => {
         fetchDocuments()
-        pushNotif('📄', `Nuevo documento recibido: ${payload.new?.title || ''}`)
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'documents' }, () => {
-        fetchDocuments()
+        if (payload.eventType === 'INSERT') pushNotif('📄', `Nuevo documento recibido: ${payload.new?.title || ''}`)
       })
       .subscribe()
 
-    // Hour compensations realtime
+    // Hour compensations — all events
     const hoursChannel = supabase
       .channel('realtime-hours')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'hour_compensations' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'hour_compensations' }, (payload) => {
         fetchHourCompensations()
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'hour_compensations' }, (payload) => {
-        fetchHourCompensations()
-        const s = payload.new?.status
-        if (s === 'approved') pushNotif('✅', 'Tu solicitud de bolsa de horas ha sido aprobada')
-        else if (s === 'rejected') pushNotif('❌', 'Tu solicitud de bolsa de horas ha sido rechazada')
+        if (payload.eventType === 'UPDATE') {
+          const s = payload.new?.status
+          if (s === 'approved') pushNotif('✅', 'Tu solicitud de bolsa de horas ha sido aprobada')
+          else if (s === 'rejected') pushNotif('❌', 'Tu solicitud de bolsa de horas ha sido rechazada')
+        }
       })
       .subscribe()
 
-    // News realtime
+    // Personal days — all events (was missing entirely)
+    const personalDaysChannel = supabase
+      .channel('realtime-personal-days')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'personal_days' }, (payload) => {
+        fetchPersonalDays()
+        if (payload.eventType === 'INSERT') pushNotif('📝', 'Nueva solicitud de asuntos propios')
+        else if (payload.eventType === 'UPDATE') {
+          const s = payload.new?.status
+          if (s === 'approved') pushNotif('✅', 'Asuntos propios aprobados')
+          else if (s === 'rejected') pushNotif('❌', 'Asuntos propios rechazados')
+        }
+      })
+      .subscribe()
+
+    // News — all events
     const newsChannel = supabase
       .channel('realtime-news')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'news' }, () => {
@@ -477,11 +445,10 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
-    // Notifications realtime
+    // Notifications — INSERT + UPDATE (for current user)
     const notifChannel = supabase
       .channel('realtime-notifications')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
-        // If it's for the current user
         if (payload.new.user_id === user?.id) {
           setNotifications(prev => [payload.new, ...prev.slice(0, 49)])
           const icon = payload.new.type === 'success' ? '✅' : payload.new.type === 'error' ? '❌' : '🔔'
@@ -495,16 +462,28 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
+    // ── Visibility-based re-fetch ────────────────────────────
+    // When the tab comes back to the foreground, re-fetch all data
+    // to catch any events that may have been missed while in background
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        refetchAll()
+        if (user?.id) fetchNotifications(user.id)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
       supabase.removeChannel(requestChannel)
       supabase.removeChannel(reservationChannel)
       supabase.removeChannel(roomChannel)
       supabase.removeChannel(vehicleChannel)
       supabase.removeChannel(documentChannel)
       supabase.removeChannel(hoursChannel)
+      supabase.removeChannel(personalDaysChannel)
       supabase.removeChannel(newsChannel)
       supabase.removeChannel(notifChannel)
-      supabase.removeChannel(presenceChannel)
     }
   }, [user?.id])
 
@@ -909,7 +888,7 @@ const [readIds, setReadIds] = useState(() => {
       createReservation, updateReservationStatus, deleteReservation,
       readIds, markRead, markAllRead,
       liveNotifs,
-      refresh: () => Promise.all([fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(), fetchDocuments(), fetchHourCompensations(), fetchPersonalDays(), fetchNews()]),
+      refresh: refetchAll,
     };
   }, [
     requests, reservations, rooms, vehicles, documents, hourCompensations, personalDays,
