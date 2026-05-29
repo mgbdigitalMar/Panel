@@ -364,11 +364,21 @@ const [readIds, setReadIds] = useState(() => {
 
     // ── Supabase Realtime subscriptions ─────────────────────
 
+    // Request desktop notification permission if not yet decided
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+
     const pushNotif = (icon, msg) => {
       const id = Date.now()
       setLiveNotifs(prev => [{ id, icon, msg }, ...prev.slice(0, 4)])
       // Auto-dismiss after 6 s
       setTimeout(() => setLiveNotifs(prev => prev.filter(n => n.id !== id)), 6000)
+
+      // Native desktop notification if tab is in background
+      if (document.visibilityState !== 'visible' && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification('Margube Intranet', { body: `${icon} ${msg}` })
+      }
     }
 
     // Requests — all events
