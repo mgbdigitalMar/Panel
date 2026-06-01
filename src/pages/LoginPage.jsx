@@ -6,8 +6,8 @@ import { Card, Button, Input } from '../components/ui';
 import { Eye, EyeOff, Shield, Users, Zap, Calendar, AlertCircle } from 'lucide-react';
 import styles from './LoginPage.module.scss';
 import clsx from 'clsx';
-import inputStyles from '../components/ui/Input/Input.module.scss';
 import { motion, AnimatePresence } from 'framer-motion';
+
 
 /* ── Brand features list ──────────────────────────────────────────── */
 const FEATURES = [
@@ -166,36 +166,36 @@ export default function LoginPage() {
                 placeholder="nombre@margube.com"
                 required
                 autoComplete="email"
+                autoFocus
                 id="login-email"
+                onKeyDown={e => e.key === 'Enter' && handleLogin()}
               />
             </div>
 
-            {/* Password */}
+            {/* Password — uses Input component with eye-toggle rightElement */}
             <div className={styles.inputGroup}>
-              <label className={inputStyles.label} htmlFor="login-password">
-                Contraseña <span className={inputStyles.asterisk}>*</span>
-              </label>
-              <div className={styles.passwordWrapper}>
-                <input
-                  id="login-password"
-                  type={showPass ? 'text' : 'password'}
-                  value={pass}
-                  onChange={e => setPass(e.target.value)}
-                  placeholder="••••••••"
-                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                  className={clsx(inputStyles.input)}
-                  style={{ paddingRight: '52px' }}
-                  autoComplete="current-password"
-                />
-                <button
-                  className={styles.eyeButton}
-                  onClick={() => setShowPass(!showPass)}
-                  type="button"
-                  aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                >
-                  {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
-                </button>
-              </div>
+              <Input
+                label="Contraseña"
+                type={showPass ? 'text' : 'password'}
+                value={pass}
+                onChange={setPass}
+                placeholder="••••••••"
+                required
+                autoComplete="current-password"
+                id="login-password"
+                onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                rightElement={
+                  <button
+                    className={styles.eyeButton}
+                    onClick={() => setShowPass(!showPass)}
+                    type="button"
+                    aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    tabIndex={0}
+                  >
+                    {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                }
+              />
             </div>
 
             {/* Error message */}

@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 import Layout             from './components/Layout'
 import { Suspense, lazy } from 'react'
+import { motion } from 'framer-motion'
 
 const LoginPage          = lazy(() => import('./pages/LoginPage'))
 const ChangePasswordPage = lazy(() => import('./pages/ChangePasswordPage'))
@@ -20,17 +21,38 @@ const SettingsPage       = lazy(() => import('./pages/SettingsPage'))
 // Loading screen while Supabase restores the session
 function LoadingScreen() {
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'var(--bg)', flexDirection: 'column', gap: 16,
-    }}>
-      <div style={{
-        width: 40, height: 40, borderRadius: 10, background: 'var(--accent)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: '#fff', fontWeight: 800, fontSize: 20,
-      }}>M</div>
-      <p style={{ color: 'var(--text-mut)', fontSize: 13 }}>Cargando sesión…</p>
-    </div>
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }}
+      style={{
+        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'var(--bg)', flexDirection: 'column', gap: 24,
+      }}
+    >
+      <motion.div
+        animate={{
+          scale: [1, 1.08, 1],
+          opacity: [0.7, 1, 0.7],
+        }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        style={{
+          width: 56, height: 56, borderRadius: 16, background: 'var(--accent)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#fff', fontWeight: 800, fontSize: 28,
+          boxShadow: '0 8px 32px rgba(var(--accent-rgb), 0.3)',
+        }}
+      >
+        M
+      </motion.div>
+      <motion.p 
+        animate={{ opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ color: 'var(--text-mut)', fontSize: 13, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}
+      >
+        Cargando
+      </motion.p>
+    </motion.div>
   )
 }
 

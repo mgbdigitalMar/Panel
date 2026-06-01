@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { useAuth, useData } from '../context';
+import { useAuth, useRequests, usePersonalDays, useDocuments } from '../context';
 import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard, ConfirmModal } from '../components/ui';
 import { Plus, Check, X, FileText, ExternalLink, Download, Trash2, Home, Briefcase, ShoppingCart, Calendar } from 'lucide-react';
 import styles from './RequestsPage.module.scss';
@@ -8,7 +8,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function RequestsPage() {
   const { user, employees } = useAuth();
-  const { requests, createRequest, updateRequestStatus, deleteRequest, personalDays, createPersonalDay, updatePersonalDayStatus, uploadDocumentFile } = useData();
+  const { requests, createRequest, updateRequestStatus, deleteRequest } = useRequests();
+  const { personalDays, createPersonalDay, updatePersonalDayStatus } = usePersonalDays();
+  const { uploadDocumentFile } = useDocuments();
   
   const [tab, setTab]             = useState('all');
   const [showModal, setShowModal] = useState(false);

@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useAuth, useData } from '../context';
+import { useAuth, useReservations, useDocuments, useHours, useDataSync } from '../context';
 import { MOCK_ROOMS, MOCK_VEHICLES } from '../data/mockData';
 import { Avatar, Badge, Modal, Input, Select, Button, Card, ConfirmModal } from '../components/ui';
 import { Search, Plus, Edit2, Trash2, Eye, EyeOff, Building, Car, FileText, Send, Clock, CheckCircle, Check, PenTool, Upload, X, Timer, Download } from 'lucide-react';
 import styles from './AdminPage.module.scss';
 import clsx from 'clsx';
-import bcrypt from 'bcryptjs';
+// bcrypt imported dynamically on demand
 import { supabase } from '../utils/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -23,7 +23,10 @@ const DEPARTMENTS = [
 
 export default function AdminPage() {
   const { user, employees, setEmployees } = useAuth();
-  const { rooms, vehicles, documents, sendDocument, uploadDocumentFile, deleteDocument, hourCompensations = [], updateHourCompensationStatus, deleteHourCompensation, deleteEmployeeData, refresh } = useData();
+  const { rooms, vehicles } = useReservations();
+  const { documents, sendDocument, uploadDocumentFile, deleteDocument, deleteEmployeeData } = useDocuments();
+  const { hourCompensations = [], updateHourCompensationStatus, deleteHourCompensation } = useHours();
+  const { refresh } = useDataSync();
 
   // Admin Bolsa Horas filters
   const [hoursFilterFrom, setHoursFilterFrom] = useState('');
@@ -65,6 +68,11 @@ export default function AdminPage() {
   const [editEmp, setEditEmp]     = useState(null);
   const [showPassFor, setShowPassFor] = useState(null);
   const [search, setSearch]       = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
   const [roleFilter, setRoleFilter] = useState('all');
   const [deptFilter, setDeptFilter] = useState('all');
   const [showResModal, setShowResModal] = useState(false);
@@ -125,13 +133,13 @@ export default function AdminPage() {
 
   const depts = useMemo(() => [...new Set(employees.map(e => e.dept))], [employees]);
   const filtered = useMemo(() => employees.filter(e => {
-    const matchesSearch = e.name.toLowerCase().includes(search.toLowerCase()) ||
-                          e.email.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = e.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                          e.email.toLowerCase().includes(debouncedSearch.toLowerCase());
     const matchesRole = roleFilter === 'all' || e.role === roleFilter;
     const matchesDept = deptFilter === 'all' ||
       (deptFilter === 'Otros' ? !depts.slice(0, 5).includes(e.dept) : e.dept === deptFilter);
     return matchesSearch && matchesRole && matchesDept;
-  }), [employees, search, roleFilter, deptFilter, depts]);
+  }), [employees, debouncedSearch, roleFilter, deptFilter, depts]);
 
   const handleSaveEmployee = async () => {
     if (!form.name || !form.email) return;
@@ -152,7 +160,9 @@ export default function AdminPage() {
         avatar_initials: avatar
       };
       if (form.password) {
-        // Hash en frontend — el trigger de Postgres fue eliminado
+        // Hash en frontend — import dinámico
+        const bcryptModule = await import('bcryptjs');
+        const bcrypt = bcryptModule.default || bcryptModule;
         updateData.password_hash = await bcrypt.hash(form.password, 10);
         updateData.first_login = true; // Fuerza re-login con nueva contraseña
       }
@@ -162,7 +172,9 @@ export default function AdminPage() {
          setEmployees(employees.map(e => e.id === editEmp.id ? { ...e, ...form, avatar } : e));
       } else { console.error("Error al actualizar", error); return; }
     } else {
-      // Hash en frontend antes de insertar — el trigger de Postgres fue eliminado
+      // Hash en frontend antes de insertar — import dinámico
+      const bcryptModule = await import('bcryptjs');
+      const bcrypt = bcryptModule.default || bcryptModule;
       const hashedPwd = await bcrypt.hash(form.password, 10);
       const { data, error } = await supabase.from('profiles').insert([{
         name: form.name,

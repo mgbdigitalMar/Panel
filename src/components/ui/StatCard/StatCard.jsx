@@ -10,7 +10,7 @@ import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
  * StatCard — Premium animated KPI card
  * Features: count-up animation, gradient icon, hover lift, trend badge
  */
-export function StatCard({ label, value, icon, color, sub, trend, trendUp, className }) {
+export function StatCard({ label, value, icon, color, sub, trend, trendUp, loading, className }) {
   const IconComponent = Icons[icon] || Icons.HelpCircle;
 
   /* ── Count-up animation ─────────────────────────────────────── */
@@ -62,14 +62,22 @@ export function StatCard({ label, value, icon, color, sub, trend, trendUp, class
       {/* Main content */}
       <div className={styles.content}>
         {/* Animated number */}
-        <p className={styles.value} aria-label={`${label}: ${value}`}>
-          {typeof value === 'number'
-            ? <motion.span ref={displayRef}>{rounded}</motion.span>
-            : value
-          }
-        </p>
-        <p className={styles.label}>{label}</p>
-        {sub && <p className={styles.sub}>{sub}</p>}
+        {loading ? (
+          <div className="skeleton-line" style={{ width: '60%', height: 32, margin: '4px 0 8px', borderRadius: 6 }} />
+        ) : (
+          <p className={styles.value} aria-label={`${label}: ${value}`}>
+            {typeof value === 'number'
+              ? <motion.span ref={displayRef}>{rounded}</motion.span>
+              : value
+            }
+          </p>
+        )}
+        {loading ? (
+          <div className="skeleton-line" style={{ width: '40%', height: 16, borderRadius: 4 }} />
+        ) : (
+          <p className={styles.label}>{label}</p>
+        )}
+        {sub && !loading && <p className={styles.sub}>{sub}</p>}
       </div>
 
       {/* Bottom color accent bar */}

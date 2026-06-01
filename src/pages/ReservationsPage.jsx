@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth, useData } from '../context';
+import { useAuth, useReservations } from '../context';
 import { Badge, Modal, Select, Input, Textarea, Button, Card, ConfirmModal } from '../components/ui';
 import { Building, Car, Check, X, Plus, Download, Trash2 } from 'lucide-react';
 import styles from './ReservationsPage.module.scss';
@@ -8,7 +8,7 @@ import ReservationsCalendar from './ReservationsCalendar';
 
 export default function ReservationsPage() {
   const { user } = useAuth();
-  const { reservations, rooms, vehicles, createReservation, updateReservationStatus, deleteReservation } = useData();
+  const { reservations, rooms, vehicles, createReservation, updateReservationStatus, deleteReservation } = useReservations();
 
   const [tab, setTab]           = useState('all');
   const [showModal, setShowModal] = useState(false);

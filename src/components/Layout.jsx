@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useTheme, useAuth, useData } from '../context';
+import { useTheme, useAuth, useNotifs, useDocuments, useRequests, useReservations, useHours } from '../context';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, Settings, User,
   LogOut, Menu, Bell, CheckCircle, XCircle,
-  UsersRound, Timer, Check, SlidersHorizontal, Clock,
+  UsersRound, Timer, Check, SlidersHorizontal, Clock, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 import logoColor from '../assets/logos/logo-color.png';
@@ -14,6 +14,9 @@ import logoWhite from '../assets/logos/logo-white.png';
 
 import { Avatar, Button } from './ui';
 import OnboardingModal from './OnboardingModal';
+import { NotificationsDropdown } from './NotificationsDropdown';
+import { PolicyModal } from './PolicyModal';
+import { LiveToastContainer } from './LiveToastContainer';
 import styles from './Layout.module.scss';
 
 /* ── Navigation items ─────────────────────────────────────────────── */
@@ -53,6 +56,7 @@ function NavLink({ item, onNavigate, collapsed, badge, active }) {
         className={clsx(styles.navLink, { [styles.navLinkActive]: active })}
         aria-current={active ? 'page' : undefined}
         aria-label={collapsed ? item.label : undefined}
+        aria-describedby={collapsed && showTip ? `tooltip-${item.id}` : undefined}
         onMouseEnter={() => collapsed && setShowTip(true)}
         onMouseLeave={() => setShowTip(false)}
         onFocus={() => collapsed && setShowTip(true)}
@@ -80,6 +84,7 @@ function NavLink({ item, onNavigate, collapsed, badge, active }) {
             exit={{ opacity: 0, x: -4, scale: 0.96 }}
             transition={{ duration: 0.14 }}
             role="tooltip"
+            id={`tooltip-${item.id}`}
           >
             {item.label}
             {badge > 0 && <span className={styles.navTooltipBadge}>{badge}</span>}
@@ -99,14 +104,11 @@ export default function Layout({ children }) {
   const location = useLocation();
   const page = location.pathname.replace('/', '') || 'dashboard';
   const { theme } = useTheme();
-  const {
-    liveNotifs = [],
-    notifications = [], markNotifRead, markAllNotifsRead,
-    onboardingDocUrl,
-    requests = [],
-    reservations = [],
-    hourCompensations = [],
-  } = useData();
+  const { liveNotifs = [], notifications = [], markNotifRead, markAllNotifsRead } = useNotifs();
+  const { onboardingDocUrl } = useDocuments();
+  const { requests = [] } = useRequests();
+  const { reservations = [] } = useReservations();
+  const { hourCompensations = [] } = useHours();
 
   const now = useClock();
   const clockStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
@@ -173,7 +175,7 @@ export default function Layout({ children }) {
       if (notiMenuRef.current && !notiMenuRef.current.contains(e.target))
         setNotiMenu(false);
     }
-    document.addEventListener('mousedown', handler);
+    document.addEventListener('mousedown', handler, { passive: true });
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
@@ -294,7 +296,7 @@ export default function Layout({ children }) {
           className={styles.collapseBtn}
           aria-label={collapsed ? 'Ampliar menú' : 'Colapsar menú'}
         >
-          {collapsed ? '›' : '‹'}
+          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
       </aside>
 
@@ -342,7 +344,7 @@ export default function Layout({ children }) {
             {/* Page title + breadcrumbs */}
             <div className={styles.titleBlock}>
               {/* Breadcrumbs */}
-              <div className={styles.breadcrumbs} aria-label="Breadcrumb" role="navigation">
+              <div className={styles.breadcrumbs} aria-label="Breadcrumb" role="navigation" style={{ display: 'flex' }}>
                 {breadcrumbs.map((crumb, i) => (
                   <span key={crumb} className={styles.breadcrumbItem}>
                     {i > 0 && <span className={styles.breadcrumbSep} aria-hidden="true">›</span>}
@@ -411,69 +413,16 @@ export default function Layout({ children }) {
                 </motion.span>
               )}
 
-              <AnimatePresence>
-                {notiMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                    transition={{ duration: 0.15 }}
-                    className={clsx(styles.dropdown, styles.notiDropdown)}
-                    role="dialog"
-                    aria-label="Panel de notificaciones"
-                  >
-                    <div className={styles.dropdownHeader}>
-                      <p>Notificaciones</p>
-                      {unreadCount > 0 && (
-                        <Button variant="ghost" size="sm" onClick={handleMarkAllRead}>
-                          Marcar todo leído
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className={styles.notiList} role="list">
-                      {notifications.length === 0 ? (
-                        <div className={styles.emptyNoti}>
-                          <p>No hay notificaciones recientes</p>
-                        </div>
-                      ) : (
-                        notifications.map(n => {
-                          const typeIcon = n.type === 'success' ? <CheckCircle size={13} /> : n.type === 'error' ? <XCircle size={13} /> : <Bell size={13} />;
-                          const typeStyle = n.type === 'success' ? styles.notiSuccess : n.type === 'error' ? styles.notiWarning : styles.notiAccent;
-                          let entityNav = n.entity_type === 'request' ? 'requests' : n.entity_type === 'document' ? 'profile' : n.entity_type === 'hour_compensation' ? 'horas' : n.entity_type === 'reservation' ? 'reservations' : 'dashboard';
-                          if (user?.role === 'admin' && n.entity_type === 'hour_compensation') entityNav = 'admin';
-
-                          return (
-                            <div
-                              key={n.id}
-                              role="listitem"
-                              className={clsx(styles.notiItem, { [styles.notiItemRead]: n.read })}
-                              onClick={() => { markNotifRead?.(n.id); navigate('/' + entityNav); setNotiMenu(false); }}
-                              tabIndex={0}
-                              onKeyDown={e => e.key === 'Enter' && (markNotifRead?.(n.id), navigate('/' + entityNav), setNotiMenu(false))}
-                            >
-                              <div className={clsx(styles.notiIcon, typeStyle)} aria-hidden="true">
-                                {typeIcon}
-                              </div>
-                              <div className={styles.notiText}>
-                                <strong>{n.title}</strong>
-                                {n.body && <span>{n.body}</span>}
-                                <span style={{ fontSize: 10, color: 'var(--text-mut)', marginTop: 2 }}>
-                                  {new Date(n.created_at).toLocaleString('es-ES', {
-                                    day: '2-digit', month: 'short',
-                                    hour: '2-digit', minute: '2-digit',
-                                  })}
-                                </span>
-                              </div>
-                              {!n.read && <span className={styles.unreadDot} aria-label="No leída" />}
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <NotificationsDropdown 
+                notiMenu={notiMenu} 
+                setNotiMenu={setNotiMenu} 
+                unreadCount={unreadCount}
+                notifications={notifications}
+                handleMarkAllRead={handleMarkAllRead}
+                markNotifRead={markNotifRead}
+                navigate={navigate}
+                user={user}
+              />
             </div>
           </div>
         </header>
@@ -496,53 +445,7 @@ export default function Layout({ children }) {
       </div>
 
       {/* ── Live Toast Notifications ────────────────────────────── */}
-      <div
-        aria-live="polite"
-        aria-atomic="true"
-        style={{
-          position: 'fixed',
-          bottom: 'calc(24px + env(safe-area-inset-bottom))',
-          right: 24,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 10,
-          zIndex: 'var(--z-toast)',
-          pointerEvents: 'none',
-          maxWidth: 'calc(100vw - 48px)',
-        }}
-      >
-        <AnimatePresence>
-          {liveNotifs.map(n => (
-            <motion.div
-              key={n.id}
-              initial={{ opacity: 0, y: 40, scale: 0.92 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 60, scale: 0.92 }}
-              transition={{ type: 'spring', damping: 22, stiffness: 300 }}
-              style={{
-                background: 'var(--glass-bg)',
-                backdropFilter: 'var(--glass-blur)',
-                WebkitBackdropFilter: 'var(--glass-blur)',
-                border: '1px solid var(--glass-border)',
-                borderLeft: '3px solid var(--accent)',
-                borderRadius: 'var(--radius)',
-                padding: '13px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                boxShadow: 'var(--shadow-xl)',
-                width: 'min(360px, calc(100vw - 48px))',
-                pointerEvents: 'all',
-              }}
-            >
-              <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>{n.icon}</span>
-              <span style={{ color: 'var(--text)', fontWeight: 600, fontSize: 13.5, flex: 1 }}>
-                {n.msg}
-              </span>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+      <LiveToastContainer liveNotifs={liveNotifs} />
 
       {/* ── Onboarding Modal ────────────────────────────────────── */}
       <AnimatePresence>
@@ -550,102 +453,15 @@ export default function Layout({ children }) {
       </AnimatePresence>
 
       {/* ── Policy Modal (Blocking) ──────────────────────────────── */}
-      <AnimatePresence>
-        {user && user.policyAccepted !== true && (
-          <div
-            style={{
-              position: 'fixed', inset: 0,
-              backgroundColor: 'rgba(0,0,0,0.88)',
-              zIndex: 'var(--z-toast)',
-              display: 'flex',
-              flexDirection: 'column',
-              padding: 'clamp(12px, 3vw, 24px)',
-              backdropFilter: 'blur(8px)',
-            }}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Lectura obligatoria"
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 30, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              style={{
-                backgroundColor: 'var(--bg)',
-                borderRadius: 'var(--radius-xl)',
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                boxShadow: 'var(--shadow-2xl)',
-                maxWidth: 900,
-                margin: '0 auto',
-                width: '100%',
-              }}
-            >
-              <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', background: 'var(--bg-2)' }}>
-                <h2 style={{ margin: 0, fontSize: 'clamp(16px,2vw,20px)', color: 'var(--text)', letterSpacing: '-0.03em' }}>
-                  Lectura Obligatoria
-                </h2>
-                <p style={{ margin: '6px 0 0', color: 'var(--text-sec)', fontSize: 13, lineHeight: 1.6 }}>
-                  Es obligatorio leer y aceptar el <strong>Procedimiento de Normas Internas 2026</strong> para continuar.
-                </p>
-              </div>
-              <div style={{ flex: 1, background: '#f5f5f5', position: 'relative' }}>
-                <iframe
-                  src={onboardingDocUrl ? `${onboardingDocUrl}#toolbar=0` : "/Procedimiento normas internas 2026.pdf#toolbar=0"}
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
-                  title="Procedimiento de normas internas"
-                />
-              </div>
-              <div style={{
-                padding: '18px 24px',
-                borderTop: '1px solid var(--border)',
-                background: 'var(--card)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: policyTimer === 0 ? 'pointer' : 'not-allowed', opacity: policyTimer === 0 ? 1 : 0.6, userSelect: 'none' }}>
-                  <div style={{ position: 'relative', width: 22, height: 22 }}>
-                    <input 
-                      type="checkbox" 
-                      disabled={policyTimer > 0} 
-                      checked={policyRead} 
-                      onChange={e => setPolicyRead(e.target.checked)} 
-                      style={{ position: 'absolute', opacity: 0, cursor: policyTimer === 0 ? 'pointer' : 'not-allowed', width: '100%', height: '100%', margin: 0, zIndex: 2 }} 
-                    />
-                    <div style={{
-                      position: 'absolute', inset: 0,
-                      background: policyRead ? 'var(--accent)' : 'var(--bg)',
-                      border: policyRead ? '2px solid var(--accent)' : '2px solid var(--border)',
-                      borderRadius: '6px',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'all 0.2s',
-                      boxShadow: policyRead ? '0 2px 8px rgba(34,81,255,0.3)' : 'none',
-                      zIndex: 1
-                    }}>
-                      <Check size={14} color="#fff" strokeWidth={3} style={{ opacity: policyRead ? 1 : 0, transform: policyRead ? 'scale(1)' : 'scale(0.5)', transition: 'all 0.2s' }} />
-                    </div>
-                  </div>
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: policyRead ? 'var(--text)' : 'var(--text-sec)', transition: 'color 0.2s' }}>
-                    Confirmo que he leído el documento hasta el final
-                  </span>
-                </label>
-                <Button
-                  variant="primary"
-                  size="lg"
-                  icon={CheckCircle}
-                  disabled={!policyRead || policyTimer > 0}
-                  onClick={() => setCurrentUser({ id: user.id, policyAccepted: true })}
-                >
-                  {policyTimer > 0 ? `Espera ${policyTimer}s...` : 'Confirmar lectura'}
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <PolicyModal
+        user={user}
+        policyAccepted={user?.policyAccepted}
+        policyTimer={policyTimer}
+        policyRead={policyRead}
+        setPolicyRead={setPolicyRead}
+        onboardingDocUrl={onboardingDocUrl}
+        setCurrentUser={setCurrentUser}
+      />
     </div>
   );
 }

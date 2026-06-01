@@ -54,6 +54,14 @@ export function useTheme() { return useContext(ThemeCtx) }
 
 // ─── DATA CONTEXT (Requests + Reservations via Supabase) ──────
 export const DataCtx = createContext()
+export const RequestsCtx = createContext()
+export const ReservationsCtx = createContext()
+export const DocumentsCtx = createContext()
+export const HoursCtx = createContext()
+export const PersonalDaysCtx = createContext()
+export const NewsCtx = createContext()
+export const NotifsCtx = createContext()
+export const DataSyncCtx = createContext()
 
 export function DataProvider({ children }) {
   const [requests, setRequestsState]         = useState([])
@@ -960,35 +968,50 @@ const [readIds, setReadIds] = useState(() => {
   const setRequests     = (fn) => setRequestsState(fn)
   const setReservations = (fn) => setReservationsState(fn)
 
-  const contextValue = useMemo(() => {
-    const onboardingDocUrl = documents?.find(d => d.title === '__ONBOARDING_DOC__')?.fileUrl || null;
-    return {
-      requests, setRequests, reservations, setReservations,
-      rooms, vehicles,
-      documents, sendDocument, updateDocumentStatus, uploadDocumentFile, deleteDocument, onboardingDocUrl,
-      hourCompensations, createHourCompensation, updateHourCompensationStatus, deleteHourCompensation,
-      personalDays, createPersonalDay, updatePersonalDayStatus,
-      news, createNews, updateNews, deleteNews,
-      notifications, markNotifRead, markAllNotifsRead,
-      loadingData,
-      createRequest, updateRequestStatus, deleteRequest, deleteEmployeeData,
-      createReservation, updateReservationStatus, deleteReservation,
-      readIds, markRead, markAllRead,
-      liveNotifs,
-      refresh: refetchAll,
-    };
-  }, [
-    requests, reservations, rooms, vehicles, documents, hourCompensations, personalDays,
-    news, notifications, loadingData, readIds, liveNotifs
-  ])
+  const requestValue = useMemo(() => ({ requests, setRequests, createRequest, updateRequestStatus, deleteRequest }), [requests]);
+  const resValue = useMemo(() => ({ reservations, setReservations, rooms, vehicles, createReservation, updateReservationStatus, deleteReservation }), [reservations, rooms, vehicles]);
+  const docValue = useMemo(() => ({ documents, sendDocument, updateDocumentStatus, uploadDocumentFile, deleteDocument, onboardingDocUrl: documents?.find(d => d.title === '__ONBOARDING_DOC__')?.fileUrl || null, deleteEmployeeData }), [documents]);
+  const hourValue = useMemo(() => ({ hourCompensations, createHourCompensation, updateHourCompensationStatus, deleteHourCompensation }), [hourCompensations]);
+  const pdValue = useMemo(() => ({ personalDays, createPersonalDay, updatePersonalDayStatus }), [personalDays]);
+  const newsValue = useMemo(() => ({ news, createNews, updateNews, deleteNews }), [news]);
+  const notifValue = useMemo(() => ({ notifications, markNotifRead, markAllNotifsRead, readIds, markRead, markAllRead, liveNotifs }), [notifications, readIds, liveNotifs]);
+  const syncValue = useMemo(() => ({ loadingData, refresh: refetchAll }), [loadingData]);
+
+  const contextValue = useMemo(() => ({
+    ...requestValue, ...resValue, ...docValue, ...hourValue, ...pdValue, ...newsValue, ...notifValue, ...syncValue
+  }), [requestValue, resValue, docValue, hourValue, pdValue, newsValue, notifValue, syncValue]);
 
   return (
-    <DataCtx.Provider value={contextValue}>
-      {children}
-    </DataCtx.Provider>
+    <DataSyncCtx.Provider value={syncValue}>
+      <NotifsCtx.Provider value={notifValue}>
+        <NewsCtx.Provider value={newsValue}>
+          <PersonalDaysCtx.Provider value={pdValue}>
+            <HoursCtx.Provider value={hourValue}>
+              <DocumentsCtx.Provider value={docValue}>
+                <ReservationsCtx.Provider value={resValue}>
+                  <RequestsCtx.Provider value={requestValue}>
+                    <DataCtx.Provider value={contextValue}>
+                      {children}
+                    </DataCtx.Provider>
+                  </RequestsCtx.Provider>
+                </ReservationsCtx.Provider>
+              </DocumentsCtx.Provider>
+            </HoursCtx.Provider>
+          </PersonalDaysCtx.Provider>
+        </NewsCtx.Provider>
+      </NotifsCtx.Provider>
+    </DataSyncCtx.Provider>
   )
 }
 export function useData() { return useContext(DataCtx) }
+export function useRequests() { return useContext(RequestsCtx) }
+export function useReservations() { return useContext(ReservationsCtx) }
+export function useDocuments() { return useContext(DocumentsCtx) }
+export function useHours() { return useContext(HoursCtx) }
+export function usePersonalDays() { return useContext(PersonalDaysCtx) }
+export function useNews() { return useContext(NewsCtx) }
+export function useNotifs() { return useContext(NotifsCtx) }
+export function useDataSync() { return useContext(DataSyncCtx) }
 
 
 // ─── AUTH CONTEXT (Supabase Auth + profiles table) ────────────

@@ -1,5 +1,27 @@
 @import './variables.scss';
 
+/* ── Skip Navigation Link — Accessibility ──────────────────────────── */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  z-index: calc(var(--z-toast) + 1);
+  padding: 10px 20px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: top 0.15s var(--ease-out);
+
+  &:focus {
+    top: 16px;
+    outline: none;
+    box-shadow: var(--shadow-accent);
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    GLOBAL STYLES — Margube Intranet v2
    Cinematic Dark Glass — Premium Enterprise SaaS
@@ -213,23 +235,26 @@ img, svg, video { display: block; max-width: 100%; }
 /* ═══════════════════════════════════════════════════════════════════
    RESPONSIVE VISIBILITY UTILITIES
 ═══════════════════════════════════════════════════════════════════ */
-.hide-mobile {
-  @media (max-width: 767px) { display: none !important; }
-}
-.show-mobile {
-  display: none !important;
-  @media (max-width: 767px) { display: flex !important; }
-}
-.hide-tablet {
-  @media (max-width: 1023px) { display: none !important; }
-}
-.show-tablet {
-  display: none !important;
-  @media (max-width: 1023px) { display: flex !important; }
-}
-.hide-xs {
-  @media (max-width: 479px) { display: none !important; }
-}
+/* ─── xs: 0–479px ─────────────────────────────────────────────────── */
+.hide-xs  { @media (max-width: 479px)  { display: none !important; } }
+.show-xs  { display: none !important; @media (max-width: 479px)  { display: flex !important; } }
+
+/* ─── sm: 480–767px ───────────────────────────────────────────────── */
+.hide-sm  { @media (max-width: 479px)  { display: none !important; } } // kept for compat
+.hide-mobile { @media (max-width: 767px)  { display: none !important; } }
+.show-mobile { display: none !important; @media (max-width: 767px)  { display: flex !important; } }
+
+/* ─── md: 768–1023px ──────────────────────────────────────────────── */
+.hide-tablet { @media (max-width: 1023px) { display: none !important; } }
+.show-tablet { display: none !important; @media (max-width: 1023px) { display: flex !important; } }
+
+/* ─── lg: 1024–1439px ─────────────────────────────────────────────── */
+.hide-desktop { @media (min-width: 1024px) { display: none !important; } }
+.show-desktop { display: none !important; @media (min-width: 1024px) { display: flex !important; } }
+
+/* ─── xl: 1440px+ ─────────────────────────────────────────────────── */
+.hide-xl { @media (min-width: 1440px) { display: none !important; } }
+.show-xl { display: none !important; @media (min-width: 1440px) { display: flex !important; } }
 
 /* ═══════════════════════════════════════════════════════════════════
    PAGE LAYOUT UTILITIES
@@ -469,12 +494,41 @@ img, svg, video { display: block; max-width: 100%; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Canonical breathe animation ─────────────────────────────────── */
+/* Used by: Layout blobs, DashboardPage banner. DO NOT re-define elsewhere. */
+@keyframes breathe {
+  0%, 100% { transform: scale(1);    opacity: 0.7; }
+  50%       { transform: scale(1.06); opacity: 1;   }
+}
+
 /* Skeleton loading — premium shimmer */
 .skeleton {
   background: var(--shimmer-bg);
   background-size: 200% 100%;
   animation: shimmer 1.8s ease-in-out infinite;
   border-radius: var(--radius-sm);
+}
+
+/* ── Skeleton composites ──────────────────────────────────────────── */
+.skeleton-line {
+  height: 12px;
+  border-radius: var(--radius-full);
+  background: var(--shimmer-bg);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+
+  &--sm  { height: 10px; }
+  &--lg  { height: 16px; }
+  &--xl  { height: 20px; }
+}
+
+.skeleton-card {
+  background: var(--shimmer-bg);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  overflow: hidden;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -960,4 +1014,67 @@ input[type=number] { -moz-appearance: textfield; }
   background-clip: text;
   font-weight: 800;
   letter-spacing: -0.04em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SPACING UTILITY CLASSES — 8px grid
+═══════════════════════════════════════════════════════════════════ */
+
+.gap-2  { gap: var(--space-2);  }
+.gap-3  { gap: var(--space-3);  }
+.gap-4  { gap: var(--space-4);  }
+.gap-6  { gap: var(--space-6);  }
+.gap-8  { gap: var(--space-8);  }
+
+.mt-4   { margin-top: var(--space-4);    }
+.mt-6   { margin-top: var(--space-6);    }
+.mt-8   { margin-top: var(--space-8);    }
+.mb-4   { margin-bottom: var(--space-4); }
+.mb-6   { margin-bottom: var(--space-6); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   FLEX / LAYOUT UTILITIES
+═══════════════════════════════════════════════════════════════════ */
+
+.flex            { display: flex; }
+.flex-col        { display: flex; flex-direction: column; }
+.items-center    { align-items: center; }
+.justify-between { justify-content: space-between; }
+.flex-1          { flex: 1; }
+.min-w-0         { min-width: 0; }
+.flex-shrink-0   { flex-shrink: 0; }
+
+/* ── Touch-target helper ───────────────────────────────────────────── */
+/* Ensures interactive elements meet 44×44px minimum for touch */
+.touch-target {
+  min-width:  44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CARD HOVER — Consistent elevation lift (add to any .card)
+═══════════════════════════════════════════════════════════════════ */
+
+.card-interactive {
+  transition:
+    transform         0.22s var(--ease-cinematic),
+    box-shadow        0.22s var(--ease-cinematic),
+    border-color      0.22s var(--ease-cinematic),
+    background-color  0.22s var(--ease-cinematic);
+
+  &:hover {
+    transform:    translateY(-2px);
+    box-shadow:   var(--shadow-lg);
+    border-color: rgba(var(--accent-rgb), 0.20) !important;
+  }
+
+  &:active { transform: translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: box-shadow 0.22s var(--ease-out);
+    &:hover, &:active { transform: none; }
+  }
 }

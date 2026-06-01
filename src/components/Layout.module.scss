@@ -72,10 +72,7 @@
   opacity: 0.7;
 }
 
-@keyframes breathe {
-  0%, 100% { transform: scale(1); opacity: 0.7; }
-  50%       { transform: scale(1.06); opacity: 1; }
-}
+
 
 [data-theme='dark'] {
   .bgBlob1 {
@@ -461,10 +458,13 @@
     color: white;
     border-color: var(--accent);
     box-shadow: var(--shadow-accent);
-    transform: scale(1.1);
+    transform: scale(1.15);
   }
 
-  &:active { transform: scale(0.95); }
+  &:active { transform: scale(0.92); }
+
+  /* On tablet/mobile the sidebar is hidden so hide the btn too */
+  @media (max-width: 1023px) { display: none; }
 }
 
 /* ── User bottom section ──────────────────────────────────────────── */
@@ -1129,9 +1129,32 @@
   .collapseBtn { display: none; }
 }
 
-/* Ultrawide */
+/* xs: 0–479px */
+@media (max-width: 479px) {
+  .header {
+    top: 8px;
+    margin: 0 8px 12px;
+    padding: 0 12px;
+  }
+
+  /* Full-width notification dropdown on very small phones */
+  .notiDropdown {
+    position: fixed;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    top: calc(var(--header-h-mobile) + 12px);
+  }
+
+  /* More breathing room for content */
+  .content {
+    padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Ultrawide (1920px+) */
 @media (min-width: 1920px) {
   .content {
-    padding: 40px clamp(40px, 5vw, 80px);
+    padding: 40px clamp(40px, 5vw, 80px) calc(40px + env(safe-area-inset-bottom));
   }
 }

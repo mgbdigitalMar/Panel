@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useAuth, useData } from '../context';
+import { useAuth, useHours } from '../context';
 import { Card, Button, Input, Modal, Avatar } from '../components/ui';
 import { Clock, Inbox, CheckCircle, XCircle, Download, Timer, PenTool, TrendingDown, TrendingUp, Minus, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -84,7 +84,7 @@ const MODE_CONFIG = {
 
 export default function HorasPage() {
   const { user, employees = [] } = useAuth();
-  const { hourCompensations = [], createHourCompensation } = useData();
+  const { hourCompensations = [], createHourCompensation } = useHours();
 
   const [tab, setTab]   = useState('nueva');
   const [mode, setMode] = useState('ya');

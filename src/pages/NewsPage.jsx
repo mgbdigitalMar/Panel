@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth, useData } from '../context';
+import { useAuth, useNews } from '../context';
 import { Avatar, Badge, Modal, Input, Select, Textarea, Button, Card, ConfirmModal } from '../components/ui';
 import { Edit2, Trash2, Pin, Plus, Newspaper } from 'lucide-react';
 import styles from './NewsPage.module.scss';
@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function NewsPage() {
   const { user } = useAuth();
-  const { news, createNews, updateNews, deleteNews } = useData();
+  const { news, createNews, updateNews, deleteNews } = useNews();
   const [tab, setTab]             = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem]   = useState(null);

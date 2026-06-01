@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useTheme, useData, useAuth } from '../context';
+import { useTheme, useAuth } from '../context';
 import { Card, Avatar } from '../components/ui';
 import {
   Sun, Moon, Monitor, Layers, BellRing, BellOff, Volume2, VolumeX,

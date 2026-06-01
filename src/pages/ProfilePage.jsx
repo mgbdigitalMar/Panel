@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth, useData } from "../context";
+import { useAuth, useDocuments } from "../context";
 import { Input, Button, Card, Select, Badge } from "../components/ui";
 import {
   Save,
@@ -18,8 +18,10 @@ import {
 import styles from "./ProfilePage.module.scss";
 import clsx from "clsx";
 import { supabase } from "../utils/supabase";
-import bcrypt from "bcryptjs";
+// bcrypt is dynamically imported on demand to save bundle size
 import { motion } from "framer-motion";
+import { useAutoDismiss } from "../hooks/useAutoDismiss";
+
 
 const container = {
   hidden: {},
@@ -53,7 +55,7 @@ function getViewerUrl(url) {
 
 export default function ProfilePage() {
   const { user, setCurrentUser, employees } = useAuth();
-  const { documents, updateDocumentStatus } = useData();
+  const { documents, updateDocumentStatus } = useDocuments();
 
   // Only show documents explicitly sent to the current user
   const myDocs = (documents || []).filter(
@@ -74,6 +76,10 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [workModeLoading, setWorkModeLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  // Auto-dismiss success/error messages after 4 seconds
+  useAutoDismiss(message, setMessage, 4000);
+
 
   const handleWorkModeChange = async (mode) => {
     if (mode === form.workMode) return;
@@ -107,6 +113,9 @@ export default function ProfilePage() {
     }
     setLoading(true);
     try {
+      const bcryptModule = await import("bcryptjs");
+      const bcrypt = bcryptModule.default || bcryptModule;
+
       const { data: profile } = await supabase
         .from("profiles")
         .select("password_hash")
@@ -431,6 +440,8 @@ export default function ProfilePage() {
             styles.message,
             message.includes("Error") ? styles.error : styles.success,
           )}
+          role="status"
+          aria-live="polite"
         >
           {message}
         </div>

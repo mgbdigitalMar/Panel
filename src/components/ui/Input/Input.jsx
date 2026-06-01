@@ -13,27 +13,43 @@ export function Input({
   hint,
   error,
   className,
+  rightElement,   // ← e.g. an eye-toggle <button>
+  autoFocus,
+  id,
   ...props
 }) {
   return (
     <div className={clsx(styles.container, className)}>
       {label && (
-        <label className={styles.label} htmlFor={props.id}>
+        <label className={styles.label} htmlFor={id}>
           {label} {required && <span className={styles.asterisk}>*</span>}
         </label>
       )}
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={clsx(styles.input, { [styles.hasError]: !!error })}
-        {...props}
-      />
+      <div className={clsx(styles.inputWrap, { [styles.hasRight]: !!rightElement })}>
+        <input
+          id={id}
+          type={type}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+          autoFocus={autoFocus}
+          aria-invalid={!!error}
+          aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+          className={clsx(styles.input, {
+            [styles.hasError]: !!error,
+            [styles.withRight]: !!rightElement,
+          })}
+          {...props}
+        />
+        {rightElement && (
+          <span className={styles.rightElement}>{rightElement}</span>
+        )}
+      </div>
       <AnimatePresence>
         {(hint || error) && (
           <motion.p 
+            id={error ? `${id}-error` : `${id}-hint`}
             initial={{ opacity: 0, y: -5 }} 
             animate={{ opacity: 1, y: 0 }} 
             exit={{ opacity: 0, y: -5 }}

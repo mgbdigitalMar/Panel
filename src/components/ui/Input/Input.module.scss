@@ -126,3 +126,34 @@
 .hintError {
   color: var(--danger);
 }
+
+/* ── rightElement support ────────────────────────────────────────── */
+.inputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* When there's a right element, the input needs extra right padding */
+.withRight {
+  padding-right: 48px;
+}
+
+/* Absolute positioning of the right element inside the input */
+.rightElement {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 4px;
+  pointer-events: all; /* allow clicks through */
+}
+
+/* iOS zoom prevention for all inputs on small screens */
+@media (max-width: 479px) {
+  .input { font-size: 16px; }
+}

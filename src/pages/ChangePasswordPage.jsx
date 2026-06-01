@@ -9,7 +9,7 @@ import styles from './LoginPage.module.scss';
 import inputStyles from '../components/ui/Input/Input.module.scss';
 import clsx from 'clsx';
 import { supabase } from '../utils/supabase';
-import bcrypt from 'bcryptjs';
+// bcrypt imported dynamically on demand
 
 export default function ChangePasswordPage() {
   const { user, setCurrentUser, setNeedsOnboarding, setLastActivity } = useAuth();
@@ -29,10 +29,10 @@ export default function ChangePasswordPage() {
 
   useEffect(() => {
     const handleActivity = resetIdle;
-    document.addEventListener('mousemove', handleActivity);
-    document.addEventListener('keydown', handleActivity);
-    document.addEventListener('click', handleActivity);
-    document.addEventListener('scroll', handleActivity);
+    document.addEventListener('mousemove', handleActivity, { passive: true });
+    document.addEventListener('keydown', handleActivity, { passive: true });
+    document.addEventListener('click', handleActivity, { passive: true });
+    document.addEventListener('scroll', handleActivity, { passive: true });
     return () => {
       document.removeEventListener('mousemove', handleActivity);
       document.removeEventListener('keydown', handleActivity);
@@ -55,6 +55,8 @@ export default function ChangePasswordPage() {
     // Hasheamos la contraseña en el frontend con bcrypt (el trigger de Postgres fue eliminado).
     // saltRounds=10 → hash $2a$10$... compatible con bcrypt.compareSync en login.
     console.log('Hasheando contraseña con bcrypt (frontend)...');
+    const bcryptModule = await import('bcryptjs');
+    const bcrypt = bcryptModule.default || bcryptModule;
     const hashedPassword = await bcrypt.hash(newPass, 10);
 
     // Update DB con el hash bcrypt

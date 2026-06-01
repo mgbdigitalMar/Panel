@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useData } from '../context';
+import { useReservations } from '../context';
 import { Building, Car, ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './ReservationsCalendar.module.scss';
 import clsx from 'clsx';
@@ -36,7 +36,7 @@ function dateString(y, m, d) {
 }
 
 export default function ReservationsCalendar() {
-  const { reservations } = useData();
+  const { reservations } = useReservations();
   const [viewMode, setViewMode] = useState('month');
   const [base, setBase] = useState(new Date());
 

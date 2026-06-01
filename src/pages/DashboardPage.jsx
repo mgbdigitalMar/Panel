@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { useAuth, useApp, useData } from '../context';
+import { useAuth, useApp, useReservations, useRequests, useNews } from '../context';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, Badge, StatCard, Card, Button } from '../components/ui';
 import {
@@ -10,6 +10,8 @@ import styles from './DashboardPage.module.scss';
 import { Users, Calendar, Inbox, Newspaper, Pin, Gift, Car, Building, ArrowRight, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
+import { useCountUp } from '../hooks/useCountUp';
+
 
 // ── Chart data helpers ────────────────────────────────────
 const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
@@ -74,25 +76,6 @@ const CHART_COLORS = {
   danger:  '#DC2626',
 };
 
-// ── Animated counter hook ──────────────────────────────────────────
-function useCountUp(target, duration = 800) {
-  const [count, setCount] = useState(0);
-  const raf = useRef(null);
-  useEffect(() => {
-    let start = null;
-    const from = 0;
-    const step = (ts) => {
-      if (!start) start = ts;
-      const progress = Math.min((ts - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-      setCount(Math.round(from + (target - from) * ease));
-      if (progress < 1) raf.current = requestAnimationFrame(step);
-    };
-    raf.current = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf.current);
-  }, [target, duration]);
-  return count;
-}
 
 // ── Custom glassmorphic tooltip ────────────────────────────────────
 function GlassTooltip({ active, payload, label }) {
@@ -123,7 +106,9 @@ const item = {
 export default function DashboardPage() {
   const { user, employees } = useAuth();
   const navigate = useNavigate();
-  const { reservations, requests, news } = useData();
+  const { reservations } = useReservations();
+  const { requests } = useRequests();
+  const { news } = useNews();
 
   // Month navigator — starts on the current real month
   const today = new Date();
@@ -259,14 +244,19 @@ const tooltipStyle = {
             <p className={styles.welcomeMotivation}>
               ✦ {motivation}
             </p>
-            {/* Workday Progress Bar */}
+            {/* Workday Progress Bar — animates from 0 on mount */}
             <div className={styles.progressContainer}>
               <div className={styles.progressText}>
                 <span>Progreso de jornada laboral</span>
                 <span>{Math.round(workdayProgress)}%</span>
               </div>
               <div className={styles.progressTrack}>
-                <div className={styles.progressBar} style={{ width: `${workdayProgress}%` }} />
+                <motion.div
+                  className={styles.progressBar}
+                  initial={{ width: '0%' }}
+                  animate={{ width: `${workdayProgress}%` }}
+                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+                />
               </div>
             </div>
           </div>
