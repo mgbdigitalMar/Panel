@@ -468,8 +468,10 @@ export default function AdminPage() {
                         title: 'Eliminar sala',
                         message: '¿Estás seguro de que deseas eliminar esta sala? Esta acción no se puede deshacer.',
                         action: async () => {
+                          await supabase.from('reservations').delete().eq('room_id', room.id);
                           const { error } = await supabase.from('rooms').delete().eq('id', room.id);
-                          if (!error) refresh();
+                          if (error) alert('Error al eliminar sala: ' + error.message);
+                          refresh();
                         }
                       });
                     }} title="Eliminar" />
@@ -521,8 +523,10 @@ export default function AdminPage() {
                         title: 'Eliminar vehículo',
                         message: '¿Estás seguro de que deseas eliminar este vehículo? Esta acción no se puede deshacer.',
                         action: async () => {
+                          await supabase.from('reservations').delete().eq('vehicle_id', v.id);
                           const { error } = await supabase.from('vehicles').delete().eq('id', v.id);
-                          if (!error) refresh();
+                          if (error) alert('Error al eliminar vehículo: ' + error.message);
+                          refresh();
                         }
                       });
                     }} title="Eliminar" />

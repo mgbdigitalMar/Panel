@@ -5,7 +5,8 @@ import {
   User, UsersRound, Timer, Search, Command, ChevronRight,
   LogOut,
 } from 'lucide-react';
-import { useApp, useAuth } from '../context';
+import { useAuth } from '../context';
+import { useNavigate } from 'react-router-dom';
 import styles from './CommandPalette.module.scss';
 
 /* ── Navigation items (mirrors Layout.jsx) ──────────────────── */
@@ -22,7 +23,7 @@ const ALL_ITEMS = [
 
 /* ── CommandPalette ─────────────────────────────────────────── */
 export default function CommandPalette({ open, onClose }) {
-  const { navigate } = useApp();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(0);
@@ -61,7 +62,7 @@ export default function CommandPalette({ open, onClose }) {
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (items[selected]) {
-        navigate(items[selected].id);
+        navigate('/' + items[selected].id);
         onClose();
       }
     } else if (e.key === 'Escape') {
@@ -79,7 +80,7 @@ export default function CommandPalette({ open, onClose }) {
   useEffect(() => { setSelected(0); }, [query]);
 
   const handleSelect = (id) => {
-    navigate(id);
+    navigate('/' + id);
     onClose();
   };
 

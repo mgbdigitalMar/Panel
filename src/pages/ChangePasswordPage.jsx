@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useAuth, useApp, useTheme } from '../context';
+import { useAuth, useTheme } from '../context';
+import { useNavigate } from 'react-router-dom';
 import logoColor from '../assets/logos/logo-color.png';
 import logoWhite from '../assets/logos/logo-white.png';
 import { Card, Button } from '../components/ui';
@@ -12,7 +13,7 @@ import bcrypt from 'bcryptjs';
 
 export default function ChangePasswordPage() {
   const { user, setCurrentUser, setNeedsOnboarding, setLastActivity } = useAuth();
-  const { navigate } = useApp();
+  const navigate = useNavigate();
   const { theme } = useTheme();
 
   const [newPass, setNewPass]   = useState('');
@@ -90,14 +91,14 @@ export default function ChangePasswordPage() {
   setSuccess('¡Contraseña guardada exitosamente! Iniciando sesión...');
   setTimeout(() => {
     setLoading(false);
-    navigate('dashboard');
+    navigate('/dashboard');
   }, 1500);
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{ justifyContent: 'center', alignItems: 'center', padding: '24px' }}>
       <div className={styles.wrapper}>
-        <div className={styles.logoContainer} style={{ marginBottom: 32 }}>
+        <div className={styles.logoContainer} style={{ marginBottom: 32, display: 'block' }}>
 <img src={theme === 'dark' ? logoWhite : logoColor} alt="Margube" style={{ width: '200px', height: 'auto', margin: '0 auto 24px', display: 'block' }} />
           <h1 className={styles.welcomeTitle} style={{ fontSize: 24, marginBottom: 8 }}>
             Primer acceso

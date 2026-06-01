@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
 import bcrypt from 'bcryptjs'
 import { MOCK_DOCUMENTS, MOCK_HOUR_COMPENSATIONS } from '../data/mockData'
@@ -369,15 +370,48 @@ const [readIds, setReadIds] = useState(() => {
       Notification.requestPermission()
     }
 
+    const playNotificationSound = () => {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.1);
+        
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.5);
+      } catch (e) {
+        console.warn('Audio play failed', e);
+      }
+    };
+
     const pushNotif = (icon, msg) => {
       const id = Date.now()
       setLiveNotifs(prev => [{ id, icon, msg }, ...prev.slice(0, 4)])
       // Auto-dismiss after 6 s
       setTimeout(() => setLiveNotifs(prev => prev.filter(n => n.id !== id)), 6000)
 
-      // Native desktop notification if tab is in background
-      if (document.visibilityState !== 'visible' && 'Notification' in window && Notification.permission === 'granted') {
-        new Notification('Margube Intranet', { body: `${icon} ${msg}` })
+      // Reproducir sonido siempre que llega una notificación
+      playNotificationSound();
+
+      // Native desktop notification si la ventana no está en foco (segundo plano o minimizada)
+      if (!document.hasFocus() && 'Notification' in window && Notification.permission === 'granted') {
+        const n = new Notification('Margube Intranet', { body: `${icon} ${msg}` })
+        n.onclick = () => {
+          window.focus()
+          n.close()
+        }
       }
     }
 
@@ -658,9 +692,26 @@ const [readIds, setReadIds] = useState(() => {
   }
 
   const createReservation = async (employeeId, payload) => {
+    // Buscar nombre del recurso si no viene en payload
+    let rName = payload.resourceName;
+    if (!rName) {
+      if (payload.type === 'room') {
+        rName = rooms.find(r => r.id === payload.room_id)?.name || 'Sala';
+      } else {
+        rName = vehicles.find(v => v.id === payload.vehicle_id)?.model || 'Vehículo';
+      }
+    }
+
     const { data, error } = await supabase.from('reservations').insert([{
       employee_id: employeeId,
-      ...payload,
+      type: payload.type,
+      room_id: payload.room_id,
+      vehicle_id: payload.vehicle_id,
+      date: payload.date,
+      time_start: payload.time_start,
+      time_end: payload.time_end,
+      purpose: payload.purpose,
+      status: payload.status
     }]).select().single()
     if (error) { 
       console.error(error); 
@@ -671,7 +722,7 @@ const [readIds, setReadIds] = useState(() => {
     // Notify admins
     const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado'
     await notifyAdmins({
-      title: `📅 Nueva reserva: ${payload.resourceName}`,
+      title: `📅 Nueva reserva: ${rName}`,
       body: `${empName} ha realizado una reserva de ${payload.type === 'room' ? 'sala' : 'vehículo'}.`,
       type: 'info',
       entityType: 'reservation',
@@ -922,7 +973,8 @@ export function useData() { return useContext(DataCtx) }
 // ─── AUTH CONTEXT (Supabase Auth + profiles table) ────────────
 export const AuthCtx = createContext()
 
-export function AuthProvider({ children, navigate }) {
+export function AuthProvider({ children }) {
+  const navigate = useNavigate();
   const [user, setUser]                     = useState(null)
   const [employees, setEmployeesState]      = useState([])
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
@@ -995,8 +1047,8 @@ export function AuthProvider({ children, navigate }) {
             setUser(mapped)
 
             await loadAllEmployees()
-            if (mapped.firstLogin === true || mapped.firstLogin === 'true') navigate('changePassword')
-            else navigate('dashboard')
+            if (mapped.firstLogin === true || mapped.firstLogin === 'true') navigate('/changePassword')
+            else navigate('/dashboard')
           } else {
             clearSession()
           }
@@ -1014,7 +1066,7 @@ export function AuthProvider({ children, navigate }) {
       localStorage.removeItem('margube_tabId')
       bc.postMessage({ type: 'logout' })
       setUser(null)
-      navigate('login')
+      navigate('/login')
     }
     
     restoreSession()
@@ -1153,8 +1205,8 @@ export function AuthProvider({ children, navigate }) {
     localStorage.setItem('margube_session', JSON.stringify({ id: mapped.id, tabId, lastActivity: Date.now() }))
     
     await loadAllEmployees()
-    if (mapped.firstLogin === true || mapped.firstLogin === 'true') navigate('changePassword')
-    else navigate('dashboard')
+    if (mapped.firstLogin === true || mapped.firstLogin === 'true') navigate('/changePassword')
+    else navigate('/dashboard')
     
     setLastActivity(Date.now())
     return { ok: true }
@@ -1172,7 +1224,7 @@ export function AuthProvider({ children, navigate }) {
     setUser(null)
     setEmployeesState([])
     setNeedsOnboarding(false)
-    navigate('login')
+    navigate('/login')
   }
 
   // ── Update own profile ────────────────────────────────────

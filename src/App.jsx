@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ThemeProvider, AuthProvider, AuthCtx, AppCtx, DataProvider, useAuth } from './context'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 import Layout             from './components/Layout'
 import { Suspense, lazy } from 'react'
@@ -33,41 +34,75 @@ function LoadingScreen() {
   )
 }
 
-function AppShell() {
-  const [page, setPage] = useState('login')
-  const navigate = p => setPage(p)
-
+function ProtectedRoute({ children }) {
   return (
-    <AuthProvider navigate={navigate}>
-      <AuthCtx.Consumer>
-        {({ user, authLoading }) => {
-          if (authLoading) return <LoadingScreen />
-          return (
-            <AppCtx.Provider value={{ page, navigate }}>
-              <DataProvider>
-                <Suspense fallback={<LoadingScreen />}>
-                  {page === 'login'          && <LoginPage />}
-                  {page === 'changePassword' && <ChangePasswordPage />}
-                  {page !== 'login' && page !== 'changePassword' && (
-                    <Layout>
-                      {page === 'dashboard'    && <DashboardPage />}
-                      {page === 'reservations' && <ReservationsPage />}
-                      {page === 'requests'     && <RequestsPage />}
-                      {page === 'horas'        && <HorasPage />}
-                      {page === 'news'         && <NewsPage />}
-                      {page === 'profile'      && <ProfilePage />}
-                      {page === 'employees'    && <EmployeesPage />}
-                      {page === 'admin'        && (user?.role === 'admin' ? <AdminPage /> : <DashboardPage />)}
-                      {page === 'settings'     && <SettingsPage />}
-                    </Layout>
-                  )}
-                </Suspense>
-              </DataProvider>
-            </AppCtx.Provider>
-          )
-        }}
-      </AuthCtx.Consumer>
-    </AuthProvider>
+    <AuthCtx.Consumer>
+      {({ user, authLoading }) => {
+        if (authLoading) return <LoadingScreen />
+        if (!user) return <Navigate to="/login" replace />
+        return (
+          <Layout>
+            {children}
+          </Layout>
+        )
+      }}
+    </AuthCtx.Consumer>
+  )
+}
+
+function AdminRoute({ children }) {
+  return (
+    <AuthCtx.Consumer>
+      {({ user }) => {
+        if (user?.role !== 'admin') return <Navigate to="/dashboard" replace />
+        return children
+      }}
+    </AuthCtx.Consumer>
+  )
+}
+
+function AppShell() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AuthCtx.Consumer>
+          {({ authLoading }) => {
+            if (authLoading) return <LoadingScreen />
+            return (
+              <AppCtx.Provider value={{}}> {/* AppCtx ya no maneja navegación, pero lo mantenemos si algo más lo requiere */}
+                <DataProvider>
+                  <Suspense fallback={<LoadingScreen />}>
+                    <Routes>
+                      {/* Rutas Públicas */}
+                      <Route path="/login" element={<LoginPage />} />
+                      <Route path="/changePassword" element={<ChangePasswordPage />} />
+                      
+                      {/* Rutas Protegidas */}
+                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                      
+                      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                      <Route path="/reservations" element={<ProtectedRoute><ReservationsPage /></ProtectedRoute>} />
+                      <Route path="/requests" element={<ProtectedRoute><RequestsPage /></ProtectedRoute>} />
+                      <Route path="/horas" element={<ProtectedRoute><HorasPage /></ProtectedRoute>} />
+                      <Route path="/news" element={<ProtectedRoute><NewsPage /></ProtectedRoute>} />
+                      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                      <Route path="/employees" element={<ProtectedRoute><EmployeesPage /></ProtectedRoute>} />
+                      <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                      
+                      {/* Ruta Admin */}
+                      <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPage /></AdminRoute></ProtectedRoute>} />
+                      
+                      {/* Fallback */}
+                      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                    </Routes>
+                  </Suspense>
+                </DataProvider>
+              </AppCtx.Provider>
+            )
+          }}
+        </AuthCtx.Consumer>
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
 

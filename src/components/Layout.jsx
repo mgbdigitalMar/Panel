@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useTheme, useAuth, useApp, useData } from '../context';
+import { useTheme, useAuth, useData } from '../context';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import {
@@ -18,14 +19,14 @@ import styles from './Layout.module.scss';
 /* ── Navigation items ─────────────────────────────────────────────── */
 const navItems = [
   { id: 'dashboard',    label: 'Dashboard',         icon: LayoutDashboard },
-  { id: 'reservations', label: 'Reservas',           icon: Calendar },
+  { id: 'reservations', label: 'Reservas',           icon: Calendar,    badgeKey: 'reservations' },
   { id: 'requests',     label: 'Solicitudes',        icon: Inbox,       badgeKey: 'requests' },
   { id: 'horas',        label: 'Control de Tiempo',  icon: Timer },
   { id: 'news',         label: 'Noticias y Eventos', icon: Newspaper },
   { id: 'employees',    label: 'Equipo',             icon: UsersRound },
 ];
 const adminItems = [
-  { id: 'admin', label: 'Administración', icon: Settings },
+  { id: 'admin', label: 'Administración', icon: Settings, badgeKey: 'admin' },
 ];
 const settingsItem = { id: 'settings', label: 'Ajustes', icon: SlidersHorizontal };
 const allItems = [...navItems, ...adminItems, settingsItem];
@@ -41,10 +42,8 @@ function useClock() {
 }
 
 /* ═ Single Nav Link ═════════════════════════════════════════════════════ */
-function NavLink({ item, onNavigate, collapsed, badge }) {
+function NavLink({ item, onNavigate, collapsed, badge, active }) {
   const Icon = item.icon;
-  const { page } = useApp();
-  const active = page === item.id;
   const [showTip, setShowTip] = useState(false);
 
   return (
@@ -96,13 +95,17 @@ function NavLink({ item, onNavigate, collapsed, badge }) {
 ════════════════════════════════════════════════════════════════════ */
 export default function Layout({ children }) {
   const { user, logout, needsOnboarding, setLastActivity, setCurrentUser } = useAuth();
-  const { theme, toggle } = useTheme();
-  const { page, navigate } = useApp();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const page = location.pathname.replace('/', '') || 'dashboard';
+  const { theme } = useTheme();
   const {
     liveNotifs = [],
     notifications = [], markNotifRead, markAllNotifsRead,
     onboardingDocUrl,
     requests = [],
+    reservations = [],
+    hourCompensations = [],
   } = useData();
 
   const now = useClock();
@@ -110,7 +113,16 @@ export default function Layout({ children }) {
 
   /* ── Pending counts for nav badges ─────────────────────────────────── */
   const pendingRequestsCount = requests.filter(r => r.status === 'pending').length;
-  const navBadges = { requests: pendingRequestsCount };
+  const pendingReservationsCount = user?.role === 'admin' 
+    ? reservations.filter(r => r.status === 'pending').length
+    : reservations.filter(r => r.status === 'pending' && r.employeeId === user?.id).length;
+  const pendingAdminCount = hourCompensations.filter(h => h.status === 'pending').length;
+  
+  const navBadges = { 
+    requests: pendingRequestsCount, 
+    reservations: pendingReservationsCount,
+    admin: pendingAdminCount
+  };
 
   /* ── UI state ────────────────────────────────────────────── */
   const [sideOpen, setSideOpen] = useState(false);
@@ -171,7 +183,7 @@ export default function Layout({ children }) {
 
   /* ── Navigation handler ─────────────────────────────────────────── */
   const handleNavigate = useCallback((id) => {
-    navigate(id);
+    navigate('/' + id);
     setSideOpen(false);
   }, [navigate]);
 
@@ -208,6 +220,7 @@ export default function Layout({ children }) {
               onNavigate={handleNavigate}
               collapsed={isCollapsed}
               badge={i.badgeKey ? navBadges[i.badgeKey] || 0 : 0}
+              active={page === i.id}
             />
           ))}
 
@@ -216,7 +229,7 @@ export default function Layout({ children }) {
               <div className={styles.navDivider} />
               <p className={styles.navSectionLabel}>Admin</p>
               {adminItems.map(i => (
-                <NavLink key={i.id} item={i} onNavigate={handleNavigate} collapsed={isCollapsed} badge={0} />
+                <NavLink key={i.id} item={i} onNavigate={handleNavigate} collapsed={isCollapsed} badge={0} active={page === i.id} />
               ))}
             </>
           )}
@@ -435,9 +448,9 @@ export default function Layout({ children }) {
                               key={n.id}
                               role="listitem"
                               className={clsx(styles.notiItem, { [styles.notiItemRead]: n.read })}
-                              onClick={() => { markNotifRead?.(n.id); navigate(entityNav); setNotiMenu(false); }}
+                              onClick={() => { markNotifRead?.(n.id); navigate('/' + entityNav); setNotiMenu(false); }}
                               tabIndex={0}
-                              onKeyDown={e => e.key === 'Enter' && (markNotifRead?.(n.id), navigate(entityNav), setNotiMenu(false))}
+                              onKeyDown={e => e.key === 'Enter' && (markNotifRead?.(n.id), navigate('/' + entityNav), setNotiMenu(false))}
                             >
                               <div className={clsx(styles.notiIcon, typeStyle)} aria-hidden="true">
                                 {typeIcon}

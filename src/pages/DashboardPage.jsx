@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useAuth, useApp, useData } from '../context';
+import { useNavigate } from 'react-router-dom';
 import { Avatar, Badge, StatCard, Card, Button } from '../components/ui';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -121,7 +122,7 @@ const item = {
 
 export default function DashboardPage() {
   const { user, employees } = useAuth();
-  const { navigate } = useApp();
+  const navigate = useNavigate();
   const { reservations, requests, news } = useData();
 
   // Month navigator — starts on the current real month
@@ -271,10 +272,10 @@ const tooltipStyle = {
           </div>
         </div>
         <div className={styles.welcomeActions}>
-          <Button variant="primary" onClick={() => navigate('reservations')} icon={Calendar}>
+          <Button variant="primary" onClick={() => navigate('/reservations')} icon={Calendar}>
             Nueva reserva
           </Button>
-          <Button variant="secondary" onClick={() => navigate('requests')} icon={Inbox}>
+          <Button variant="secondary" onClick={() => navigate('/requests')} icon={Inbox}>
             Ver solicitudes
           </Button>
         </div>
@@ -450,7 +451,7 @@ const tooltipStyle = {
           <div className={styles.cardPad}>
             <div className={styles.cardHeader}>
               <h3 className={styles.sectionTitle}>Noticias y Eventos</h3>
-              <Button variant="ghost" size="sm" onClick={() => navigate('news')}>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/news')}>
                 Ver todo <ArrowRight size={14} />
               </Button>
             </div>
@@ -508,7 +509,7 @@ const tooltipStyle = {
           <div className={styles.cardPad}>
             <div className={styles.cardHeader}>
               <h3 className={styles.sectionTitle}>Reservas recientes</h3>
-              <Button variant="ghost" size="sm" onClick={() => navigate('reservations')}>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/reservations')}>
                 Ver todo <ArrowRight size={14} />
               </Button>
             </div>
