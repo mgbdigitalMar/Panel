@@ -87,7 +87,7 @@
 }
 
 .deptTabs {
-  display: inline-flex;
+  display: flex;
   gap: 4px;
   background: var(--glass-input);
   backdrop-filter: blur(12px) saturate(160%);
@@ -98,8 +98,20 @@
   max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
+  
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(var(--text-rgb), 0.15);
+    border-radius: var(--radius-full);
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--text-rgb), 0.25);
+  }
 
   @media (prefers-reduced-motion: reduce) {
     backdrop-filter: none;
@@ -123,6 +135,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 
   &:hover {
     color: var(--text);

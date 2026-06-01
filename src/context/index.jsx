@@ -420,11 +420,15 @@ const [readIds, setReadIds] = useState(() => {
       .channel('realtime-requests')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'requests' }, (payload) => {
         fetchRequests()
-        if (payload.eventType === 'INSERT') pushNotif('📋', 'Nueva solicitud recibida')
+        if (payload.eventType === 'INSERT') {
+          if (payload.new.employee_id !== user?.id && user?.role === 'admin') pushNotif('📋', 'Nueva solicitud recibida')
+        }
         else if (payload.eventType === 'UPDATE') {
-          const s = payload.new?.status
-          if (s === 'approved') pushNotif('✅', 'Una solicitud ha sido aprobada')
-          else if (s === 'rejected') pushNotif('❌', 'Una solicitud ha sido rechazada')
+          if (payload.new.employee_id === user?.id) {
+            const s = payload.new?.status
+            if (s === 'approved') pushNotif('✅', 'Una solicitud ha sido aprobada')
+            else if (s === 'rejected') pushNotif('❌', 'Una solicitud ha sido rechazada')
+          }
         }
       })
       .subscribe()
@@ -434,11 +438,15 @@ const [readIds, setReadIds] = useState(() => {
       .channel('realtime-reservations')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations' }, (payload) => {
         fetchReservations()
-        if (payload.eventType === 'INSERT') pushNotif('📅', 'Nueva reserva pendiente de revisión')
+        if (payload.eventType === 'INSERT') {
+          if (payload.new.employee_id !== user?.id && user?.role === 'admin') pushNotif('📅', 'Nueva reserva pendiente de revisión')
+        }
         else if (payload.eventType === 'UPDATE') {
-          const s = payload.new?.status
-          if (s === 'confirmed') pushNotif('✅', 'Tu reserva ha sido confirmada')
-          else if (s === 'cancelled') pushNotif('❌', 'Tu reserva ha sido cancelada')
+          if (payload.new.employee_id === user?.id) {
+            const s = payload.new?.status
+            if (s === 'confirmed') pushNotif('✅', 'Tu reserva ha sido confirmada')
+            else if (s === 'cancelled') pushNotif('❌', 'Tu reserva ha sido cancelada')
+          }
         }
       })
       .subscribe()
@@ -470,7 +478,14 @@ const [readIds, setReadIds] = useState(() => {
       .channel('realtime-documents')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, (payload) => {
         fetchDocuments()
-        if (payload.eventType === 'INSERT') pushNotif('📄', `Nuevo documento recibido: ${payload.new?.title || ''}`)
+        if (payload.eventType === 'INSERT') {
+          if (payload.new.sender_id !== user?.id) {
+            // Only push if it's a broadcast (no recipient) or targeted at me
+            if (!payload.new.recipient_id || payload.new.recipient_id === user?.id) {
+              pushNotif('📄', `Nuevo documento recibido: ${payload.new?.title || ''}`)
+            }
+          }
+        }
       })
       .subscribe()
 
@@ -480,9 +495,11 @@ const [readIds, setReadIds] = useState(() => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'hour_compensations' }, (payload) => {
         fetchHourCompensations()
         if (payload.eventType === 'UPDATE') {
-          const s = payload.new?.status
-          if (s === 'approved') pushNotif('✅', 'Tu solicitud de bolsa de horas ha sido aprobada')
-          else if (s === 'rejected') pushNotif('❌', 'Tu solicitud de bolsa de horas ha sido rechazada')
+          if (payload.new.employee_id === user?.id) {
+            const s = payload.new?.status
+            if (s === 'approved') pushNotif('✅', 'Tu solicitud de bolsa de horas ha sido aprobada')
+            else if (s === 'rejected') pushNotif('❌', 'Tu solicitud de bolsa de horas ha sido rechazada')
+          }
         }
       })
       .subscribe()
@@ -492,11 +509,15 @@ const [readIds, setReadIds] = useState(() => {
       .channel('realtime-personal-days')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'personal_days' }, (payload) => {
         fetchPersonalDays()
-        if (payload.eventType === 'INSERT') pushNotif('📝', 'Nueva solicitud de asuntos propios')
+        if (payload.eventType === 'INSERT') {
+          if (payload.new.employee_id !== user?.id && user?.role === 'admin') pushNotif('📝', 'Nueva solicitud de asuntos propios')
+        }
         else if (payload.eventType === 'UPDATE') {
-          const s = payload.new?.status
-          if (s === 'approved') pushNotif('✅', 'Asuntos propios aprobados')
-          else if (s === 'rejected') pushNotif('❌', 'Asuntos propios rechazados')
+          if (payload.new.employee_id === user?.id) {
+            const s = payload.new?.status
+            if (s === 'approved') pushNotif('✅', 'Asuntos propios aprobados')
+            else if (s === 'rejected') pushNotif('❌', 'Asuntos propios rechazados')
+          }
         }
       })
       .subscribe()

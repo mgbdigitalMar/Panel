@@ -176,6 +176,13 @@
   }
 }
 
+.deptBadgeActive {
+  border-color: var(--accent) !important;
+  color: var(--text) !important;
+  background: var(--card) !important;
+  box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.15) inset;
+}
+
 /* ── Enterprise Table ──────────────────────────────────────── */
 .tableWrapper {
   overflow-x: auto;

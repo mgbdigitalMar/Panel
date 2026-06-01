@@ -79,7 +79,7 @@ export default function NewsPage() {
           </div>
         </div>
 
-        {user.role === 'admin' && (
+        {(user.role === 'admin' || user.dept === 'Comunicación - marketing') && (
           <div className={styles.cardActions}>
             <Button variant="action" iconOnly icon={Edit2} onClick={() => handleEdit(item)} title="Editar" />
             <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => setItemToDelete(item.id)} title="Eliminar" />
@@ -115,7 +115,7 @@ export default function NewsPage() {
           {tabBtn('news', 'Noticias')}
           {tabBtn('event', 'Eventos')}
         </div>
-        {user.role === 'admin' && (
+        {(user.role === 'admin' || user.dept === 'Comunicación - marketing') && (
           <Button icon={Plus} onClick={() => { setEditItem(null); setForm({ type: 'news', title: '', content: '', category: 'Empresa', pinned: false }); setShowModal(true); }}>
             Publicar
           </Button>
@@ -159,7 +159,7 @@ export default function NewsPage() {
                 ? 'No hay noticias ni eventos publicados aún.'
                 : `No hay ${tab === 'news' ? 'noticias' : 'eventos'} publicados aún.`}
             </p>
-            {user.role === 'admin' && (
+            {(user.role === 'admin' || user.dept === 'Comunicación - marketing') && (
               <Button icon={Plus} onClick={() => { setEditItem(null); setForm({ type: tab === 'event' ? 'event' : 'news', title: '', content: '', category: 'Empresa', pinned: false }); setShowModal(true); }}>
                 Publicar ahora
               </Button>

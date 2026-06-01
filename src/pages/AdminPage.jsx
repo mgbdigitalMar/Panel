@@ -65,6 +65,8 @@ export default function AdminPage() {
   const [editEmp, setEditEmp]     = useState(null);
   const [showPassFor, setShowPassFor] = useState(null);
   const [search, setSearch]       = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [deptFilter, setDeptFilter] = useState('all');
   const [showResModal, setShowResModal] = useState(false);
   const [resType, setResType]     = useState('room');
   const [showDocModal, setShowDocModal] = useState(false);
@@ -121,11 +123,15 @@ export default function AdminPage() {
 
 
 
-  const filtered = useMemo(() => employees.filter(e =>
-    e.name.toLowerCase().includes(search.toLowerCase()) ||
-    e.email.toLowerCase().includes(search.toLowerCase())
-  ), [employees, search]);
   const depts = useMemo(() => [...new Set(employees.map(e => e.dept))], [employees]);
+  const filtered = useMemo(() => employees.filter(e => {
+    const matchesSearch = e.name.toLowerCase().includes(search.toLowerCase()) ||
+                          e.email.toLowerCase().includes(search.toLowerCase());
+    const matchesRole = roleFilter === 'all' || e.role === roleFilter;
+    const matchesDept = deptFilter === 'all' ||
+      (deptFilter === 'Otros' ? !depts.slice(0, 5).includes(e.dept) : e.dept === deptFilter);
+    return matchesSearch && matchesRole && matchesDept;
+  }), [employees, search, roleFilter, deptFilter, depts]);
 
   const handleSaveEmployee = async () => {
     if (!form.name || !form.email) return;
@@ -330,15 +336,35 @@ export default function AdminPage() {
                   placeholder="Buscar empleado por nombre o email..."
                 />
               </div>
+
               <div className={styles.deptStats}>
+                <div 
+                  className={clsx(styles.deptBadge, { [styles.deptBadgeActive]: deptFilter === 'all' })} 
+                  title="Todos"
+                  onClick={() => setDeptFilter('all')}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <span>Todos</span>
+                  <span>{employees.length}</span>
+                </div>
                 {depts.slice(0, 5).map(d => (
-                  <div key={d} className={styles.deptBadge} title={d}>
+                  <div 
+                    key={d} 
+                    className={clsx(styles.deptBadge, { [styles.deptBadgeActive]: deptFilter === d })} 
+                    title={d}
+                    onClick={() => setDeptFilter(deptFilter === d ? 'all' : d)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <span>{d.includes('-') ? d.split('-')[0].trim() : d}</span>
                     <span>{employees.filter(e => e.dept === d).length}</span>
                   </div>
                 ))}
                 {depts.length > 5 && (
-                  <div className={styles.deptBadge}>
+                  <div 
+                    className={clsx(styles.deptBadge, { [styles.deptBadgeActive]: deptFilter === 'Otros' })}
+                    onClick={() => setDeptFilter(deptFilter === 'Otros' ? 'all' : 'Otros')}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <span>Otros</span>
                     <span>{employees.filter(e => !depts.slice(0,5).includes(e.dept)).length}</span>
                   </div>
