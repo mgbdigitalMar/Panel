@@ -209,7 +209,9 @@ const [readIds, setReadIds] = useState(() => {
       .from('documents')
       .select(`
         id, title, description, file_url, status, created_at, updated_at,
-        sender_id, recipient_id
+        sender_id, recipient_id,
+        sender:profiles!documents_sender_id_fkey(name),
+        recipient:profiles!documents_recipient_id_fkey(name)
       `)
       .order('created_at', { ascending: false })
     if (error || !data) {
@@ -238,9 +240,9 @@ const [readIds, setReadIds] = useState(() => {
       createdAt: d.created_at,
       updatedAt: d.updated_at,
       senderId: d.sender_id,
-      senderName: null,  // resolved below if needed
+      senderName: d.sender?.name || null,
       recipientId: d.recipient_id,
-      recipientName: null,
+      recipientName: d.recipient?.name || null,
     })))
   }
 
@@ -249,7 +251,9 @@ const [readIds, setReadIds] = useState(() => {
       .from('hour_compensations')
       .select(`
         id, date, reason, hours, type, status, created_at, reviewed_at,
-        employee_id, reviewed_by
+        employee_id, reviewed_by,
+        employee:profiles!hour_compensations_employee_id_fkey(name),
+        reviewer:profiles!hour_compensations_reviewed_by_fkey(name)
       `)
       .order('created_at', { ascending: false })
     if (error || !data) {
@@ -270,7 +274,9 @@ const [readIds, setReadIds] = useState(() => {
     setHourCompensations(data.map(h => ({
       id: h.id,
       employeeId: h.employee_id,
-      employeeName: null,
+      employeeName: h.employee?.name || null,
+      reviewerId: h.reviewed_by,
+      reviewerName: h.reviewer?.name || null,
       date: h.date,
       reason: h.reason,
       hours: parseFloat(h.hours),
@@ -286,7 +292,9 @@ const [readIds, setReadIds] = useState(() => {
       .from('personal_days')
       .select(`
         id, date, reason, file_url, status, created_at, reviewed_at,
-        employee_id, reviewed_by
+        employee_id, reviewed_by,
+        employee:profiles!personal_days_employee_id_fkey(name),
+        reviewer:profiles!personal_days_reviewed_by_fkey(name)
       `)
       .order('created_at', { ascending: false })
     if (error || !data) {
@@ -297,7 +305,9 @@ const [readIds, setReadIds] = useState(() => {
     setPersonalDays(data.map(p => ({
       id: p.id,
       employeeId: p.employee_id,
-      employeeName: null,
+      employeeName: p.employee?.name || null,
+      reviewerId: p.reviewed_by,
+      reviewerName: p.reviewer?.name || null,
       date: p.date,
       reason: p.reason,
       fileUrl: p.file_url,
@@ -373,10 +383,6 @@ const [readIds, setReadIds] = useState(() => {
 
     // ── Supabase Realtime subscriptions ─────────────────────
 
-    // Request desktop notification permission if not yet decided
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission()
-    }
 
     const playNotificationSound = () => {
       try {
@@ -808,6 +814,10 @@ const [readIds, setReadIds] = useState(() => {
   const uploadDocumentFile = async (file) => {
     if (!file) return { url: null }
 
+    if (file.size > 15 * 1024 * 1024) {
+      return { error: 'El archivo supera el tamaño máximo permitido (15 MB).' }
+    }
+
     // ── Strategy 1: Supabase Storage ──────────────────────────
     try {
       const ext  = file.name.split('.').pop()
@@ -823,13 +833,13 @@ const [readIds, setReadIds] = useState(() => {
       
       console.warn('Supabase Storage no disponible:', upErr.message)
       
-      // If the file is > 2MB, don't fallback to base64, it will crash the DB insert
-      if (file.size > 2 * 1024 * 1024) {
+      // If the file is > 15MB, don't fallback to base64
+      if (file.size > 15 * 1024 * 1024) {
         return { error: `Error en Storage: ${upErr.message}. Crea el bucket 'documents' como público en Supabase.` }
       }
     } catch (e) {
       console.warn('Storage error:', e)
-      if (file.size > 2 * 1024 * 1024) {
+      if (file.size > 15 * 1024 * 1024) {
         return { error: 'Error en Storage. Crea el bucket "documents" en Supabase.' }
       }
     }
@@ -1063,21 +1073,23 @@ export function AuthProvider({ children }) {
     setEmployeesState(data.map(mapProfile))
   }
 
-  // ── Per-tab session + auto-logout on close ─────────────────
+  // ── Per-tab session + synchronized logout across tabs ─────
   useEffect(() => {
-    // Generate unique tab ID
-    const tabId = 'tab_' + Math.random().toString(36).substr(2, 9)
-    localStorage.setItem('margube_tabId', tabId)
+    // Generate unique tab ID for this browser tab in sessionStorage
+    let tabId = sessionStorage.getItem('margube_tabId')
+    if (!tabId) {
+      tabId = 'tab_' + Math.random().toString(36).substr(2, 9)
+      sessionStorage.setItem('margube_tabId', tabId)
+    }
     
     // Broadcast channel for cross-tab communication
     const bc = new BroadcastChannel('margube_sessions')
     
-    // Session restore + tab validation
+    // Session restore
     const restoreSession = async () => {
       try {
-        const storedTab = localStorage.getItem('margube_tabId')
         const stored = localStorage.getItem('margube_session')
-        if (stored && storedTab === tabId) {
+        if (stored) {
           const sessionData = JSON.parse(stored)
           if (Date.now() - sessionData.lastActivity > IDLE_TIMEOUT) {
             console.log('Session stale - forcing logout')
@@ -1107,7 +1119,7 @@ export function AuthProvider({ children }) {
     
     const clearSession = () => {
       localStorage.removeItem('margube_session')
-      localStorage.removeItem('margube_tabId')
+      sessionStorage.removeItem('margube_tabId')
       bc.postMessage({ type: 'logout' })
       setUser(null)
       navigate('/login')
@@ -1115,24 +1127,19 @@ export function AuthProvider({ children }) {
     
     restoreSession()
     
-    // Auto-logout on tab close
-    const handleBeforeUnload = () => {
-      bc.postMessage({ type: 'tab_closed', tabId })
-      localStorage.removeItem(`margube_tabId`)
-    }
-    
-    // Listen for other tabs logout/close
+    // Listen for other tabs explicit logout
     const handleBCMessage = (ev) => {
-      if (ev.data.type === 'logout' || (ev.data.type === 'tab_closed' && ev.data.tabId !== tabId)) {
-        clearSession()
+      if (ev.data.type === 'logout') {
+        localStorage.removeItem('margube_session')
+        sessionStorage.removeItem('margube_tabId')
+        setUser(null)
+        navigate('/login')
       }
     }
     
-    window.addEventListener('beforeunload', handleBeforeUnload)
     bc.addEventListener('message', handleBCMessage)
     
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
       bc.removeEventListener('message', handleBCMessage)
       bc.close()
     }
@@ -1245,7 +1252,7 @@ export function AuthProvider({ children }) {
     setUser(mapped)
 
     // Guardamos evidencia de conexión activa localmente + tab ID
-    const tabId = localStorage.getItem('margube_tabId')
+    const tabId = sessionStorage.getItem('margube_tabId') || 'tab_main'
     localStorage.setItem('margube_session', JSON.stringify({ id: mapped.id, tabId, lastActivity: Date.now() }))
     
     await loadAllEmployees()
@@ -1258,9 +1265,9 @@ export function AuthProvider({ children }) {
 
   // ── Logout ────────────────────────────────────────────────
   const logout = async () => {
-    const tabId = localStorage.getItem('margube_tabId')
     localStorage.removeItem('margube_session')
     localStorage.removeItem('margube_tabId')
+    sessionStorage.removeItem('margube_tabId')
     localStorage.removeItem('margube_readNotifs') // Clear read notifications
     const bc = new BroadcastChannel('margube_sessions')
     bc.postMessage({ type: 'logout' })

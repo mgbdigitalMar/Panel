@@ -200,10 +200,12 @@ img, svg, video { display: block; max-width: 100%; }
     tr {
       display: flex;
       flex-direction: column;
-      background: var(--card) !important;
-      border: 1px solid var(--border);
+      background: var(--glass-card) !important;
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+      border: 1px solid var(--glass-border);
       border-radius: var(--radius-md);
-      box-shadow: var(--shadow-sm);
+      box-shadow: var(--shadow-sm), var(--glass-highlight-sm);
       overflow: hidden;
       padding: 4px 0;
     }
@@ -227,7 +229,19 @@ img, svg, video { display: block; max-width: 100%; }
         text-align: left;
       }
 
+      &:not([data-label])::before,
+      &[data-label=""]::before {
+        display: none;
+      }
+
       &:last-child { border-bottom: none; }
+    }
+
+    td[colspan],
+    td:has(.empty-state) {
+      display: block;
+      text-align: center;
+      &::before { display: none !important; }
     }
   }
 }
@@ -384,6 +398,20 @@ img, svg, video { display: block; max-width: 100%; }
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-highlight);
+  position: relative;
+
+  /* Top specular highlight rim */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 16px;
+    right: 16px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.30), rgba(255, 255, 255, 0.40), transparent);
+    pointer-events: none;
+    border-radius: var(--radius-full);
+  }
 
   @media (max-width: 767px) {
     backdrop-filter: blur(10px) saturate(130%);

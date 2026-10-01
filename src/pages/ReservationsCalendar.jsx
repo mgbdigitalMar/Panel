@@ -8,7 +8,13 @@ const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Ago
 const DAYS_ES   = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 const HOURS     = Array.from({ length: 13 }, (_, i) => `${String(i + 8).padStart(2,'0')}:00`);
 
-function parseH(t) { const [h, m] = t.split(':').map(Number); return h + m / 60; }
+function parseH(t) {
+  if (!t || typeof t !== 'string') return 0;
+  const parts = t.split(':');
+  const h = Number(parts[0]) || 0;
+  const m = Number(parts[1]) || 0;
+  return h + m / 60;
+}
 
 function getMonthMatrix(year, month) {
   const first = new Date(year, month, 1).getDay();
@@ -154,8 +160,9 @@ export default function ReservationsCalendar() {
                 <div className={styles.hourLabel}>{hour}</div>
                 {weekDays.map((d, di) => {
                   const dayRes = resByDayHour(d).filter(r => {
+                    if (!r || !r.timeStart || !r.timeEnd) return false;
                     const start = parseH(r.timeStart);
-                    const thisH = parseInt(hour);
+                    const thisH = parseInt(hour, 10);
                     const end = parseH(r.timeEnd);
                     return start <= thisH && thisH < end;
                   });

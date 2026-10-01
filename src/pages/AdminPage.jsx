@@ -45,15 +45,19 @@ export default function AdminPage() {
     const headers = ['Empleado', 'Fecha', 'Motivo', 'Horas', 'Estado', 'Revisado por', 'Fecha solicitud'];
     const lines = [
       headers.join(';'),
-      ...rows.map(h => [
-        h.employeeName,
-        h.date,
-        `"${(h.reason || '').replace(/"/g, '""')}"`,
-        String(h.hours).replace('.', ','),
-        h.status === 'approved' ? 'Aprobada' : h.status === 'rejected' ? 'Rechazada' : 'Pendiente',
-        h.reviewerName || '—',
-        new Date(h.createdAt).toLocaleDateString('es-ES'),
-      ].join(';')),
+      ...rows.map(h => {
+        const emp = employees.find(e => String(e.id) === String(h.employeeId));
+        const empName = h.employeeName || emp?.name || 'Empleado';
+        return [
+          empName,
+          h.date,
+          `"${(h.reason || '').replace(/"/g, '""')}"`,
+          String(h.hours).replace('.', ','),
+          h.status === 'approved' ? 'Aprobada' : h.status === 'rejected' ? 'Rechazada' : 'Pendiente',
+          h.reviewerName || '—',
+          h.createdAt ? new Date(h.createdAt).toLocaleDateString('es-ES') : '—',
+        ].join(';');
+      }),
     ];
     const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -91,6 +95,10 @@ export default function AdminPage() {
 
   const handleUpdateOnboarding = async () => {
     if (!onboardingFile) return;
+    if (onboardingFile.size > 15 * 1024 * 1024) {
+      setOnboardingUploadStatus('❌ El archivo supera el tamaño máximo permitido (15 MB).');
+      return;
+    }
     setOnboardingUploading(true);
     setOnboardingUploadStatus('⏳ Subiendo archivo al servidor...');
     const { url, error } = await uploadDocumentFile(onboardingFile);
@@ -245,7 +253,10 @@ export default function AdminPage() {
   const handleSendDoc = async () => {
     if (!docForm.title || !docForm.recipientId) return;
 
-    // No file size limit checked in frontend anymore
+    if (docFile && docFile.size > 15 * 1024 * 1024) {
+      setDocUploadStatus('❌ El archivo supera el tamaño máximo permitido (15 MB).');
+      return;
+    }
 
     setDocSending(true);
     setDocUploadStatus(docFile ? '⏳ Subiendo archivo...' : '');
@@ -655,7 +666,7 @@ export default function AdminPage() {
                             </span>
                           </td>
                           <td data-label="Fecha" className={styles.docDate}>
-                            {new Date(doc.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                           </td>
                           <td data-label="Acciones">
                             <div className={styles.actionsCell}>
@@ -772,7 +783,7 @@ export default function AdminPage() {
                             </div>
                           </td>
                           <td data-label="Fecha" className={styles.boldDateCell}>
-                            {new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            {h.date ? new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                           </td>
                           <td data-label="Motivo" className={styles.reasonCell}>
                             {h.reason}
@@ -1025,7 +1036,7 @@ export default function AdminPage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="*/*"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.webp,.txt"
                 className={styles.hiddenInput}
                 onChange={e => { if (e.target.files[0]) setDocFile(e.target.files[0]); }}
               />
@@ -1049,7 +1060,7 @@ export default function AdminPage() {
                   <Upload size={28} className={styles.uploadIcon} />
                   <p className={styles.filePromptTitle}>Arrastra un archivo aquí</p>
                   <p className={styles.filePromptSub}>o haz clic para seleccionar</p>
-                  <p className={styles.filePromptDesc}>Cualquier formato de archivo permitido &bull; Sin límite de tamaño</p>
+                  <p className={styles.filePromptDesc}>Formatos admitidos: PDF, Word, Excel, imágenes &bull; Máx. 15MB</p>
                 </div>
               )}
             </div>
@@ -1114,7 +1125,7 @@ export default function AdminPage() {
             ) : (
               <div>
                 <Upload size={28} className={styles.onboardingUploadIcon} />
-                <p className={styles.onboardingUploadPrompt}>Haz clic para seleccionar un PDF</p>
+                <p className={styles.onboardingUploadPrompt}>Haz clic para seleccionar un PDF (máx. 15MB)</p>
               </div>
             )}
           </div>

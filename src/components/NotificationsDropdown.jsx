@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
-import { Bell, CheckCircle, XCircle } from 'lucide-react';
+import { Bell, CheckCircle, XCircle, CheckCheck, Clock, ChevronRight } from 'lucide-react';
 import { Button } from './ui';
 import styles from './Layout.module.scss';
 
@@ -18,18 +18,35 @@ export function NotificationsDropdown({
     <AnimatePresence>
       {notiMenu && (
         <motion.div
-          initial={{ opacity: 0, y: 8, scale: 0.96 }}
+          initial={{ opacity: 0, y: 10, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 8, scale: 0.96 }}
-          transition={{ duration: 0.15 }}
+          transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           className={clsx(styles.dropdown, styles.notiDropdown)}
           role="dialog"
           aria-label="Panel de notificaciones"
         >
           <div className={styles.dropdownHeader}>
-            <p>Notificaciones</p>
+            <div className={styles.dropdownHeaderTitle}>
+              <p>Notificaciones</p>
+              {unreadCount > 0 ? (
+                <span className={styles.notiBadgePill}>
+                  {unreadCount} {unreadCount === 1 ? 'nueva' : 'nuevas'}
+                </span>
+              ) : (
+                <span className={styles.notiBadgePillRead}>
+                  Al día
+                </span>
+              )}
+            </div>
             {unreadCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={handleMarkAllRead}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleMarkAllRead}
+                className={styles.markAllBtn}
+                icon={CheckCheck}
+              >
                 Marcar todo leído
               </Button>
             )}
@@ -38,11 +55,15 @@ export function NotificationsDropdown({
           <div className={styles.notiList} role="list">
             {notifications.length === 0 ? (
               <div className={styles.emptyNoti}>
-                <p>No hay notificaciones recientes</p>
+                <div className={styles.emptyNotiIcon}>
+                  <Bell size={26} />
+                </div>
+                <p className={styles.emptyNotiTitle}>Estás al día</p>
+                <span className={styles.emptyNotiSub}>No tienes notificaciones pendientes en este momento</span>
               </div>
             ) : (
               notifications.map(n => {
-                const typeIcon = n.type === 'success' ? <CheckCircle size={13} /> : n.type === 'error' ? <XCircle size={13} /> : <Bell size={13} />;
+                const typeIcon = n.type === 'success' ? <CheckCircle size={14} /> : n.type === 'error' ? <XCircle size={14} /> : <Bell size={14} />;
                 const typeStyle = n.type === 'success' ? styles.notiSuccess : n.type === 'error' ? styles.notiWarning : styles.notiAccent;
                 let entityNav = n.entity_type === 'request' ? 'requests' : n.entity_type === 'document' ? 'profile' : n.entity_type === 'hour_compensation' ? 'horas' : n.entity_type === 'reservation' ? 'reservations' : 'dashboard';
                 if (user?.role === 'admin' && n.entity_type === 'hour_compensation') entityNav = 'admin';
@@ -67,16 +88,20 @@ export function NotificationsDropdown({
                       {typeIcon}
                     </div>
                     <div className={styles.notiText}>
-                      <strong>{n.title}</strong>
-                      {n.body && <span>{n.body}</span>}
-                      <span style={{ fontSize: 10, color: 'var(--text-mut)', marginTop: 2 }}>
+                      <div className={styles.notiTitleRow}>
+                        <strong>{n.title}</strong>
+                        {!n.read && <span className={styles.unreadDot} aria-label="No leída" />}
+                      </div>
+                      {n.body && <span className={styles.notiBody}>{n.body}</span>}
+                      <span className={styles.notiTime}>
+                        <Clock size={11} aria-hidden="true" />
                         {new Date(n.created_at).toLocaleString('es-ES', {
                           day: '2-digit', month: 'short',
                           hour: '2-digit', minute: '2-digit',
                         })}
                       </span>
                     </div>
-                    {!n.read && <span className={styles.unreadDot} aria-label="No leída" />}
+                    <ChevronRight size={14} className={styles.notiChevron} aria-hidden="true" />
                   </div>
                 );
               })

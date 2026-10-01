@@ -213,9 +213,11 @@
 
 .legendDot {
   display: inline-block;
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
+  background: var(--dot-bg, var(--accent));
+  box-shadow: 0 0 6px var(--dot-bg, var(--accent));
   flex-shrink: 0;
 }
 
@@ -257,6 +259,8 @@
   width: 10px;
   height: 10px;
   border-radius: 3px;
+  background: var(--dot-bg, var(--accent));
+  box-shadow: 0 0 6px var(--dot-bg, var(--accent));
   flex-shrink: 0;
 }
 

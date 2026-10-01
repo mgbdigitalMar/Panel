@@ -63,11 +63,13 @@
 }
 
 .tabBtnActive {
-  background: var(--card) !important;
+  background: var(--glass-card) !important;
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
   color: var(--accent) !important;
   font-weight: 700;
   border-color: transparent !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(var(--accent-rgb), 0.15) inset !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), var(--glass-highlight-sm), 0 0 0 1px rgba(var(--accent-rgb), 0.15) inset !important;
   pointer-events: none;
 }
 

@@ -142,6 +142,7 @@ export default function DashboardPage() {
   const isCurrentYear = requestsYear === currentYear;
   const upcomingBirthdays = useMemo(() => 
     employees
+      .filter(e => e.birthdate && !isNaN(new Date(e.birthdate).getTime()))
       .map(e => {
         const bd = new Date(e.birthdate);
         const thisYear = new Date(today.getFullYear(), bd.getMonth(), bd.getDate());
@@ -449,7 +450,7 @@ const tooltipStyle = {
               {news.slice(0, 5).map(n => (
                 <div key={n.id} className={clsx(styles.timelineItem, n.type === 'event' && styles.timelineEventItem)}>
                   <p className={styles.timelineDate}>
-                    {new Date(n.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {(n.date || n.published_at || n.created_at) ? new Date(n.date || n.published_at || n.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
                   </p>
                   <div className={styles.timelineContentBox}>
                     <div className={styles.feedTitleRow}>

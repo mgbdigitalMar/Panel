@@ -17,7 +17,7 @@ export default function ReservationsPage() {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [form, setForm]         = useState({ type: 'room', resourceId: '', date: '', timeStart: '', timeEnd: '', purpose: '' });
 
-  const filtered = tab === 'all' ? reservations : tab === 'mine' ? reservations.filter(r => r.employeeId === user.id) : reservations.filter(r => r.type === tab);
+  const filtered = tab === 'all' ? reservations : tab === 'mine' ? reservations.filter(r => r.employeeId === user?.id) : reservations.filter(r => r.type === tab);
 
   const exportReservationsCSV = (rows) => {
     const headers = ['Recurso', 'Tipo', 'Solicitante', 'Fecha', 'Horario', 'Propósito', 'Estado'];
@@ -204,7 +204,7 @@ export default function ReservationsPage() {
                               <Button variant="action-danger" iconOnly icon={X} onClick={() => handleReject(r.id)} title="Rechazar" />
                             </>
                           )}
-                          {(user.role === 'admin' || (r.employeeId === user.id && r.status !== 'pending')) && (
+                          {(user?.role === 'admin' || r.employeeId === user?.id) && (
                             <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => setItemToDelete(r.id)} title="Eliminar" />
                           )}
                         </div>

@@ -11,6 +11,7 @@ import {
 
 import logoColor from '../assets/logos/logo-color.png';
 import logoWhite from '../assets/logos/logo-white.png';
+import logoIcon from '../assets/logos/logo-icon.png';
 
 import { Avatar, Button } from './ui';
 import OnboardingModal from './OnboardingModal';
@@ -79,9 +80,9 @@ function NavLink({ item, onNavigate, collapsed, badge, active }) {
         {collapsed && showTip && (
           <motion.div
             className={styles.navTooltip}
-            initial={{ opacity: 0, x: -6, scale: 0.94 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -4, scale: 0.96 }}
+            initial={{ opacity: 0, x: -6, y: '-50%', scale: 0.94 }}
+            animate={{ opacity: 1, x: 0, y: '-50%', scale: 1 }}
+            exit={{ opacity: 0, x: -4, y: '-50%', scale: 0.96 }}
             transition={{ duration: 0.14 }}
             role="tooltip"
             id={`tooltip-${item.id}`}
@@ -203,11 +204,12 @@ export default function Layout({ children }) {
     return (
       <div className={styles.sidebarInner}>
         {/* Logo */}
-        <div className={styles.logoArea}>
+        <div className={clsx(styles.logoArea, { [styles.logoAreaCollapsed]: isCollapsed })}>
           <div className={styles.logoMark}>
             <img
-              src={theme === 'dark' ? logoWhite : logoColor}
+              src={isCollapsed ? logoIcon : (theme === 'dark' ? logoWhite : logoColor)}
               alt="Margube"
+              className={clsx({ [styles.logoIconCollapsed]: isCollapsed })}
             />
           </div>
         </div>
@@ -231,16 +233,39 @@ export default function Layout({ children }) {
               <div className={styles.navDivider} />
               <p className={styles.navSectionLabel}>Admin</p>
               {adminItems.map(i => (
-                <NavLink key={i.id} item={i} onNavigate={handleNavigate} collapsed={isCollapsed} badge={0} active={page === i.id} />
+                <NavLink 
+                  key={i.id} 
+                  item={i} 
+                  onNavigate={handleNavigate} 
+                  collapsed={isCollapsed} 
+                  badge={i.badgeKey ? navBadges[i.badgeKey] || 0 : 0} 
+                  active={page === i.id} 
+                />
               ))}
             </>
           )}
+
+          <div className={styles.navDivider} />
+          <NavLink
+            item={settingsItem}
+            onNavigate={handleNavigate}
+            collapsed={isCollapsed}
+            badge={0}
+            active={page === settingsItem.id}
+          />
         </nav>
 
         {/* ── User bottom section ─────────────────────────────────── */}
         <div className={styles.userBottom}>
           {/* Avatar + info */}
-          <div className={styles.userCard}>
+          <div 
+            className={styles.userCard}
+            onClick={() => handleNavigate('profile')}
+            role="button"
+            tabIndex={0}
+            title="Ir a mi perfil"
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleNavigate('profile'); }}
+          >
             <Avatar initials={user?.avatar || '??'} size={34} />
             <div className={styles.userInfo}>
               <p className={styles.userName}>{user?.name}</p>
@@ -254,23 +279,25 @@ export default function Layout({ children }) {
               variant="action"
               size="sm"
               icon={User}
+              iconOnly={isCollapsed}
               onClick={() => handleNavigate('profile')}
               title="Mi perfil"
               aria-label="Ir a mi perfil"
               style={{ width: '100%', justifyContent: 'center' }}
             >
-              <span>Perfil</span>
+              {!isCollapsed && 'Perfil'}
             </Button>
             <Button
               variant="action-danger"
               size="sm"
               icon={LogOut}
+              iconOnly={isCollapsed}
               onClick={() => logout()}
               title="Cerrar sesión"
               aria-label="Cerrar sesión"
               style={{ width: '100%', justifyContent: 'center' }}
             >
-              <span>Salir</span>
+              {!isCollapsed && 'Salir'}
             </Button>
           </div>
         </div>
@@ -280,10 +307,12 @@ export default function Layout({ children }) {
 
   return (
     <div className={styles.layout}>
-      {/* Ambient background orbs — cinematic depth */}
+      {/* Ambient background orbs & futuristic mesh canvas — cinematic depth */}
       <div className={styles.bgBlob1} aria-hidden="true" />
       <div className={styles.bgBlob2} aria-hidden="true" />
       <div className={styles.bgBlob3} aria-hidden="true" />
+      <div className={styles.bgMeshGrid} aria-hidden="true" />
+      <div className={styles.bgNoise} aria-hidden="true" />
 
       {/* ── Desktop sidebar ──────────────────────────────────────────── */}
       <aside
@@ -379,15 +408,6 @@ export default function Layout({ children }) {
               <span>{clockStr}</span>
             </div>
 
-            {/* Settings button — where theme toggle used to be */}
-            <Button
-              variant="ghost"
-              iconOnly
-              icon={SlidersHorizontal}
-              onClick={() => handleNavigate('settings')}
-              aria-label="Ajustes"
-              title="Ajustes"
-            />
 
             {/* Notifications */}
             <div style={{ position: 'relative' }} ref={notiMenuRef}>

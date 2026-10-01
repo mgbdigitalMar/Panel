@@ -97,6 +97,11 @@ export default function RequestsPage() {
     if (reqType === 'asuntos_propios') {
       let fileUrl = null;
       if (file) {
+        if (file.size > 15 * 1024 * 1024) {
+          alert('El archivo supera el tamaño máximo permitido (15 MB).');
+          setLoading(false);
+          return;
+        }
         const uploadRes = await uploadDocumentFile(file);
         if (uploadRes && !uploadRes.error) {
           fileUrl = uploadRes.url;
@@ -363,7 +368,7 @@ export default function RequestsPage() {
                     {file ? file.name : 'Haz clic o arrastra un archivo aquí'}
                   </p>
                   <p className={styles.uploadFileSpecs}>
-                    {file ? `${(file.size / 1024).toFixed(1)} KB` : 'PDF, JPG, PNG (máx. 5MB)'}
+                    {file ? `${(file.size / 1024).toFixed(1)} KB` : 'PDF, JPG, PNG (máx. 15MB)'}
                   </p>
                 </div>
                 <input 

@@ -132,7 +132,7 @@ export default function HorasPage() {
         ya,
         balance,
         totalRequests: empAll.length,
-        history: empAll.sort((a, b) => b.date.localeCompare(a.date))
+        history: [...empAll].sort((a, b) => (b.date || '').localeCompare(a.date || ''))
       };
     });
   }, [employees, hourCompensations]);
@@ -172,16 +172,17 @@ export default function HorasPage() {
   const debtHours    = myDebt.reduce((s, h) => s + h.hours, 0);
   const balance      = creditHours - debtHours; // positive = in favour; negative = owes
 
-  const allRows = [...myCredit, ...myDebt].sort((a, b) => b.date.localeCompare(a.date));
+  const allRows = [...myCredit, ...myDebt].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   const handleSubmit = async () => {
-    if (!form.date || !form.reason || !form.hours) return;
+    const numHours = parseFloat(form.hours);
+    if (!form.date || !form.reason || isNaN(numHours) || numHours <= 0 || numHours > 24) return;
     setLoading(true);
     const result = await createHourCompensation({
-      employeeId: user.id,
+      employeeId: user?.id,
       date: form.date,
-      reason: form.reason,
-      hours: parseFloat(form.hours),
+      reason: form.reason.trim(),
+      hours: numHours,
       type: mode,
     });
     setLoading(false);
@@ -320,7 +321,7 @@ export default function HorasPage() {
                   icon={cfg.btnIcon}
                   onClick={handleSubmit}
                   loading={loading}
-                  disabled={!form.date || !form.reason || !form.hours || loading}
+                  disabled={!form.date || !form.reason || !form.hours || isNaN(parseFloat(form.hours)) || parseFloat(form.hours) <= 0 || parseFloat(form.hours) > 24 || loading}
                   variant={mode === 'debe' ? 'danger' : mode === 'ya' ? 'success' : 'primary'}
                 >
                   {cfg.btnLabel}
@@ -431,7 +432,7 @@ export default function HorasPage() {
                       {allRows.map(h => (
                         <tr key={h.id} className={h.type === 'debe' ? styles.rowDebe : ''}>
                           <td className={styles.dateCell} data-label="Fecha">
-                            {new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            {h.date ? new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                           </td>
                           <td data-label="Tipo">{typeBadge(h.type)}</td>
                           <td className={styles.reasonCell} data-label="Motivo">{h.reason}</td>
@@ -631,17 +632,17 @@ export default function HorasPage() {
                   <tbody>
                     {selectedUser.history.map(h => (
                       <tr key={h.id} className={h.type === 'debe' ? styles.rowDebe : ''}>
-                        <td className={styles.dateCell}>
-                          {new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        <td data-label="Fecha" className={styles.dateCell}>
+                          {h.date ? new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                         </td>
-                        <td>{typeBadge(h.type)}</td>
-                        <td className={styles.reasonCell}>{h.reason}</td>
-                        <td>
+                        <td data-label="Tipo">{typeBadge(h.type)}</td>
+                        <td data-label="Motivo" className={styles.reasonCell}>{h.reason}</td>
+                        <td data-label="Horas">
                           <span className={clsx(styles.hoursChip, h.type === 'debe' ? styles.hoursChipDebe : '')}>
                             {h.type === 'debe' ? '-' : '+'}{h.hours}h
                           </span>
                         </td>
-                        <td>{statusBadge(h.status)}</td>
+                        <td data-label="Estado">{statusBadge(h.status)}</td>
                       </tr>
                     ))}
                   </tbody>

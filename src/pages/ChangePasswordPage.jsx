@@ -27,6 +27,13 @@ export default function ChangePasswordPage() {
   // Reset idle timer on activity (prevents logout during password change)
   const resetIdle = () => setLastActivity(Date.now());
 
+  // Require user session — redirect to login if accessed directly without session
+  useEffect(() => {
+    if (!user) {
+      navigate('/login', { replace: true });
+    }
+  }, [user, navigate]);
+
   useEffect(() => {
     const handleActivity = resetIdle;
     document.addEventListener('mousemove', handleActivity, { passive: true });
@@ -42,6 +49,10 @@ export default function ChangePasswordPage() {
   }, [resetIdle]);
 
   const handleSave = async () => {
+    if (!user || !user.id) {
+      navigate('/login', { replace: true });
+      return;
+    }
     if (!newPass || newPass.length < 8) { 
       setErr('La contraseña debe tener al menos 8 caracteres.'); 
       return; 
