@@ -25,7 +25,7 @@ const navItems = [
   { id: 'dashboard',    label: 'Dashboard',         icon: LayoutDashboard },
   { id: 'reservations', label: 'Reservas',           icon: Calendar,    badgeKey: 'reservations' },
   { id: 'requests',     label: 'Solicitudes',        icon: Inbox,       badgeKey: 'requests' },
-  { id: 'horas',        label: 'Control de Tiempo',  icon: Timer },
+  { id: 'horas',        label: 'Tiempo a compensar', icon: Timer },
   { id: 'news',         label: 'Noticias y Eventos', icon: Newspaper },
   { id: 'employees',    label: 'Equipo',             icon: UsersRound },
 ];

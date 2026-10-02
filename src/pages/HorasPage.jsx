@@ -45,7 +45,7 @@ function exportAllUsersCSV(stats) {
   const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `control-tiempo-usuarios-${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `tiempo-a-compensar-usuarios-${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
 }
 
@@ -59,6 +59,7 @@ const MODE_CONFIG = {
     btnIcon: CheckCircle,
     successMsg: '✅ Compensación registrada correctamente.',
     colorClass: 'infoYa',
+    dateLabel: 'Fecha de compensación',
   },
   bolsa: {
     label: 'Bolsa',
@@ -69,6 +70,7 @@ const MODE_CONFIG = {
     btnIcon: PenTool,
     successMsg: '📋 Solicitud enviada. Pendiente de aprobación.',
     colorClass: 'infoBolsa',
+    dateLabel: 'Fecha de generación',
   },
   debe: {
     label: 'Debo',
@@ -79,6 +81,7 @@ const MODE_CONFIG = {
     btnIcon: TrendingDown,
     successMsg: '📌 Horas de deuda registradas correctamente.',
     colorClass: 'infoDebe',
+    dateLabel: 'Fecha en que se debieron',
   },
 };
 
@@ -287,7 +290,7 @@ export default function HorasPage() {
               {/* Form */}
               <div className={styles.formGrid}>
                 <Input
-                  label={mode === 'debe' ? 'Fecha en que se debieron' : 'Fecha de compensación'}
+                  label={cfg.dateLabel}
                   type="date"
                   value={form.date}
                   onChange={v => setForm({ ...form, date: v })}
@@ -308,7 +311,7 @@ export default function HorasPage() {
                     onChange={v => setForm({ ...form, reason: v })}
                     placeholder={
                       mode === 'debe'
-                        ? 'Ej: Llegué 1h tarde por cita médica...'
+                        ? 'Ej: He entrado 30min tarde por ir al banco...'
                         : 'Describe brevemente el motivo de la compensación...'
                     }
                     required
