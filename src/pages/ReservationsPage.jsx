@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth, useReservations } from '../context';
-import { Badge, Modal, Select, Input, Textarea, Button, Card, ConfirmModal } from '../components/ui';
-import { Building, Car, Check, X, Plus, Download, Trash2 } from 'lucide-react';
+import { Badge, Modal, Select, Input, Textarea, Button, Card, ConfirmModal, StatCard } from '../components/ui';
+import { Building, Car, Check, X, Plus, Download, Trash2, Calendar } from 'lucide-react';
 import styles from './ReservationsPage.module.scss';
 import clsx from 'clsx';
 import ReservationsCalendar from './ReservationsCalendar';
@@ -45,19 +45,23 @@ export default function ReservationsPage() {
   };
 
   const handleCreate = async () => {
-    if (!form.resourceId || !form.date || !form.timeStart || !form.timeEnd || !form.purpose) {
-      setErrorMsg('Complete todos los campos requeridos');
+    if (!form.resourceId || !form.date || !form.timeStart || !form.timeEnd) {
+      setErrorMsg('Por favor selecciona un recurso, fecha y horario');
+      return;
+    }
+    if (form.timeEnd <= form.timeStart) {
+      setErrorMsg('La hora de fin debe ser posterior a la hora de inicio');
       return;
     }
     setLoading(true);
     setErrorMsg('');
     const payload = {
       type: form.type,
-      [form.type === 'room' ? 'room_id' : 'vehicle_id']: parseInt(form.resourceId),
+      [form.type === 'room' ? 'room_id' : 'vehicle_id']: parseInt(form.resourceId, 10),
       date: form.date,
       time_start: form.timeStart,
       time_end: form.timeEnd,
-      purpose: form.purpose,
+      purpose: form.purpose?.trim() || (form.type === 'room' ? 'Reserva de sala' : 'Uso de vehículo'),
       status: 'pending',
     };
     const result = await createReservation(user.id, payload);
@@ -74,37 +78,65 @@ export default function ReservationsPage() {
   const handleApprove = async (id) => { await updateReservationStatus(id, 'confirmed', user.id); };
   const handleReject  = async (id) => { await updateReservationStatus(id, 'cancelled', user.id); };
 
-  const tabBtn = (id, label) => (
+  const tabBtn = (id, label, count) => (
     <button 
       key={id} 
       onClick={() => setTab(id)}
       className={clsx(styles.tabBtn, { [styles.tabBtnActive]: tab === id })}
     >
       {label}
+      {typeof count === 'number' && count >= 0 && (
+        <span className={styles.tabCount}>{count}</span>
+      )}
     </button>
   );
 
   return (
-    <div>
+    <div className={styles.container}>
       {/* Header */}
       <div className={styles.pageControls}>
         <div className={styles.tabsRow}>
-          {tabBtn('all', 'Todas')}
-          {tabBtn('room', 'Salas')}
-          {tabBtn('vehicle', 'Vehículos')}
+          {tabBtn('all', 'Todas', reservations.length)}
+          {tabBtn('room', 'Salas', rooms.length)}
+          {tabBtn('vehicle', 'Vehículos', vehicles.length)}
           {tabBtn('calendar', '📅 Calendario')}
         </div>
-        {tab !== 'calendar' && (
-          <div className={styles.headerRight}>
-            {filtered.length > 0 && (
-              <Button icon={Download} variant="ghost" onClick={() => exportReservationsCSV(filtered)}>
-                Descargar Excel
-              </Button>
-            )}
-            <Button icon={Plus} onClick={() => setShowModal(true)}>Nueva reserva</Button>
-          </div>
-        )}
+        <div className={styles.controlsRight}>
+          {filtered.length > 0 && tab !== 'calendar' && (
+            <Button icon={Download} variant="ghost" onClick={() => exportReservationsCSV(filtered)}>
+              Descargar Excel
+            </Button>
+          )}
+          <Button icon={Plus} onClick={() => setShowModal(true)}>Nueva reserva</Button>
+        </div>
       </div>
+
+      {/* Stats */}
+      {tab !== 'calendar' && (
+        <div className={styles.statsGrid}>
+          <StatCard
+            label="Total reservas"
+            value={reservations.length}
+            icon="Calendar"
+            color="var(--accent)"
+            sub="Histórico registrado"
+          />
+          <StatCard
+            label="Salas activas"
+            value={rooms.length}
+            icon="Building"
+            color="var(--success)"
+            sub="Espacios de reunión"
+          />
+          <StatCard
+            label="Vehículos flota"
+            value={vehicles.length}
+            icon="Car"
+            color="var(--warning)"
+            sub="Flota disponible"
+          />
+        </div>
+      )}
 
       {/* Calendar view */}
       {tab === 'calendar' && <ReservationsCalendar />}
@@ -115,7 +147,16 @@ export default function ReservationsPage() {
           <h3 className={styles.sectionLabel}>Salas disponibles</h3>
           <div className={styles.resourceGrid}>
             {rooms.map(room => (
-              <Card key={room.id} className={styles.resourceCard}>
+              <Card
+                key={room.id}
+                className={styles.resourceCard}
+                onClick={() => {
+                  setForm(f => ({ ...f, type: 'room', resourceId: String(room.id) }));
+                  setShowModal(true);
+                }}
+                style={{ cursor: 'pointer' }}
+                title="Haz clic para reservar esta sala"
+              >
                 <div className={styles.resourceHeader}>
                   <div className={clsx(styles.resourceIcon, styles.iconAccent)}>
                     <Building size={22} />
@@ -141,7 +182,16 @@ export default function ReservationsPage() {
           <h3 className={styles.sectionLabel}>Vehículos de empresa</h3>
           <div className={styles.resourceGrid}>
             {vehicles.map(v => (
-              <Card key={v.id} className={styles.resourceCard}>
+              <Card
+                key={v.id}
+                className={styles.resourceCard}
+                onClick={() => {
+                  setForm(f => ({ ...f, type: 'vehicle', resourceId: String(v.id) }));
+                  setShowModal(true);
+                }}
+                style={{ cursor: 'pointer' }}
+                title="Haz clic para reservar este vehículo"
+              >
                 <div className={styles.resourceHeader}>
                   <div className={clsx(styles.resourceIcon, styles.iconWarning)}>
                     <Car size={22} />

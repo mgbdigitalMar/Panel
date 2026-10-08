@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useAuth } from '../context';
-import { Avatar, Badge, Card } from '../components/ui';
-import { Home, Building2, MapPin } from 'lucide-react';
+import { Avatar, Badge, Card, StatCard } from '../components/ui';
+import { Home, Building2, MapPin, LayoutGrid, List } from 'lucide-react';
 import styles from './EmployeesPage.module.scss';
 import clsx from 'clsx';
 import { supabase } from '../utils/supabase';
@@ -58,48 +58,72 @@ export default function EmployeesPage() {
     }
   };
 
-  const summary = useMemo(() => Object.entries(WORK_MODES).map(([key, meta]) => ({
-    key, ...meta,
-    count: employees.filter(e => e.workMode === key).length,
-  })), [employees]);
+  const officeCount = useMemo(() => employees.filter(e => (e.workMode || 'office').toLowerCase() === 'office').length, [employees]);
+  const remoteCount = useMemo(() => employees.filter(e => (e.workMode || '').toLowerCase() === 'remoto').length, [employees]);
+  const fieldCount  = useMemo(() => employees.filter(e => (e.workMode || '').toLowerCase() === 'externo' || (e.workMode || '').toLowerCase() === 'field').length, [employees]);
 
   return (
     <div className={styles.container}>
-      {/* Summary row */}
-      <div className={styles.summaryRow}>
-        {summary.map(s => {
-          const Icon = s.icon;
-          return (
-            <Card key={s.key} className={styles.summaryCard} style={{ '--c': s.color, '--cbg': s.bg }}>
-              <div className={styles.summaryIcon}><Icon size={18} /></div>
-              <div>
-                <p className={styles.summaryCount}>{s.count}</p>
-                <p className={styles.summaryLabel}>{s.label}</p>
-              </div>
-            </Card>
-          );
-        })}
+      {/* Stats */}
+      <div className={styles.statsGrid}>
+        <StatCard
+          label="En oficina"
+          value={officeCount}
+          icon="Building"
+          color="var(--accent)"
+          sub="Presencial en sede"
+        />
+        <StatCard
+          label="En remoto"
+          value={remoteCount}
+          icon="Home"
+          color="var(--success)"
+          sub="Teletrabajo activo"
+        />
+        <StatCard
+          label="Trabajo externo"
+          value={fieldCount}
+          icon="MapPin"
+          color="var(--warning)"
+          sub="Clientes y ruta"
+        />
       </div>
 
       {/* Filters + view toggle */}
-      <div className={styles.toolbar}>
-        <div className={styles.deptTabs}>
+      <div className={styles.pageControls}>
+        <div className={styles.tabsRow}>
           {depts.map(d => (
             <button
               key={d}
               onClick={() => setFilter(d)}
-              className={clsx(styles.deptTab, { [styles.deptTabActive]: filter === d })}
+              className={clsx(styles.tabBtn, { [styles.tabBtnActive]: filter === d })}
             >
               {d === 'all' ? 'Todos' : d}
-              <span className={styles.deptCount}>
+              <span className={styles.tabCount}>
                 {d === 'all' ? employees.length : employees.filter(e => e.dept === d).length}
               </span>
             </button>
           ))}
         </div>
-        <div className={styles.viewToggle}>
-          <button onClick={() => setView('grid')} className={clsx(styles.viewBtn, { [styles.viewBtnActive]: view === 'grid' })}>⊞</button>
-          <button onClick={() => setView('list')} className={clsx(styles.viewBtn, { [styles.viewBtnActive]: view === 'list' })}>☰</button>
+        <div className={styles.controlsRight}>
+          <div className={styles.viewToggle}>
+            <button
+              onClick={() => setView('grid')}
+              className={clsx(styles.viewBtn, { [styles.viewBtnActive]: view === 'grid' })}
+              title="Vista cuadrícula"
+              aria-label="Vista cuadrícula"
+            >
+              <LayoutGrid size={15} />
+            </button>
+            <button
+              onClick={() => setView('list')}
+              className={clsx(styles.viewBtn, { [styles.viewBtnActive]: view === 'list' })}
+              title="Vista tabla"
+              aria-label="Vista tabla"
+            >
+              <List size={15} />
+            </button>
+          </div>
         </div>
       </div>
 

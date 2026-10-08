@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { useEffect } from 'react';
 import styles from './Modal.module.scss';
 import clsx from 'clsx';
+import { springConfig } from '../../../hooks/useSpringAnimation';
 
 export function Modal({ open, onClose, title, children, className }) {
   // Prevent body scroll when open
@@ -20,15 +21,15 @@ export function Modal({ open, onClose, title, children, className }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
+            transition={{ duration: 0.2 }}
             className={styles.backdrop}
             onClick={onClose}
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={springConfig.default}
             className={clsx(styles.modal, className)}
           >
             <div className={styles.header}>

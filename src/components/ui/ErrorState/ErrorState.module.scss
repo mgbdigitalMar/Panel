@@ -1,0 +1,156 @@
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 3vw, 28px);
+  padding: clamp(40px, 8vw, 80px) clamp(20px, 4vw, 40px);
+  text-align: center;
+  min-height: 340px;
+  background: linear-gradient(135deg, rgba(var(--danger-rgb), 0.05) 0%, rgba(var(--danger-rgb), 0.02) 100%);
+  border: 1px solid rgba(var(--danger-rgb), 0.15);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(var(--danger-rgb), 0.08) 0%, transparent 65%);
+    pointer-events: none;
+  }
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(80px, 12vw, 120px);
+  height: clamp(80px, 12vw, 120px);
+  background: rgba(var(--danger-rgb), 0.12);
+  border-radius: var(--radius-2xl);
+  box-shadow:
+    0 0 0 1px rgba(var(--danger-rgb), 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 24px -8px rgba(var(--danger-rgb), 0.25);
+  position: relative;
+  z-index: 1;
+}
+
+.icon {
+  color: var(--danger);
+  opacity: 0.9;
+  flex-shrink: 0;
+  animation: pulseIcon 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseIcon {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(16px, 2vw, 20px);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  font-family: var(--font-heading);
+  position: relative;
+  z-index: 1;
+}
+
+.description {
+  margin: 0;
+  font-size: clamp(13px, 1.5vw, 15px);
+  color: var(--text-sec);
+  line-height: 1.5;
+  max-width: 380px;
+  position: relative;
+  z-index: 1;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+
+  > * {
+    flex-shrink: 0;
+  }
+}
+
+/* Size variants */
+.size-sm {
+  min-height: 240px;
+  padding: clamp(24px, 4vw, 40px) clamp(16px, 3vw, 32px);
+  gap: clamp(12px, 2vw, 16px);
+
+  .iconWrapper {
+    width: clamp(60px, 10vw, 80px);
+    height: clamp(60px, 10vw, 80px);
+  }
+
+  .icon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .title {
+    font-size: clamp(14px, 1.6vw, 16px);
+  }
+
+  .description {
+    font-size: clamp(12px, 1.2vw, 13px);
+  }
+}
+
+.size-lg {
+  min-height: 420px;
+  padding: clamp(60px, 10vw, 100px) clamp(32px, 5vw, 48px);
+  gap: clamp(20px, 4vw, 32px);
+
+  .iconWrapper {
+    width: clamp(100px, 14vw, 140px);
+    height: clamp(100px, 14vw, 140px);
+  }
+
+  .title {
+    font-size: clamp(20px, 2.5vw, 28px);
+  }
+
+  .description {
+    font-size: clamp(14px, 1.8vw, 16px);
+  }
+}
+
+/* Responsive */
+@media (max-width: 479px) {
+  .errorState {
+    min-height: 280px;
+  }
+
+  .actions {
+    width: 100%;
+
+    > * {
+      flex: 1;
+      min-width: 100px;
+    }
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .icon {
+    animation: none;
+    opacity: 0.9;
+  }
+}

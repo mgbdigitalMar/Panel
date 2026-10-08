@@ -1,7 +1,10 @@
 .calendar {
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--glass-card);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card), var(--glass-highlight);
   overflow: hidden;
 }
 
@@ -17,7 +20,7 @@
   justify-content: space-between;
   padding: 16px 20px;
   border-bottom: 1px solid rgba(var(--border-rgb), 0.35);
-  background: rgba(var(--bg-rgb), 0.55);
+  background: rgba(var(--bg-rgb), 0.45);
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
   flex-wrap: wrap;
@@ -30,10 +33,15 @@
 }
 
 .viewToggle {
-  display: flex;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  background: var(--glass-input);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid rgba(var(--border-rgb), 0.45);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 2px;
 }
 
 .viewBtn {
@@ -42,20 +50,21 @@
   border: none;
   cursor: pointer;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-sec);
-  transition: all 0.15s;
+  border-radius: var(--radius-full);
+  transition: all 0.2s var(--ease-out);
 
   &:hover {
-    background: var(--bg);
+    color: var(--text);
   }
 }
 
 .viewBtnActive {
-  background: var(--gradient-accent) !important;
-  color: #fff !important;
+  background: var(--glass-card) !important;
+  color: var(--accent) !important;
   font-weight: 700;
-  box-shadow: 0 2px 12px rgba(var(--accent-rgb), 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), var(--glass-highlight-sm);
 }
 
 .navRow {
@@ -217,13 +226,13 @@
 /* ── Week grid ──────────────────────────────────────────── */
 .weekGrid {
   display: grid;
-  grid-template-columns: 54px repeat(7, 1fr);
+  grid-template-columns: 54px repeat(7, minmax(80px, 1fr));
   overflow-y: auto;
   max-height: 520px;
-  min-width: 600px;
+  min-width: 640px;
 
   @media (max-width: 768px) {
-    grid-template-columns: 40px repeat(7, 1fr);
+    grid-template-columns: 44px repeat(7, minmax(72px, 1fr));
     max-height: 480px;
   }
 }
@@ -235,11 +244,11 @@
 }
 
 .weekDayHeader {
-  padding: 10px 4px;
+  padding: 12px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   background: var(--bg);

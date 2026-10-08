@@ -3,6 +3,7 @@ import { useTheme, useAuth, useNotifs, useDocuments, useRequests, useReservation
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
+import { springConfig } from '../hooks/useSpringAnimation';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, Settings, User,
   LogOut, Menu, Bell, CheckCircle, XCircle,
@@ -52,7 +53,7 @@ function NavLink({ item, onNavigate, collapsed, badge, active }) {
 
   return (
     <div className={styles.navLinkWrapper}>
-      <button
+      <motion.button
         onClick={() => onNavigate(item.id)}
         className={clsx(styles.navLink, { [styles.navLinkActive]: active })}
         aria-current={active ? 'page' : undefined}
@@ -62,28 +63,43 @@ function NavLink({ item, onNavigate, collapsed, badge, active }) {
         onMouseLeave={() => setShowTip(false)}
         onFocus={() => collapsed && setShowTip(true)}
         onBlur={() => setShowTip(false)}
+        whileHover={{ scale: 1.05, x: 2 }}
+        whileTap={{ scale: 0.95 }}
+        transition={springConfig.responsive}
       >
         <Icon size={17} aria-hidden="true" />
         <span className={styles.navLabel}>{item.label}</span>
         {badge > 0 && !collapsed && (
-          <span className={styles.navBadge} aria-label={`${badge} pendientes`}>
+          <motion.span
+            className={styles.navBadge}
+            aria-label={`${badge} pendientes`}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', damping: 1.0, mass: 0.8, stiffness: 300 }}
+          >
             {badge > 9 ? '9+' : badge}
-          </span>
+          </motion.span>
         )}
         {badge > 0 && collapsed && (
-          <span className={styles.navBadgeDot} aria-label={`${badge} pendientes`} />
+          <motion.span
+            className={styles.navBadgeDot}
+            aria-label={`${badge} pendientes`}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', damping: 1.0, mass: 0.8, stiffness: 300 }}
+          />
         )}
-      </button>
+      </motion.button>
 
-      {/* Floating tooltip when collapsed */}
+      {/* Floating tooltip when collapsed - Apple style spring entrance */}
       <AnimatePresence>
         {collapsed && showTip && (
           <motion.div
             className={styles.navTooltip}
-            initial={{ opacity: 0, x: -6, y: '-50%', scale: 0.94 }}
+            initial={{ opacity: 0, x: -8, y: '-50%', scale: 0.92 }}
             animate={{ opacity: 1, x: 0, y: '-50%', scale: 1 }}
-            exit={{ opacity: 0, x: -4, y: '-50%', scale: 0.96 }}
-            transition={{ duration: 0.14 }}
+            exit={{ opacity: 0, x: -6, y: '-50%', scale: 0.94 }}
+            transition={springConfig.responsive}
             role="tooltip"
             id={`tooltip-${item.id}`}
           >

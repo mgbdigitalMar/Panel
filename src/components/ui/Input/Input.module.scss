@@ -110,9 +110,19 @@
 
 .hasError {
   border-color: var(--danger) !important;
+  background-color: rgba(var(--danger-rgb), 0.03) !important;
 
   &:focus {
-    box-shadow: 0 0 0 3px rgba(var(--danger-rgb), 0.18) !important;
+    box-shadow: 0 0 0 1px var(--danger), 0 0 0 3px rgba(var(--danger-rgb), 0.18) !important;
+  }
+}
+
+.hasSuccess {
+  border-color: var(--success) !important;
+  background-color: rgba(var(--success-rgb), 0.02) !important;
+
+  &:focus {
+    box-shadow: 0 0 0 1px var(--success), 0 0 0 3px rgba(var(--success-rgb), 0.12) !important;
   }
 }
 
@@ -125,6 +135,50 @@
 
 .hintError {
   color: var(--danger);
+  font-weight: 500;
+}
+
+/* ── Validation icons ─────────────────────────────────────────── */
+.validationIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-mut);
+  transition: color 0.18s var(--ease-out);
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+}
+
+.errorIcon {
+  color: var(--danger);
+}
+
+.successIcon {
+  color: var(--success);
+}
+
+/* ── leftElement support ──────────────────────────────────────────── */
+.leftElement {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-mut);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.withLeft {
+  padding-left: 42px;
+}
+
+.hasLeft .input {
+  padding-left: 42px;
 }
 
 /* ── rightElement support ────────────────────────────────────────── */
@@ -149,7 +203,7 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  padding: 0 4px;
+  padding: 0 8px 0 4px;
   pointer-events: all; /* allow clicks through */
 }
 
