@@ -541,10 +541,10 @@
     color: white;
     border-color: var(--accent);
     box-shadow: var(--shadow-accent);
-    transform: scale(1.15);
+    transform: scale(1.05);
   }
 
-  &:active { transform: scale(0.92); }
+  &:active { transform: scale(0.96); }
 
   /* On tablet/mobile the sidebar is hidden so hide the btn too */
   @media (max-width: 1023px) { display: none; }

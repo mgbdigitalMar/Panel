@@ -125,7 +125,8 @@ export async function registerForPushNotificationsAsync(userId) {
     }
 
     await ensureChannel();
-    if (!Device.isDevice) return { ok: false, reason: 'emulator' };
+    // Android emulators with Google Play services receive FCM; iOS simulators can't.
+    if (!Device.isDevice && Platform.OS === 'ios') return { ok: false, reason: 'emulator' };
 
     let { status } = await NativeNotifications.getPermissionsAsync();
     if (status !== 'granted') {

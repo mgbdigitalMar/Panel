@@ -27,6 +27,11 @@ export default defineConfig({
       }
     })
   ],
+  server: {
+    watch: {
+      ignored: ['**/mobile/**', '**/tests/**', '**/supabase/**']
+    }
+  },
   css: {
     preprocessorOptions: {
       scss: {
@@ -48,6 +53,9 @@ export default defineConfig({
             }
             if (id.includes('@supabase') || id.includes('supabase-js')) {
               return 'vendor-supabase';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
             }
             if (id.includes('bcryptjs')) {
               return 'vendor-bcrypt';

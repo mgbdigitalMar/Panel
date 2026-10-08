@@ -1,0 +1,43 @@
+# ==============================================================================
+# Vercel Deployment Exclusions
+# ==============================================================================
+# Este archivo asegura que Vercel SOLO procese y despliegue la aplicación web,
+# aislando por completo la aplicación móvil (Expo / React Native), tests y backend.
+# ==============================================================================
+
+# 1. Aplicación móvil (React Native / Expo)
+mobile
+mobile/**
+mobile-standalone
+mobile-standalone/**
+
+# 2. Backend Supabase & Edge Functions (gestionados independientemente)
+supabase
+supabase/**
+
+# 3. Suites de pruebas y utilidades de testing
+tests
+tests/**
+
+# 4. Documentación y archivos estáticos pesados fuera de /public
+docs
+docs/**
+Margube · App móvil y Web.html
+*.md
+LICENSE
+
+# 5. Herramientas de IA, configuración de IDE y logs
+.agents
+.agents/**
+.claude
+.claude/**
+.gemini
+skills-lock.json
+
+# 6. Scripts locales de mantenimiento
+delete_mock_docs.js
+list_docs.js
+
+# 7. Dependencias y temporales
+node_modules
+.expo

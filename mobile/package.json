@@ -45,6 +45,9 @@
     "run:android": "npx expo run:android",
     "build:apk": "npx eas-cli@latest build --platform android --profile preview",
     "build:dev": "npx eas-cli@latest build --platform android --profile development",
+    "eas:login": "npx eas-cli@latest login",
+    "eas:init": "npx eas-cli@latest init",
+    "eas:credentials": "npx eas-cli@latest credentials --platform android",
     "doctor": "npx expo-doctor",
     "bundle": "npx expo export --platform android --output-dir dist",
     "lint": "expo lint"

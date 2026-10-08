@@ -17,6 +17,10 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+# Firebase service account (FCM V1) — se sube a EAS, nunca a git.
+# google-services.json SÍ se sube: solo tiene identificadores públicos.
+*firebase-adminsdk*.json
+service-account*.json
 
 # Metro
 .metro-health-check*

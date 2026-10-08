@@ -63,8 +63,8 @@ function NavLink({ item, onNavigate, collapsed, badge, active }) {
         onMouseLeave={() => setShowTip(false)}
         onFocus={() => collapsed && setShowTip(true)}
         onBlur={() => setShowTip(false)}
-        whileHover={{ scale: 1.05, x: 2 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1.01, x: 2 }}
+        whileTap={{ scale: 0.98 }}
         transition={springConfig.responsive}
       >
         <Icon size={17} aria-hidden="true" />
@@ -73,9 +73,9 @@ function NavLink({ item, onNavigate, collapsed, badge, active }) {
           <motion.span
             className={styles.navBadge}
             aria-label={`${badge} pendientes`}
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', damping: 1.0, mass: 0.8, stiffness: 300 }}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', damping: 26, mass: 0.8, stiffness: 300 }}
           >
             {badge > 9 ? '9+' : badge}
           </motion.span>
@@ -84,9 +84,9 @@ function NavLink({ item, onNavigate, collapsed, badge, active }) {
           <motion.span
             className={styles.navBadgeDot}
             aria-label={`${badge} pendientes`}
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', damping: 1.0, mass: 0.8, stiffness: 300 }}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', damping: 26, mass: 0.8, stiffness: 300 }}
           />
         )}
       </motion.button>

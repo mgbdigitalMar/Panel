@@ -7,48 +7,48 @@ import { useMotionValue, useSpring } from 'framer-motion';
  */
 
 export const springConfig = {
-  // UI default: snappy, no bounce
+  // UI default: snappy, no bounce (critically damped)
   default: {
     type: 'spring',
-    damping: 1.0,
+    damping: 28,
     mass: 1,
     stiffness: 300,
     restDelta: 0.001,
   },
 
-  // Responsive feedback: faster response
+  // Responsive feedback: fast, crisp button/hover response
   responsive: {
     type: 'spring',
-    damping: 1.0,
+    damping: 26,
     mass: 0.8,
-    stiffness: 400,
+    stiffness: 360,
     restDelta: 0.001,
   },
 
-  // Momentum interaction: slight bounce (damping 0.8)
+  // Momentum interaction: gentle settle without wild bounce
   momentum: {
     type: 'spring',
-    damping: 0.8,
-    mass: 1,
-    stiffness: 300,
-    restDelta: 0.001,
-  },
-
-  // Page transition: slower, more deliberate
-  pageTransition: {
-    type: 'spring',
-    damping: 1.0,
-    mass: 1.2,
-    stiffness: 200,
-    restDelta: 0.001,
-  },
-
-  // Drawer/sheet: medium bounce on flick
-  sheet: {
-    type: 'spring',
-    damping: 0.8,
+    damping: 24,
     mass: 1,
     stiffness: 280,
+    restDelta: 0.001,
+  },
+
+  // Page transition: smooth, deliberate entrance
+  pageTransition: {
+    type: 'spring',
+    damping: 30,
+    mass: 1.1,
+    stiffness: 220,
+    restDelta: 0.001,
+  },
+
+  // Drawer/sheet: controlled fluid settle
+  sheet: {
+    type: 'spring',
+    damping: 26,
+    mass: 1,
+    stiffness: 260,
     restDelta: 0.001,
   },
 };

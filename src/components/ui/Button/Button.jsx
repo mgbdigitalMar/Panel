@@ -24,8 +24,8 @@ export function Button({
     <Component
       type={props.href ? undefined : type}
       title={title}
-      whileHover={!disabled && !loading ? { scale: 1.02 } : {}}
-      whileTap={!disabled && !loading ? { scale: 0.97 } : {}}
+      whileHover={!disabled && !loading ? { scale: 1.01 } : {}}
+      whileTap={!disabled && !loading ? { scale: 0.98 } : {}}
       transition={springConfig.responsive}
       onClick={onClick}
       disabled={disabled || loading}
