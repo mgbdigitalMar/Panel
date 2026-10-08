@@ -107,18 +107,20 @@ export default function NewsPage() {
   };
 
   return (
-    <div>
+    <div className={styles.container}>
       {/* Header */}
       <div className={styles.pageControls}>
-        <div className={styles.tabs}>
+        <div className={styles.tabsRow}>
           {tabBtn('all', 'Todo')}
           {tabBtn('news', 'Noticias')}
           {tabBtn('event', 'Eventos')}
         </div>
         {(user.role === 'admin' || user.dept === 'Comunicación - marketing') && (
-          <Button icon={Plus} onClick={() => { setEditItem(null); setForm({ type: 'news', title: '', content: '', category: 'Empresa', pinned: false }); setShowModal(true); }}>
-            Publicar
-          </Button>
+          <div className={styles.controlsRight}>
+            <Button icon={Plus} onClick={() => { setEditItem(null); setForm({ type: 'news', title: '', content: '', category: 'Empresa', pinned: false }); setShowModal(true); }}>
+              Publicar
+            </Button>
+          </div>
         )}
       </div>
 

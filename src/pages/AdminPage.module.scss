@@ -74,6 +74,38 @@
   pointer-events: none;
 }
 
+.tabCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  background: rgba(var(--text-rgb), 0.08);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-sec);
+  line-height: 1;
+
+  .tabBtnActive & {
+    background: rgba(var(--accent-rgb), 0.12);
+    color: var(--accent);
+  }
+}
+
+.controlsRight {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
 @keyframes tab-indicator {
   from { width: 0%; opacity: 0; }
   to   { width: 60%; opacity: 1; }

@@ -3,11 +3,12 @@ import { runDatabaseSchemaTests } from './02_database_schema.test.mjs';
 import { runCrudLifecycleTests } from './03_crud_lifecycle.test.mjs';
 import { runBusinessLogicTests } from './04_business_logic.test.mjs';
 import { runFrontendIntegrityTests } from './05_frontend_integrity.test.mjs';
+import { runMobileAppTests } from './06_mobile_app.test.mjs';
 
 async function main() {
   const startGlobal = Date.now();
   console.log('================================================================');
-  console.log('🚀 MARGUBE INTRANET: SUITE COMPLETA DE PRUEBAS DE LA WEB');
+  console.log('🚀 MARGUBE INTRANET: SUITE COMPLETA DE PRUEBAS (WEB + APP MÓVIL)');
   console.log('================================================================');
 
   const suites = [
@@ -16,6 +17,7 @@ async function main() {
     { name: 'Ciclo de Vida CRUD y Persistencia', fn: runCrudLifecycleTests },
     { name: 'Lógica de Negocio y Validaciones', fn: runBusinessLogicTests },
     { name: 'Integridad del Frontend y Assets', fn: runFrontendIntegrityTests },
+    { name: 'App Móvil y Servicios Compartidos', fn: runMobileAppTests },
   ];
 
   let totalPassed = 0;

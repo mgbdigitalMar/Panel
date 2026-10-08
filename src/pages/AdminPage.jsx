@@ -238,13 +238,16 @@ export default function AdminPage() {
     });
   };
 
-  const tabBtn = (id, label) => (
+  const tabBtn = (id, label, count) => (
     <button 
       key={id} 
       onClick={() => setTab(id)}
       className={clsx(styles.tabBtn, { [styles.tabBtnActive]: tab === id })}
     >
       {label}
+      {typeof count === 'number' && count >= 0 && (
+        <span className={styles.tabCount}>{count}</span>
+      )}
     </button>
   );
 
@@ -299,43 +302,45 @@ export default function AdminPage() {
       {/* Page Controls */}
       <div className={styles.pageControls}>
         <div className={styles.tabsRow}>
-          {tabBtn('employees', 'Empleados / Usuarios')}
-          {tabBtn('rooms', 'Salas')}
-          {tabBtn('vehicles', 'Vehículos')}
-          {tabBtn('documents', 'Documentos')}
-          {tabBtn('bolsahoras', 'Bolsa Horas')}
+          {tabBtn('employees', 'Empleados', employees.length)}
+          {tabBtn('rooms', 'Salas', rooms.length)}
+          {tabBtn('vehicles', 'Vehículos', vehicles.length)}
+          {tabBtn('documents', 'Documentos', documents.length)}
+          {tabBtn('bolsahoras', 'Bolsa Horas', (hourCompensations || []).length)}
         </div>
         
-        {tab === 'employees' && (
-          <Button icon={Plus} onClick={() => { setEditEmp(null); setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '', workMode: 'Office' }); setShowModal(true); }}>
-            Nuevo empleado
-          </Button>
-        )}
-        {tab === 'rooms' && (
-          <Button icon={Plus} onClick={() => { setResType('room'); setResForm({ id: null, name: '', capacity: '', floor: '', equipment: '' }); setEditingRes(false); setShowResModal(true); }}>
-            Nueva sala
-          </Button>
-        )}
-        {tab === 'vehicles' && (
-          <Button icon={Plus} onClick={() => { setResType('vehicle'); setResForm({ id: null, model: '', plate: '', year: '', type: 'Turismo' }); setEditingRes(false); setShowResModal(true); }}>
-            Nuevo vehículo
-          </Button>
-        )}
-        {tab === 'documents' && (
-          <div className={styles.headerRight}>
-            <Button icon={Upload} variant="ghost" onClick={() => setShowOnboardingModal(true)}>
-              Actualizar doc. inicio
+        <div className={styles.controlsRight}>
+          {tab === 'employees' && (
+            <Button icon={Plus} onClick={() => { setEditEmp(null); setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '', workMode: 'Office' }); setShowModal(true); }}>
+              Nuevo empleado
             </Button>
-            <Button icon={Send} onClick={() => setShowDocModal(true)}>
-              Enviar documento
+          )}
+          {tab === 'rooms' && (
+            <Button icon={Plus} onClick={() => { setResType('room'); setResForm({ id: null, name: '', capacity: '', floor: '', equipment: '' }); setEditingRes(false); setShowResModal(true); }}>
+              Nueva sala
             </Button>
-          </div>
-        )}
-        {tab === 'bolsahoras' && filteredHours.length > 0 && (
-          <Button icon={Download} variant="ghost" onClick={() => exportHoursCSV(filteredHours)}>
-            Descargar Excel
-          </Button>
-        )}
+          )}
+          {tab === 'vehicles' && (
+            <Button icon={Plus} onClick={() => { setResType('vehicle'); setResForm({ id: null, model: '', plate: '', year: '', type: 'Turismo' }); setEditingRes(false); setShowResModal(true); }}>
+              Nuevo vehículo
+            </Button>
+          )}
+          {tab === 'documents' && (
+            <>
+              <Button icon={Upload} variant="ghost" onClick={() => setShowOnboardingModal(true)}>
+                Actualizar doc. inicio
+              </Button>
+              <Button icon={Send} onClick={() => setShowDocModal(true)}>
+                Enviar documento
+              </Button>
+            </>
+          )}
+          {tab === 'bolsahoras' && filteredHours.length > 0 && (
+            <Button icon={Download} variant="ghost" onClick={() => exportHoursCSV(filteredHours)}>
+              Descargar Excel
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* ── EMPLOYEES ── */}

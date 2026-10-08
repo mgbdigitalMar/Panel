@@ -1,12 +1,24 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 2.5vw, 24px);
+}
+
 .pageControls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: clamp(16px, 2.5vw, 28px);
+  gap: 14px;
   flex-wrap: wrap;
-  gap: 12px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
 }
 
+.tabsRow,
 .tabs {
   display: inline-flex;
   gap: 4px;
@@ -39,7 +51,7 @@
   font-family: inherit;
   cursor: pointer;
   border-radius: var(--radius-full);
-  transition: all 0.25s var(--ease-out);
+  transition: all 0.22s var(--ease-out);
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -68,10 +80,10 @@
   justify-content: center;
   min-width: 18px;
   height: 18px;
-  padding: 0 4px;
+  padding: 0 5px;
   border-radius: var(--radius-full);
   background: rgba(var(--text-rgb), 0.08);
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 700;
   color: var(--text-sec);
   line-height: 1;
@@ -82,18 +94,41 @@
   }
 }
 
+.controlsRight {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
 @keyframes tab-indicator {
   from { width: 0%; opacity: 0; }
   to   { width: 60%; opacity: 1; }
 }
 
 .sectionTitle {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--text-mut);
+  color: var(--text-sec);
+  margin: 8px 0 16px;
+  font-family: var(--font-heading);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(var(--border-rgb), 0.45);
+  }
 }
 
 .newsList {

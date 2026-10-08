@@ -727,30 +727,33 @@ const [readIds, setReadIds] = useState(() => {
   }
 
   const createReservation = async (employeeId, payload) => {
-    // Buscar nombre del recurso si no viene en payload
     let rName = payload.resourceName;
     if (!rName) {
       if (payload.type === 'room') {
-        rName = rooms.find(r => r.id === payload.room_id)?.name || 'Sala';
+        rName = rooms.find(r => String(r.id) === String(payload.room_id))?.name || 'Sala';
       } else {
-        rName = vehicles.find(v => v.id === payload.vehicle_id)?.model || 'Vehículo';
+        rName = vehicles.find(v => String(v.id) === String(payload.vehicle_id))?.model || 'Vehículo';
       }
     }
+
+    const roomId = payload.type === 'room' && payload.room_id ? parseInt(payload.room_id, 10) : null;
+    const vehicleId = payload.type === 'vehicle' && payload.vehicle_id ? parseInt(payload.vehicle_id, 10) : null;
+    const purpose = payload.purpose?.trim() || (payload.type === 'room' ? 'Reserva de sala' : 'Uso de vehículo');
 
     const { data, error } = await supabase.from('reservations').insert([{
       employee_id: employeeId,
       type: payload.type,
-      room_id: payload.room_id,
-      vehicle_id: payload.vehicle_id,
+      room_id: roomId,
+      vehicle_id: vehicleId,
       date: payload.date,
       time_start: payload.time_start,
       time_end: payload.time_end,
-      purpose: payload.purpose,
-      status: payload.status
+      purpose,
+      status: payload.status || 'pending'
     }]).select().single()
     if (error) { 
-      console.error(error); 
-      return { error: error.message || 'Failed to create reservation' }
+      console.error('createReservation error:', error); 
+      return { error: error.message || 'Error al crear la reserva' }
     }
     await fetchReservations()
     
@@ -761,7 +764,7 @@ const [readIds, setReadIds] = useState(() => {
       body: `${empName} ha realizado una reserva de ${payload.type === 'room' ? 'sala' : 'vehículo'}.`,
       type: 'info',
       entityType: 'reservation',
-      entityId: data?.id
+      entityId: data?.id ? String(data.id) : null
     })
     
     return { data }
@@ -1040,20 +1043,31 @@ export function AuthProvider({ children }) {
 
   // Map a Supabase profile row → app user shape
   function mapProfile(profile) {
+    if (!profile) return null;
+    const rawDept = (profile.department || profile.dept || '').trim();
+    const dept = rawDept || 'Sin asignar';
+    const position = (profile.position || '').trim();
+    const phone = (profile.phone || '').trim();
+    const name = (profile.name || '').trim();
+    const email = (profile.email || '').trim();
+    const workMode = profile.work_mode || profile.workMode || 'Office';
+
     return {
       id:         profile.id,
-      name:       profile.name,
-      email:      profile.email,
-      role:       profile.role,
-      dept:       profile.department,
-      phone:      profile.phone,
-      position:   profile.position,
-      avatar:     profile.avatar_initials,
-      birthdate:  profile.birthdate,
-      joinDate:   profile.join_date,
-      workMode:   profile.work_mode || 'Office',
-      firstLogin: profile.first_login,
-      policyAccepted: profile.policy_accepted,
+      name:       name,
+      email:      email,
+      role:       profile.role || 'employee',
+      dept:       dept,
+      department: dept,
+      phone:      phone,
+      position:   position,
+      avatar:     profile.avatar_initials || profile.avatar || null,
+      avatarUrl:  profile.avatar_url || profile.avatarUrl || null,
+      birthdate:  profile.birthdate || profile.birth_date || null,
+      joinDate:   profile.join_date || profile.joinDate || null,
+      workMode:   workMode,
+      firstLogin: profile.first_login ?? profile.firstLogin,
+      policyAccepted: profile.policy_accepted ?? profile.policyAccepted,
     }
   }
 

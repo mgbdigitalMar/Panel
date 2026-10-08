@@ -1,0 +1,87 @@
+.skeleton {
+  display: block;
+  background: var(--shimmer-bg);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+/* Card skeleton */
+.skeletonCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* Table skeleton */
+.skeletonTable {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeletonTableRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px;
+  padding: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.skeletonTableCell {
+  overflow: hidden;
+}
+
+/* Text skeleton */
+.skeletonText {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonLine {
+  width: 100%;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--bg-3);
+    opacity: 0.5;
+  }
+}
+
+/* Responsive */
+@media (max-width: 479px) {
+  .skeletonTableRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

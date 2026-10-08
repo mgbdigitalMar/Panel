@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAuth, useHours } from '../context';
-import { Card, Button, Input, Modal, Avatar } from '../components/ui';
+import { Card, Button, Input, Modal, Avatar, StatCard } from '../components/ui';
 import { Clock, Inbox, CheckCircle, XCircle, Download, Timer, PenTool, TrendingDown, TrendingUp, Minus, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
@@ -232,15 +232,17 @@ export default function HorasPage() {
           {tabBtn('bolsa', '🗂 Mi Registro', myAll.length)}
           {user?.role === 'admin' && tabBtn('usuarios', '👥 Historial de Usuarios', userStats.filter(s => s.pending > 0).length)}
         </div>
-        {tab === 'bolsa' && allRows.length > 0 && (
-          <Button
-            icon={Download}
-            variant="ghost"
-            onClick={() => exportToCSV(allRows, `horas-${new Date().toISOString().slice(0,10)}.csv`)}
-          >
-            Descargar Excel
-          </Button>
-        )}
+        <div className={styles.controlsRight}>
+          {tab === 'bolsa' && allRows.length > 0 && (
+            <Button
+              icon={Download}
+              variant="ghost"
+              onClick={() => exportToCSV(allRows, `horas-${new Date().toISOString().slice(0,10)}.csv`)}
+            >
+              Descargar Excel
+            </Button>
+          )}
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
@@ -359,36 +361,35 @@ export default function HorasPage() {
             transition={{ duration: 0.2 }}
           >
             {/* Balance stats */}
-            <div className={styles.statsRow}>
-              <div className={clsx(styles.statCard, styles.statApproved)}>
-                <TrendingUp size={20} />
-                <div>
-                  <span className={styles.statValue}>{creditHours.toFixed(1)}h</span>
-                  <span className={styles.statLabel}>A favor (aprobadas)</span>
-                </div>
-              </div>
-              <div className={clsx(styles.statCard, styles.statPending)}>
-                <Clock size={20} />
-                <div>
-                  <span className={styles.statValue}>{pendingHours.toFixed(1)}h</span>
-                  <span className={styles.statLabel}>Pendientes aprobación</span>
-                </div>
-              </div>
-              <div className={clsx(styles.statCard, styles.statRejected)}>
-                <TrendingDown size={20} />
-                <div>
-                  <span className={styles.statValue}>{debtHours.toFixed(1)}h</span>
-                  <span className={styles.statLabel}>Debo a la empresa</span>
-                </div>
-              </div>
-              {/* Net balance */}
-              <div className={clsx(styles.statCard, balance >= 0 ? styles.statApproved : styles.statRejected, styles.statBalance)}>
-                {balance > 0 ? <TrendingUp size={20} /> : balance < 0 ? <TrendingDown size={20} /> : <Minus size={20} />}
-                <div>
-                  <span className={styles.statValue}>{balance >= 0 ? '+' : ''}{balance.toFixed(1)}h</span>
-                  <span className={styles.statLabel}>Balance neto</span>
-                </div>
-              </div>
+            <div className={styles.statsGrid}>
+              <StatCard
+                label="A mi favor"
+                value={`${creditHours.toFixed(1)}h`}
+                icon="Clock"
+                color="var(--success)"
+                sub="Horas aprobadas"
+              />
+              <StatCard
+                label="Pendientes"
+                value={`${pendingHours.toFixed(1)}h`}
+                icon="Clock"
+                color="var(--warning)"
+                sub="En revisión administrativa"
+              />
+              <StatCard
+                label="Debo a la empresa"
+                value={`${debtHours.toFixed(1)}h`}
+                icon="TrendingDown"
+                color="var(--danger)"
+                sub="Horas por recuperar"
+              />
+              <StatCard
+                label="Balance neto"
+                value={`${balance >= 0 ? '+' : ''}${balance.toFixed(1)}h`}
+                icon={balance >= 0 ? "TrendingUp" : "TrendingDown"}
+                color={balance >= 0 ? "var(--accent)" : "var(--danger)"}
+                sub={balance >= 0 ? "Saldo a favor" : "Saldo deudor"}
+              />
             </div>
 
             {/* Filters */}

@@ -2,13 +2,14 @@ import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import styles from './Button.module.scss';
 import { Loader2 } from 'lucide-react';
+import { springConfig } from '../../../hooks/useSpringAnimation';
 
-export function Button({ 
-  children, 
-  onClick, 
-  variant = 'primary', 
-  size = 'md', 
-  icon: IconComponent, 
+export function Button({
+  children,
+  onClick,
+  variant = 'primary',
+  size = 'md',
+  icon: IconComponent,
   disabled,
   loading = false,
   className,
@@ -24,7 +25,8 @@ export function Button({
       type={props.href ? undefined : type}
       title={title}
       whileHover={!disabled && !loading ? { scale: 1.02 } : {}}
-      whileTap={!disabled && !loading ? { scale: 0.98 } : {}}
+      whileTap={!disabled && !loading ? { scale: 0.97 } : {}}
+      transition={springConfig.responsive}
       onClick={onClick}
       disabled={disabled || loading}
       {...props}
@@ -41,7 +43,7 @@ export function Button({
       ) : IconComponent ? (
         <IconComponent size={16} />
       ) : null}
-      
+
       {children && !iconOnly && <span>{children}</span>}
     </Component>
   );

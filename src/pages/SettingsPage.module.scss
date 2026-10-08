@@ -3,7 +3,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: clamp(20px, 3vw, 28px);
+  gap: clamp(16px, 2.5vw, 24px);
   animation: slide-in-up 0.28s var(--ease-out) both;
 }
 
