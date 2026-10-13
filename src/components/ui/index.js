@@ -11,3 +11,4 @@ export { ConfirmModal } from './ConfirmModal/ConfirmModal';
 export { EmptyState } from './EmptyState/EmptyState';
 export { ErrorState } from './ErrorState/ErrorState';
 export { Skeleton, SkeletonCard, SkeletonTable, SkeletonText } from './Skeleton/Skeleton';
+export { LeafMark, BootLoader, Spinner, TopProgress, PageLoader } from './Loader/Loader';

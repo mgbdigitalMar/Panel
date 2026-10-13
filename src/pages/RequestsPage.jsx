@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth, useRequests, usePersonalDays, useDocuments } from '../context';
 import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard, ConfirmModal } from '../components/ui';
 import { Plus, Check, X, FileText, ExternalLink, Download, Trash2, Home, Briefcase, ShoppingCart, Calendar } from 'lucide-react';
@@ -19,7 +20,16 @@ export default function RequestsPage() {
   const [form, setForm]           = useState({ startDate: '', endDate: '', date: '', reason: '', item: '', amount: '', acceptedTerms: false });
   const [file, setFile]           = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
-  
+
+  // ?nueva=1 (search, shortcuts) opens the request form straight away
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get('nueva') === '1') {
+      setShowModal(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const [conditionsRead, setConditionsRead] = useState(false);
   const conditionsRef = useRef(null);
 

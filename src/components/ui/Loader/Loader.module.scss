@@ -1,0 +1,301 @@
+/* ═══════════════════════════════════════════════════════════════════
+   LOADERS — built from the Margube leaf mark
+   One timeline (2.4s): outline draws → leaf fills → glass sheen → release
+═══════════════════════════════════════════════════════════════════ */
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ── Leaf mark ──────────────────────────────────────────────────────── */
+.mark {
+  --mark-tile: #2F5BEA;
+  --mark-cycle: 2.4s;
+  position: relative;
+  display: inline-block;
+  width: var(--mark-size);
+  height: var(--mark-size);
+  border-radius: calc(var(--mark-size) * 0.25);
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow:
+    0 10px 24px -8px rgba(47, 91, 234, 0.45),
+    0 2px 6px -2px rgba(6, 17, 43, 0.20);
+
+  svg { display: block; }
+}
+
+.tile { fill: var(--mark-tile); }
+
+.leafFill {
+  fill: #FFFFFF;
+  opacity: 1;
+}
+
+.leafStroke {
+  fill: none;
+  stroke: #FFFFFF;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 0;
+}
+
+.vein {
+  fill: none;
+  stroke: var(--mark-tile);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 0;
+}
+
+/* Diagonal glass sheen that crosses the tile once per cycle */
+.sheen {
+  position: absolute;
+  inset: -20%;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 62%
+  );
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+
+.markAnimate {
+  .leafStroke { animation: leaf-draw var(--mark-cycle) cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+  .leafFill   { animation: leaf-fill var(--mark-cycle) cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+  .vein       { animation: vein-draw var(--mark-cycle) cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+  .sheen      { animation: mark-sheen var(--mark-cycle) cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+}
+
+@keyframes leaf-draw {
+  0%        { stroke-dashoffset: 1; }
+  38%, 86%  { stroke-dashoffset: 0; }
+  100%      { stroke-dashoffset: -1; }
+}
+
+@keyframes leaf-fill {
+  0%, 34%   { opacity: 0; }
+  52%, 84%  { opacity: 1; }
+  96%, 100% { opacity: 0; }
+}
+
+@keyframes vein-draw {
+  0%, 10%   { stroke-dashoffset: 1; stroke: #FFFFFF; }
+  40%       { stroke-dashoffset: 0; stroke: #FFFFFF; }
+  52%, 86%  { stroke-dashoffset: 0; stroke: var(--mark-tile); }
+  100%      { stroke-dashoffset: -1; stroke: #FFFFFF; }
+}
+
+@keyframes mark-sheen {
+  0%, 52%   { transform: translateX(-120%); }
+  78%, 100% { transform: translateX(120%); }
+}
+
+/* ── Boot screen ───────────────────────────────────────────────────── */
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background:
+    radial-gradient(60vmax 60vmax at 50% 42%, rgba(var(--accent-rgb), 0.10), transparent 60%),
+    var(--bg);
+}
+
+.bootTrack {
+  position: relative;
+  width: 112px;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: rgba(var(--text-rgb), 0.08);
+  overflow: hidden;
+}
+
+.bootBar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  border-radius: inherit;
+  background: var(--gradient-accent);
+  animation: progress-slide 1.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.bootLabel {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-mut);
+  letter-spacing: -0.005em;
+}
+
+@keyframes progress-slide {
+  from { transform: translateX(-110%); }
+  to   { transform: translateX(290%); }
+}
+
+/* ── Spinner ───────────────────────────────────────────────────────── */
+.spinner {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: currentColor;
+
+  svg { animation: spinner-turn 0.9s linear infinite; }
+}
+
+.spinnerTrack {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  opacity: 0.22;
+}
+
+.spinnerArc {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transform-origin: center;
+  animation: spinner-dash 1.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes spinner-turn {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spinner-dash {
+  0%   { stroke-dasharray: 2 100;  stroke-dashoffset: 0; }
+  50%  { stroke-dasharray: 55 100; stroke-dashoffset: -12; }
+  100% { stroke-dasharray: 2 100;  stroke-dashoffset: -98; }
+}
+
+/* ── Top progress hairline ─────────────────────────────────────────── */
+.topProgress {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease-out);
+}
+
+.topProgressActive { opacity: 1; }
+
+.topProgressBar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 36%;
+  border-radius: inherit;
+  background: var(--gradient-accent);
+  animation: progress-slide 1.3s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  animation-play-state: paused;
+
+  .topProgressActive & { animation-play-state: running; }
+}
+
+/* ── In-shell page placeholder ─────────────────────────────────────── */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 2vw, 22px);
+  width: 100%;
+}
+
+.pageHead {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.pageTiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(12px, 2vw, 20px);
+
+  @media (max-width: 1280px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 480px)  { grid-template-columns: 1fr; }
+}
+
+.pagePanels {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: clamp(12px, 2vw, 20px);
+
+  @media (max-width: 1024px) { grid-template-columns: 1fr; }
+}
+
+.block {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: rgba(var(--text-rgb), 0.055);
+  opacity: 0;
+  /* Delay-before-show: fast loads never flash a skeleton */
+  animation: block-in 0.4s var(--ease-out) forwards;
+  animation-delay: calc(140ms + var(--i, 0) * 55ms);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 20%,
+      rgba(var(--text-rgb), 0.06) 45%,
+      rgba(255, 255, 255, 0.10) 50%,
+      rgba(var(--text-rgb), 0.06) 55%,
+      transparent 80%
+    );
+    transform: translateX(-100%);
+    animation: block-sheen 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation-delay: calc(var(--i, 0) * 90ms);
+  }
+}
+
+.blockTitle { width: min(260px, 60%); height: 26px; border-radius: var(--radius); }
+.blockSub   { width: min(380px, 80%); height: 14px; border-radius: var(--radius-full); }
+.pageTile   { height: 118px; }
+.panel      { height: clamp(220px, 32vh, 340px); }
+
+@keyframes block-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes block-sheen {
+  to { transform: translateX(100%); }
+}
+
+/* ── Reduced motion: keep state legible, drop the travel ──────────── */
+@media (prefers-reduced-motion: reduce) {
+  .markAnimate {
+    .leafStroke, .vein { animation: none; stroke-dashoffset: 0; }
+    .leafFill { animation: mark-pulse 1.6s ease-in-out infinite !important; animation-duration: 1.6s !important; }
+    .sheen { display: none; }
+  }
+  .block { animation: none; opacity: 1; &::after { display: none; } }
+}
+
+@keyframes mark-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}

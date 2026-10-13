@@ -18,10 +18,10 @@ export function NotificationsDropdown({
     <AnimatePresence>
       {notiMenu && (
         <motion.div
-          initial={{ opacity: 0, y: 10, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 8, scale: 0.96 }}
-          transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          style={{ transformOrigin: 'top right' }}
+          initial={{ opacity: 0, y: -6, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 480, damping: 34, mass: 0.8 } }}
+          exit={{ opacity: 0, y: -4, scale: 0.97, transition: { duration: 0.14, ease: [0.4, 0, 1, 1] } }}
           className={clsx(styles.dropdown, styles.notiDropdown)}
           role="dialog"
           aria-label="Panel de notificaciones"
@@ -52,7 +52,7 @@ export function NotificationsDropdown({
             )}
           </div>
 
-          <div className={styles.notiList} role="list">
+          <div className={clsx(styles.notiList, 'stagger-in')} role="list">
             {notifications.length === 0 ? (
               <div className={styles.emptyNoti}>
                 <div className={styles.emptyNotiIcon}>

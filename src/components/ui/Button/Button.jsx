@@ -1,7 +1,7 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import styles from './Button.module.scss';
-import { Loader2 } from 'lucide-react';
+import { Spinner } from '../Loader/Loader';
 import { springConfig } from '../../../hooks/useSpringAnimation';
 
 export function Button({
@@ -19,30 +19,57 @@ export function Button({
   ...props
 }) {
   const Component = props.href ? motion.a : motion.button;
+  const interactive = !disabled && !loading;
 
   return (
     <Component
       type={props.href ? undefined : type}
       title={title}
-      whileHover={!disabled && !loading ? { scale: 1.01 } : {}}
-      whileTap={!disabled && !loading ? { scale: 0.98 } : {}}
+      whileTap={interactive ? { scale: 0.97 } : undefined}
       transition={springConfig.responsive}
       onClick={onClick}
       disabled={disabled || loading}
+      aria-busy={loading || undefined}
       {...props}
       className={clsx(
         styles.button,
         styles[`variant-${variant}`],
         styles[`size-${size}`],
         iconOnly && styles.iconOnly,
+        loading && styles.isLoading,
         className
       )}
     >
-      {loading ? (
-        <Loader2 className={styles.spinner} size={16} />
-      ) : IconComponent ? (
-        <IconComponent size={16} />
-      ) : null}
+      {/* Icon slot swaps to the spinner with a quick scale-fade */}
+      {(loading || IconComponent) && (
+        <span className={styles.iconSlot}>
+          <AnimatePresence mode="popLayout" initial={false}>
+            {loading ? (
+              <motion.span
+                key="spinner"
+                className={styles.iconSwap}
+                initial={{ opacity: 0, scale: 0.6 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.6 }}
+                transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <Spinner size={16} />
+              </motion.span>
+            ) : (
+              <motion.span
+                key="icon"
+                className={styles.iconSwap}
+                initial={{ opacity: 0, scale: 0.6 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.6 }}
+                transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <IconComponent size={16} />
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </span>
+      )}
 
       {children && !iconOnly && <span>{children}</span>}
     </Component>

@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth, useReservations } from '../context';
 import { Badge, Modal, Select, Input, Textarea, Button, Card, ConfirmModal, StatCard } from '../components/ui';
-import { Building, Car, Check, X, Plus, Download, Trash2, Calendar } from 'lucide-react';
+import { Building, Car, Check, X, Plus, Download, Trash2, Calendar, CalendarPlus } from 'lucide-react';
+import { downloadReservationIcs } from '../utils/ics';
 import styles from './ReservationsPage.module.scss';
 import clsx from 'clsx';
 import ReservationsCalendar from './ReservationsCalendar';
@@ -16,6 +18,15 @@ export default function ReservationsPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [itemToDelete, setItemToDelete] = useState(null);
   const [form, setForm]         = useState({ type: 'room', resourceId: '', date: '', timeStart: '', timeEnd: '', purpose: '' });
+
+  // ?nueva=1 (search, shortcuts, dashboard) opens the booking form straight away
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get('nueva') === '1') {
+      setShowModal(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const filtered = tab === 'all' ? reservations : tab === 'mine' ? reservations.filter(r => r.employeeId === user?.id) : reservations.filter(r => r.type === tab);
 
@@ -253,6 +264,16 @@ export default function ReservationsPage() {
                               <Button variant="action-success" iconOnly icon={Check} onClick={() => handleApprove(r.id)} title="Aprobar" />
                               <Button variant="action-danger" iconOnly icon={X} onClick={() => handleReject(r.id)} title="Rechazar" />
                             </>
+                          )}
+                          {r.employeeId === user?.id && r.status !== 'rejected' && r.status !== 'cancelled' && (
+                            <Button
+                              variant="action-download"
+                              iconOnly
+                              icon={CalendarPlus}
+                              onClick={() => downloadReservationIcs(r)}
+                              title="Añadir a mi calendario"
+                              aria-label={`Añadir ${r.resourceName} a mi calendario`}
+                            />
                           )}
                           {(user?.role === 'admin' || r.employeeId === user?.id) && (
                             <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => setItemToDelete(r.id)} title="Eliminar" />

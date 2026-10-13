@@ -72,7 +72,7 @@
   font-size: 30px;
   font-weight: 800;
   color: var(--text);
-  letter-spacing: -0.05em;
+  letter-spacing: -0.03em;
   line-height: 1;
   font-family: var(--font-heading);
   font-variant-numeric: tabular-nums;
@@ -293,8 +293,7 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
 }
 
 .empMeta {
@@ -362,8 +361,7 @@
     font-size: 11px;
     font-weight: 600;
     color: var(--text-mut);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0;
     border-bottom: 1px solid rgba(var(--border-rgb), 0.50);
     white-space: nowrap;
     background: rgba(var(--bg-rgb), 0.65);
@@ -386,9 +384,9 @@
   /* ── Mobile Card Layout ── */
   @media (max-width: 767px) {
     min-width: 100%;
-    
+
     thead { display: none; }
-    
+
     tbody {
       display: flex;
       flex-direction: column;
@@ -420,9 +418,8 @@
         content: attr(data-label);
         font-size: 11px;
         font-weight: 700;
-        text-transform: uppercase;
         color: var(--text-mut);
-        letter-spacing: 0.05em;
+        letter-spacing: 0;
         text-align: left;
       }
 
@@ -458,4 +455,47 @@
   .summaryCard { padding: 14px 16px; }
   .summaryIcon { width: 36px; height: 36px; }
   .summaryCount { font-size: 22px; }
+}
+
+/* ── Team search ─────────────────────────────────────────────────── */
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: min(300px, 100%);
+  height: var(--input-height);
+  padding: 0 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(var(--border-rgb), 0.55);
+  background: var(--glass-input);
+  color: var(--text-sec);
+  transition: border-color 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
+
+  &:focus-within {
+    border-color: var(--accent);
+    box-shadow: var(--accent-glow);
+    color: var(--accent);
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 13.5px;
+
+    &::placeholder { color: var(--text-mut); }
+    @media (max-width: 479px) { font-size: 16px; }
+  }
+
+  @media (max-width: 768px) { flex: 1; }
+}
+
+.noResults {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--text-sec);
+  font-size: 14px;
 }

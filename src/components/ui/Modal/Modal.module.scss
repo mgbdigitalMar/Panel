@@ -1,13 +1,4 @@
-/* ── Backdrop + entry animations ────────────────────────── */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(24px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
+/* Entry/exit motion lives in Modal.jsx (Framer Motion) */
 
 .overlay {
   position: fixed;
@@ -17,7 +8,6 @@
   justify-content: center;
   padding: 16px;
   z-index: var(--z-modal, 200);
-  animation: fadeIn 0.18s var(--ease-out);
 }
 
 .backdrop {
@@ -30,7 +20,8 @@
 
 .modal {
   position: relative;
-  background: var(--glass-card);
+  /* Opaque enough to read over the dimmed page in both themes */
+  background: var(--glass-card-hover);
   backdrop-filter: blur(32px) saturate(200%);
   -webkit-backdrop-filter: blur(32px) saturate(200%);
   border: 1px solid rgba(255,255,255,0.07);
@@ -46,7 +37,6 @@
   flex-direction: column;
   overflow: hidden;
   z-index: 10;
-  animation: slideUp 0.24s var(--ease-cinematic);
 
   @media (max-width: 479px) {
     max-width: 100%;
@@ -106,20 +96,20 @@
   align-items: center;
   justify-content: center;
   color: var(--text-sec);
-  transition: all 0.2s var(--ease-out);
+  transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), transform 0.15s var(--ease-out);
   flex-shrink: 0;
+
+  svg { transition: transform 0.3s var(--ease-out); }
 
   &:hover {
     color: var(--danger);
     background: var(--danger-bg);
-    border-color: rgba(220, 38, 38, 0.4);
-    box-shadow: var(--glass-highlight-sm);
-    transform: translateY(-1px);
-    svg { filter: drop-shadow(0 0 4px rgba(var(--danger-rgb), 0.25)); }
+    border-color: rgba(var(--danger-rgb), 0.4);
+    svg { transform: rotate(90deg); }
   }
 
   &:active {
-    transform: scale(0.92) rotate(0deg);
+    transform: scale(0.92);
   }
 
   &:focus-visible {

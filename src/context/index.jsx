@@ -1,8 +1,13 @@
 import { createContext, useContext, useState, useEffect, useMemo } from 'react'
+import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
 import bcrypt from 'bcryptjs'
 import { MOCK_DOCUMENTS, MOCK_HOUR_COMPENSATIONS } from '../data/mockData'
+import {
+  showSystemNotification, playNotificationSound, notificationsEnabled,
+  enablePush, disablePush, getRegistration, listenForNotificationClicks,
+} from '../services/webPush'
 
 // ─── THEME CONTEXT ────────────────────────────────────────────
 export const ThemeCtx = createContext()
@@ -42,9 +47,38 @@ export function ThemeProvider({ children }) {
     return () => mq.removeEventListener('change', handler);
   }, [mode]);
 
-  const setMode = (m) => setModeState(m);
+  // Remember where the last press happened so the theme reveal starts there
+  useEffect(() => {
+    const track = (e) => {
+      const root = document.documentElement;
+      root.style.setProperty('--vt-x', `${e.clientX}px`);
+      root.style.setProperty('--vt-y', `${e.clientY}px`);
+      const r = Math.hypot(Math.max(e.clientX, innerWidth - e.clientX), Math.max(e.clientY, innerHeight - e.clientY));
+      root.style.setProperty('--vt-r', `${Math.ceil(r)}px`);
+    };
+    window.addEventListener('pointerdown', track, { passive: true });
+    return () => window.removeEventListener('pointerdown', track);
+  }, []);
+
+  // Theme changes that alter the resolved theme play a circular reveal
+  const withThemeTransition = (update) => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!document.startViewTransition || reduce) { update(); return; }
+    const root = document.documentElement;
+    // Colour transitions would make the new snapshot start from the old palette
+    root.classList.add('theme-switching');
+    const vt = document.startViewTransition(() => {
+      flushSync(update);
+    });
+    vt.finished.finally(() => root.classList.remove('theme-switching'));
+  };
+
+  const setMode = (m) => {
+    if (resolveTheme(m) === resolveTheme(mode)) { setModeState(m); return; }
+    withThemeTransition(() => { setModeState(m); applyMode(m); });
+  };
   // Legacy toggle kept for any remaining usages
-  const toggle = () => setModeState(prev => prev === 'dark' ? 'light' : 'dark');
+  const toggle = () => setMode(mode === 'dark' ? 'light' : 'dark');
   // theme = resolved applied value (for icon logic, etc.)
   const theme = resolveTheme(mode);
 
@@ -384,49 +418,27 @@ const [readIds, setReadIds] = useState(() => {
     // ── Supabase Realtime subscriptions ─────────────────────
 
 
-    const playNotificationSound = () => {
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.1);
-        
-        gain.gain.setValueAtTime(0, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-        
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.5);
-      } catch (e) {
-        console.warn('Audio play failed', e);
-      }
-    };
-
+    // One table change often produces two events (e.g. the request UPDATE and
+    // its row in `notifications`): the blip plays once per burst.
+    let lastSoundAt = 0
     const pushNotif = (icon, msg) => {
-      const id = Date.now()
+      const id = Date.now() + Math.random()
       setLiveNotifs(prev => [{ id, icon, msg }, ...prev.slice(0, 4)])
       // Auto-dismiss after 6 s
       setTimeout(() => setLiveNotifs(prev => prev.filter(n => n.id !== id)), 6000)
 
-      // Reproducir sonido siempre que llega una notificación
-      playNotificationSound();
-
-      // Native desktop notification si la ventana no está en foco (segundo plano o minimizada)
-      if (!document.hasFocus() && 'Notification' in window && Notification.permission === 'granted') {
-        const n = new Notification('Margube Intranet', { body: `${icon} ${msg}` })
-        n.onclick = () => {
-          window.focus()
-          n.close()
-        }
+      if (Date.now() - lastSoundAt > 1500) {
+        lastSoundAt = Date.now()
+        playNotificationSound()
       }
+    }
+
+    // System notification while the intranet is not in front of the person.
+    // Only rows of `notifications` trigger it: they are the per-person feed and
+    // share the `margube-<id>` tag with Web Push, so nothing shows twice.
+    const notifyInBackground = (row) => {
+      if (document.visibilityState === 'visible' && document.hasFocus()) return
+      showSystemNotification({ id: row.id, title: row.title, body: row.body, entityType: row.entity_type })
     }
 
     // Requests — all events
@@ -552,6 +564,7 @@ const [readIds, setReadIds] = useState(() => {
           setNotifications(prev => [payload.new, ...prev.slice(0, 49)])
           const icon = payload.new.type === 'success' ? '✅' : payload.new.type === 'error' ? '❌' : '🔔'
           pushNotif(icon, payload.new.title)
+          notifyInBackground(payload.new)
         }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifications' }, (payload) => {
@@ -572,8 +585,17 @@ const [readIds, setReadIds] = useState(() => {
     }
     document.addEventListener('visibilitychange', handleVisibility)
 
+    // Network came back → reopen the realtime socket and catch up
+    const handleOnline = () => {
+      supabase.realtime.connect()
+      refetchAll()
+      if (user?.id) fetchNotifications(user.id)
+    }
+    window.addEventListener('online', handleOnline)
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('online', handleOnline)
       supabase.removeChannel(requestChannel)
       supabase.removeChannel(reservationChannel)
       supabase.removeChannel(roomChannel)
@@ -1213,6 +1235,17 @@ export function AuthProvider({ children }) {
     };
   }, [user, lastActivity])
 
+  // ── Background notifications ──────────────────────────────
+  // Signed in + "Alertas de escritorio" on → link this browser's Web Push
+  // subscription to the current person (idempotent, safe on every load).
+  useEffect(() => {
+    if (!user?.id || !notificationsEnabled()) return
+    getRegistration().then(() => enablePush(user.id))
+  }, [user?.id])
+
+  // Clicking a system notification focuses this tab on the right page
+  useEffect(() => listenForNotificationClicks(path => navigate(path)), [])
+
   // ── Login ─────────────────────────────────────────────────
   const login = async (email, pass) => {
     // Buscamos el perfil por correo
@@ -1279,6 +1312,8 @@ export function AuthProvider({ children }) {
 
   // ── Logout ────────────────────────────────────────────────
   const logout = async () => {
+    // This browser stops receiving pushes for the person signing out
+    disablePush({ keepBrowserSubscription: true })
     localStorage.removeItem('margube_session')
     localStorage.removeItem('margube_tabId')
     sessionStorage.removeItem('margube_tabId')

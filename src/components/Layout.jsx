@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useTheme, useAuth, useNotifs, useDocuments, useRequests, useReservations, useHours } from '../context';
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
+import { useTheme, useAuth, useNotifs, useDocuments, useRequests, useReservations, useHours, useDataSync } from '../context';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
@@ -7,18 +7,21 @@ import { springConfig } from '../hooks/useSpringAnimation';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, Settings, User,
   LogOut, Menu, Bell, CheckCircle, XCircle,
-  UsersRound, Timer, Check, SlidersHorizontal, Clock, ChevronLeft, ChevronRight
+  UsersRound, Timer, Check, SlidersHorizontal, Clock, ChevronLeft, ChevronRight, Search
 } from 'lucide-react';
 
 import logoColor from '../assets/logos/logo-color.png';
 import logoWhite from '../assets/logos/logo-white.png';
 import logoIcon from '../assets/logos/logo-icon.png';
 
-import { Avatar, Button } from './ui';
+import { Avatar, Button, TopProgress, PageLoader } from './ui';
 import OnboardingModal from './OnboardingModal';
 import { NotificationsDropdown } from './NotificationsDropdown';
 import { PolicyModal } from './PolicyModal';
 import { LiveToastContainer } from './LiveToastContainer';
+import CommandPalette from './CommandPalette';
+import { ShortcutsSheet } from './ShortcutsSheet';
+import { ConnectionStatus } from './ConnectionStatus';
 import styles from './Layout.module.scss';
 
 /* ── Navigation items ─────────────────────────────────────────────── */
@@ -47,12 +50,21 @@ function useClock() {
 }
 
 /* ═ Single Nav Link ═════════════════════════════════════════════════════ */
-function NavLink({ item, onNavigate, collapsed, badge, active }) {
+function NavLink({ item, onNavigate, collapsed, badge, active, pillId, index = 0 }) {
   const Icon = item.icon;
   const [showTip, setShowTip] = useState(false);
 
   return (
-    <div className={styles.navLinkWrapper}>
+    <div className={styles.navLinkWrapper} style={{ '--i': index }}>
+      {/* Active pill — shared element that glides between items */}
+      {active && (
+        <motion.span
+          layoutId={pillId}
+          className={styles.navPill}
+          transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.9 }}
+          aria-hidden="true"
+        />
+      )}
       <motion.button
         onClick={() => onNavigate(item.id)}
         className={clsx(styles.navLink, { [styles.navLinkActive]: active })}
@@ -63,8 +75,7 @@ function NavLink({ item, onNavigate, collapsed, badge, active }) {
         onMouseLeave={() => setShowTip(false)}
         onFocus={() => collapsed && setShowTip(true)}
         onBlur={() => setShowTip(false)}
-        whileHover={{ scale: 1.01, x: 2 }}
-        whileTap={{ scale: 0.98 }}
+        whileTap={{ scale: 0.97 }}
         transition={springConfig.responsive}
       >
         <Icon size={17} aria-hidden="true" />
@@ -126,6 +137,7 @@ export default function Layout({ children }) {
   const { requests = [] } = useRequests();
   const { reservations = [] } = useReservations();
   const { hourCompensations = [] } = useHours();
+  const { loadingData = false } = useDataSync() || {};
 
   const now = useClock();
   const clockStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
@@ -196,15 +208,55 @@ export default function Layout({ children }) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  /* ── Global keyboard shortcut: ⌘K / Ctrl+K ──────────────────────── */
-  // (kept for future re-enabling, not rendered in topbar)
-  // Command palette available via CommandPalette component
-
   /* ── Navigation handler ─────────────────────────────────────────── */
   const handleNavigate = useCallback((id) => {
     navigate('/' + id);
     setSideOpen(false);
   }, [navigate]);
+
+  /* ── Global search + keyboard shortcuts ─────────────────────────── */
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const closeCmd = useCallback(() => setCmdOpen(false), []);
+  const openShortcuts = useCallback(() => setShortcutsOpen(true), []);
+
+  useEffect(() => {
+    const G_MAP = { d: 'dashboard', r: 'reservations', s: 'requests', h: 'horas', n: 'news', e: 'employees', p: 'profile', a: 'settings', m: 'admin' };
+    const isTyping = (el) => el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
+    let gPending = false;
+    let gTimer;
+
+    const onKey = (e) => {
+      // Ctrl/⌘ K works everywhere, even while typing
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCmdOpen(o => !o);
+        return;
+      }
+      if (e.metaKey || e.ctrlKey || e.altKey || isTyping(e.target)) return;
+      // Letter shortcuts stay quiet while any dialog is open
+      if (document.querySelector('[aria-modal="true"]')) return;
+
+      if (gPending) {
+        gPending = false;
+        clearTimeout(gTimer);
+        const id = G_MAP[e.key.toLowerCase()];
+        if (id && (id !== 'admin' || user?.role === 'admin')) {
+          e.preventDefault();
+          handleNavigate(id);
+        }
+        return;
+      }
+      if (e.key === '/') { e.preventDefault(); setCmdOpen(true); return; }
+      if (e.key === '?') { e.preventDefault(); setShortcutsOpen(true); return; }
+      if (e.key.toLowerCase() === 'g') {
+        gPending = true;
+        gTimer = setTimeout(() => { gPending = false; }, 1200);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => { window.removeEventListener('keydown', onKey); clearTimeout(gTimer); };
+  }, [handleNavigate, user?.role]);
 
   /* ── Derived data ──────────────────────────────────────────────── */
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -217,6 +269,7 @@ export default function Layout({ children }) {
   /* ── Sidebar content (shared between desktop + mobile drawer) ──── */
   const getSidebarContent = (isMobile = false) => {
     const isCollapsed = !isMobile && collapsed;
+    const pillId = isMobile ? 'nav-pill-drawer' : 'nav-pill-rail';
     return (
       <div className={styles.sidebarInner}>
         {/* Logo */}
@@ -233,10 +286,12 @@ export default function Layout({ children }) {
         {/* Navigation */}
         <nav className={styles.navGroup} role="navigation" aria-label="Navegación principal">
           <p className={styles.navSectionLabel}>Menú</p>
-          {navItems.map(i => (
+          {navItems.map((i, idx) => (
             <NavLink
               key={i.id}
               item={i}
+              index={idx}
+              pillId={pillId}
               onNavigate={handleNavigate}
               collapsed={isCollapsed}
               badge={i.badgeKey ? navBadges[i.badgeKey] || 0 : 0}
@@ -251,8 +306,10 @@ export default function Layout({ children }) {
               {adminItems.map(i => (
                 <NavLink 
                   key={i.id} 
-                  item={i} 
-                  onNavigate={handleNavigate} 
+                  item={i}
+                  index={navItems.length}
+                  pillId={pillId}
+                  onNavigate={handleNavigate}
                   collapsed={isCollapsed} 
                   badge={i.badgeKey ? navBadges[i.badgeKey] || 0 : 0} 
                   active={page === i.id} 
@@ -264,6 +321,8 @@ export default function Layout({ children }) {
           <div className={styles.navDivider} />
           <NavLink
             item={settingsItem}
+            index={navItems.length + 1}
+            pillId={pillId}
             onNavigate={handleNavigate}
             collapsed={isCollapsed}
             badge={0}
@@ -323,12 +382,9 @@ export default function Layout({ children }) {
 
   return (
     <div className={styles.layout}>
-      {/* Ambient background orbs & futuristic mesh canvas — cinematic depth */}
+      {/* Two slow ambient light fields — what the glass surfaces refract */}
       <div className={styles.bgBlob1} aria-hidden="true" />
       <div className={styles.bgBlob2} aria-hidden="true" />
-      <div className={styles.bgBlob3} aria-hidden="true" />
-      <div className={styles.bgMeshGrid} aria-hidden="true" />
-      <div className={styles.bgNoise} aria-hidden="true" />
 
       {/* ── Desktop sidebar ──────────────────────────────────────────── */}
       <aside
@@ -405,10 +461,9 @@ export default function Layout({ children }) {
                 <motion.h1
                   key={page}
                   className={styles.pageTitle}
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 6 }}
-                  transition={{ duration: 0.18 }}
+                  initial={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.26, ease: [0.16, 1, 0.3, 1] }, transitionEnd: { filter: 'none' } }}
+                  exit={{ opacity: 0, y: -6, filter: 'blur(4px)', transition: { duration: 0.12, ease: [0.4, 0, 1, 1] } }}
                 >
                   {allItems.find(i => i.id === page)?.label || 'Margube'}
                 </motion.h1>
@@ -418,6 +473,19 @@ export default function Layout({ children }) {
 
           {/* Right actions */}
           <div className={styles.headerRight}>
+            {/* Global search trigger */}
+            <button
+              type="button"
+              className={styles.searchTrigger}
+              onClick={() => setCmdOpen(true)}
+              aria-label="Buscar (Ctrl+K)"
+              aria-haspopup="dialog"
+            >
+              <Search size={15} aria-hidden="true" />
+              <span className={styles.searchTriggerLabel}>Buscar…</span>
+              <kbd className={styles.cmdKbd}>{/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘K' : 'Ctrl K'}</kbd>
+            </button>
+
             {/* Live clock */}
             <div className={styles.liveClock} aria-label="Hora actual">
               <Clock size={13} aria-hidden="true" />
@@ -438,9 +506,10 @@ export default function Layout({ children }) {
               />
               {unreadCount > 0 && (
                 <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                  key={unreadCount}
+                  initial={{ scale: 0.4, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 520, damping: 24 }}
                   className={styles.badge}
                   aria-hidden="true"
                   style={{ pointerEvents: 'none', position: 'absolute', top: -2, right: -2 }}
@@ -461,20 +530,32 @@ export default function Layout({ children }) {
               />
             </div>
           </div>
+
+          {/* Data sync hairline along the bottom edge of the glass bar */}
+          <TopProgress active={loadingData} />
         </header>
 
         {/* ── Page content ───────────────────────────────────────── */}
-        <main className={styles.content} id="main-content" role="main">
-          <AnimatePresence mode="wait">
+        <main className={styles.content} id="main-content" role="main" aria-busy={loadingData}>
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={page}
-              initial={{ opacity: 0, y: 18, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.98 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0, y: 12, filter: 'blur(6px)' }}
+              animate={{
+                opacity: 1, y: 0, filter: 'blur(0px)',
+                transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] },
+                // A lingering filter would trap position:fixed modals inside this wrapper
+                transitionEnd: { filter: 'none' },
+              }}
+              exit={{ opacity: 0, y: -6, filter: 'blur(4px)', transition: { duration: 0.14, ease: [0.4, 0, 1, 1] } }}
               style={{ width: '100%' }}
             >
-              {children}
+              {/* First data sync shows the page skeleton instead of empty states */}
+              {loadingData ? <PageLoader /> : (
+                <Suspense fallback={<PageLoader />}>
+                  {children}
+                </Suspense>
+              )}
             </motion.div>
           </AnimatePresence>
         </main>
@@ -482,6 +563,11 @@ export default function Layout({ children }) {
 
       {/* ── Live Toast Notifications ────────────────────────────── */}
       <LiveToastContainer liveNotifs={liveNotifs} />
+
+      {/* ── Global search, shortcuts sheet, network status ─────── */}
+      <CommandPalette open={cmdOpen} onClose={closeCmd} onShowShortcuts={openShortcuts} />
+      <ShortcutsSheet open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} isAdmin={user?.role === 'admin'} />
+      <ConnectionStatus />
 
       {/* ── Onboarding Modal ────────────────────────────────────── */}
       <AnimatePresence>

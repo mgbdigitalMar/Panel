@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context';
 import { Avatar, Badge, Card, StatCard } from '../components/ui';
-import { Home, Building2, MapPin, LayoutGrid, List } from 'lucide-react';
+import { Home, Building2, MapPin, LayoutGrid, List, Search } from 'lucide-react';
 import styles from './EmployeesPage.module.scss';
 import clsx from 'clsx';
 import { supabase } from '../utils/supabase';
@@ -29,11 +30,23 @@ export default function EmployeesPage() {
   const [filter, setFilter] = useState('all');
   const [view, setView] = useState('grid');
 
+  // Name search — also fed by the global search (?q=)
+  const [searchParams] = useSearchParams();
+  const [query, setQuery] = useState(() => searchParams.get('q') || '');
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q !== null) setQuery(q);
+  }, [searchParams]);
+
   const depts = useMemo(() => ['all', ...new Set(employees.map(e => e.dept))], [employees]);
 
-  const filtered = useMemo(() => employees.filter(e =>
-    filter === 'all' ? true : e.dept === filter
-  ), [employees, filter]);
+  const filtered = useMemo(() => {
+    const q = query.trim().toLocaleLowerCase('es');
+    return employees.filter(e =>
+      (filter === 'all' || e.dept === filter) &&
+      (!q || [e.name, e.dept, e.position, e.email].some(v => (v || '').toLocaleLowerCase('es').includes(q)))
+    );
+  }, [employees, filter, query]);
 
   const handleWorkModeChange = async (empId, mode) => {
     try {
@@ -106,6 +119,16 @@ export default function EmployeesPage() {
           ))}
         </div>
         <div className={styles.controlsRight}>
+          <label className={styles.searchBox}>
+            <Search size={15} aria-hidden="true" />
+            <input
+              type="search"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Buscar por nombre, puesto o departamento"
+              aria-label="Buscar en el equipo"
+            />
+          </label>
           <div className={styles.viewToggle}>
             <button
               onClick={() => setView('grid')}
@@ -126,6 +149,12 @@ export default function EmployeesPage() {
           </div>
         </div>
       </div>
+
+      {filtered.length === 0 && (
+        <p className={styles.noResults} role="status">
+          {query ? `Nadie del equipo coincide con «${query}». Prueba con otro nombre o departamento.` : 'No hay personas en este departamento.'}
+        </p>
+      )}
 
       {/* Grid view */}
       {view === 'grid' && (

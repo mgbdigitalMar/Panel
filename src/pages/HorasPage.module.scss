@@ -221,10 +221,10 @@
 }
 
 .modeBtnYa {
-  &:hover { 
-    border-color: var(--success); 
-    background: var(--success-bg); 
-    svg { color: var(--success); filter: drop-shadow(0 0 5px rgba(var(--success-rgb), 0.5)); } 
+  &:hover {
+    border-color: var(--success);
+    background: var(--success-bg);
+    svg { color: var(--success); }
   }
 }
 
@@ -233,15 +233,15 @@
   background: var(--success-bg) !important;
   box-shadow: 0 0 0 3px rgba(var(--success-rgb), 0.1) !important;
 
-  svg { color: var(--success) !important; filter: drop-shadow(0 0 5px rgba(var(--success-rgb), 0.5)) !important; }
+  svg { color: var(--success) !important; }
   strong { color: var(--success) !important; }
 }
 
 .modeBtnBolsa {
-  &:hover { 
-    border-color: var(--accent); 
-    background: var(--accent-bg); 
-    svg { color: var(--accent); filter: drop-shadow(0 0 5px rgba(var(--accent-rgb), 0.5)); } 
+  &:hover {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+    svg { color: var(--accent); }
   }
 }
 
@@ -250,15 +250,15 @@
   background: var(--accent-bg) !important;
   box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1) !important;
 
-  svg { color: var(--accent) !important; filter: drop-shadow(0 0 5px rgba(var(--accent-rgb), 0.5)) !important; }
+  svg { color: var(--accent) !important; }
   strong { color: var(--accent) !important; }
 }
 
 .modeBtnDebe {
-  &:hover { 
-    border-color: var(--danger); 
-    background: var(--danger-bg); 
-    svg { color: var(--danger); filter: drop-shadow(0 0 5px rgba(var(--danger-rgb), 0.5)); } 
+  &:hover {
+    border-color: var(--danger);
+    background: var(--danger-bg);
+    svg { color: var(--danger); }
   }
 }
 
@@ -267,7 +267,7 @@
   background: var(--danger-bg) !important;
   box-shadow: 0 0 0 3px rgba(var(--danger-rgb), 0.1) !important;
 
-  svg { color: var(--danger) !important; filter: drop-shadow(0 0 5px rgba(var(--danger-rgb), 0.5)) !important; }
+  svg { color: var(--danger) !important; }
   strong { color: var(--danger) !important; }
 }
 
@@ -396,7 +396,7 @@
   font-size: clamp(20px, 2.5vw, 26px);
   font-weight: 800;
   color: var(--text);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -409,8 +409,8 @@
 .statBalance  { border-width: 2px; font-weight: 700; }
 
 /* ── Filter Toolbar ─────────────────────────────────────────────── */
-.filterCard { 
-  padding: clamp(10px, 1.5vw, 14px) clamp(14px, 2vw, 18px); 
+.filterCard {
+  padding: clamp(10px, 1.5vw, 14px) clamp(14px, 2vw, 18px);
   background: rgba(var(--bg-rgb), 0.7);
   backdrop-filter: var(--glass-blur-sm);
   -webkit-backdrop-filter: var(--glass-blur-sm);
@@ -432,8 +432,7 @@
   font-size: 10.5px;
   font-weight: 700;
   color: var(--text-mut);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
 }
 
 .filterInput {
@@ -476,8 +475,7 @@
     color: var(--text-mut);
     font-weight: 700;
     font-size: 10.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0;
     line-height: 1.3;
     border-bottom: 1px solid rgba(var(--border-rgb), 0.50);
     background: rgba(var(--bg-rgb), 0.75);
@@ -499,9 +497,9 @@
   /* ── Mobile Card Layout ── */
   @media (max-width: 767px) {
     min-width: 100%;
-    
+
     thead { display: none; }
-    
+
     tbody {
       display: flex;
       flex-direction: column;
@@ -533,15 +531,14 @@
         content: attr(data-label);
         font-size: 11px;
         font-weight: 700;
-        text-transform: uppercase;
         color: var(--text-mut);
-        letter-spacing: 0.05em;
+        letter-spacing: 0;
         text-align: left;
       }
 
       &:last-child { border-bottom: none; }
     }
-    
+
     /* Make date cell look like a card header */
     .dateCell {
       background: var(--bg-2);
@@ -572,8 +569,7 @@
   display: inline-block;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  letter-spacing: 0;
   padding: 2px 8px;
   border-radius: var(--radius-full);
   white-space: nowrap;
@@ -592,10 +588,9 @@
   gap: 4px;
   font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   padding: 3px 9px;
   border-radius: var(--radius-full);
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -704,13 +699,13 @@
     flex-direction: column;
     gap: 2px;
     text-align: left;
-    
+
     strong {
       font-size: 13.5px;
       font-weight: 600;
       color: var(--text);
     }
-    
+
     span {
       font-size: 11px;
       color: var(--text-mut);
@@ -767,7 +762,6 @@
     font-size: 11px;
     color: var(--text-mut);
     font-weight: 600;
-    text-transform: uppercase;
     letter-spacing: 0.02em;
   }
 }

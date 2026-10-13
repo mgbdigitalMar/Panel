@@ -8,6 +8,10 @@ import {
 import styles from './SettingsPage.module.scss';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
+import {
+  PREF_NOTIFS, notificationsSupported, notificationsEnabled,
+  enablePush, disablePush, showSystemNotification,
+} from '../services/webPush';
 
 const container = {
   hidden: {},
@@ -54,14 +58,40 @@ export default function SettingsPage() {
     if (typeof Notification !== 'undefined') setNotifPerm(Notification.permission);
   }, []);
 
-  const handleBrowserNotifs = async (val) => {
-    if (val && typeof Notification !== 'undefined' && Notification.permission === 'default') {
-      const perm = await Notification.requestPermission();
-      setNotifPerm(perm);
-      if (perm !== 'granted') { setBrowserNotifs(false); setLS('margube-browser-notifs', false); return; }
+  // 'push' = also with the intranet closed · 'local' = only while a tab is open
+  const [pushMode, setPushMode] = useState(null);
+  const [notifBusy, setNotifBusy] = useState(false);
+
+  // Reflect the real state of this browser when the page opens
+  useEffect(() => {
+    if (browserNotifs && notificationsEnabled() && user?.id) {
+      enablePush(user.id).then(setPushMode);
     }
-    setBrowserNotifs(val);
-    setLS('margube-browser-notifs', val);
+  }, [browserNotifs, user?.id]);
+
+  const handleBrowserNotifs = async (val) => {
+    if (!notificationsSupported()) return;
+    setNotifBusy(true);
+    try {
+      if (val) {
+        let perm = Notification.permission;
+        if (perm === 'default') perm = await Notification.requestPermission();
+        setNotifPerm(perm);
+        if (perm !== 'granted') { setBrowserNotifs(false); setLS(PREF_NOTIFS, false); return; }
+        setLS(PREF_NOTIFS, true);
+        setBrowserNotifs(true);
+        setPushMode(await enablePush(user?.id));
+        // Confirmation the person can see right away
+        showSystemNotification({ id: 'test', title: 'Notificaciones activadas', body: 'Así verás los avisos de la intranet.' });
+      } else {
+        setLS(PREF_NOTIFS, false);
+        setBrowserNotifs(false);
+        setPushMode(null);
+        await disablePush();
+      }
+    } finally {
+      setNotifBusy(false);
+    }
   };
 
   // ── Sounds ────────────────────────────────────────────────────────
@@ -153,15 +183,21 @@ export default function SettingsPage() {
               <div>
                 <span className={styles.rowLabel}>Alertas de escritorio</span>
                 <span className={styles.rowDesc}>
-                  {notifPerm === 'denied'
-                    ? 'Bloqueadas por el navegador — actívalas en ajustes del navegador'
-                    : 'Recibe notificaciones push cuando la app esté en segundo plano'}
+                  {!notificationsSupported()
+                    ? 'Este navegador no admite notificaciones.'
+                    : notifPerm === 'denied'
+                    ? 'Bloqueadas por el navegador. Permítelas desde el candado de la barra de direcciones.'
+                    : browserNotifs && pushMode === 'push'
+                    ? 'Activas, también con la intranet cerrada.'
+                    : browserNotifs && pushMode === 'local'
+                    ? 'Activas mientras tengas la intranet abierta, aunque esté en otra pestaña o minimizada.'
+                    : 'Recibe avisos del sistema aunque estés en otra pestaña o con la intranet cerrada.'}
                 </span>
               </div>
             </div>
             <Toggle
               checked={browserNotifs && notifPerm === 'granted'}
-              onChange={handleBrowserNotifs}
+              onChange={notifBusy ? () => {} : handleBrowserNotifs}
               id="notifs-toggle"
             />
           </div>

@@ -79,7 +79,6 @@
 
   .statCard:hover & {
     transform: scale(1.04);
-    svg { filter: drop-shadow(0 0 10px currentColor); }
   }
 }
 
@@ -121,9 +120,9 @@
 .value {
   margin: 0;
   font-size: clamp(28px, 4vw, 40px);
-  font-weight: 800;
+  font-weight: 600;
   color: var(--text);
-  letter-spacing: -0.055em;
+  letter-spacing: -0.03em;
   line-height: 1;
   font-family: var(--font-heading);
   font-variant-numeric: tabular-nums;
@@ -166,7 +165,7 @@
   .statCard:hover & {
     opacity: 1;
     height: 4px;
-    box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.55), 0 0 40px rgba(var(--accent-rgb), 0.20);
+
   }
 }
 

@@ -1,19 +1,31 @@
+/* Quiet base + a glass sheen crossing it (transform-only, GPU friendly) */
 .skeleton {
+  position: relative;
   display: block;
-  background: var(--shimmer-bg);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  overflow: hidden;
+  background: rgba(var(--text-rgb), 0.06);
   border-radius: var(--radius);
   flex-shrink: 0;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 20%,
+      rgba(var(--text-rgb), 0.05) 42%,
+      rgba(255, 255, 255, 0.12) 50%,
+      rgba(var(--text-rgb), 0.05) 58%,
+      transparent 80%
+    );
+    transform: translateX(-100%);
+    animation: skeleton-sheen 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+@keyframes skeleton-sheen {
+  to { transform: translateX(100%); }
 }
 
 .circle {
@@ -26,10 +38,9 @@
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--glass-card);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
 
   .content {
     display: flex;
@@ -72,11 +83,7 @@
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .skeleton {
-    animation: none;
-    background: var(--bg-3);
-    opacity: 0.5;
-  }
+  .skeleton::after { display: none; }
 }
 
 /* Responsive */

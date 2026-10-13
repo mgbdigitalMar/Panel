@@ -131,6 +131,9 @@ export function AuthProvider({ children }) {
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') {
         if (Date.now() - lastActivity.current > IDLE_TIMEOUT_MOBILE) setLocked(true);
+        // Permission may have been granted from system settings meanwhile,
+        // or the token rotated: re-registering is idempotent on the backend.
+        if (userRef.current) registerForPushNotificationsAsync(userRef.current.id);
       } else if (userRef.current) {
         persistSession(userRef.current.id, true);
       }

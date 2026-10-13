@@ -7,6 +7,9 @@ import { Eye, EyeOff, Shield, Users, Zap, Calendar, AlertCircle } from 'lucide-r
 import styles from './LoginPage.module.scss';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
+
+const DRAW_EASE = [0.65, 0, 0.35, 1];
 
 
 /* ── Brand features list ──────────────────────────────────────────── */
@@ -71,12 +74,29 @@ export default function LoginPage() {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         aria-hidden="true"
       >
-        {/* Decorative particles */}
-        <div className={styles.particles} aria-hidden="true">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className={styles.particle} style={{ '--i': i }} />
-          ))}
-        </div>
+        {/* The leaf mark, drawn once as a hairline across the panel */}
+        <svg className={styles.brandLeaf} viewBox="0 0 48 48" aria-hidden="true">
+          <motion.path
+            className={styles.brandLeafEcho}
+            d={LEAF_PATH}
+            transform="translate(24 24) scale(1.14) translate(-24 -24)"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 1 }}
+            transition={{ pathLength: { duration: 2.2, ease: DRAW_EASE, delay: 0.55 }, opacity: { duration: 0.3, delay: 0.55 } }}
+          />
+          <motion.path
+            d={LEAF_PATH}
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 1 }}
+            transition={{ pathLength: { duration: 1.8, ease: DRAW_EASE, delay: 0.3 }, opacity: { duration: 0.3, delay: 0.3 } }}
+          />
+          <motion.path
+            d={VEIN_PATH}
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 1 }}
+            transition={{ pathLength: { duration: 1.1, ease: DRAW_EASE, delay: 1.5 }, opacity: { duration: 0.2, delay: 1.5 } }}
+          />
+        </svg>
 
         {/* Brand logo */}
         <div className={styles.brandTop}>
@@ -204,9 +224,9 @@ export default function LoginPage() {
                 <motion.div
                   key={errKey}
                   className={styles.errorBox}
-                  initial={{ opacity: 0, scale: 0.97, x: -4 }}
-                  animate={{ opacity: 1, scale: 1, x: 0 }}
-                  exit={{ opacity: 0, scale: 0.97 }}
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0, x: [0, -7, 6, -4, 2, 0], transition: { duration: 0.42, ease: [0.16, 1, 0.3, 1] } }}
+                  exit={{ opacity: 0, y: -4, transition: { duration: 0.14 } }}
                   role="alert"
                 >
                   <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />

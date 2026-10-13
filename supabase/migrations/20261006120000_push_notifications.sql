@@ -37,8 +37,9 @@ revoke all on public.push_tokens from anon, authenticated;
 
 -- NOTA DE SEGURIDAD: la intranet todavía no usa Supabase Auth (auth.uid() es
 -- null para todos los clientes), así que estas funciones no pueden comprobar
--- que el llamante sea p_user_id. El riesgo es limitado porque el push es
--- siempre genérico y no revela contenido. Tras migrar a Supabase Auth,
+-- que el llamante sea p_user_id: alguien que conozca el id de otro usuario
+-- podría registrar su dispositivo y recibir sus avisos, que ahora llevan el
+-- título real. Prioridad alta migrar a Supabase Auth y entonces
 -- sustituir p_user_id por auth.uid() dentro de las funciones.
 create or replace function public.register_push_token(p_user_id uuid, p_token text, p_platform text)
 returns void
@@ -96,7 +97,8 @@ begin
     return new;
   end if;
 
-  -- Solo se envían identificadores: la Edge Function nunca reenvía título ni cuerpo.
+  -- Solo se envían identificadores; la Edge Function lee la notificación y
+  -- envía su título y cuerpo (ver supabase/functions/send-push).
   perform net.http_post(
     url     := 'https://exaggikhxozcfsifwxeq.supabase.co/functions/v1/send-push',
     headers := jsonb_build_object(

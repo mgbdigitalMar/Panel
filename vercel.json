@@ -9,7 +9,7 @@
       ]
     },
     {
-      "source": "/(sw.js|manifest.webmanifest|registerSW.js)",
+      "source": "/(sw.js|push-sw.js|manifest.webmanifest|registerSW.js)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]

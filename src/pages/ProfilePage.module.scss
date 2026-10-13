@@ -54,7 +54,7 @@
   svg {
     color: var(--accent);
     flex-shrink: 0;
-    filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.35));
+
   }
 
   h3 {
@@ -94,8 +94,7 @@
   font-size: 10.5px;
   font-weight: 700;
   color: var(--text-mut);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0;
 }
 
 .infoValue {
@@ -268,7 +267,7 @@
   .docItem:hover & {
     color: var(--accent);
     border-color: rgba(var(--accent-rgb), 0.20);
-    box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.15);
+
   }
 }
 
@@ -298,10 +297,9 @@
   gap: 4px;
   font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   padding: 3px 9px;
   border-radius: var(--radius-full);
-  text-transform: uppercase;
   line-height: 1.4;
 }
 
@@ -419,7 +417,7 @@
   svg {
     color: var(--accent);
     flex-shrink: 0;
-    filter: drop-shadow(0 0 5px rgba(var(--accent-rgb), 0.40));
+
   }
 
   span {

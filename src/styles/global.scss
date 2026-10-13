@@ -80,17 +80,17 @@ body {
 /* ── Fluid Typography ─────────────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--text);
   text-wrap: pretty;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
-h1 { font-size: clamp(24px, 3.5vw + 0.5rem, 48px); letter-spacing: -0.04em; }
-h2 { font-size: clamp(20px, 2.8vw + 0.4rem, 36px); letter-spacing: -0.03em; }
-h3 { font-size: clamp(17px, 2.2vw + 0.3rem, 26px); letter-spacing: -0.02em; }
+h1 { font-size: clamp(24px, 3.5vw + 0.5rem, 48px); letter-spacing: -0.025em; line-height: 1.12; }
+h2 { font-size: clamp(20px, 2.8vw + 0.4rem, 36px); letter-spacing: -0.022em; }
+h3 { font-size: clamp(17px, 2.2vw + 0.3rem, 26px); letter-spacing: -0.018em; }
 h4 { font-size: clamp(15px, 1.8vw + 0.2rem, 20px); letter-spacing: -0.015em; }
 h5 { font-size: clamp(14px, 1.5vw + 0.1rem, 17px); letter-spacing: -0.01em; }
 h6 { font-size: clamp(13px, 1.2vw, 15px); }
@@ -121,7 +121,7 @@ img, svg, video { display: block; max-width: 100%; }
 /* ── Focus Ring — Accessibility ───────────────────────────────────── */
 :focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px rgba(var(--accent-rgb), 0.40), 0 0 16px rgba(var(--accent-rgb), 0.15);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px rgba(var(--accent-rgb), 0.55);
   border-radius: inherit;
   transition: box-shadow 0.15s var(--ease-out);
 }
@@ -145,11 +145,10 @@ img, svg, video { display: block; max-width: 100%; }
   th {
     padding: 14px 20px;
     text-align: left;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-mut);
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-sec);
+    letter-spacing: -0.005em;
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
     background: rgba(var(--bg-rgb), 0.60);
@@ -221,11 +220,9 @@ img, svg, video { display: block; max-width: 100%; }
 
       &::before {
         content: attr(data-label);
-        font-size: 10.5px;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: var(--text-mut);
-        letter-spacing: 0.06em;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-sec);
         text-align: left;
       }
 
@@ -283,10 +280,10 @@ img, svg, video { display: block; max-width: 100%; }
   flex-wrap: wrap;
 
   h1 {
-    font-size: clamp(18px, 2.5vw, 26px);
-    font-weight: 800;
+    font-size: clamp(19px, 2.5vw, 26px);
+    font-weight: 600;
     margin: 0 0 4px;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.022em;
     line-height: 1.15;
   }
 
@@ -349,29 +346,6 @@ img, svg, video { display: block; max-width: 100%; }
 /* ═══════════════════════════════════════════════════════════════════
    TYPOGRAPHY UTILITIES
 ═══════════════════════════════════════════════════════════════════ */
-
-.text-gradient {
-  background: var(--gradient-aurora);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gradient-subtle {
-  background: var(--gradient-text);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.glow-text {
-  background: var(--gradient-aurora);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: none;
-  filter: drop-shadow(0 0 20px rgba(var(--accent-rgb), 0.35));
-}
 
 .text-truncate {
   overflow: hidden;
@@ -472,11 +446,6 @@ img, svg, video { display: block; max-width: 100%; }
   100% { background-position: 0% 50%; }
 }
 
-@keyframes breathe {
-  0%, 100% { transform: scale(1); opacity: 0.7; }
-  50%       { transform: scale(1.08); opacity: 1; }
-}
-
 @keyframes slide-in-up {
   from { opacity: 0; transform: translateY(16px) scale(0.97); filter: blur(4px); }
   to   { opacity: 1; transform: translateY(0) scale(1);       filter: blur(0px); }
@@ -528,21 +497,43 @@ img, svg, video { display: block; max-width: 100%; }
   50%       { transform: scale(1.025); opacity: 1;   }
 }
 
-/* Skeleton loading — premium shimmer */
+/* Skeleton loading — a glass sheen crossing a quiet base */
+@keyframes skeleton-sheen {
+  to { transform: translateX(100%); }
+}
+
+%skeleton-base {
+  position: relative;
+  overflow: hidden;
+  background: rgba(var(--text-rgb), 0.06);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 20%,
+      rgba(var(--text-rgb), 0.05) 42%,
+      rgba(255, 255, 255, 0.12) 50%,
+      rgba(var(--text-rgb), 0.05) 58%,
+      transparent 80%
+    );
+    transform: translateX(-100%);
+    animation: skeleton-sheen 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+}
+
 .skeleton {
-  background: var(--shimmer-bg);
-  background-size: 200% 100%;
-  animation: shimmer 1.8s ease-in-out infinite;
+  @extend %skeleton-base;
   border-radius: var(--radius-sm);
 }
 
 /* ── Skeleton composites ──────────────────────────────────────────── */
 .skeleton-line {
+  @extend %skeleton-base;
   height: 12px;
   border-radius: var(--radius-full);
-  background: var(--shimmer-bg);
-  background-size: 200% 100%;
-  animation: shimmer 1.8s ease-in-out infinite;
 
   &--sm  { height: 10px; }
   &--lg  { height: 16px; }
@@ -550,12 +541,9 @@ img, svg, video { display: block; max-width: 100%; }
 }
 
 .skeleton-card {
-  background: var(--shimmer-bg);
-  background-size: 200% 100%;
-  animation: shimmer 1.8s ease-in-out infinite;
+  @extend %skeleton-base;
   border-radius: var(--radius-lg);
   border: 1px solid transparent;
-  overflow: hidden;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -566,23 +554,22 @@ img, svg, video { display: block; max-width: 100%; }
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0;
   padding: 3px 9px;
   border-radius: var(--radius-full);
   white-space: nowrap;
   line-height: 1.4;
-  text-transform: uppercase;
 }
 
 .status-chip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0;
   padding: 3px 10px;
   border-radius: var(--radius-full);
   white-space: nowrap;
@@ -597,7 +584,6 @@ img, svg, video { display: block; max-width: 100%; }
     background: currentColor;
     flex-shrink: 0;
     opacity: 0.85;
-    animation: pulse-dot 2.5s ease-in-out infinite;
   }
 
   &--success {
@@ -606,10 +592,12 @@ img, svg, video { display: block; max-width: 100%; }
     border: 1px solid rgba(var(--success-rgb), 0.18);
   }
 
+  /* Pending is the one state still in motion */
   &--warning {
     background: var(--warning-bg);
     color: var(--warning);
     border: 1px solid rgba(var(--warning-rgb), 0.18);
+    &::before { animation: pulse-dot 2.2s ease-in-out infinite; }
   }
 
   &--danger {
@@ -747,17 +735,19 @@ img, svg, video { display: block; max-width: 100%; }
     background: var(--accent-bg);
     color: var(--accent);
     border: 1px solid rgba(var(--accent-rgb), 0.18);
-    &:hover { box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.25); }
+    &:hover {  }
   }
   &--success {
     background: var(--success-bg);
     color: var(--success);
     border: 1px solid rgba(var(--success-rgb), 0.18);
   }
+  /* Pending is the one state still in motion */
   &--warning {
     background: var(--warning-bg);
     color: var(--warning);
     border: 1px solid rgba(var(--warning-rgb), 0.18);
+    &::before { animation: pulse-dot 2.2s ease-in-out infinite; }
   }
   &--danger  {
     background: var(--danger-bg);
@@ -801,11 +791,9 @@ img, svg, video { display: block; max-width: 100%; }
   }
 
   &__label {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--text-mut);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-sec);
   }
 
   &__input {
@@ -934,7 +922,7 @@ h1, h2, h3, h4, h5, h6 {
     filter: blur(8px);
   }
 
-  &:hover::after { opacity: 0.35; }
+  &:hover::after { opacity: 0.22; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -986,12 +974,14 @@ h1, h2, h3, h4, h5, h6 {
 .hover-lift {
   transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
 
-  &:hover {
-    transform: translateY(-3px) scale(var(--scale-subtle, 1.008));
-    box-shadow: var(--shadow-lg);
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
   }
 
-  &:active { transform: translateY(0) scale(var(--scale-press, 0.965)); }
+  &:active { transform: translateY(0) scale(0.985); }
 
   @media (prefers-reduced-motion: reduce) {
     transition: none;
@@ -1014,7 +1004,7 @@ h1, h2, h3, h4, h5, h6 {
 ═══════════════════════════════════════════════════════════════════ */
 
 .count-up {
-  animation: number-count-up 0.5s var(--ease-spring) both;
+  animation: number-count-up 0.5s var(--ease-out) both;
   display: inline-block;
 }
 
@@ -1028,20 +1018,6 @@ input[type=number]::-webkit-outer-spin-button {
   margin: 0;
 }
 input[type=number] { -moz-appearance: textfield; }
-
-/* ═══════════════════════════════════════════════════════════════════
-   PREMIUM GRADIENT TEXT UTILITY
-═══════════════════════════════════════════════════════════════════ */
-
-.gradient-heading {
-  font-family: var(--font-heading);
-  background: var(--gradient-aurora);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-}
 
 /* ═══════════════════════════════════════════════════════════════════
    SPACING UTILITY CLASSES — 8px grid
@@ -1092,10 +1068,12 @@ input[type=number] { -moz-appearance: textfield; }
     border-color      0.22s var(--ease-cinematic),
     background-color  0.22s var(--ease-cinematic);
 
-  &:hover {
-    transform:    translateY(-2px);
-    box-shadow:   var(--shadow-lg);
-    border-color: rgba(var(--accent-rgb), 0.20) !important;
+  @media (hover: hover) {
+    &:hover {
+      transform:    translateY(-2px);
+      box-shadow:   var(--shadow-lg);
+      border-color: rgba(var(--accent-rgb), 0.20) !important;
+    }
   }
 
   &:active { transform: translateY(0); }
@@ -1104,4 +1082,57 @@ input[type=number] { -moz-appearance: textfield; }
     transition: box-shadow 0.22s var(--ease-out);
     &:hover, &:active { transform: none; }
   }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   BROWSER SURFACES — caret & tap highlight carry the palette
+═══════════════════════════════════════════════════════════════════ */
+
+input, textarea, [contenteditable] { caret-color: var(--accent); }
+html { -webkit-tap-highlight-color: transparent; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   THEME SWITCH — new theme opens as a circle from the pointer
+   (driven by ThemeProvider via the View Transitions API)
+═══════════════════════════════════════════════════════════════════ */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  animation: theme-reveal 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@keyframes theme-reveal {
+  from { clip-path: circle(0 at var(--vt-x, 50%) var(--vt-y, 50%)); }
+  to   { clip-path: circle(var(--vt-r, 150vmax) at var(--vt-x, 50%) var(--vt-y, 50%)); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LIST ENTRANCE — for content that arrives as a list (capped stagger)
+═══════════════════════════════════════════════════════════════════ */
+
+@keyframes list-item-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-in > * {
+  /* backwards fill: once settled, hover transforms stay free */
+  animation: list-item-in 0.42s var(--ease-out) backwards;
+
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) { animation-delay: #{($i - 1) * 40}ms; }
+  }
+  &:nth-child(n + 11) { animation-delay: 400ms; }
+}
+
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
 }

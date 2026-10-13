@@ -1,7 +1,9 @@
-import { useState, Suspense, lazy } from 'react'
+import { Suspense, lazy } from 'react'
 import { ThemeProvider, AuthProvider, AuthCtx, AppCtx, DataProvider } from './context'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AnimatePresence, MotionConfig } from 'framer-motion'
 import Layout from './components/Layout'
+import { BootLoader } from './components/ui'
 
 const LoginPage          = lazy(() => import('./pages/LoginPage'))
 const ChangePasswordPage = lazy(() => import('./pages/ChangePasswordPage'))
@@ -15,28 +17,11 @@ const ProfilePage        = lazy(() => import('./pages/ProfilePage'))
 const HorasPage          = lazy(() => import('./pages/HorasPage'))
 const SettingsPage       = lazy(() => import('./pages/SettingsPage'))
 
-// Loading screen while Supabase restores the session
-function LoadingScreen() {
-  return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'var(--bg)', flexDirection: 'column', gap: 16,
-    }}>
-      <div style={{
-        width: 40, height: 40, borderRadius: 10, background: 'var(--accent)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: '#fff', fontWeight: 800, fontSize: 20,
-      }}>M</div>
-      <p style={{ color: 'var(--text-mut)', fontSize: 13 }}>Cargando sesión…</p>
-    </div>
-  )
-}
-
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return (
     <AuthCtx.Consumer>
       {({ user, authLoading }: any) => {
-        if (authLoading) return <LoadingScreen />
+        if (authLoading) return <BootLoader />
         if (!user) return <Navigate to="/login" replace />
         return (
           <Layout>
@@ -64,12 +49,16 @@ function AppShell() {
     <BrowserRouter>
       <AuthProvider>
         <AuthCtx.Consumer>
-          {({ authLoading }: any) => {
-            if (authLoading) return <LoadingScreen />
-            return (
+          {({ authLoading }: any) => (
+            <>
+            {/* Boot loader dissolves over the app once the session is restored */}
+            <AnimatePresence>
+              {authLoading && <BootLoader key="boot" />}
+            </AnimatePresence>
+            {!authLoading && (
               <AppCtx.Provider value={{}}> {/* AppCtx ya no maneja navegación */}
                 <DataProvider>
-                  <Suspense fallback={<LoadingScreen />}>
+                  <Suspense fallback={<BootLoader label="Cargando…" />}>
                     <Routes>
                       {/* Rutas Públicas */}
                       <Route path="/login" element={<LoginPage />} />
@@ -96,8 +85,9 @@ function AppShell() {
                   </Suspense>
                 </DataProvider>
               </AppCtx.Provider>
-            )
-          }}
+            )}
+            </>
+          )}
         </AuthCtx.Consumer>
       </AuthProvider>
     </BrowserRouter>
@@ -107,7 +97,10 @@ function AppShell() {
 export default function App() {
   return (
     <ThemeProvider>
-      <AppShell />
+      {/* Framer Motion honours prefers-reduced-motion app-wide */}
+      <MotionConfig reducedMotion="user">
+        <AppShell />
+      </MotionConfig>
     </ThemeProvider>
   )
 }

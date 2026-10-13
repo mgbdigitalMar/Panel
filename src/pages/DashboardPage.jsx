@@ -11,6 +11,7 @@ import { Users, Calendar, Inbox, Newspaper, Pin, Gift, Car, Building, ArrowRight
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import { useCountUp } from '../hooks/useCountUp';
+import { TodayPanel } from '../components/TodayPanel';
 
 
 // ── Chart data helpers ────────────────────────────────────
@@ -263,7 +264,7 @@ const tooltipStyle = {
           </div>
         </div>
         <div className={styles.welcomeActions}>
-          <Button variant="primary" onClick={() => navigate('/reservations')} icon={Calendar}>
+          <Button variant="primary" onClick={() => navigate('/reservations?nueva=1')} icon={Calendar}>
             Nueva reserva
           </Button>
           <Button variant="secondary" onClick={() => navigate('/requests')} icon={Inbox}>
@@ -310,6 +311,11 @@ const tooltipStyle = {
           trend="Actualizado"
           trendUp={true}
         />
+      </motion.div>
+
+      {/* ── Hoy en Margube ──────────────────────── */}
+      <motion.div variants={item}>
+        <TodayPanel />
       </motion.div>
 
       {/* ── Charts ──────────────────────────────── */}

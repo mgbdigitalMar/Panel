@@ -91,11 +91,16 @@ WEB (Vite/React) ─┐                         ┌─ APP (Expo/React Native)
 
 1. Cualquier cliente inserta una fila en `notifications`, como hoy.
 2. El trigger `on_notification_insert_push` llama a la Edge Function `send-push` con solo el id.
-3. La función busca los tokens del usuario y el número de no leídas, y envía a Expo Push (APNs/FCM) un texto **genérico**: "Tienes una nueva notificación en la intranet." El contenido real nunca sale del backend.
+3. La función lee la notificación, los dispositivos del usuario y el número de no leídas, y envía:
+   - a la app, por Expo Push (APNs/FCM): **título y cuerpo reales** (decisión de producto, oct 2026; antes era un texto genérico);
+   - a los navegadores, por Web Push (VAPID, tabla `web_push_subscriptions`): el mismo contenido, cifrado hasta el navegador. Lo muestra `public/push-sw.js`.
 4. El badge del icono recibe el número de no leídas calculado en el servidor.
-5. Al tocar el push, la app abre `margube://notificaciones/<id>`, marca la notificación como leída y navega a la sección correspondiente. Funciona con la app cerrada, en segundo plano o abierta.
-6. En Android el canal usa visibilidad `PRIVATE` en pantalla bloqueada.
-7. Los tokens caducados se borran automáticamente y el logout debe llamar a `unregisterPushNotificationsAsync()`.
+5. Al tocar el push, la app abre la notificación, la marca como leída y navega a la sección correspondiente; en la web, el service worker enfoca la pestaña abierta (o abre una) en la página correspondiente. Funciona con la app/web cerrada, en segundo plano o abierta.
+6. En Android el canal usa visibilidad `PRIVATE` en pantalla bloqueada, así que el detalle no se ve hasta desbloquear.
+7. Los tokens y suscripciones caducados se borran automáticamente; el logout de web y app da de baja el dispositivo.
+8. Web con la pestaña abierta pero oculta: el Realtime mantiene el latido en un Web Worker (`realtime.worker`) para que el navegador no corte el socket, y el aviso del sistema usa la misma etiqueta `margube-<id>` que el Web Push, así que nunca sale duplicado.
+
+**Web Push en Vercel:** añadir `VITE_VAPID_PUBLIC_KEY` en Project Settings → Environment Variables y volver a desplegar. Las claves VAPID están en `supabase/.env.push` (no versionado) y se suben a Supabase con `supabase secrets set --env-file supabase/.env.push`.
 
 **Pasos de despliegue pendientes:**
 1. `cd mobile && npx eas init` para obtener `extra.eas.projectId`.
