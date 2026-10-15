@@ -327,7 +327,9 @@
   --header-opacity:   0.84;
 
   /* ── Border RGB (dark) ────────────────────────────────────────── */
-  --border-rgb:         20, 30, 50;
+  /* Used as rgba(var(--border-rgb), 0.3–0.6): needs to sit well above the
+     card surface or every such border disappears in dark mode */
+  --border-rgb:         70, 80, 102;
 
   /* ── Text RGB (dark) ──────────────────────────────────────────── */
   --text-rgb:           240, 244, 255;

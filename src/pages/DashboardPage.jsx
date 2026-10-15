@@ -7,11 +7,11 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import styles from './DashboardPage.module.scss';
-import { Users, Calendar, Inbox, Newspaper, Pin, Gift, Car, Building, ArrowRight, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { Users, Calendar, Inbox, Newspaper, Pin, Gift, Car, Building, ArrowRight, ChevronLeft, ChevronRight, Sun, CloudSun, Moon, PartyPopper } from 'lucide-react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
-import { useCountUp } from '../hooks/useCountUp';
 import { TodayPanel } from '../components/TodayPanel';
+import { fmtDate, fmtDayShort, todayKey } from '../utils/format';
 
 
 // ── Chart data helpers ────────────────────────────────────
@@ -70,11 +70,12 @@ function buildReservationsByWeek(reservations, year, month) {
   return weeks;
 }
 
+// Theme tokens, so charts follow light/dark like the rest of the UI
 const CHART_COLORS = {
-  accent:  '#635BFF',
-  success: '#059669',
-  warning: '#D97706',
-  danger:  '#DC2626',
+  accent:  'var(--accent)',
+  success: 'var(--success)',
+  warning: 'var(--warning)',
+  danger:  'var(--danger)',
 };
 
 
@@ -94,15 +95,6 @@ function GlassTooltip({ active, payload, label }) {
     </div>
   );
 }
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07 } },
-};
-const item = {
-  hidden: { opacity: 0, y: 16 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
-};
 
 export default function DashboardPage() {
   const { user, employees } = useAuth();
@@ -182,7 +174,7 @@ export default function DashboardPage() {
 
   const hour = today.getHours();
   const greeting = hour < 13 ? 'Buenos días' : hour < 20 ? 'Buenas tardes' : 'Buenas noches';
-  const emoji    = hour < 13 ? '☀️' : hour < 20 ? '🌤️' : '🌙';
+  const DayIcon  = hour < 13 ? Sun : hour < 20 ? CloudSun : Moon;
   const todayStr = today.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
   // Calculate workday progress
@@ -210,12 +202,13 @@ const tooltipStyle = {
     padding: '8px 12px',
   };
 
-  // Animated counters
-  const empCount      = useCountUp(employees.length);
-  const todayStr2     = new Date().toISOString().split('T')[0];
-  const todayResCount = useCountUp(reservations.filter(r => r.date === todayStr2).length);
-  const pendCount     = useCountUp(pendingCount);
-  const newsCount     = useCountUp(news.length);
+  // KPI figures (StatCard animates the count itself)
+  const todayStr2     = todayKey(today);
+  const todayResCount = reservations.filter(r => r.date === todayStr2).length;
+  const newsThisMonth = news.filter(n => {
+    const d = new Date(n.date || n.createdAt);
+    return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth();
+  }).length;
 
   // Motivational text based on hour
   const motivations = hour < 13
@@ -226,16 +219,11 @@ const tooltipStyle = {
   const motivation = motivations[today.getDate() % motivations.length];
 
   return (
-    <motion.div
-      className={styles.page}
-      variants={container}
-      initial="hidden"
-      animate="show"
-    >
+    <div className={styles.page}>
       {/* ── Welcome Banner ──────────────────────── */}
-      <motion.div variants={item} className={styles.welcomeBanner}>
+      <section className={styles.welcomeBanner} aria-label="Resumen del día">
         <div className={styles.welcomeLeft}>
-          <span className={styles.welcomeEmoji}>{emoji}</span>
+          <span className={styles.welcomeEmoji} aria-hidden="true"><DayIcon size={26} strokeWidth={1.75} /></span>
           <div className={styles.welcomeText}>
             <h2 className={styles.welcomeTitle}>
               {greeting}, {user?.name?.split(' ')[0]}
@@ -243,16 +231,21 @@ const tooltipStyle = {
             <p className={styles.welcomeSub}>
               {todayStr.charAt(0).toUpperCase() + todayStr.slice(1)}
             </p>
-            <p className={styles.welcomeMotivation}>
-              ✦ {motivation}
-            </p>
+            <p className={styles.welcomeMotivation}>{motivation}</p>
             {/* Workday Progress Bar — animates from 0 on mount */}
             <div className={styles.progressContainer}>
               <div className={styles.progressText}>
                 <span>Progreso de jornada laboral</span>
                 <span>{Math.round(workdayProgress)}%</span>
               </div>
-              <div className={styles.progressTrack}>
+              <div
+                className={styles.progressTrack}
+                role="progressbar"
+                aria-label="Progreso de jornada laboral"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(workdayProgress)}
+              >
                 <motion.div
                   className={styles.progressBar}
                   initial={{ width: '0%' }}
@@ -271,55 +264,55 @@ const tooltipStyle = {
             Ver solicitudes
           </Button>
         </div>
-      </motion.div>
+      </section>
 
       {/* ── KPI Cards ───────────────────────────────── */}
-      <motion.div variants={item} className={styles.gridCards}>
+      <div className={styles.gridCards}>
         <StatCard
           label="Empleados activos"
-          value={empCount}
-          icon="Users"
+          value={employees.length}
+          icon={Users}
           color="var(--accent)"
           sub="Total en plantilla"
-          trend="+2 este mes"
-          trendUp={true}
+          onClick={() => navigate('/employees')}
+          actionLabel={`${employees.length} empleados activos. Ver equipo`}
         />
         <StatCard
           label="Reservas hoy"
           value={todayResCount}
-          icon="Calendar"
+          icon={Calendar}
           color="var(--success)"
           sub="Salas y vehículos"
-          trend="+15%"
-          trendUp={true}
+          onClick={() => navigate('/reservations')}
+          actionLabel={`${todayResCount} reservas hoy. Ver reservas`}
         />
         <StatCard
           label="Solicitudes pendientes"
-          value={pendCount}
-          icon="Inbox"
+          value={pendingCount}
+          icon={Inbox}
           color="var(--warning)"
-          sub="Requieren revisión"
-          trend={pendingCount > 3 ? "Requiere atención" : "Bajo control"}
-          trendUp={pendingCount <= 3}
+          sub={pendingCount === 0 ? 'Todo revisado' : 'Requieren revisión'}
+          onClick={() => navigate('/requests')}
+          actionLabel={`${pendingCount} solicitudes pendientes. Ver solicitudes`}
         />
         <StatCard
-          label="Noticias activas"
-          value={newsCount}
-          icon="Newspaper"
-          color="#EC4899"
-          sub="Publicadas este mes"
-          trend="Actualizado"
-          trendUp={true}
+          label="Noticias publicadas"
+          value={news.length}
+          icon={Newspaper}
+          color="var(--info)"
+          sub={newsThisMonth === 0 ? 'Ninguna este mes' : `${newsThisMonth} este mes`}
+          onClick={() => navigate('/news')}
+          actionLabel={`${news.length} noticias publicadas. Ver noticias`}
         />
-      </motion.div>
+      </div>
 
       {/* ── Hoy en Margube ──────────────────────── */}
-      <motion.div variants={item}>
+      <div>
         <TodayPanel />
-      </motion.div>
+      </div>
 
       {/* ── Charts ──────────────────────────────── */}
-      <motion.div variants={item} className={styles.chartsRow}>
+      <div className={styles.chartsRow}>
         {/* Bar chart */}
         <Card className={styles.chartCard}>
           <div className={styles.chartHeader}>
@@ -433,16 +426,16 @@ const tooltipStyle = {
                   type="monotone" dataKey="reservas"
                   stroke={CHART_COLORS.accent} strokeWidth={2.5}
                   dot={{ r: 4, fill: CHART_COLORS.accent, strokeWidth: 0 }}
-                  activeDot={{ r: 6, fill: CHART_COLORS.accent, strokeWidth: 0, filter: 'drop-shadow(0 0 6px rgba(99,91,255,0.5))' }}
+                  activeDot={{ r: 6, fill: CHART_COLORS.accent, stroke: 'var(--card)', strokeWidth: 2 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </Card>
-      </motion.div>
+      </div>
 
       {/* ── Content row ─────────────────────────── */}
-      <motion.div variants={item} className={styles.gridContent}>
+      <div className={styles.gridContent}>
         {/* News feed */}
         <Card>
           <div className={styles.cardPad}>
@@ -455,9 +448,7 @@ const tooltipStyle = {
             <div className={styles.timelineContainer}>
               {news.slice(0, 5).map(n => (
                 <div key={n.id} className={clsx(styles.timelineItem, n.type === 'event' && styles.timelineEventItem)}>
-                  <p className={styles.timelineDate}>
-                    {(n.date || n.published_at || n.created_at) ? new Date(n.date || n.published_at || n.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
-                  </p>
+                  <p className={styles.timelineDate}>{fmtDate(n.date || n.createdAt)}</p>
                   <div className={styles.timelineContentBox}>
                     <div className={styles.feedTitleRow}>
                       {n.pinned && <Pin size={10} color="var(--accent)" />}
@@ -490,18 +481,18 @@ const tooltipStyle = {
                   </div>
                   <span className={clsx(styles.daysChip, e.daysLeft <= 7 ? styles.daysChipUrgent : styles.daysChipNormal)}>
                     {e.daysLeft === 0 ? (
-                      <span className={styles.birthdayToday}>🎉 ¡Hoy!</span>
-                    ) : `en ${e.daysLeft}d`}
+                      <span className={styles.birthdayToday}><PartyPopper size={12} aria-hidden="true" /> ¡Hoy!</span>
+                    ) : `en ${e.daysLeft} d`}
                   </span>
                 </div>
               ))}
             </div>
           </div>
         </Card>
-      </motion.div>
+      </div>
 
       {/* ── Recent reservations table ─────────── */}
-      <motion.div variants={item}>
+      <div>
         <Card>
           <div className={styles.cardPad}>
             <div className={styles.cardHeader}>
@@ -536,8 +527,8 @@ const tooltipStyle = {
                       </span>
                     </td>
                     <td data-label="Solicitante">{r.employeeName}</td>
-                    <td data-label="Fecha">{r.date}</td>
-                    <td data-label="Horario">{r.timeStart}–{r.timeEnd}</td>
+                    <td data-label="Fecha" className={styles.nowrap}>{fmtDayShort(r.date)}</td>
+                    <td data-label="Horario" className={styles.nowrap}>{r.timeStart}–{r.timeEnd}</td>
                     <td data-label="Estado"><Badge status={r.status} /></td>
                   </tr>
                   );
@@ -546,7 +537,7 @@ const tooltipStyle = {
             </table>
           </div>
         </Card>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }

@@ -196,33 +196,36 @@ img, svg, video { display: block; max-width: 100%; }
       padding: 0;
     }
 
+    /* One card per row; no per-row blur (a long list of blurred cards is
+       the most expensive thing to scroll on a phone) */
     tr {
       display: flex;
       flex-direction: column;
       background: var(--glass-card) !important;
-      backdrop-filter: blur(12px) saturate(140%);
-      -webkit-backdrop-filter: blur(12px) saturate(140%);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-md);
-      box-shadow: var(--shadow-sm), var(--glass-highlight-sm);
+      box-shadow: var(--shadow-sm);
       overflow: hidden;
-      padding: 4px 0;
+      padding: 6px 0;
     }
 
     td {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 16px;
-      border-bottom: 1px solid rgba(var(--border-rgb), 0.3);
+      min-height: 40px;
+      padding: 8px 16px;
+      border-bottom: none;
       text-align: right;
-      gap: 12px;
+      gap: 16px;
+      overflow-wrap: anywhere;
 
       &::before {
         content: attr(data-label);
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-sec);
+        flex-shrink: 0;
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--text-mut);
         text-align: left;
       }
 
@@ -1157,15 +1160,17 @@ html { -webkit-tap-highlight-color: transparent; }
    settled (a leftover transform would trap position:fixed modals).
 ═══════════════════════════════════════════════════════════════════ */
 
+/* Page switches happen dozens of times a day: keep the rise short and the
+   cascade tight so content is readable almost immediately. */
 @keyframes page-rise {
-  from { opacity: 0; translate: 0 16px; }
+  from { opacity: 0; translate: 0 8px; }
 }
 
 .page-stagger > * > * {
-  animation: page-rise 0.55s var(--ease-cinematic) backwards;
+  animation: page-rise 0.32s var(--ease-out) backwards;
 
-  @for $i from 1 through 8 {
-    &:nth-child(#{$i}) { animation-delay: #{30 + ($i - 1) * 55}ms; }
+  @for $i from 1 through 5 {
+    &:nth-child(#{$i}) { animation-delay: #{($i - 1) * 35}ms; }
   }
-  &:nth-child(n + 9) { animation-delay: 420ms; }
+  &:nth-child(n + 6) { animation-delay: 175ms; }
 }

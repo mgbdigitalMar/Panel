@@ -261,8 +261,9 @@ export default function Layout({ children }) {
   const handleMarkAllRead = () => markAllNotifsRead?.(user?.id);
 
   /* ── Breadcrumbs ────────────────────────────────────────────────── */
-  const currentItem = allItems.find(i => i.id === page);
-  const breadcrumbs = currentItem ? ['Margube', currentItem.label] : ['Margube'];
+  // Profile is reached from the user chip, not the nav list, so it needs its own label
+  const pageLabel = allItems.find(i => i.id === page)?.label || (page === 'profile' ? 'Mi perfil' : null);
+  const breadcrumbs = pageLabel ? ['Margube', pageLabel] : ['Margube'];
 
   /* ── Sidebar content (shared between desktop + mobile drawer) ──── */
   const getSidebarContent = (isMobile = false) => {
@@ -463,7 +464,7 @@ export default function Layout({ children }) {
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.26, ease: [0.16, 1, 0.3, 1] }, transitionEnd: { filter: 'none' } }}
                   exit={{ opacity: 0, y: -6, filter: 'blur(4px)', transition: { duration: 0.12, ease: [0.4, 0, 1, 1] } }}
                 >
-                  {allItems.find(i => i.id === page)?.label || 'Margube'}
+                  {pageLabel || 'Margube'}
                 </motion.h1>
               </AnimatePresence>
             </div>
@@ -540,10 +541,9 @@ export default function Layout({ children }) {
               key={page}
               className="page-stagger"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { duration: 0.24, ease: [0.16, 1, 0.3, 1] } }}
-              exit={{ opacity: 0, y: -6, transition: { duration: 0.14, ease: [0.4, 0, 1, 1] } }}
               // A lingering transform would trap position:fixed modals inside this wrapper
-              transitionEnd={{ transform: 'none' }}
+              animate={{ opacity: 1, transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] }, transitionEnd: { transform: 'none' } }}
+              exit={{ opacity: 0, transition: { duration: 0.12, ease: [0.23, 1, 0.32, 1] } }}
               style={{ width: '100%' }}
             >
               {/* First data sync shows the page skeleton instead of empty states */}

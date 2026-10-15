@@ -6,8 +6,8 @@
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(8px, 1.5vw, 14px);
   margin-bottom: 4px;
 }
 
@@ -134,7 +134,7 @@
   font-family: inherit;
   cursor: pointer;
   border-radius: var(--radius-full);
-  transition: all 0.22s var(--ease-out);
+  transition: color 0.2s var(--ease-out), background-color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -216,7 +216,7 @@
   border: none;
   cursor: pointer;
   color: var(--text-mut);
-  transition: all 0.2s var(--ease-out);
+  transition: color 0.2s var(--ease-out), background-color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
 
   &:hover {
     color: var(--text);

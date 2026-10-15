@@ -44,7 +44,7 @@
   font-size: 13px;
   font-weight: 500;
   color: var(--text-sec);
-  transition: all 0.15s;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
 
   &:hover {
     background: var(--bg);
@@ -78,7 +78,7 @@
   align-items: center;
   justify-content: center;
   color: var(--text-sec);
-  transition: all 0.2s var(--ease-out);
+  transition: color 0.2s var(--ease-out), background-color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
   flex-shrink: 0;
 
   &:hover {

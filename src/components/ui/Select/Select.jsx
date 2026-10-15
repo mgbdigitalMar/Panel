@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import inputStyles from '../Input/Input.module.scss';
 
-export function Select({ label, value, onChange, options, required, className, ...props }) {
+export function Select({ label, value, onChange, options, required, className, loading, disabled, ...props }) {
   return (
     <div className={clsx(inputStyles.container, className)}>
       {label && (
@@ -13,6 +13,8 @@ export function Select({ label, value, onChange, options, required, className, .
         value={value}
         onChange={e => onChange(e.target.value)}
         className={inputStyles.input}
+        disabled={disabled || loading}
+        aria-busy={loading || undefined}
         {...props}
       >
         {options.map(o => (

@@ -1,87 +1,72 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import clsx from 'clsx';
-import { Card } from '../Card/Card';
 import styles from './StatCard.module.scss';
-import * as Icons from 'lucide-react';
-import { TrendingUp, TrendingDown } from 'lucide-react';
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
+import {
+  ArrowUpRight, Building, Calendar, Car, CheckCircle, Clock, HelpCircle, Home, Inbox,
+  MapPin, Newspaper, TrendingDown, TrendingUp, Users, XCircle,
+} from 'lucide-react';
+import { motion, useMotionValue, useTransform, animate, useReducedMotion } from 'framer-motion';
+
+// Explicit map: `import * as Icons` pulled the whole icon set into the bundle
+const ICONS = { Building, Calendar, Car, CheckCircle, Clock, Home, Inbox, MapPin, Newspaper, TrendingDown, TrendingUp, Users, XCircle };
 
 /**
- * StatCard — Premium animated KPI card
- * Features: count-up animation, gradient icon, hover lift, trend badge
+ * StatCard — compact KPI tile.
+ * `icon` takes a lucide component or one of the names above.
+ * Pass `onClick` to make the whole tile a button that opens the related page.
+ * `trend` is optional and should only ever carry a computed value.
  */
-export function StatCard({ label, value, icon, color, sub, trend, trendUp, loading, className }) {
-  const IconComponent = Icons[icon] || Icons.HelpCircle;
+export function StatCard({ label, value, icon, color = 'var(--accent)', sub, trend, trendUp, loading, onClick, actionLabel, className }) {
+  const IconComponent = typeof icon === 'string' ? (ICONS[icon] || HelpCircle) : (icon || HelpCircle);
+  const reduce = useReducedMotion();
 
-  /* ── Count-up animation ─────────────────────────────────────── */
-  const count = useMotionValue(0);
-  const rounded = useTransform(count, Math.round);
-  const displayRef = useRef(null);
+  const count = useMotionValue(typeof value === 'number' ? value : 0);
+  const rounded = useTransform(count, v => Math.round(v).toLocaleString('es-ES'));
 
   useEffect(() => {
-    // Only animate numeric values
-    if (typeof value !== 'number') return;
-    const controls = animate(count, value, {
-      duration: 1.2,
-      ease: [0.16, 1, 0.3, 1],
-    });
+    if (typeof value !== 'number') return undefined;
+    if (reduce) { count.set(value); return undefined; }
+    const controls = animate(count, value, { duration: 0.6, ease: [0.23, 1, 0.32, 1] });
     return () => controls.stop();
-  }, [value, count]);
+  }, [value, count, reduce]);
+
+  const Root = onClick ? 'button' : 'div';
 
   return (
-    <Card className={clsx(styles.statCard, className)}>
-      {/* Top row: icon + trend */}
-      <div className={styles.topRow}>
-        {/* Icon with color glow */}
-        <div
-          className={styles.iconWrapper}
-          style={{ color }}
-          aria-hidden="true"
-        >
-          <IconComponent size={22} strokeWidth={2} />
-        </div>
+    <Root
+      type={onClick ? 'button' : undefined}
+      onClick={onClick}
+      aria-label={onClick ? (actionLabel || `${label}: ${value}. Ver detalle`) : undefined}
+      className={clsx(styles.statCard, onClick && styles.interactive, className)}
+      style={{ '--stat-color': color }}
+    >
+      <div className={styles.head}>
+        <span className={styles.icon} aria-hidden="true">
+          <IconComponent size={17} strokeWidth={2} />
+        </span>
+        <span className={styles.label}>{label}</span>
+        {onClick && <ArrowUpRight size={16} className={styles.go} aria-hidden="true" />}
+      </div>
 
-        {/* Trend badge */}
-        {trend && (
-          <span
-            className={clsx(
-              styles.trend,
-              trendUp === false ? styles.trendDown : styles.trendUp
+      {loading ? (
+        <>
+          <span className="skeleton-line" style={{ width: '45%', height: 30, borderRadius: 6 }} />
+          <span className="skeleton-line" style={{ width: '70%', height: 12, borderRadius: 4 }} />
+        </>
+      ) : (
+        <>
+          <p className={styles.value} aria-hidden={onClick ? true : undefined}>
+            {typeof value === 'number' ? <motion.span>{rounded}</motion.span> : value}
+            {trend && (
+              <span className={clsx(styles.trend, trendUp === false ? styles.trendDown : styles.trendUp)}>
+                {trendUp === false ? <TrendingDown size={12} aria-hidden="true" /> : <TrendingUp size={12} aria-hidden="true" />}
+                {trend}
+              </span>
             )}
-            aria-label={`Tendencia: ${trend}`}
-          >
-            {trendUp === false
-              ? <TrendingDown size={11} aria-hidden="true" />
-              : <TrendingUp   size={11} aria-hidden="true" />
-            }
-            {trend}
-          </span>
-        )}
-      </div>
-
-      {/* Main content */}
-      <div className={styles.content}>
-        {/* Animated number */}
-        {loading ? (
-          <div className="skeleton-line" style={{ width: '60%', height: 32, margin: '4px 0 8px', borderRadius: 6 }} />
-        ) : (
-          <p className={styles.value} aria-label={`${label}: ${value}`}>
-            {typeof value === 'number'
-              ? <motion.span ref={displayRef}>{rounded}</motion.span>
-              : value
-            }
           </p>
-        )}
-        {loading ? (
-          <div className="skeleton-line" style={{ width: '40%', height: 16, borderRadius: 4 }} />
-        ) : (
-          <p className={styles.label}>{label}</p>
-        )}
-        {sub && !loading && <p className={styles.sub}>{sub}</p>}
-      </div>
-
-      {/* Bottom color accent bar */}
-      <div className={styles.accentBar} style={{ background: color }} aria-hidden="true" />
-    </Card>
+          {sub && <p className={styles.sub}>{sub}</p>}
+        </>
+      )}
+    </Root>
   );
 }

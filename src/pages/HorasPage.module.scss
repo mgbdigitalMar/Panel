@@ -11,9 +11,11 @@
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(8px, 1.5vw, 14px);
   margin-bottom: 4px;
+
+  @media (max-width: 899px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* Wrapper for each tab's motion.div — propagates the gap to its children */
@@ -109,7 +111,7 @@
   font-family: inherit;
   cursor: pointer;
   border-radius: var(--radius-full);
-  transition: all 0.25s var(--ease-out);
+  transition: color 0.2s var(--ease-out), background-color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -273,10 +275,19 @@
 
 /* ── Info Banner ─────────────────────────────────────────────── */
 .infoBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   padding: 12px 16px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 500;
+  line-height: 1.5;
+}
+
+.infoBannerIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .infoYa    { background: var(--success-bg); color: var(--success); border: 1px solid rgba(var(--success-rgb), 0.2); }
@@ -316,6 +327,7 @@
 .successToast {
   display: flex;
   align-items: center;
+  gap: 8px;
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   background: var(--success-bg);

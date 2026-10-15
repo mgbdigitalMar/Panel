@@ -1,184 +1,148 @@
 /* ═══════════════════════════════════════════════════════════════════
-   STATCARD — Premium KPI card v3
-   Additions: shimmer sweep, icon radial glow, animated bottom bar,
-              refined hover depth
+   STATCARD — compact KPI tile
+   Label + tinted icon on top, figure below. Only tiles that navigate
+   react to hover/press; static tiles stay still.
 ═══════════════════════════════════════════════════════════════════ */
 
 .statCard {
-  padding: clamp(20px, 2.8vw, 28px);
+  container-type: inline-size;
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  border-radius: var(--radius-xl) !important;
-  cursor: default;
-  overflow: hidden !important;
-  will-change: transform;
-  position: relative;
-  transition:
-    box-shadow 0.24s var(--ease-cinematic),
-    transform 0.24s var(--ease-cinematic),
-    border-color 0.24s var(--ease-cinematic),
-    background 0.24s var(--ease-cinematic) !important;
-
-  /* Ambient fill orb (top-right) */
-  &::before {
-    content: '';
-    position: absolute;
-    top: -20%;
-    right: -15%;
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--card-color, rgba(var(--accent-rgb), 0.10)) 0%, transparent 70%);
-    pointer-events: none;
-    transition: opacity 0.24s ease, transform 0.40s var(--ease-cinematic);
-    opacity: 0.65;
-  }
-
-
-
-  &:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: var(--shadow-md), var(--glass-highlight) !important;
-    border-color: rgba(255, 255, 255, 0.40) !important;
-    background: var(--glass-card-hover) !important;
-
-    &::before { opacity: 1.0; transform: scale(1.05); }
-  }
-
-  &:active { transform: translateY(-1px) !important; }
-
-
-}
-
-/* ── Top row: icon + trend ────────────────────────────────────────── */
-.topRow {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  position: relative;
-  z-index: 1;
-}
-
-.iconWrapper {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  position: relative;
-  /* Radial glow behind icon using current color */
-  background: radial-gradient(circle at 50% 60%, rgba(var(--accent-rgb), 0.12) 0%, transparent 75%);
-  transition:
-    transform 0.22s var(--ease-out),
-    box-shadow 0.24s var(--ease-out),
-    background 0.24s;
-
-  .statCard:hover & {
-    transform: scale(1.04);
-  }
-}
-
-/* ── Trend badges ─────────────────────────────────────────────────── */
-.trend {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  white-space: nowrap;
-  flex-shrink: 0;
-  letter-spacing: 0.01em;
-}
-
-.trendUp {
-  background: var(--success-bg);
-  color: var(--success);
-  border: 1px solid rgba(var(--success-rgb), 0.18);
-}
-
-.trendDown {
-  background: var(--warning-bg);
-  color: var(--warning);
-  border: 1px solid rgba(var(--warning-rgb), 0.18);
-}
-
-/* ── Value + labels ───────────────────────────────────────────────── */
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  position: relative;
-  z-index: 1;
-}
-
-.value {
-  margin: 0;
-  font-size: clamp(28px, 4vw, 40px);
-  font-weight: 600;
+  gap: 6px;
+  min-width: 0;
+  padding: 18px 20px 20px;
+  border-radius: var(--radius-lg);
+  background: var(--glass-card);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-card);
   color: var(--text);
-  letter-spacing: -0.03em;
-  line-height: 1;
-  font-family: var(--font-heading);
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum';
+  font: inherit;
+  text-align: left;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin-bottom: 6px;
+}
+
+.icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius);
+  color: var(--stat-color);
+  background: color-mix(in srgb, var(--stat-color) 14%, transparent);
 }
 
 .label {
-  margin: 0;
-  font-size: clamp(12px, 1vw, 13.5px);
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
   font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-sec);
+  overflow-wrap: anywhere;
+}
+
+.value {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
   color: var(--text);
-  letter-spacing: -0.015em;
 }
 
 .sub {
   margin: 0;
-  font-size: 11.5px;
+  font-size: 12.5px;
+  line-height: 1.45;
   color: var(--text-mut);
-  font-weight: 400;
-  margin-top: 1px;
 }
 
-/* ── Bottom accent bar ────────────────────────────────────────────── */
-.accentBar {
-  height: 3px;
-  width: 0%;
-  margin-top: auto;
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-  opacity: 0.65;
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.trendUp   { color: var(--success); }
+.trendDown { color: var(--warning); }
+
+/* ── Navigating tile ─────────────────────────────────────────────── */
+.interactive {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition:
-    opacity 0.28s var(--ease-out),
-    height 0.24s var(--ease-out),
-    box-shadow 0.28s var(--ease-out),
-    width 0.60s var(--ease-cinematic);
-  background: var(--gradient-accent);
-  position: relative;
-  z-index: 1;
-  animation: bar-expand 0.8s var(--ease-cinematic) 0.2s both;
+    border-color 160ms var(--ease-out),
+    background-color 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
 
-  .statCard:hover & {
-    opacity: 1;
-    height: 4px;
+  &:active { transform: scale(0.98); }
 
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--bg), var(--accent-glow);
   }
 }
 
-@keyframes bar-expand {
-  from { width: 0%; }
-  to   { width: 100%; }
+.go {
+  flex-shrink: 0;
+  color: var(--text-mut);
+  transition: color 160ms var(--ease-out), transform 160ms var(--ease-out);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .accentBar { animation: none; width: 100%; }
+@media (hover: hover) and (pointer: fine) {
+  .interactive:hover {
+    border-color: rgba(var(--accent-rgb), 0.35);
+    background: var(--glass-card-hover);
+
+    .go {
+      color: var(--accent);
+      transform: translate(1px, -1px);
+    }
+  }
 }
 
-/* Two-up cards on phones: let the trend pill drop below the icon instead of overflowing */
 @media (max-width: 479px) {
-  .topRow { flex-wrap: wrap; }
+  .statCard { padding: 14px 14px 16px; }
+  .value { font-size: 26px; }
+  .head { gap: 8px; }
+  .icon { width: 28px; height: 28px; }
+}
+
+/* Narrow tiles (three across on a phone): icon above the label */
+@container (max-width: 150px) {
+  .head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .label { font-size: 12.5px; }
+
+  .go {
+    position: absolute;
+    top: 14px;
+    right: 12px;
+  }
+
+  .value { font-size: 24px; }
+  .sub { font-size: 12px; }
 }

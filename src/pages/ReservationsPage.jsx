@@ -4,13 +4,46 @@ import { useAuth, useReservations } from '../context';
 import { Badge, Modal, Select, Input, Textarea, Button, Card, ConfirmModal, StatCard } from '../components/ui';
 import { Building, Car, Check, X, Plus, Download, Trash2, Calendar, CalendarPlus } from 'lucide-react';
 import { downloadReservationIcs } from '../utils/ics';
+import { fmtDayShort, todayKey } from '../utils/format';
 import styles from './ReservationsPage.module.scss';
 import clsx from 'clsx';
 import ReservationsCalendar from './ReservationsCalendar';
 
+/** Live state of a room or vehicle right now, from today's bookings. */
+function useBusyUntil(reservations) {
+  const now = new Date();
+  const day = todayKey(now);
+  const hm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  return (type, name) => reservations
+    .filter(r => r.type === type && r.resourceName === name && r.date === day
+      && r.status !== 'rejected' && r.status !== 'cancelled'
+      && r.timeStart <= hm && r.timeEnd > hm)
+    .map(r => r.timeEnd)
+    .sort()
+    .pop() || null;
+}
+
+function AvailabilityBadge({ until }) {
+  return until
+    ? <Badge status="pending" label={`En uso hasta ${until}`} />
+    : <Badge status="confirmed" label="Libre ahora" />;
+}
+
+/** Keyboard + screen-reader support for the clickable resource cards. */
+const pressable = (onActivate, label) => ({
+  role: 'button',
+  tabIndex: 0,
+  'aria-label': label,
+  onClick: onActivate,
+  onKeyDown: (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onActivate(); }
+  },
+});
+
 export default function ReservationsPage() {
   const { user } = useAuth();
   const { reservations, rooms, vehicles, createReservation, updateReservationStatus, deleteReservation } = useReservations();
+  const busyUntil = useBusyUntil(reservations);
 
   const [tab, setTab]           = useState('all');
   const [showModal, setShowModal] = useState(false);
@@ -161,18 +194,16 @@ export default function ReservationsPage() {
               <Card
                 key={room.id}
                 className={styles.resourceCard}
-                onClick={() => {
+                {...pressable(() => {
                   setForm(f => ({ ...f, type: 'room', resourceId: String(room.id) }));
                   setShowModal(true);
-                }}
-                style={{ cursor: 'pointer' }}
-                title="Haz clic para reservar esta sala"
+                }, `Reservar ${room.name}`)}
               >
                 <div className={styles.resourceHeader}>
                   <div className={clsx(styles.resourceIcon, styles.iconAccent)}>
                     <Building size={22} />
                   </div>
-                  <Badge status="neutral" label="Disponible" className="variant-success" />
+                  <AvailabilityBadge until={busyUntil('room', room.name)} />
                 </div>
                 <h4 className={styles.resourceTitle}>{room.name}</h4>
                 <p className={styles.resourceMeta}>Planta {room.floor} · {room.capacity} personas</p>
@@ -196,22 +227,22 @@ export default function ReservationsPage() {
               <Card
                 key={v.id}
                 className={styles.resourceCard}
-                onClick={() => {
+                {...pressable(() => {
                   setForm(f => ({ ...f, type: 'vehicle', resourceId: String(v.id) }));
                   setShowModal(true);
-                }}
-                style={{ cursor: 'pointer' }}
-                title="Haz clic para reservar este vehículo"
+                }, `Reservar ${v.model} (${v.plate})`)}
               >
                 <div className={styles.resourceHeader}>
                   <div className={clsx(styles.resourceIcon, styles.iconWarning)}>
                     <Car size={22} />
                   </div>
-                  <Badge status="neutral" label="Disponible" className="variant-success" />
+                  <AvailabilityBadge until={busyUntil('vehicle', v.model)} />
                 </div>
                 <h4 className={styles.resourceTitle}>{v.model}</h4>
                 <p className={styles.resourceMeta}>Matrícula: <strong>{v.plate}</strong></p>
-                <p className={clsx(styles.resourceMeta, styles.noMargin)}>{v.type} · {v.year}</p>
+                {(v.type || v.year) && (
+                  <p className={clsx(styles.resourceMeta, styles.noMargin)}>{[v.type, v.year].filter(Boolean).join(' · ')}</p>
+                )}
               </Card>
             ))}
           </div>
@@ -253,9 +284,9 @@ export default function ReservationsPage() {
                         </span>
                       </td>
                       <td data-label="Solicitante" className={styles.textSec}>{r.employeeName}</td>
-                      <td data-label="Fecha" className={clsx(styles.textSec, styles.noMargin)}>{r.date}</td>
-                      <td data-label="Horario" className={clsx(styles.textSec, styles.noMargin)}>{r.timeStart}–{r.timeEnd}</td>
-                      <td data-label="Propósito" className={styles.purposeCell}>{r.purpose}</td>
+                      <td data-label="Fecha" className={clsx(styles.textSec, styles.noMargin, styles.nowrap)}>{fmtDayShort(r.date)}</td>
+                      <td data-label="Horario" className={clsx(styles.textSec, styles.noMargin, styles.nowrap)}>{r.timeStart}–{r.timeEnd}</td>
+                      <td data-label="Propósito" className={styles.purposeCell} title={r.purpose}>{r.purpose}</td>
                       <td data-label="Estado"><Badge status={r.status} /></td>
                       <td data-label="Acciones">
                         <div className={styles.actionsCell}>

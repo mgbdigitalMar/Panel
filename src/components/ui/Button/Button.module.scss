@@ -51,6 +51,13 @@
   display: inline-flex;
 }
 
+/* Label keeps inline icons (e.g. a trailing arrow) on the same line */
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 /* Loading keeps full colour — it is busy, not disabled */
 .isLoading:disabled {
   opacity: 0.88;

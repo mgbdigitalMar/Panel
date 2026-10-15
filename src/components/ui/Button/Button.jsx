@@ -30,6 +30,7 @@ export function Button({
       onClick={onClick}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
+      aria-label={iconOnly && title ? title : undefined}
       {...props}
       className={clsx(
         styles.button,
@@ -71,7 +72,7 @@ export function Button({
         </span>
       )}
 
-      {children && !iconOnly && <span>{children}</span>}
+      {children && !iconOnly && <span className={styles.label}>{children}</span>}
     </Component>
   );
 }

@@ -125,7 +125,7 @@
   border: 1.5px solid var(--border);
   background: var(--bg-3);
   cursor: pointer;
-  transition: all 0.18s var(--ease-out);
+  transition: color 0.18s var(--ease-out), background-color 0.18s var(--ease-out), border-color 0.18s var(--ease-out), box-shadow 0.18s var(--ease-out), opacity 0.18s var(--ease-out), transform 0.18s var(--ease-out);
   font-family: inherit;
   text-align: center;
 
@@ -203,7 +203,7 @@
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
-  transition: all 0.15s var(--ease-out);
+  transition: color 0.15s var(--ease-out), background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), opacity 0.15s var(--ease-out), transform 0.15s var(--ease-out);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -274,7 +274,7 @@
   background: var(--bg-3);
   border: 1.5px solid var(--border);
   cursor: pointer;
-  transition: all 0.22s var(--ease-out);
+  transition: color 0.2s var(--ease-out), background-color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
   padding: 0;
   flex-shrink: 0;
   outline: none;
@@ -296,7 +296,7 @@
   height: 18px;
   border-radius: 50%;
   background: var(--text-mut);
-  transition: all 0.22s var(--ease-out);
+  transition: color 0.2s var(--ease-out), background-color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
   box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 
   .toggleOn & {

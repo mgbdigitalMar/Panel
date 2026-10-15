@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useAuth, useHours } from '../context';
 import { Card, Button, Input, Modal, Avatar, StatCard } from '../components/ui';
-import { Clock, Inbox, CheckCircle, XCircle, Download, Timer, PenTool, TrendingDown, TrendingUp, Minus, Search } from 'lucide-react';
+import { Clock, Inbox, CheckCircle, XCircle, Download, Timer, PenTool, TrendingDown, TrendingUp, Minus, Search, Zap, Info, AlertTriangle, CheckCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import styles from './HorasPage.module.scss';
@@ -54,10 +54,11 @@ const MODE_CONFIG = {
     label: 'Ya',
     desc: 'Registro inmediato — sin aprobación',
     icon: CheckCircle,
-    banner: '⚡ Las horas se registrarán como compensadas inmediatamente.',
+    bannerIcon: Zap,
+    banner: 'Las horas se registrarán como compensadas inmediatamente.',
     btnLabel: 'Registrar compensación',
     btnIcon: CheckCircle,
-    successMsg: '✅ Compensación registrada correctamente.',
+    successMsg: 'Compensación registrada correctamente.',
     colorClass: 'infoYa',
     dateLabel: 'Fecha de compensación',
   },
@@ -65,10 +66,11 @@ const MODE_CONFIG = {
     label: 'Bolsa',
     desc: 'Acumular horas — requiere aprobación admin',
     icon: Inbox,
-    banner: '📋 La solicitud será revisada por el administrador antes de añadirse a tu bolsa.',
+    bannerIcon: Info,
+    banner: 'La solicitud será revisada por el administrador antes de añadirse a tu bolsa.',
     btnLabel: 'Enviar a bolsa',
     btnIcon: PenTool,
-    successMsg: '📋 Solicitud enviada. Pendiente de aprobación.',
+    successMsg: 'Solicitud enviada. Pendiente de aprobación.',
     colorClass: 'infoBolsa',
     dateLabel: 'Fecha de generación',
   },
@@ -76,10 +78,11 @@ const MODE_CONFIG = {
     label: 'Debo',
     desc: 'Registrar horas que debo a la empresa',
     icon: TrendingDown,
-    banner: '⚠️ Estas horas quedan registradas como deuda — el admin puede revisarlas.',
+    bannerIcon: AlertTriangle,
+    banner: 'Estas horas quedan registradas como deuda — el admin puede revisarlas.',
     btnLabel: 'Registrar horas que debo',
     btnIcon: TrendingDown,
-    successMsg: '📌 Horas de deuda registradas correctamente.',
+    successMsg: 'Horas de deuda registradas correctamente.',
     colorClass: 'infoDebe',
     dateLabel: 'Fecha en que se debieron',
   },
@@ -228,9 +231,9 @@ export default function HorasPage() {
       {/* Tabs */}
       <div className={styles.pageControls}>
         <div className={styles.tabsRow}>
-          {tabBtn('nueva', '➕ Nueva solicitud', 0)}
-          {tabBtn('bolsa', '🗂 Mi Registro', myAll.length)}
-          {user?.role === 'admin' && tabBtn('usuarios', '👥 Historial de Usuarios', userStats.filter(s => s.pending > 0).length)}
+          {tabBtn('nueva', 'Nueva solicitud', 0)}
+          {tabBtn('bolsa', 'Mi registro', myAll.length)}
+          {user?.role === 'admin' && tabBtn('usuarios', 'Historial de usuarios', userStats.filter(s => s.pending > 0).length)}
         </div>
         <div className={styles.controlsRight}>
           {tab === 'bolsa' && allRows.length > 0 && (
@@ -286,7 +289,8 @@ export default function HorasPage() {
 
               {/* Info banner */}
               <div className={clsx(styles.infoBanner, styles[cfg.colorClass])}>
-                {cfg.banner}
+                <cfg.bannerIcon size={16} aria-hidden="true" className={styles.infoBannerIcon} />
+                <span>{cfg.banner}</span>
               </div>
 
               {/* Form */}
@@ -341,6 +345,7 @@ export default function HorasPage() {
                       transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                       role="status"
                     >
+                      <CheckCheck size={16} aria-hidden="true" />
                       {success}
                     </motion.div>
                   )}

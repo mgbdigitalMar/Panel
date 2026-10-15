@@ -6,6 +6,20 @@ import { Plus, Check, X, FileText, ExternalLink, Download, Trash2, Home, Briefca
 import styles from './RequestsPage.module.scss';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
+import { fmtDate, fmtRange, fmtMoney, plural } from '../utils/format';
+
+/** What was asked for: the day(s) for absences, the item and cost for purchases. */
+function requestDetail(r) {
+  if (r.type === 'asuntos_propios') return fmtDate(r.date || r.startDate);
+  if (r.type === 'external' || r.type === 'remoto') {
+    const range = fmtRange(r.startDate, r.endDate);
+    return r.days ? `${range} · ${plural(r.days, 'día', 'días')}` : range;
+  }
+  return [r.item, r.amount != null && r.amount !== '' ? fmtMoney(r.amount) : null].filter(Boolean).join(' · ') || '—';
+}
+
+// Requests and personal days live in separate tables, so ids can repeat across them
+const rowKey = (r) => `${r.type === 'asuntos_propios' ? 'pd' : 'rq'}-${r.id}`;
 
 export default function RequestsPage() {
   const { user, employees } = useAuth();
@@ -80,18 +94,14 @@ export default function RequestsPage() {
       headers.join(';'),
       ...rows.map(r => {
         const typeLabel = r.type === 'asuntos_propios' ? 'Asuntos Propios' : r.type === 'remoto' ? 'Remoto' : r.type === 'external' ? 'Trabajo Externo' : 'Compra';
-        const detail = r.type === 'asuntos_propios'
-          ? `${r.date} (1 día)`
-          : r.type === 'external' || r.type === 'remoto'
-          ? `${r.startDate} a ${r.endDate} (${r.days || '?'} días)`
-          : `${r.item} - ${r.amount}€`;
+        const detail = requestDetail(r);
         const status = r.status === 'approved' ? 'Aprobada' : r.status === 'rejected' ? 'Rechazada' : 'Pendiente';
         return [
           r.employeeName || '—',
           typeLabel,
           `"${detail.replace(/"/g, '""')}"`,
           status,
-          r.createdAt
+          r.createdAt ? new Date(r.createdAt).toLocaleDateString('es-ES') : ''
         ].join(';');
       }),
     ];
@@ -192,8 +202,8 @@ export default function RequestsPage() {
       {/* Stats */}
       <div className={styles.statsGrid}>
         <StatCard label="Pendientes" value={allItems.filter(r => r.status === 'pending').length}  color="var(--warning)" icon="Clock" sub="Esperando revisión" />
-        <StatCard label="Aprobadas"  value={allItems.filter(r => r.status === 'approved').length} color="var(--success)" icon="CheckCircle" sub="Este periodo" />
-        <StatCard label="Rechazadas" value={allItems.filter(r => r.status === 'rejected').length} color="var(--danger)"  icon="XCircle" sub="Sin acción" />
+        <StatCard label="Aprobadas"  value={allItems.filter(r => r.status === 'approved').length} color="var(--success)" icon="CheckCircle" sub="En total" />
+        <StatCard label="Rechazadas" value={allItems.filter(r => r.status === 'rejected').length} color="var(--danger)"  icon="XCircle" sub="En total" />
       </div>
 
       {/* Table */}
@@ -220,7 +230,7 @@ export default function RequestsPage() {
                 <AnimatePresence mode="sync">
                 {filtered.map((r, i) => (
                   <motion.tr
-                    key={r.id}
+                    key={rowKey(r)}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
@@ -237,18 +247,16 @@ export default function RequestsPage() {
                       <Badge status={r.type} label={r.type === 'asuntos_propios' ? 'Asuntos Propios' : r.type === 'remoto' ? 'Remoto' : r.type === 'external' ? 'Trabajo Externo' : 'Compra'} />
                     </td>
                     <td data-label="Detalle" className={styles.detailCell}>
-                      {r.type === 'asuntos_propios'
-                        ? `${r.date} (1 día)`
-                        : r.type === 'external' || r.type === 'remoto'
-                        ? `${r.startDate} → ${r.endDate} (${r.days || '?'} días)`
-                        : `${r.item} — ${r.amount}€`}
+                      {requestDetail(r)}
                       {r.fileUrl && (
                         <a href={r.fileUrl} download="justificante" className={styles.downloadLink} title="Descargar justificante">
                           <Download size={14} />
                         </a>
                       )}
                     </td>
-                    <td data-label="Fecha solicitud" className={styles.dateCell}>{r.createdAt}</td>
+                    <td data-label="Fecha solicitud" className={styles.dateCell}>
+                      <time dateTime={r.createdAt}>{fmtDate(r.createdAt)}</time>
+                    </td>
                     <td data-label="Estado"><Badge status={r.status} /></td>
                     {user.role === 'admin' && (
                       <td data-label="Acciones">

@@ -5,6 +5,7 @@ import { Edit2, Trash2, Pin, Plus, Newspaper } from 'lucide-react';
 import styles from './NewsPage.module.scss';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
+import { fmtDate } from '../utils/format';
 
 export default function NewsPage() {
   const { user } = useAuth();
@@ -75,7 +76,9 @@ export default function NewsPage() {
           <p className={styles.newsContent}>{item.content}</p>
           <div className={styles.authorRow}>
             <Avatar initials={item.authorAvatar} size={26} />
-            <span className={styles.authorMeta}>{item.authorName} · {item.date}</span>
+            <span className={styles.authorMeta}>
+              {item.authorName} · <time dateTime={item.date}>{fmtDate(item.date)}</time>
+            </span>
           </div>
         </div>
 
