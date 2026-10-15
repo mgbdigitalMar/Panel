@@ -2,43 +2,51 @@ import { useState, useCallback } from 'react';
 import { useAuth, useTheme } from '../context';
 import logoColor from '../assets/logos/logo-color.png';
 import logoWhite from '../assets/logos/logo-white.png';
-import { Card, Button, Input } from '../components/ui';
-import { Eye, EyeOff, Shield, Users, Zap, Calendar, AlertCircle } from 'lucide-react';
+import {
+  Eye, EyeOff, AlertCircle, LogIn, Lock, Loader2, Sun, Moon,
+  CalendarDays, Car, DoorOpen, Home, Users, FileText,
+} from 'lucide-react';
 import styles from './LoginPage.module.scss';
-import clsx from 'clsx';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
 
+const EASE = [0.22, 1, 0.36, 1];
 const DRAW_EASE = [0.65, 0, 0.35, 1];
 
-
-/* ── Brand features list ──────────────────────────────────────────── */
-const FEATURES = [
-  { icon: Calendar, text: 'Gestión de reservas de salas y vehículos' },
-  { icon: Users,    text: 'Directorio completo del equipo Margube'   },
-  { icon: Shield,   text: 'Acceso seguro y privado para empleados'   },
-  { icon: Zap,      text: 'Solicitudes y novedades en tiempo real'   },
+/* ── Phone mock data (decorative) ─────────────────────────────────── */
+const WEEK = [
+  { d: 'L', v: 0.62 },
+  { d: 'M', v: 0.48 },
+  { d: 'X', v: 0.84 },
+  { d: 'J', v: 0.70 },
+  { d: 'V', v: 0.92, active: true },
+  { d: 'S', v: 0.22 },
+  { d: 'D', v: 0.12 },
 ];
 
 /* ── Animation variants ───────────────────────────────────────────── */
-const panelVariants = {
-  hidden: { opacity: 0, x: 30 },
-  show:   { opacity: 1, x: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
-};
-
 const stagger = {
   hidden: {},
-  show:   { transition: { staggerChildren: 0.08, delayChildren: 0.2 } },
+  show:   { transition: { staggerChildren: 0.07, delayChildren: 0.25 } },
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+  hidden: { opacity: 0, y: 14 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
 };
+
+function LeafGlyph({ size = 18 }) {
+  return (
+    <svg viewBox="0 0 48 48" width={size} height={size} aria-hidden="true">
+      <path d={LEAF_PATH} fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinejoin="round" />
+      <path d={VEIN_PATH} fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 export default function LoginPage() {
   const { login } = useAuth();
-  const { theme } = useTheme();
+  const { theme, setMode } = useTheme();
 
   const [email,    setEmail]    = useState('');
   const [pass,     setPass]     = useState('');
@@ -47,7 +55,9 @@ export default function LoginPage() {
   const [loading,  setLoading]  = useState(false);
   const [errKey,   setErrKey]   = useState(0); // increment to retrigger shake
 
-  const handleLogin = useCallback(async () => {
+  const handleLogin = useCallback(async (e) => {
+    e?.preventDefault();
+    if (loading) return;
     if (!email || !pass) {
       setErr('Por favor, introduce email y contraseña.');
       setErrKey(k => k + 1);
@@ -61,197 +71,254 @@ export default function LoginPage() {
       setErrKey(k => k + 1);
       setLoading(false);
     }
-  }, [email, pass, login]);
+  }, [email, pass, login, loading]);
+
+  const isDark = theme === 'dark';
 
   return (
-    <div className={styles.container}>
-
-      {/* ── Left: Branding panel (desktop only) ─────────────────────── */}
-      <motion.div
-        className={styles.brandPanel}
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        aria-hidden="true"
-      >
-        {/* The leaf mark, drawn once as a hairline across the panel */}
-        <svg className={styles.brandLeaf} viewBox="0 0 48 48" aria-hidden="true">
-          <motion.path
-            className={styles.brandLeafEcho}
-            d={LEAF_PATH}
-            transform="translate(24 24) scale(1.14) translate(-24 -24)"
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: 1 }}
-            transition={{ pathLength: { duration: 2.2, ease: DRAW_EASE, delay: 0.55 }, opacity: { duration: 0.3, delay: 0.55 } }}
-          />
-          <motion.path
-            d={LEAF_PATH}
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: 1 }}
-            transition={{ pathLength: { duration: 1.8, ease: DRAW_EASE, delay: 0.3 }, opacity: { duration: 0.3, delay: 0.3 } }}
-          />
-          <motion.path
-            d={VEIN_PATH}
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: 1 }}
-            transition={{ pathLength: { duration: 1.1, ease: DRAW_EASE, delay: 1.5 }, opacity: { duration: 0.2, delay: 1.5 } }}
-          />
-        </svg>
-
-        {/* Brand logo */}
-        <div className={styles.brandTop}>
-          <div className={styles.brandLogo}>
-            <img src={logoColor} alt="Margube" />
-          </div>
+    <MotionConfig reducedMotion="user">
+      <div className={styles.page}>
+        {/* Soft blurred backdrop behind the frame */}
+        <div className={styles.backdrop} aria-hidden="true">
+          <span className={styles.blobA} />
+          <span className={styles.blobB} />
         </div>
 
-        {/* Headline + features */}
         <motion.div
-          className={styles.brandMid}
-          variants={stagger}
-          initial="hidden"
-          animate="show"
+          className={styles.frame}
+          initial={{ opacity: 0, y: 16, scale: 0.985 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, ease: EASE }}
         >
-          <motion.h2 variants={fadeUp} className={styles.brandHeadline}>
-            Tu espacio de trabajo,<br />todo en un lugar
-          </motion.h2>
-          <motion.p variants={fadeUp} className={styles.brandDesc}>
-            La intranet corporativa de Margube. Gestiona reservas, solicitudes,
-            equipo y mucho más de forma simple y eficiente.
-          </motion.p>
-          <motion.div variants={fadeUp} className={styles.brandFeatures}>
-            {FEATURES.map(({ icon: Icon, text }) => (
-              <div key={text} className={styles.brandFeature}>
-                <div className={styles.brandFeatureIcon}>
-                  <Icon size={13} />
+          {/* ── Left: brand panel (desktop only) ──────────────────────── */}
+          <div className={styles.brandPanel} aria-hidden="true">
+            <motion.p
+              className={styles.brandTagline}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.35, duration: 0.5 }}
+            >
+              La intranet de Margube — reservas, solicitudes y equipo en un solo lugar.
+            </motion.p>
+
+            {/* Hairline rings behind the headline */}
+            <svg className={styles.rings} viewBox="0 0 400 400">
+              <motion.circle
+                cx="200" cy="200" r="198"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ pathLength: { duration: 2, ease: DRAW_EASE, delay: 0.3 }, opacity: { duration: 0.3, delay: 0.3 } }}
+              />
+              <motion.circle
+                cx="200" cy="200" r="138"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ pathLength: { duration: 1.7, ease: DRAW_EASE, delay: 0.5 }, opacity: { duration: 0.3, delay: 0.5 } }}
+              />
+            </svg>
+
+            <motion.h2
+              className={styles.brandHeadline}
+              variants={stagger}
+              initial="hidden"
+              animate="show"
+            >
+              <motion.span variants={fadeUp}>Tu espacio</motion.span>
+              <motion.span variants={fadeUp}>de trabajo</motion.span>
+            </motion.h2>
+
+            {/* Phone mock — rises in from the bottom edge */}
+            <motion.div
+              className={styles.phone}
+              initial={{ opacity: 0, y: 80, rotate: -4 }}
+              animate={{ opacity: 1, y: 0, rotate: -8 }}
+              transition={{ duration: 0.9, ease: EASE, delay: 0.45 }}
+            >
+              <div className={styles.phoneScreen}>
+                <span className={styles.phoneIsland} />
+
+                <div className={styles.phoneCard}>
+                  <div className={styles.phoneCardHead}>
+                    <span>Esta semana</span>
+                    <CalendarDays size={11} />
+                  </div>
+                  <div className={styles.phoneStat}>
+                    24<small>reservas</small>
+                  </div>
+                  <div className={styles.phoneBars}>
+                    {WEEK.map(({ d, v, active }, i) => (
+                      <div key={d} className={styles.phoneBarCol}>
+                        <div className={styles.phoneBarTrack}>
+                          <motion.span
+                            className={active ? styles.phoneBarActive : styles.phoneBarFill}
+                            initial={{ scaleY: 0 }}
+                            animate={{ scaleY: v }}
+                            transition={{ duration: 0.7, ease: EASE, delay: 1 + i * 0.05 }}
+                          />
+                        </div>
+                        <span>{d}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <span>{text}</span>
+
+                <div className={styles.phoneSection}>Recursos</div>
+                <div className={styles.phoneTiles}>
+                  <div className={styles.phoneTile}>
+                    <DoorOpen size={12} />
+                    <b>3</b>
+                    <span>Salas</span>
+                  </div>
+                  <div className={`${styles.phoneTile} ${styles.phoneTileTall}`}>
+                    <Car size={12} />
+                    <b>2</b>
+                    <span>Vehículos</span>
+                  </div>
+                  <div className={styles.phoneTile}>
+                    <FileText size={12} />
+                    <b>5</b>
+                    <span>Solicitudes</span>
+                  </div>
+                </div>
+
+                <div className={styles.phoneNav}>
+                  <Home size={13} />
+                  <CalendarDays size={13} />
+                  <span className={styles.phoneNavMark}><LeafGlyph size={13} /></span>
+                  <Users size={13} />
+                  <FileText size={13} />
+                </div>
               </div>
-            ))}
-          </motion.div>
-        </motion.div>
+            </motion.div>
 
-        {/* Bottom copyright */}
-        <div className={styles.brandBottom}>
-          © {new Date().getFullYear()} Margube · Uso interno exclusivo
-        </div>
-      </motion.div>
-
-      {/* ── Right: Form panel ────────────────────────────────────── */}
-      <motion.div
-        className={styles.formPanel}
-        variants={panelVariants}
-        initial="hidden"
-        animate="show"
-        role="main"
-      >
-        <div className={styles.wrapper}>
-          {/* Mobile logo */}
-          <div className={styles.logoContainer}>
-            <img
-              src={theme === 'dark' ? logoWhite : logoColor}
-              alt="Margube"
-              className={styles.logoImg}
-            />
-            <p className={styles.subtitle}>Intranet corporativa — Acceso privado</p>
+            <span className={styles.brandBadge}><LeafGlyph size={14} /></span>
           </div>
 
-          {/* Form heading */}
-          <motion.h1
-            className={styles.formHeading}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25, duration: 0.4 }}
+          {/* ── Right: form panel ─────────────────────────────────────── */}
+          <motion.main
+            className={styles.formPanel}
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.55, ease: EASE, delay: 0.1 }}
           >
-            Bienvenido/a
-          </motion.h1>
-          <motion.p
-            className={styles.formSubtext}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.4 }}
-          >
-            Inicia sesión con tu cuenta corporativa
-          </motion.p>
-
-          {/* On mobile, wrap in a card for visual grouping */}
-          <Card className={styles.loginCard}>
-            {/* Email */}
-            <div className={styles.inputGroup} style={{ marginTop: '8px' }}>
-              <Input
-                label="Correo corporativo"
-                type="email"
-                value={email}
-                onChange={setEmail}
-                placeholder="nombre@margube.com"
-                required
-                autoComplete="email"
-                autoFocus
-                id="login-email"
-                onKeyDown={e => e.key === 'Enter' && handleLogin()}
+            <header className={styles.formTop}>
+              <img
+                src={isDark ? logoWhite : logoColor}
+                alt="Margube"
+                className={styles.logo}
               />
-            </div>
+              <span className={styles.privateBadge}>
+                <Lock size={13} />
+                Acceso privado
+              </span>
+            </header>
 
-            {/* Password — uses Input component with eye-toggle rightElement */}
-            <div className={styles.inputGroup}>
-              <Input
-                label="Contraseña"
-                type={showPass ? 'text' : 'password'}
-                value={pass}
-                onChange={setPass}
-                placeholder="••••••••"
-                required
-                autoComplete="current-password"
-                id="login-password"
-                onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                rightElement={
-                  <button
-                    className={styles.eyeButton}
-                    onClick={() => setShowPass(!showPass)}
-                    type="button"
-                    aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                    tabIndex={0}
-                  >
-                    {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
-                  </button>
-                }
-              />
-            </div>
-
-            {/* Error message */}
-            <AnimatePresence mode="wait">
-              {err && (
-                <motion.div
-                  key={errKey}
-                  className={styles.errorBox}
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0, x: [0, -7, 6, -4, 2, 0], transition: { duration: 0.42, ease: [0.16, 1, 0.3, 1] } }}
-                  exit={{ opacity: 0, y: -4, transition: { duration: 0.14 } }}
-                  role="alert"
-                >
-                  <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
-                  <span>{err}</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Submit */}
-            <Button
-              className={styles.actionButton}
-              onClick={handleLogin}
-              loading={loading}
-              size="lg"
-              aria-label="Iniciar sesión"
+            <motion.form
+              className={styles.form}
+              onSubmit={handleLogin}
+              noValidate
+              variants={stagger}
+              initial="hidden"
+              animate="show"
             >
-              {loading ? 'Verificando...' : 'Iniciar sesión'}
-            </Button>
+              <motion.h1 variants={fadeUp} className={styles.heading}>
+                Iniciar sesión
+              </motion.h1>
+              <motion.p variants={fadeUp} className={styles.subheading}>
+                Accede con tu cuenta corporativa de Margube
+              </motion.p>
 
-            <p className={styles.helpText}>
-              ¿Problemas de acceso? Contacta con RRHH o Administración
-            </p>
-          </Card>
-        </div>
-      </motion.div>
-    </div>
+              <motion.div variants={fadeUp} className={styles.field}>
+                <label htmlFor="login-email" className={styles.srOnly}>Correo corporativo</label>
+                <input
+                  id="login-email"
+                  className={styles.input}
+                  type="email"
+                  inputMode="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="Correo corporativo"
+                  autoComplete="email"
+                  autoFocus
+                  required
+                  aria-invalid={!!err}
+                />
+              </motion.div>
+
+              <motion.div variants={fadeUp} className={styles.field}>
+                <label htmlFor="login-password" className={styles.srOnly}>Contraseña</label>
+                <input
+                  id="login-password"
+                  className={`${styles.input} ${styles.inputWithIcon}`}
+                  type={showPass ? 'text' : 'password'}
+                  value={pass}
+                  onChange={e => setPass(e.target.value)}
+                  placeholder="Contraseña"
+                  autoComplete="current-password"
+                  required
+                  aria-invalid={!!err}
+                />
+                <button
+                  className={styles.eyeButton}
+                  onClick={() => setShowPass(s => !s)}
+                  type="button"
+                  aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  aria-pressed={showPass}
+                >
+                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </motion.div>
+
+              <motion.p variants={fadeUp} className={styles.helpLink}>
+                ¿Problemas de acceso? Contacta con RRHH
+              </motion.p>
+
+              <AnimatePresence mode="wait">
+                {err && (
+                  <motion.div
+                    key={errKey}
+                    className={styles.errorBox}
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0, x: [0, -7, 6, -4, 2, 0], transition: { duration: 0.42, ease: [0.16, 1, 0.3, 1] } }}
+                    exit={{ opacity: 0, y: -4, transition: { duration: 0.14 } }}
+                    role="alert"
+                  >
+                    <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <span>{err}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <motion.button
+                variants={fadeUp}
+                type="submit"
+                className={styles.submit}
+                disabled={loading}
+                aria-busy={loading}
+                whileTap={{ scale: 0.98 }}
+              >
+                {loading
+                  ? <Loader2 size={17} className={styles.spin} />
+                  : <LogIn size={17} />}
+                {loading ? 'Verificando…' : 'Iniciar sesión'}
+              </motion.button>
+            </motion.form>
+
+            <footer className={styles.formFooter}>
+              <span>© {new Date().getFullYear()} Margube · Uso interno exclusivo</span>
+              <button
+                type="button"
+                className={styles.themeButton}
+                onClick={() => setMode(isDark ? 'light' : 'dark')}
+                aria-label={isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+              >
+                {isDark ? <Sun size={14} /> : <Moon size={14} />}
+                {isDark ? 'Claro' : 'Oscuro'}
+              </button>
+            </footer>
+          </motion.main>
+        </motion.div>
+      </div>
+    </MotionConfig>
   );
 }
