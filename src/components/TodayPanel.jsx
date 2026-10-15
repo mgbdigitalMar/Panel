@@ -1,9 +1,8 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { CalendarPlus, Car, DoorOpen, Home, Briefcase, Sun } from 'lucide-react';
-import { useAuth, useRequests, useReservations, usePersonalDays } from '../context';
-import { Avatar, Button, Card } from './ui';
-import { downloadReservationIcs, localDateKey } from '../utils/ics';
+import { Home, Briefcase, Sun } from 'lucide-react';
+import { useAuth, useRequests, usePersonalDays } from '../context';
+import { Avatar, Card } from './ui';
+import { localDateKey } from '../utils/ics';
 import styles from './TodayPanel.module.scss';
 
 const AWAY_KINDS = {
@@ -12,15 +11,10 @@ const AWAY_KINDS = {
   asuntos_propios: { label: 'Asuntos propios',  icon: Sun,       tone: 'warning' },
 };
 
-/**
- * "Hoy en Margube" — who is working away from the office today
- * and the signed-in person's own bookings for the day.
- */
+/** "Hoy en Margube" — who is working away from the office today. */
 export function TodayPanel() {
-  const navigate = useNavigate();
-  const { user, employees = [] } = useAuth();
+  const { employees = [] } = useAuth();
   const { requests = [] } = useRequests() || {};
-  const { reservations = [] } = useReservations() || {};
   const { personalDays = [] } = usePersonalDays() || {};
   const today = localDateKey();
 
@@ -42,11 +36,6 @@ export function TodayPanel() {
     return [...byPerson.values()].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'es'));
   }, [requests, personalDays, today]);
 
-  const myToday = useMemo(() =>
-    reservations
-      .filter(r => r.employeeId === user?.id && r.date === today && r.status !== 'rejected')
-      .sort((a, b) => (a.timeStart || '').localeCompare(b.timeStart || '')),
-  [reservations, user?.id, today]);
 
   return (
     <Card className={styles.panel}>
@@ -76,44 +65,6 @@ export function TodayPanel() {
         )}
       </section>
 
-      <section className={styles.col} aria-labelledby="today-mine">
-        <header className={styles.head}>
-          <h3 id="today-mine" className={styles.title}>Tu agenda de hoy</h3>
-          <span className={styles.count}>{myToday.length}</span>
-        </header>
-        {myToday.length === 0 ? (
-          <div className={styles.emptyRow}>
-            <p className={styles.empty}>No tienes salas ni vehículos reservados para hoy.</p>
-            <Button variant="secondary" size="sm" onClick={() => navigate('/reservations?nueva=1')}>
-              Reservar
-            </Button>
-          </div>
-        ) : (
-          <ul className={`${styles.list} stagger-in`}>
-            {myToday.map(r => {
-              const Icon = r.type === 'vehicle' ? Car : DoorOpen;
-              return (
-                <li key={r.id} className={styles.booking}>
-                  <span className={styles.time}>{r.timeStart}<span>{r.timeEnd}</span></span>
-                  <span className={styles.bookingBody}>
-                    <span className={styles.name}><Icon size={14} aria-hidden="true" /> {r.resourceName}</span>
-                    {r.purpose && <span className={styles.purpose}>{r.purpose}</span>}
-                  </span>
-                  <Button
-                    variant="action-download"
-                    size="sm"
-                    iconOnly
-                    icon={CalendarPlus}
-                    onClick={() => downloadReservationIcs(r)}
-                    title="Añadir a mi calendario"
-                    aria-label={`Añadir ${r.resourceName} a mi calendario`}
-                  />
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
     </Card>
   );
 }

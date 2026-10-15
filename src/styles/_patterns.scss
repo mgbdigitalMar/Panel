@@ -1,0 +1,145 @@
+/* ═══════════════════════════════════════════════════════════════════
+   SHARED PATTERNS — one definition for controls every page repeats.
+   Use from a page module:  @use '../styles/patterns' as p;
+═══════════════════════════════════════════════════════════════════ */
+
+/* Segmented tabs: a white pill track; the active tab is a solid accent pill */
+@mixin tabs-row {
+  display: inline-flex;
+  gap: 2px;
+  max-width: 100%;
+  padding: 4px;
+  border-radius: var(--radius-full);
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-xs);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+@mixin tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-sec);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s var(--ease-out), background-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), transform 0.15s var(--ease-out);
+
+  &:active { transform: scale(0.97); }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--accent-glow);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: var(--text);
+      background: rgba(var(--text-rgb), 0.05);
+    }
+  }
+}
+
+@mixin tab-btn-active {
+  background: var(--accent) !important;
+  color: var(--accent-fg) !important;
+  border-color: transparent !important;
+  box-shadow: 0 8px 18px -10px rgba(var(--accent-rgb), 0.9) !important;
+}
+
+@mixin tab-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: rgba(var(--text-rgb), 0.07);
+  color: var(--text-sec);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+@mixin tab-count-on-active {
+  background: rgba(255, 255, 255, 0.24);
+  color: inherit;
+}
+
+/* A section heading that sits on the panel, above its cards */
+@mixin section-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(18px, 1.5vw, 21px);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+/* Surface used by every card */
+@mixin surface {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  box-shadow: var(--shadow-card);
+}
+
+/* The login's dark brand panel: navy with a blue glow and two hairline
+   rings. Dark in both themes — used for the one highlight on a page. */
+@mixin brand-panel {
+  color: #FFFFFF;
+  background:
+    radial-gradient(75% 110% at 0% 100%, rgba(47, 91, 234, 0.5) 0%, transparent 70%),
+    radial-gradient(circle at 88% 28%, transparent 119px, rgba(255, 255, 255, 0.07) 120px, transparent 121px),
+    radial-gradient(circle at 88% 28%, transparent 189px, rgba(255, 255, 255, 0.05) 190px, transparent 191px),
+    #11141B;
+  box-shadow: 0 24px 48px -24px rgba(17, 20, 27, 0.55);
+
+  [data-theme='dark'] & {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  }
+}
+
+/* Hairline leaf drawn into a brand panel */
+@mixin brand-leaf {
+  position: absolute;
+  overflow: visible;
+  pointer-events: none;
+
+  path {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.2);
+    stroke-width: 1.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+/* Translucent chip on a brand panel */
+@mixin brand-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 11px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  font-weight: 600;
+}

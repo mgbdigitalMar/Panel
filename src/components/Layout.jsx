@@ -1,15 +1,16 @@
-import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
-import { useAuth, useNotifs, useDocuments, useRequests, useReservations, useHours, useDataSync } from '../context';
+import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from 'react';
+import { useAuth, useTheme, useNotifs, useDocuments, useRequests, useReservations, useHours, usePersonalDays, useDataSync } from '../context';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import { springConfig } from '../hooks/useSpringAnimation';
 import {
-  LayoutDashboard, Calendar, Inbox, Newspaper, Settings, User,
-  LogOut, Menu, Bell, CheckCircle, XCircle,
-  UsersRound, Timer, Check, SlidersHorizontal, Clock, ChevronLeft, ChevronRight, Search
+  LayoutDashboard, Calendar, Inbox, Newspaper, Settings,
+  LogOut, Menu, Bell, UsersRound, Timer, SlidersHorizontal, Clock,
+  ChevronLeft, ChevronRight, Search, Sun, Moon,
 } from 'lucide-react';
 
+import logoColor from '../assets/logos/logo-color.png';
 import logoWhite from '../assets/logos/logo-white.png';
 import logoIcon from '../assets/logos/logo-icon.png';
 
@@ -21,11 +22,13 @@ import { LiveToastContainer } from './LiveToastContainer';
 import CommandPalette from './CommandPalette';
 import { ShortcutsSheet } from './ShortcutsSheet';
 import { ConnectionStatus } from './ConnectionStatus';
+import { todayKey } from '../utils/format';
+import { workdayProgress } from '../utils/workday';
 import styles from './Layout.module.scss';
 
 /* ── Navigation items ─────────────────────────────────────────────── */
 const navItems = [
-  { id: 'dashboard',    label: 'Dashboard',         icon: LayoutDashboard },
+  { id: 'dashboard',    label: 'Inicio',             icon: LayoutDashboard },
   { id: 'reservations', label: 'Reservas',           icon: Calendar,    badgeKey: 'reservations' },
   { id: 'requests',     label: 'Solicitudes',        icon: Inbox,       badgeKey: 'requests' },
   { id: 'horas',        label: 'Tiempo a compensar', icon: Timer },
@@ -38,7 +41,19 @@ const adminItems = [
 const settingsItem = { id: 'settings', label: 'Ajustes', icon: SlidersHorizontal };
 const allItems = [...navItems, ...adminItems, settingsItem];
 
-/* ── Live clock hook ───────────────────────────────────────────────────── */
+/* Heading shown at the top of the content panel. The dashboard draws its own. */
+const PAGE_META = {
+  reservations: { title: 'Reservas',           desc: 'Salas y vehículos de empresa: mira qué está libre y reserva en segundos.' },
+  requests:     { title: 'Solicitudes',        desc: 'Asuntos propios, trabajo en remoto o externo y compras.' },
+  horas:        { title: 'Tiempo a compensar', desc: 'Registra tus horas y consulta tu saldo con la empresa.' },
+  news:         { title: 'Noticias y Eventos', desc: 'Comunicados, novedades y próximos eventos de Margube.' },
+  employees:    { title: 'Equipo',             desc: 'Directorio del equipo y dónde trabaja cada persona hoy.' },
+  profile:      { title: 'Mi perfil',          desc: 'Tus datos, modo de trabajo, contraseña y documentos.' },
+  settings:     { title: 'Ajustes',            desc: 'Tema, notificaciones y preferencias de tu cuenta.' },
+  admin:        { title: 'Administración',     desc: 'Empleados, salas, vehículos, documentos y bolsa de horas.' },
+};
+
+/* ── Live clock hook ───────────────────────────────────────────────── */
 function useClock() {
   const [time, setTime] = useState(() => new Date());
   useEffect(() => {
@@ -48,13 +63,58 @@ function useClock() {
   return time;
 }
 
+/* ═ Profile ring — the workday traced around the avatar ═══════════════
+   Same leaf outline as the avatars (--shape-leaf: 60% 12% 60% 12%). */
+function leafOutline(size, inset) {
+  const x = inset, y = inset, w = size - inset * 2, h = w;
+  const big = w * 0.6, small = w * 0.12;
+  return [
+    `M ${x + big} ${y}`,
+    `H ${x + w - small}`, `A ${small} ${small} 0 0 1 ${x + w} ${y + small}`,
+    `V ${y + h - big}`,   `A ${big} ${big} 0 0 1 ${x + w - big} ${y + h}`,
+    `H ${x + small}`,     `A ${small} ${small} 0 0 1 ${x} ${y + h - small}`,
+    `V ${y + big}`,       `A ${big} ${big} 0 0 1 ${x + big} ${y}`,
+    'Z',
+  ].join(' ');
+}
+
+function ProfileRing({ progress, size, children }) {
+  const stroke = 3;
+  const d = leafOutline(size, stroke / 2 + 0.5);
+  return (
+    <div className={styles.ring} style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+        <defs>
+          <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="var(--accent-light)" />
+            <stop offset="1" stopColor="var(--accent)" />
+          </linearGradient>
+        </defs>
+        <path className={styles.ringTrack} d={d} strokeWidth={stroke} />
+        <motion.path
+          className={styles.ringValue}
+          d={d}
+          pathLength={1}
+          strokeWidth={stroke}
+          stroke="url(#ringGrad)"
+          strokeDasharray="1 1"
+          initial={{ strokeDashoffset: 1 }}
+          animate={{ strokeDashoffset: 1 - progress / 100 }}
+          transition={{ duration: 1.1, ease: [0.23, 1, 0.32, 1], delay: 0.2 }}
+        />
+      </svg>
+      <div className={styles.ringInner}>{children}</div>
+    </div>
+  );
+}
+
 /* ═ Single Nav Link ═════════════════════════════════════════════════════ */
-function NavLink({ item, onNavigate, collapsed, badge, active, pillId, index = 0 }) {
+function NavLink({ item, onNavigate, collapsed, badge, active, pillId }) {
   const Icon = item.icon;
   const [showTip, setShowTip] = useState(false);
 
   return (
-    <div className={styles.navLinkWrapper} style={{ '--i': index }}>
+    <div className={styles.navLinkWrapper}>
       {/* Active pill — shared element that glides between items */}
       {active && (
         <motion.span
@@ -77,7 +137,7 @@ function NavLink({ item, onNavigate, collapsed, badge, active, pillId, index = 0
         whileTap={{ scale: 0.97 }}
         transition={springConfig.responsive}
       >
-        <Icon size={17} aria-hidden="true" />
+        <span className={styles.navIcon}><Icon size={18} aria-hidden="true" /></span>
         <span className={styles.navLabel}>{item.label}</span>
         {badge > 0 && !collapsed && (
           <motion.span
@@ -91,25 +151,19 @@ function NavLink({ item, onNavigate, collapsed, badge, active, pillId, index = 0
           </motion.span>
         )}
         {badge > 0 && collapsed && (
-          <motion.span
-            className={styles.navBadgeDot}
-            aria-label={`${badge} pendientes`}
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', damping: 26, mass: 0.8, stiffness: 300 }}
-          />
+          <span className={styles.navBadgeDot} aria-label={`${badge} pendientes`} />
         )}
       </motion.button>
 
-      {/* Floating tooltip when collapsed - Apple style spring entrance */}
+      {/* Floating tooltip when collapsed */}
       <AnimatePresence>
         {collapsed && showTip && (
           <motion.div
             className={styles.navTooltip}
-            initial={{ opacity: 0, x: -8, y: '-50%', scale: 0.92 }}
+            initial={{ opacity: 0, x: -6, y: '-50%', scale: 0.96 }}
             animate={{ opacity: 1, x: 0, y: '-50%', scale: 1 }}
-            exit={{ opacity: 0, x: -6, y: '-50%', scale: 0.94 }}
-            transition={springConfig.responsive}
+            exit={{ opacity: 0, x: -4, y: '-50%', scale: 0.97, transition: { duration: 0.1 } }}
+            transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
             role="tooltip"
             id={`tooltip-${item.id}`}
           >
@@ -127,6 +181,7 @@ function NavLink({ item, onNavigate, collapsed, badge, active, pillId, index = 0
 ════════════════════════════════════════════════════════════════════ */
 export default function Layout({ children }) {
   const { user, logout, needsOnboarding, setLastActivity, setCurrentUser } = useAuth();
+  const { theme, setMode } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const page = location.pathname.replace('/', '') || 'dashboard';
@@ -135,28 +190,43 @@ export default function Layout({ children }) {
   const { requests = [] } = useRequests();
   const { reservations = [] } = useReservations();
   const { hourCompensations = [] } = useHours();
+  const { personalDays = [] } = usePersonalDays() || {};
   const { loadingData = false } = useDataSync() || {};
 
   const now = useClock();
   const clockStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const today = todayKey(now);
+  const isDark = theme === 'dark';
 
   /* ── Pending counts for nav badges ─────────────────────────────────── */
   const pendingRequestsCount = requests.filter(r => r.status === 'pending').length;
-  const pendingReservationsCount = user?.role === 'admin' 
+  const pendingReservationsCount = user?.role === 'admin'
     ? reservations.filter(r => r.status === 'pending').length
     : reservations.filter(r => r.status === 'pending' && r.employeeId === user?.id).length;
   const pendingAdminCount = hourCompensations.filter(h => h.status === 'pending').length;
-  
-  const navBadges = { 
-    requests: pendingRequestsCount, 
+
+  const navBadges = {
+    requests: pendingRequestsCount,
     reservations: pendingReservationsCount,
     admin: pendingAdminCount
   };
 
+  /* ── The signed-in person's own numbers (profile block) ────────────── */
+  const myUpcoming = useMemo(() =>
+    reservations
+      .filter(r => r.employeeId === user?.id && r.date >= today && r.status !== 'rejected' && r.status !== 'cancelled')
+      .sort((a, b) => (a.date + (a.timeStart || '')).localeCompare(b.date + (b.timeStart || ''))),
+  [reservations, user?.id, today]);
+
+  const myOpenRequests = useMemo(() =>
+    requests.filter(r => r.employeeId === user?.id && r.status === 'pending').length
+    + personalDays.filter(p => p.employeeId === user?.id && p.status === 'pending').length,
+  [requests, personalDays, user?.id]);
+
   /* ── UI state ────────────────────────────────────────────── */
   const [sideOpen, setSideOpen] = useState(false);
   const [notiMenu, setNotiMenu] = useState(false);
-  
+
   const [policyRead, setPolicyRead] = useState(false);
   const [policyTimer, setPolicyTimer] = useState(5);
 
@@ -259,37 +329,78 @@ export default function Layout({ children }) {
   /* ── Derived data ──────────────────────────────────────────────── */
   const unreadCount = notifications.filter(n => !n.read).length;
   const handleMarkAllRead = () => markAllNotifsRead?.(user?.id);
+  const meta = PAGE_META[page];
+  const docTitle = meta?.title || (page === 'dashboard' ? 'Inicio' : null);
 
-  /* ── Breadcrumbs ────────────────────────────────────────────────── */
-  // Profile is reached from the user chip, not the nav list, so it needs its own label
-  const pageLabel = allItems.find(i => i.id === page)?.label || (page === 'profile' ? 'Mi perfil' : null);
-  const breadcrumbs = pageLabel ? ['Margube', pageLabel] : ['Margube'];
+  useEffect(() => {
+    document.title = docTitle ? `${docTitle} · Margube` : 'Margube';
+  }, [docTitle]);
+
+  // Each page opens at the top (the panel scrolls on desktop, the window on phones)
+  const panelRef = useRef(null);
+  useEffect(() => {
+    panelRef.current?.scrollTo(0, 0);
+    window.scrollTo(0, 0);
+  }, [page]);
 
   /* ── Sidebar content (shared between desktop + mobile drawer) ──── */
   const getSidebarContent = (isMobile = false) => {
     const isCollapsed = !isMobile && collapsed;
     const pillId = isMobile ? 'nav-pill-drawer' : 'nav-pill-rail';
+    const progress = workdayProgress(now);
     return (
       <div className={styles.sidebarInner}>
         {/* Logo */}
         <div className={clsx(styles.logoArea, { [styles.logoAreaCollapsed]: isCollapsed })}>
-          <div className={styles.logoMark}>
-            <img
-              src={isCollapsed ? logoIcon : logoWhite}
-              alt="Margube"
-              className={clsx({ [styles.logoIconCollapsed]: isCollapsed })}
-            />
-          </div>
+          <img
+            src={isCollapsed ? logoIcon : (isDark ? logoWhite : logoColor)}
+            alt="Margube"
+            className={isCollapsed ? styles.logoIcon : styles.logo}
+          />
+        </div>
+
+        {/* Profile — the ring is today's workday */}
+        <div className={clsx(styles.profile, { [styles.profileCollapsed]: isCollapsed })}>
+          <button
+            type="button"
+            className={styles.profileMain}
+            onClick={() => handleNavigate('profile')}
+            aria-label={`${user?.name || 'Mi perfil'}. Ir a mi perfil`}
+            title={`Jornada: ${Math.round(progress)}%`}
+          >
+            <ProfileRing progress={progress} size={isCollapsed ? 48 : 76}>
+              <Avatar initials={user?.avatar || '??'} src={user?.avatarUrl} size={isCollapsed ? 38 : 62} />
+            </ProfileRing>
+            {!isCollapsed && (
+              <span className={styles.profileText}>
+                <span className={styles.profileName}>{user?.name}</span>
+                <span className={styles.profileRole}>{[user?.position, user?.dept].filter(Boolean).join(' · ')}</span>
+              </span>
+            )}
+          </button>
+
+          {!isCollapsed && (
+            <div className={styles.profileStats}>
+              <button type="button" className={styles.profileStat} onClick={() => handleNavigate('reservations')}>
+                <Calendar size={15} aria-hidden="true" />
+                <strong>{myUpcoming.length}</strong>
+                <span>{myUpcoming.length === 1 ? 'reserva' : 'reservas'}</span>
+              </button>
+              <button type="button" className={styles.profileStat} onClick={() => handleNavigate('requests')}>
+                <Inbox size={15} aria-hidden="true" />
+                <strong>{myOpenRequests}</strong>
+                <span>{myOpenRequests === 1 ? 'pendiente' : 'pendientes'}</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Navigation */}
-        <nav className={styles.navGroup} role="navigation" aria-label="Navegación principal">
-          <p className={styles.navSectionLabel}>Menú</p>
-          {navItems.map((i, idx) => (
+        <nav className={styles.navGroup} aria-label="Navegación principal">
+          {navItems.map(i => (
             <NavLink
               key={i.id}
               item={i}
-              index={idx}
               pillId={pillId}
               onNavigate={handleNavigate}
               collapsed={isCollapsed}
@@ -300,102 +411,63 @@ export default function Layout({ children }) {
 
           {user?.role === 'admin' && (
             <>
-              <div className={styles.navDivider} />
-              <p className={styles.navSectionLabel}>Admin</p>
+              {!isCollapsed && <p className={styles.navSectionLabel}>Admin</p>}
+              {isCollapsed && <div className={styles.navDivider} />}
               {adminItems.map(i => (
-                <NavLink 
-                  key={i.id} 
+                <NavLink
+                  key={i.id}
                   item={i}
-                  index={navItems.length}
                   pillId={pillId}
                   onNavigate={handleNavigate}
-                  collapsed={isCollapsed} 
-                  badge={i.badgeKey ? navBadges[i.badgeKey] || 0 : 0} 
-                  active={page === i.id} 
+                  collapsed={isCollapsed}
+                  badge={i.badgeKey ? navBadges[i.badgeKey] || 0 : 0}
+                  active={page === i.id}
                 />
               ))}
             </>
           )}
+        </nav>
 
-          <div className={styles.navDivider} />
+        {/* Footer */}
+        <div className={styles.sidebarFooter}>
           <NavLink
             item={settingsItem}
-            index={navItems.length + 1}
             pillId={pillId}
             onNavigate={handleNavigate}
             collapsed={isCollapsed}
             badge={0}
             active={page === settingsItem.id}
           />
-        </nav>
-
-        {/* ── User bottom section ─────────────────────────────────── */}
-        <div className={styles.userBottom}>
-          {/* Avatar + info */}
-          <div 
-            className={styles.userCard}
-            onClick={() => handleNavigate('profile')}
-            role="button"
-            tabIndex={0}
-            title="Ir a mi perfil"
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleNavigate('profile'); }}
+          <button
+            type="button"
+            className={styles.logoutBtn}
+            onClick={() => logout()}
+            aria-label="Cerrar sesión"
+            title={isCollapsed ? 'Cerrar sesión' : undefined}
           >
-            <Avatar initials={user?.avatar || '??'} size={34} />
-            <div className={styles.userInfo}>
-              <p className={styles.userName}>{user?.name}</p>
-              <p>{user?.dept}</p>
-            </div>
-          </div>
-
-          {/* Quick action buttons — always visible */}
-          <div className={styles.userActions}>
-            <Button
-              variant="action"
-              size="sm"
-              icon={User}
-              iconOnly={isCollapsed}
-              onClick={() => handleNavigate('profile')}
-              title="Mi perfil"
-              aria-label="Ir a mi perfil"
-              style={{ width: '100%', justifyContent: 'center' }}
-            >
-              {!isCollapsed && 'Perfil'}
-            </Button>
-            <Button
-              variant="action-danger"
-              size="sm"
-              icon={LogOut}
-              iconOnly={isCollapsed}
-              onClick={() => logout()}
-              title="Cerrar sesión"
-              aria-label="Cerrar sesión"
-              style={{ width: '100%', justifyContent: 'center' }}
-            >
-              {!isCollapsed && 'Salir'}
-            </Button>
-          </div>
+            <span className={styles.navIcon}><LogOut size={18} aria-hidden="true" /></span>
+            {!isCollapsed && <span className={styles.navLabel}>Cerrar sesión</span>}
+          </button>
         </div>
       </div>
     );
   };
 
   return (
-    <div className={clsx(styles.layout, 'app-shell')}>
+    <div className={clsx(styles.layout, 'app-shell', { [styles.layoutCollapsed]: collapsed })}>
       {/* Same animated backdrop as the login: drifting glows + dot grid */}
       <AnimatedBackdrop />
 
       {/* ── Desktop sidebar ──────────────────────────────────────────── */}
-      <aside
-        className={clsx(styles.sidebar, { [styles.sidebarCollapsed]: collapsed }, 'hide-tablet')}
-        aria-label="Sidebar de navegación"
-      >
+      <aside className={clsx(styles.sidebar, 'hide-tablet')} aria-label="Barra lateral">
         {getSidebarContent(false)}
         <button
           onClick={toggleCollapse}
           className={styles.collapseBtn}
           aria-label={collapsed ? 'Ampliar menú' : 'Colapsar menú'}
+          title={collapsed ? 'Ampliar menú' : 'Colapsar menú'}
         >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
       </aside>
 
@@ -413,11 +485,11 @@ export default function Layout({ children }) {
               onClick={() => setSideOpen(false)}
             />
             <motion.aside
-              initial={{ x: 'calc(-100% - 12px)' }}
+              initial={{ x: '-100%' }}
               animate={{ x: 0 }}
-              exit={{ x: 'calc(-100% - 12px)' }}
-              transition={{ type: 'spring', damping: 28, stiffness: 380, bounce: 0 }}
-              className={styles.sidebarMobileContent}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'tween', duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
+              className={styles.drawer}
             >
               {getSidebarContent(true)}
             </motion.aside>
@@ -425,101 +497,90 @@ export default function Layout({ children }) {
         )}
       </AnimatePresence>
 
-      {/* ── Main content ───────────────────────────────────────────────────── */}
-      <div className={clsx(styles.main, { [styles.mainCollapsed]: collapsed })}>
+      {/* ── Main column ─────────────────────────────────────────────────── */}
+      <div className={styles.main}>
 
-        {/* ── Topbar ─────────────────────────────────────────────── */}
+        {/* ── Top bar ────────────────────────────────────────────── */}
         <header className={styles.header} role="banner">
           <div className={styles.headerLeft}>
-            {/* Mobile hamburger */}
             <Button
               variant="ghost"
               iconOnly
               icon={Menu}
-              className="show-tablet"
+              className={clsx('show-tablet', styles.menuBtn)}
               onClick={() => setSideOpen(true)}
               aria-label="Abrir menú"
             />
-
-            {/* Page title + breadcrumbs */}
-            <div className={styles.titleBlock}>
-              {/* Breadcrumbs */}
-              <div className={styles.breadcrumbs} aria-label="Breadcrumb" role="navigation" style={{ display: 'flex' }}>
-                {breadcrumbs.map((crumb, i) => (
-                  <span key={crumb} className={styles.breadcrumbItem}>
-                    {i > 0 && <span className={styles.breadcrumbSep} aria-hidden="true">›</span>}
-                    <span className={i === breadcrumbs.length - 1 ? styles.breadcrumbActive : styles.breadcrumbMuted}>
-                      {crumb}
-                    </span>
-                  </span>
-                ))}
-              </div>
-
-              {/* Animated page title */}
-              <AnimatePresence mode="wait">
-                <motion.h1
-                  key={page}
-                  className={styles.pageTitle}
-                  initial={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
-                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.26, ease: [0.16, 1, 0.3, 1] }, transitionEnd: { filter: 'none' } }}
-                  exit={{ opacity: 0, y: -6, filter: 'blur(4px)', transition: { duration: 0.12, ease: [0.4, 0, 1, 1] } }}
-                >
-                  {pageLabel || 'Margube'}
-                </motion.h1>
-              </AnimatePresence>
-            </div>
+            <img src={logoIcon} alt="" className={clsx(styles.headerMark, 'show-tablet')} aria-hidden="true" />
           </div>
 
-          {/* Right actions */}
-          <div className={styles.headerRight}>
-            {/* Global search trigger */}
-            <button
-              type="button"
-              className={styles.searchTrigger}
-              onClick={() => setCmdOpen(true)}
-              aria-label="Buscar (Ctrl+K)"
-              aria-haspopup="dialog"
-            >
-              <Search size={15} aria-hidden="true" />
-              <span className={styles.searchTriggerLabel}>Buscar…</span>
-              <kbd className={styles.cmdKbd}>{/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘K' : 'Ctrl K'}</kbd>
-            </button>
+          {/* Global search trigger (opens the command palette) */}
+          <button
+            type="button"
+            className={styles.searchTrigger}
+            onClick={() => setCmdOpen(true)}
+            aria-label="Buscar (Ctrl+K)"
+            aria-haspopup="dialog"
+          >
+            <Search size={17} aria-hidden="true" />
+            <span className={styles.searchTriggerLabel}>Busca personas, reservas, solicitudes…</span>
+            <kbd className={styles.cmdKbd}>{/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘K' : 'Ctrl K'}</kbd>
+          </button>
 
-            {/* Live clock */}
-            <div className={styles.liveClock} aria-label="Hora actual">
-              <Clock size={13} aria-hidden="true" />
+          <div className={styles.headerRight}>
+            <div className={styles.liveClock} aria-label={`Hora actual ${clockStr}`}>
+              <Clock size={14} aria-hidden="true" />
               <span>{clockStr}</span>
             </div>
 
+            <button
+              type="button"
+              className={styles.iconBtn}
+              onClick={() => setMode(isDark ? 'light' : 'dark')}
+              aria-label={isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+              title={isDark ? 'Tema claro' : 'Tema oscuro'}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={isDark ? 'sun' : 'moon'}
+                  className={styles.iconSwap}
+                  initial={{ opacity: 0, rotate: -45, scale: 0.8 }}
+                  animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                  exit={{ opacity: 0, rotate: 45, scale: 0.8 }}
+                  transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+                >
+                  {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                </motion.span>
+              </AnimatePresence>
+            </button>
 
             {/* Notifications */}
-            <div style={{ position: 'relative' }} ref={notiMenuRef}>
-              <Button
-                variant="ghost"
-                iconOnly
-                icon={Bell}
+            <div className={styles.bellWrap} ref={notiMenuRef}>
+              <button
+                type="button"
+                className={clsx(styles.iconBtn, { [styles.iconBtnActive]: notiMenu })}
                 onClick={() => setNotiMenu(v => !v)}
-                className={styles.bellBtn}
                 aria-label={`Notificaciones${unreadCount > 0 ? ` (${unreadCount} sin leer)` : ''}`}
                 aria-expanded={notiMenu}
-              />
+              >
+                <Bell size={18} aria-hidden="true" />
+              </button>
               {unreadCount > 0 && (
                 <motion.span
                   key={unreadCount}
-                  initial={{ scale: 0.4, opacity: 0 }}
+                  initial={{ scale: 0.6, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: 'spring', stiffness: 520, damping: 24 }}
                   className={styles.badge}
                   aria-hidden="true"
-                  style={{ pointerEvents: 'none', position: 'absolute', top: -2, right: -2 }}
                 >
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </motion.span>
               )}
 
-              <NotificationsDropdown 
-                notiMenu={notiMenu} 
-                setNotiMenu={setNotiMenu} 
+              <NotificationsDropdown
+                notiMenu={notiMenu}
+                setNotiMenu={setNotiMenu}
                 unreadCount={unreadCount}
                 notifications={notifications}
                 handleMarkAllRead={handleMarkAllRead}
@@ -530,22 +591,27 @@ export default function Layout({ children }) {
             </div>
           </div>
 
-          {/* Data sync hairline along the bottom edge of the glass bar */}
+          {/* Data sync hairline along the bottom edge of the bar */}
           <TopProgress active={loadingData} />
         </header>
 
-        {/* ── Page content ───────────────────────────────────────── */}
-        <main className={styles.content} id="main-content" role="main" aria-busy={loadingData}>
+        {/* ── Content panel ──────────────────────────────────────── */}
+        <main ref={panelRef} className={styles.panel} id="main-content" role="main" aria-busy={loadingData}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={page}
-              className="page-stagger"
+              className={clsx(styles.panelInner, 'page-stagger')}
               initial={{ opacity: 0 }}
               // A lingering transform would trap position:fixed modals inside this wrapper
               animate={{ opacity: 1, transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] }, transitionEnd: { transform: 'none' } }}
               exit={{ opacity: 0, transition: { duration: 0.12, ease: [0.23, 1, 0.32, 1] } }}
-              style={{ width: '100%' }}
             >
+              {meta && (
+                <div className={styles.pageIntro}>
+                  <h1 className={styles.pageTitle}>{meta.title}</h1>
+                  <p className={styles.pageDesc}>{meta.desc}</p>
+                </div>
+              )}
               {/* First data sync shows the page skeleton instead of empty states */}
               {loadingData ? <PageLoader /> : (
                 <Suspense fallback={<PageLoader />}>

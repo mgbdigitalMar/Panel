@@ -1,0 +1,35 @@
+@use '../../../styles/patterns' as p;
+
+.section {
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.text { min-width: 0; }
+
+.title { @include p.section-title; }
+
+.desc {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-mut);
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Consecutive blocks inside a section (filters, table…) */
+.section > :not(.head) + :not(.head) { margin-top: 14px; }

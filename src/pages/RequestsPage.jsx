@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth, useRequests, usePersonalDays, useDocuments } from '../context';
-import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard, ConfirmModal } from '../components/ui';
+import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard, ConfirmModal, Section } from '../components/ui';
 import { Plus, Check, X, FileText, ExternalLink, Download, Trash2, Home, Briefcase, ShoppingCart, Calendar } from 'lucide-react';
 import styles from './RequestsPage.module.scss';
 import clsx from 'clsx';
@@ -207,6 +207,7 @@ export default function RequestsPage() {
       </div>
 
       {/* Table */}
+      <Section title="Historial de solicitudes" description={`${filtered.length} ${filtered.length === 1 ? 'solicitud' : 'solicitudes'}`}>
       <Card>
         {filtered.length === 0 ? (
           <div className="empty-state">
@@ -279,6 +280,7 @@ export default function RequestsPage() {
           </div>
         )}
       </Card>
+      </Section>
 
       {/* New request modal */}
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Nueva solicitud">

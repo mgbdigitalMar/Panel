@@ -1,25 +1,13 @@
-/* "Hoy en Margube" — two columns divided by a hairline, not two cards */
+/* "Hoy en Margube" — who is away from the office today */
 .panel {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr;
   padding: 0;
-
-  @media (max-width: 900px) { grid-template-columns: 1fr; }
 }
 
 .col {
-  padding: clamp(18px, 2.2vw, 24px) clamp(18px, 2.4vw, 26px);
+  padding: clamp(18px, 2.2vw, 22px) clamp(18px, 2.4vw, 22px);
   min-width: 0;
-
-  & + & {
-    border-left: 1px solid rgba(var(--border-rgb), 0.45);
-
-    @media (max-width: 900px) {
-      border-left: none;
-      border-top: 1px solid rgba(var(--border-rgb), 0.45);
-    }
-  }
 }
+
 
 .head {
   display: flex;

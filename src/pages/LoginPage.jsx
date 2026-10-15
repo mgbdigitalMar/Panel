@@ -9,6 +9,7 @@ import {
 import styles from './LoginPage.module.scss';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
+import { AnimatedBackdrop } from '../components/ui';
 
 const EASE = [0.22, 1, 0.36, 1];
 const DRAW_EASE = [0.65, 0, 0.35, 1];
@@ -78,11 +79,9 @@ export default function LoginPage() {
   return (
     <MotionConfig reducedMotion="user">
       <div className={styles.page}>
-        {/* Soft blurred backdrop behind the frame */}
-        <div className={styles.backdrop} aria-hidden="true">
-          <span className={styles.blobA} />
-          <span className={styles.blobB} />
-        </div>
+        {/* The same animated backdrop as the app shell: drifting glows + dot grid */}
+        <AnimatedBackdrop />
+        <div className={styles.loginGlow} aria-hidden="true" />
 
         <motion.div
           className={styles.frame}

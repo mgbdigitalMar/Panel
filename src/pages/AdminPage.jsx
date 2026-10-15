@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth, useReservations, useDocuments, useHours, useDataSync } from '../context';
 import { MOCK_ROOMS, MOCK_VEHICLES } from '../data/mockData';
-import { Avatar, Badge, Modal, Input, Select, Button, Card, ConfirmModal } from '../components/ui';
+import { Avatar, Badge, Modal, Input, Select, Button, Card, ConfirmModal, Section } from '../components/ui';
 import { Search, Plus, Edit2, Trash2, Eye, EyeOff, Building, Car, FileText, Send, Clock, CheckCircle, Check, PenTool, Upload, X, Timer, Download } from 'lucide-react';
 import styles from './AdminPage.module.scss';
 import clsx from 'clsx';
@@ -353,6 +353,7 @@ export default function AdminPage() {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
+          <Section title="Empleados" description="Altas, datos de contacto y modalidad de cada persona." />
           <Card className={styles.tableCard}>
             <div className={styles.tableHeaderSection}>
               <div className={styles.searchWrapper}>
@@ -496,6 +497,7 @@ export default function AdminPage() {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
+          <Section title="Salas" description="Espacios que el equipo puede reservar." />
 
           <div className={styles.grid}>
             {rooms.map(room => (
@@ -551,6 +553,7 @@ export default function AdminPage() {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
+          <Section title="Vehículos" description="Flota de empresa disponible para reservas." />
 
           <div className={styles.grid}>
             {vehicles.map(v => (
@@ -606,6 +609,7 @@ export default function AdminPage() {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
+          <Section title="Documentos" description="Envía documentos para firmar o completar y sigue su estado." />
           <Card className={styles.tableCard}>
             <div className={clsx(styles.tableHeaderSection, styles.tableHeaderPadding)}>
               <p className={styles.documentTableHeaderTitle}>
@@ -720,6 +724,7 @@ export default function AdminPage() {
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
+          <Section title="Bolsa de horas" description="Aprueba o rechaza las horas que acumula el equipo." />
           <Card className={styles.tableCard}>
             {/* Filters */}
             <div className={styles.filtersHeader}>

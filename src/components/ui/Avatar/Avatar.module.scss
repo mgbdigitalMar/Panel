@@ -1,5 +1,5 @@
 .avatar {
-  border-radius: 50%;
+  border-radius: var(--shape-leaf);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,6 +13,7 @@
     box-shadow 0.22s var(--ease-out),
     transform 0.22s var(--ease-out);
   position: relative;
+  overflow: hidden;
 
   &:hover {
     /* Double ring: card gap + accent ring */
@@ -36,3 +37,9 @@
   border: 2px solid var(--card);
 }
 
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

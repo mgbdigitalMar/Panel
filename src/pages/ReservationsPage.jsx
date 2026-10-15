@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth, useReservations } from '../context';
-import { Badge, Modal, Select, Input, Textarea, Button, Card, ConfirmModal, StatCard } from '../components/ui';
-import { Building, Car, Check, X, Plus, Download, Trash2, Calendar, CalendarPlus } from 'lucide-react';
+import { Badge, Modal, Select, Input, Textarea, Button, Card, ConfirmModal, StatCard, Section } from '../components/ui';
+import { Building, Car, Check, X, Plus, Download, Trash2, Calendar, CalendarPlus, CalendarDays, Users, ArrowRight } from 'lucide-react';
 import { downloadReservationIcs } from '../utils/ics';
 import { fmtDayShort, todayKey } from '../utils/format';
 import styles from './ReservationsPage.module.scss';
@@ -143,7 +143,7 @@ export default function ReservationsPage() {
           {tabBtn('all', 'Todas', reservations.length)}
           {tabBtn('room', 'Salas', rooms.length)}
           {tabBtn('vehicle', 'Vehículos', vehicles.length)}
-          {tabBtn('calendar', '📅 Calendario')}
+          {tabBtn('calendar', <><CalendarDays size={15} aria-hidden="true" /> Calendario</>)}
         </div>
         <div className={styles.controlsRight}>
           {filtered.length > 0 && tab !== 'calendar' && (
@@ -187,8 +187,7 @@ export default function ReservationsPage() {
 
       {/* Room cards */}
       {tab !== 'vehicle' && tab !== 'calendar' && (
-        <div className={styles.sectionContainer}>
-          <h3 className={styles.sectionLabel}>Salas disponibles</h3>
+        <Section title="Salas de reuniones" description="Pulsa una sala para reservarla.">
           <div className={styles.resourceGrid}>
             {rooms.map(room => (
               <Card
@@ -199,29 +198,34 @@ export default function ReservationsPage() {
                   setShowModal(true);
                 }, `Reservar ${room.name}`)}
               >
-                <div className={styles.resourceHeader}>
-                  <div className={clsx(styles.resourceIcon, styles.iconAccent)}>
-                    <Building size={22} />
-                  </div>
+                <div className={styles.resourceTop}>
+                  <span className={styles.resourceIcon} data-tone="room" aria-hidden="true">
+                    <Building size={20} />
+                  </span>
                   <AvailabilityBadge until={busyUntil('room', room.name)} />
                 </div>
-                <h4 className={styles.resourceTitle}>{room.name}</h4>
-                <p className={styles.resourceMeta}>Planta {room.floor} · {room.capacity} personas</p>
-                <div className={styles.tagList}>
-                  {(room.equipment || []).map(eq => (
-                    <span key={eq} className={styles.tag}>{eq}</span>
-                  ))}
-                </div>
+                <h3 className={styles.resourceTitle}>{room.name}</h3>
+                <p className={styles.resourceMeta}>
+                  {room.floor && <span>Planta {room.floor}</span>}
+                  {room.capacity && <span><Users size={13} aria-hidden="true" /> {room.capacity} personas</span>}
+                </p>
+                {(room.equipment || []).length > 0 && (
+                  <div className={styles.tagList}>
+                    {room.equipment.map(eq => (
+                      <span key={eq} className={styles.tag}>{eq}</span>
+                    ))}
+                  </div>
+                )}
+                <span className={styles.resourceCta} aria-hidden="true">Reservar <ArrowRight size={14} /></span>
               </Card>
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
       {/* Vehicle cards */}
       {tab !== 'room' && tab !== 'calendar' && (
-        <div className={styles.sectionContainer}>
-          <h3 className={styles.sectionLabel}>Vehículos de empresa</h3>
+        <Section title="Vehículos de empresa" description="Reserva un coche o furgoneta para visitas y obras.">
           <div className={styles.resourceGrid}>
             {vehicles.map(v => (
               <Card
@@ -232,29 +236,30 @@ export default function ReservationsPage() {
                   setShowModal(true);
                 }, `Reservar ${v.model} (${v.plate})`)}
               >
-                <div className={styles.resourceHeader}>
-                  <div className={clsx(styles.resourceIcon, styles.iconWarning)}>
-                    <Car size={22} />
-                  </div>
+                <div className={styles.resourceTop}>
+                  <span className={styles.resourceIcon} data-tone="vehicle" aria-hidden="true">
+                    <Car size={20} />
+                  </span>
                   <AvailabilityBadge until={busyUntil('vehicle', v.model)} />
                 </div>
-                <h4 className={styles.resourceTitle}>{v.model}</h4>
-                <p className={styles.resourceMeta}>Matrícula: <strong>{v.plate}</strong></p>
-                {(v.type || v.year) && (
-                  <p className={clsx(styles.resourceMeta, styles.noMargin)}>{[v.type, v.year].filter(Boolean).join(' · ')}</p>
-                )}
+                <h3 className={styles.resourceTitle}>{v.model}</h3>
+                <p className={styles.resourceMeta}>
+                  {[v.type, v.year].filter(Boolean).length > 0 && <span>{[v.type, v.year].filter(Boolean).join(' · ')}</span>}
+                </p>
+                <div className={styles.tagList}>
+                  <span className={styles.plate}>{v.plate}</span>
+                </div>
+                <span className={styles.resourceCta} aria-hidden="true">Reservar <ArrowRight size={14} /></span>
               </Card>
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
       {/* Reservations table */}
       {tab !== 'calendar' && (
+        <Section title="Historial de reservas" description={`${filtered.length} ${filtered.length === 1 ? 'reserva' : 'reservas'}`}>
         <Card>
-          <div className={styles.tableCardHeader}>
-            <h3 className={styles.tableCardTitle}>Historial de reservas</h3>
-          </div>
           {filtered.length === 0 ? (
             <div className="empty-state">
               <div className={clsx("icon-box icon-box--lg icon-box--accent empty-state__icon", styles.opaqueIcon)}>
@@ -318,6 +323,7 @@ export default function ReservationsPage() {
             </div>
           )}
         </Card>
+        </Section>
       )}
 
       {/* Create modal */}

@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context';
-import { Avatar, Badge, Card, StatCard } from '../components/ui';
+import { Avatar, Badge, Card, StatCard, Section } from '../components/ui';
 import { Home, Building2, MapPin, LayoutGrid, List, Search } from 'lucide-react';
 import styles from './EmployeesPage.module.scss';
 import clsx from 'clsx';
@@ -103,6 +103,7 @@ export default function EmployeesPage() {
       </div>
 
       {/* Filters + view toggle */}
+      <Section className={styles.dirHead} title="Directorio" description={`${filtered.length} ${filtered.length === 1 ? 'persona' : 'personas'}`} />
       <div className={styles.pageControls}>
         <div className={styles.tabsRow}>
           {depts.map(d => (

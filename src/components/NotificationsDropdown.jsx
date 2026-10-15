@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import { Bell, CheckCircle, XCircle, CheckCheck, Clock, ChevronRight } from 'lucide-react';
 import { Button } from './ui';
-import styles from './Layout.module.scss';
+import styles from './NotificationsDropdown.module.scss';
 
 export function NotificationsDropdown({
   notiMenu,

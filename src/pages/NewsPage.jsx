@@ -1,11 +1,100 @@
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { useAuth, useNews } from '../context';
-import { Avatar, Badge, Modal, Input, Select, Textarea, Button, Card, ConfirmModal } from '../components/ui';
+import { Avatar, Badge, Modal, Input, Select, Textarea, Button, Card, ConfirmModal, Section } from '../components/ui';
 import { Edit2, Trash2, Pin, Plus, Newspaper } from 'lucide-react';
 import styles from './NewsPage.module.scss';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fmtDate } from '../utils/format';
+import { fmtDate, toDate } from '../utils/format';
+import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
+
+const typeLabel = (t) => (t === 'event' ? 'Evento' : 'Noticia');
+
+/** Pinned post: the brand panel, with the full text. */
+// forwardRef: AnimatePresence (popLayout) measures each child through its ref
+const FeaturedPost = forwardRef(function FeaturedPost({ item, canEdit, onEdit, onDelete }, ref) {
+  return (
+    <motion.article
+      ref={ref}
+      layout
+      className={styles.featured}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, transition: { duration: 0.15 } }}
+      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+    >
+      <svg className={styles.featuredLeaf} viewBox="0 0 48 48" aria-hidden="true">
+        <motion.path d={LEAF_PATH} initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.8, ease: [0.65, 0, 0.35, 1], delay: 0.2 }} />
+        <motion.path d={VEIN_PATH} initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1, ease: [0.65, 0, 0.35, 1], delay: 1.2 }} />
+      </svg>
+      <div className={styles.featuredBody}>
+        <div className={styles.featuredTop}>
+          <div className={styles.featuredTags}>
+            <span className={styles.featuredTag}>{typeLabel(item.type)}</span>
+            {item.category && <span className={styles.featuredTag}>{item.category}</span>}
+            <span className={styles.featuredTag}><Pin size={11} aria-hidden="true" /> Fijado</span>
+          </div>
+          {canEdit && (
+            <div className={styles.featuredActions}>
+              <button type="button" className={styles.featuredAction} onClick={() => onEdit(item)} aria-label={`Editar «${item.title}»`}><Edit2 size={15} /></button>
+              <button type="button" className={styles.featuredAction} onClick={() => onDelete(item.id)} aria-label={`Eliminar «${item.title}»`}><Trash2 size={15} /></button>
+            </div>
+          )}
+        </div>
+        <h3 className={styles.featuredTitle}>{item.title}</h3>
+        <p className={styles.featuredText}>{item.content}</p>
+        <div className={styles.featuredFoot}>
+          <Avatar initials={item.authorAvatar} size={28} />
+          <span className={styles.featuredAuthor}>{item.authorName}</span>
+          <span aria-hidden="true">·</span>
+          <time dateTime={item.date}>{fmtDate(item.date)}</time>
+        </div>
+      </div>
+    </motion.article>
+  );
+});
+
+/** Regular post: date block on the left, text on the right. */
+const PostCard = forwardRef(function PostCard({ item, canEdit, onEdit, onDelete }, ref) {
+  const d = toDate(item.date);
+  return (
+    <motion.div
+      ref={ref}
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, transition: { duration: 0.15 } }}
+      transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
+    >
+      <Card className={styles.post}>
+        <div className={clsx(styles.postDate, item.type === 'event' && styles.postDateEvent)} aria-hidden="true">
+          <strong>{d ? d.getDate() : '—'}</strong>
+          <span>{d ? d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '') : ''}</span>
+        </div>
+        <div className={styles.postBody}>
+          <div className={styles.cardBadges}>
+            <Badge status={item.type} />
+            {item.category && <span className={styles.categoryTag}>{item.category}</span>}
+          </div>
+          <h3 className={styles.newsTitle}>{item.title}</h3>
+          <p className={styles.newsContent}>{item.content}</p>
+          <div className={styles.authorRow}>
+            <Avatar initials={item.authorAvatar} size={26} />
+            <span className={styles.authorMeta}>
+              {item.authorName} · <time dateTime={item.date}>{fmtDate(item.date)}</time>
+            </span>
+          </div>
+        </div>
+        {canEdit && (
+          <div className={styles.cardActions}>
+            <Button variant="action" iconOnly icon={Edit2} onClick={() => onEdit(item)} title="Editar" />
+            <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => onDelete(item.id)} title="Eliminar" />
+          </div>
+        )}
+      </Card>
+    </motion.div>
+  );
+});
 
 export default function NewsPage() {
   const { user } = useAuth();
@@ -52,46 +141,7 @@ export default function NewsPage() {
     setItemToDelete(null);
   };
 
-  const NewsCard = ({ item }) => (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-    >
-    <Card className={clsx(styles.newsCard, { [styles.newsCardPinned]: item.pinned })}>
-      <div className={styles.cardTop}>
-        <div style={{ flex: 1 }}>
-          <div className={styles.cardBadges}>
-            <Badge status={item.type} />
-            <span className={styles.categoryTag}>{item.category}</span>
-            {item.pinned && (
-              <span className={styles.pinnedTag}>
-                <Pin size={12} fill="currentColor" /> Fijado
-              </span>
-            )}
-          </div>
-          <h3 className={styles.newsTitle}>{item.title}</h3>
-          <p className={styles.newsContent}>{item.content}</p>
-          <div className={styles.authorRow}>
-            <Avatar initials={item.authorAvatar} size={26} />
-            <span className={styles.authorMeta}>
-              {item.authorName} · <time dateTime={item.date}>{fmtDate(item.date)}</time>
-            </span>
-          </div>
-        </div>
-
-        {(user.role === 'admin' || user.dept === 'Comunicación - marketing') && (
-          <div className={styles.cardActions}>
-            <Button variant="action" iconOnly icon={Edit2} onClick={() => handleEdit(item)} title="Editar" />
-            <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => setItemToDelete(item.id)} title="Eliminar" />
-          </div>
-        )}
-      </div>
-    </Card>
-    </motion.div>
-  );
+  const canEdit = user.role === 'admin' || user.dept === 'Comunicación - marketing';
 
   const tabBtn = (id, label) => {
     const count = id === 'all' ? news.length : news.filter(n => n.type === id).length;
@@ -129,26 +179,24 @@ export default function NewsPage() {
 
       {/* Pinned */}
       {pinned.length > 0 && (
-        <>
-          <p className={styles.sectionTitle}>Destacado</p>
-          <AnimatePresence mode="popLayout">
-            <div className={styles.newsList}>
-              {pinned.map(n => <NewsCard key={n.id} item={n} />)}
-            </div>
-          </AnimatePresence>
-        </>
+        <Section title="Destacado">
+          <div className={styles.newsList}>
+            <AnimatePresence mode="popLayout">
+              {pinned.map(n => <FeaturedPost key={n.id} item={n} canEdit={canEdit} onEdit={handleEdit} onDelete={setItemToDelete} />)}
+            </AnimatePresence>
+          </div>
+        </Section>
       )}
 
       {/* Regular */}
       {regular.length > 0 && (
-        <>
-          {pinned.length > 0 && <p className={styles.sectionTitle}>Reciente</p>}
-          <AnimatePresence mode="popLayout">
-            <div className={styles.newsList}>
-              {regular.map(n => <NewsCard key={n.id} item={n} />)}
-            </div>
-          </AnimatePresence>
-        </>
+        <Section title={pinned.length > 0 ? 'Recientes' : 'Publicaciones'}>
+          <div className={styles.newsList}>
+            <AnimatePresence mode="popLayout">
+              {regular.map(n => <PostCard key={n.id} item={n} canEdit={canEdit} onEdit={handleEdit} onDelete={setItemToDelete} />)}
+            </AnimatePresence>
+          </div>
+        </Section>
       )}
 
       {/* Empty state */}

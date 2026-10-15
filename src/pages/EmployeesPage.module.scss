@@ -1,3 +1,5 @@
+@use '../styles/patterns' as p;
+
 .container {
   display: flex;
   flex-direction: column;
@@ -185,7 +187,8 @@
   display: flex;
   gap: 10px;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  min-width: 0;
 
   @media (max-width: 768px) {
     width: 100%;
@@ -195,11 +198,10 @@
 
 .viewToggle {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
-  background: var(--glass-input);
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
-  border: 1px solid rgba(var(--border-rgb), 0.45);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-full);
   padding: 3px;
   gap: 2px;
@@ -462,12 +464,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 1;
   min-width: min(300px, 100%);
-  height: var(--input-height);
-  padding: 0 14px;
+  height: 44px;
+  padding: 0 16px;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(var(--border-rgb), 0.55);
-  background: var(--glass-input);
+  border: 1px solid var(--border);
+  background: var(--card);
   color: var(--text-sec);
   transition: border-color 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
 
@@ -499,3 +502,15 @@
   color: var(--text-sec);
   font-size: 14px;
 }
+
+/* ── Tabs: shared pattern (src/styles/_patterns.scss) ─────────────── */
+.tabsRow { @include p.tabs-row; }
+.tabBtn { @include p.tab-btn; }
+.tabBtnActive {
+  @include p.tab-btn-active;
+  .tabCount { @include p.tab-count-on-active; }
+}
+.tabCount { @include p.tab-count; }
+
+/* The directory heading belongs to the toolbar right below it */
+.dirHead { margin-bottom: -8px; }

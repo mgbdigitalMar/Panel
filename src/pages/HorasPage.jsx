@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAuth, useHours } from '../context';
-import { Card, Button, Input, Modal, Avatar, StatCard } from '../components/ui';
+import { Card, Button, Input, Modal, Avatar, StatCard, Section } from '../components/ui';
 import { Clock, Inbox, CheckCircle, XCircle, Download, Timer, PenTool, TrendingDown, TrendingUp, Minus, Search, Zap, Info, AlertTriangle, CheckCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
@@ -259,6 +259,7 @@ export default function HorasPage() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.2 }}
           >
+            <Section title="Registrar horas" description="Elige si las compensas ya, las acumulas en tu bolsa o las debes a la empresa.">
             <Card className={styles.formCard}>
               {/* Mode toggle — 3 options */}
               <div className={styles.modeToggle}>
@@ -352,6 +353,7 @@ export default function HorasPage() {
                 </AnimatePresence>
               </div>
             </Card>
+            </Section>
           </motion.div>
         )}
 
@@ -397,6 +399,7 @@ export default function HorasPage() {
               />
             </div>
 
+            <Section title="Mi registro" description="Tus horas a favor y las que debes, por fecha.">
             {/* Filters */}
             <Card className={styles.filterCard}>
               <div className={styles.filterRow}>
@@ -464,6 +467,7 @@ export default function HorasPage() {
                 </div>
               </Card>
             )}
+            </Section>
           </motion.div>
         )}
 
@@ -477,6 +481,7 @@ export default function HorasPage() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.2 }}
           >
+            <Section title="Saldo por persona" description="Horas a favor, pendientes y en deuda de cada empleado.">
             {/* Search */}
             <div className={styles.adminSearchHeader}>
               <div className={clsx(styles.userSearchWrapper, styles.userSearchWrapperFlex)}>
@@ -574,6 +579,7 @@ export default function HorasPage() {
                 </div>
               </Card>
             )}
+            </Section>
           </motion.div>
         )}
       </AnimatePresence>

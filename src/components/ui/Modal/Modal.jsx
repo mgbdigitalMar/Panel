@@ -3,16 +3,13 @@ import { X } from 'lucide-react';
 import { useEffect } from 'react';
 import styles from './Modal.module.scss';
 import clsx from 'clsx';
+import { Portal, useInertApp } from '../Portal/Portal';
 
 const EASE_OUT = [0.16, 1, 0.3, 1];
 
 export function Modal({ open, onClose, title, children, className }) {
-  // Prevent body scroll when open
-  useEffect(() => {
-    if (open) document.body.style.overflow = 'hidden';
-    else document.body.style.overflow = 'unset';
-    return () => { document.body.style.overflow = 'unset'; };
-  }, [open]);
+  // The app behind (sidebar included) can't be clicked, focused or scrolled
+  useInertApp(open);
 
   // Escape closes
   useEffect(() => {
@@ -23,6 +20,7 @@ export function Modal({ open, onClose, title, children, className }) {
   }, [open, onClose]);
 
   return (
+    <Portal>
     <AnimatePresence>
       {open && (
         <div className={styles.overlay}>
@@ -61,5 +59,6 @@ export function Modal({ open, onClose, title, children, className }) {
         </div>
       )}
     </AnimatePresence>
+    </Portal>
   );
 }

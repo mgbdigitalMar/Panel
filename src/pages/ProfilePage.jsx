@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth, useDocuments } from "../context";
-import { Input, Button, Card, Select, Badge } from "../components/ui";
+import { Input, Button, Card, Select, Badge, Avatar, Portal, useInertApp } from "../components/ui";
 import {
   Save,
   Lock,
@@ -14,23 +14,15 @@ import {
   Eye,
   X,
   ExternalLink,
+  Mail,
+  MapPin,
 } from "lucide-react";
 import styles from "./ProfilePage.module.scss";
 import clsx from "clsx";
 import { supabase } from "../utils/supabase";
 // bcrypt is dynamically imported on demand to save bundle size
-import { motion } from "framer-motion";
 import { useAutoDismiss } from "../hooks/useAutoDismiss";
 
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07 } },
-};
-const item = {
-  hidden: { opacity: 0, y: 16 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
-};
 
 const WORK_MODES = {
   Office: { label: "Oficina" },
@@ -66,6 +58,15 @@ export default function ProfilePage() {
 
   // Viewer modal state
   const [viewerDoc, setViewerDoc] = useState(null); // doc object
+
+  // Viewer covers the whole app (sidebar included); Escape closes it
+  useInertApp(!!viewerDoc);
+  useEffect(() => {
+    if (!viewerDoc) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setViewerDoc(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [viewerDoc]);
 
   const [form, setForm] = useState({
     currentPassword: "",
@@ -154,13 +155,27 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.container}>
-      <motion.div className={styles.cards} variants={container} initial="hidden" animate="show">
+      {/* Identity: the brand panel with the person's leaf avatar */}
+      <section className={styles.hero} aria-label="Tu identidad">
+        <Avatar initials={user?.avatar || '??'} src={user?.avatarUrl} size={88} className={styles.heroAvatar} />
+        <div className={styles.heroText}>
+          <h2 className={styles.heroName}>{user?.name}</h2>
+          <p className={styles.heroRole}>{[user?.position, user?.dept].filter(Boolean).join(' · ') || 'Margube'}</p>
+          <div className={styles.heroTags}>
+            <span className={styles.heroTag}><Shield size={12} aria-hidden="true" /> {user?.role === 'admin' ? 'Administrador' : 'Empleado'}</span>
+            <span className={styles.heroTag}><MapPin size={12} aria-hidden="true" /> {WORK_MODES[form.workMode]?.label || 'Oficina'}</span>
+            {user?.email && <span className={styles.heroTag}><Mail size={12} aria-hidden="true" /> {user.email}</span>}
+          </div>
+        </div>
+      </section>
+
+      <div className={styles.cards}>
         {/* User Info */}
-        <motion.div variants={item}>
+        <div>
         <Card className={styles.infoCard}>
           <div className={styles.cardHeader}>
-            <User size={20} />
-            <h3>Mi Información</h3>
+            <span className={styles.cardIcon} aria-hidden="true"><User size={17} /></span>
+            <h3>Mi información</h3>
           </div>
           <div className={styles.infoGrid}>
             <div className={styles.infoItem}>
@@ -193,14 +208,14 @@ export default function ProfilePage() {
             </div>
           </div>
         </Card>
-        </motion.div>
+        </div>
 
         {/* Work Mode */}
-        <motion.div variants={item}>
+        <div>
         <Card className={styles.card}>
           <div className={styles.cardHeader}>
-            <Shield size={20} />
-            <h3>Modo de Trabajo</h3>
+            <span className={styles.cardIcon} aria-hidden="true"><Shield size={17} /></span>
+            <h3>Modo de trabajo</h3>
           </div>
           <Select
             label=""
@@ -215,14 +230,14 @@ export default function ProfilePage() {
             disabled={workModeLoading}
           />
         </Card>
-        </motion.div>
+        </div>
 
         {/* Password */}
-        <motion.div variants={item}>
+        <div>
         <Card className={styles.card}>
           <div className={styles.cardHeader}>
-            <Lock size={20} />
-            <h3>Cambiar Contraseña</h3>
+            <span className={styles.cardIcon} aria-hidden="true"><Lock size={17} /></span>
+            <h3>Cambiar contraseña</h3>
           </div>
           <div className={styles.form}>
             <Input
@@ -253,18 +268,18 @@ export default function ProfilePage() {
               disabled={!form.newPassword || form.newPassword.length < 6}
               className={styles.saveBtn}
             >
-              Actualizar Contraseña
+              Actualizar contraseña
             </Button>
           </div>
         </Card>
-        </motion.div>
+        </div>
 
         {/* Mis Documentos */}
-        <motion.div variants={item}>
+        <div>
         <Card className={styles.docsCard}>
           <div className={styles.cardHeader}>
-            <FileText size={20} />
-            <h3>Mis Documentos</h3>
+            <span className={styles.cardIcon} aria-hidden="true"><FileText size={17} /></span>
+            <h3>Mis documentos</h3>
             {myDocs.length > 0 && (
               <span className={styles.docsBadge}>{myDocs.length}</span>
             )}
@@ -431,8 +446,8 @@ export default function ProfilePage() {
             </div>
           )}
         </Card>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {message && (
         <div
@@ -449,9 +464,13 @@ export default function ProfilePage() {
 
       {/* ── Document Viewer Modal ── */}
       {viewerDoc && (
+        <Portal>
         <div
           className={styles.viewerOverlay}
           onClick={() => setViewerDoc(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={viewerDoc.title}
         >
           <div
             className={styles.viewerModal}
@@ -499,6 +518,7 @@ export default function ProfilePage() {
             />
           </div>
         </div>
+        </Portal>
       )}
     </div>
   );

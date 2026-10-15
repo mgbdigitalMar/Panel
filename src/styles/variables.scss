@@ -98,6 +98,10 @@
   --radius-3xl:  40px;
   --radius-full: 9999px;
 
+  /* The Margube leaf: round top-left and bottom-right, near-sharp elsewhere.
+     Used for every person's avatar so people read as "part of Margube". */
+  --shape-leaf:  60% 12% 60% 12%;
+
   /* ── Typography — Brand Font System ──────────────────────────── */
   --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-heading: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
