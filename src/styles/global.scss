@@ -1136,3 +1136,36 @@ html { -webkit-tap-highlight-color: transparent; }
 .theme-switching *::after {
   transition: none !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   SOLID SURFACES — the app shell sits on the animated backdrop.
+   Blurred glass over a moving background re-blurs on every frame, so
+   inside the shell surfaces are near-opaque (see the --glass-* tokens)
+   and blur is off. Dialog scrims opt back in with data-scrim; the
+   backdrop pauses while a dialog is open, so their blur stays static.
+═══════════════════════════════════════════════════════════════════ */
+
+.app-shell *:not([data-scrim]) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PAGE ENTRANCE — each page's sections rise in one after another.
+   Uses the standalone `translate` property so it never fights Framer
+   Motion's `transform`, and `backwards` fill so nothing lingers once
+   settled (a leftover transform would trap position:fixed modals).
+═══════════════════════════════════════════════════════════════════ */
+
+@keyframes page-rise {
+  from { opacity: 0; translate: 0 16px; }
+}
+
+.page-stagger > * > * {
+  animation: page-rise 0.55s var(--ease-cinematic) backwards;
+
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) { animation-delay: #{30 + ($i - 1) * 55}ms; }
+  }
+  &:nth-child(n + 9) { animation-delay: 420ms; }
+}

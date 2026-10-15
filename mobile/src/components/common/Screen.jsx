@@ -37,10 +37,11 @@ export const Glow = memo(function Glow({ variant = 'default' }) {
 /**
  * Screen container: background, glow, safe areas, optional pull-to-refresh
  * and an optional sticky footer (primary action bar).
+ * `backdrop` replaces the default glow (e.g. the animated auth backdrop).
  */
 export function Screen({
   children, scroll = true, refreshing = false, onRefresh, footer, glow = true, padded = true,
-  tabBarSpace = false, contentStyle, keyboard = true, scrollRef, glowVariant, fab,
+  tabBarSpace = false, contentStyle, keyboard = true, scrollRef, glowVariant, fab, backdrop,
 }) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -75,7 +76,7 @@ export function Screen({
 
   const body = (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      {glow ? <Glow variant={glowVariant} /> : null}
+      {backdrop ?? (glow ? <Glow variant={glowVariant} /> : null)}
       {content}
       {fab}
       {footer ? (

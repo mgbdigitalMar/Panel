@@ -31,6 +31,7 @@ export function Modal({ open, onClose, title, children, className }) {
             animate={{ opacity: 1, transition: { duration: 0.24, ease: EASE_OUT } }}
             exit={{ opacity: 0, transition: { duration: 0.16 } }}
             className={styles.backdrop}
+            data-scrim
             onClick={onClose}
           />
           {/* Panel rises out of focus: blur + scale settle on a spring */}

@@ -106,6 +106,7 @@ export default function CommandPalette({ open, onClose, onShowShortcuts }) {
         <div className={styles.overlay} role="dialog" aria-modal="true" aria-label="Buscar en la intranet">
           <motion.div
             className={styles.backdrop}
+            data-scrim
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.12 } }}

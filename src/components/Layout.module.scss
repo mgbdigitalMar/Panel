@@ -1,6 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════
-   LAYOUT MODULE — Margube Intranet v3
-   Cinematic Dark Glass Shell — Elite Enterprise SaaS
+   LAYOUT MODULE — Margube Intranet v4
+   Same language as the login: dark brand-panel sidebar, solid rounded
+   surfaces, gradient pill for the active item, animated backdrop
    Upgraded: sidebar collapse, tooltips, user chip, command palette,
              breadcrumbs, status dot, section labels
 ═══════════════════════════════════════════════════════════════════ */
@@ -16,88 +17,67 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   BACKGROUND — two slow light fields for the glass to refract
-═══════════════════════════════════════════════════════════════════ */
-
-.bgBlob1,
-.bgBlob2 {
-  position: fixed;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-  will-change: transform;
-}
-
-.bgBlob1 {
-  top: -18%;
-  left: -10%;
-  width: 60vw;
-  height: 60vw;
-  background: radial-gradient(circle,
-    rgba(34, 81, 255, 0.13) 0%,
-    rgba(76, 117, 255, 0.06) 45%,
-    transparent 70%
-  );
-  filter: blur(80px);
-  animation: ambient-drift-a 38s ease-in-out infinite alternate;
-}
-
-.bgBlob2 {
-  bottom: -22%;
-  right: -10%;
-  width: 65vw;
-  height: 65vw;
-  background: radial-gradient(circle,
-    rgba(99, 102, 241, 0.10) 0%,
-    rgba(139, 92, 246, 0.05) 45%,
-    transparent 70%
-  );
-  filter: blur(100px);
-  animation: ambient-drift-b 46s ease-in-out infinite alternate;
-}
-
-@keyframes ambient-drift-a {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(6vw, 4vh, 0); }
-}
-
-@keyframes ambient-drift-b {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(-5vw, -6vh, 0); }
-}
-
-[data-theme='dark'] {
-  .bgBlob1 {
-    background: radial-gradient(circle,
-      rgba(62, 99, 221, 0.18) 0%,
-      rgba(62, 99, 221, 0.06) 45%,
-      transparent 70%
-    );
-  }
-  .bgBlob2 {
-    background: radial-gradient(circle,
-      rgba(139, 92, 246, 0.12) 0%,
-      rgba(90, 127, 240, 0.04) 45%,
-      transparent 70%
-    );
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bgBlob1, .bgBlob2 { animation: none; }
-}
-
-/* ═══════════════════════════════════════════════════════════════════
    SIDEBAR — Glassmorphic premium rail
 ═══════════════════════════════════════════════════════════════════ */
 
+/* The sidebar is the login's brand panel, dark in both themes. The tokens
+   are re-pointed here so everything inside (avatar, buttons, tooltips,
+   badges) follows without per-component overrides. */
+.sidebar,
+.sidebarMobileContent {
+  --text:              #F5F6F8;
+  --text-sec:          rgba(245, 246, 248, 0.68);
+  --text-mut:          rgba(245, 246, 248, 0.42);
+  --text-rgb:          240, 244, 255;
+  --border:            rgba(255, 255, 255, 0.10);
+  --border-2:          rgba(255, 255, 255, 0.18);
+  --border-rgb:        64, 70, 84;
+  --accent:            #7AA2FF;
+  --accent-rgb:        122, 162, 255;
+  --accent-bg:         rgba(122, 162, 255, 0.14);
+  --bg:                #11141B;
+  --bg-rgb:            17, 20, 27;
+  --bg-3:              rgba(255, 255, 255, 0.06);
+  --card:              #1A1E27;
+  --sidebar:           #11141B;
+  --sidebar-rgb:       17, 20, 27;
+  --glass-input:       rgba(255, 255, 255, 0.05);
+  --glass-card:        rgba(255, 255, 255, 0.08);
+  --glass-card-hover:  rgba(255, 255, 255, 0.11);
+  --glass-border:      rgba(255, 255, 255, 0.08);
+  --glass-highlight:    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --glass-highlight-sm: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --danger:            #FB7185;
+  --danger-bg:         rgba(251, 113, 133, 0.16);
+  --danger-rgb:        251, 113, 133;
+  --success:           #34D399;
+  --success-bg:        rgba(52, 211, 153, 0.16);
+  color: var(--text);
+  color-scheme: dark;
+  background:
+    radial-gradient(130% 42% at 15% 100%, rgba(47, 91, 234, 0.42) 0%, transparent 70%),
+    radial-gradient(90% 26% at 95% 0%, rgba(91, 124, 255, 0.14) 0%, transparent 70%),
+    #11141B;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-xl);
+
+  /* Dot grid across the top, like the login's brand panel */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 220px;
+    border-radius: inherit;
+    pointer-events: none;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.12) 1px, transparent 1.6px);
+    background-size: 18px 18px;
+    mask-image: linear-gradient(180deg, #000 0%, transparent 100%);
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 100%);
+  }
+}
+
 .sidebar {
   width: var(--sidebar-w);
-  background: rgba(var(--sidebar-rgb), var(--sidebar-opacity));
-  backdrop-filter: blur(40px) saturate(220%) brightness(1.02);
-  -webkit-backdrop-filter: blur(40px) saturate(220%) brightness(1.02);
-  border: 1px solid rgba(var(--border-rgb), 0.4);
-  border-radius: var(--radius-xl);
   position: fixed;
   top: clamp(8px, 2vw, 16px);
   left: clamp(8px, 2vw, 24px);
@@ -106,28 +86,8 @@
   display: flex;
   flex-direction: column;
   overflow: visible; // allows collapse button and floating tooltips without clipping
-  box-shadow: var(--shadow-md), var(--glass-highlight-sm);
+  box-shadow: var(--shadow-xl);
   transition: var(--sidebar-transition);
-
-  /* Top specular highlight rim */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 20px;
-    right: 20px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.45), rgba(255, 255, 255, 0.45), transparent);
-    pointer-events: none;
-    border-radius: var(--radius-full);
-    z-index: 1;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: var(--card);
-  }
 }
 
 /* ── Collapsed sidebar ─────────────────────────────────────────── */
@@ -199,18 +159,13 @@
 /* Mobile drawer */
 .sidebarMobileContent {
   width: var(--sidebar-w);
-  background: rgba(var(--sidebar-rgb), 0.94);
-  backdrop-filter: blur(40px) saturate(240%);
-  -webkit-backdrop-filter: blur(40px) saturate(240%);
-  border: 1px solid rgba(var(--border-rgb), 0.4);
-  border-radius: var(--radius-xl);
   position: absolute;
   top: 12px;
   left: 12px;
   bottom: 12px;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-2xl), var(--glass-highlight-sm);
+  box-shadow: var(--shadow-2xl);
 }
 
 /* Inner padding wrapper */
@@ -219,6 +174,7 @@
   flex-direction: column;
   height: 100%;
   padding: 18px 10px 20px;
+  position: relative;
   overflow-y: auto;
   overflow-x: hidden;
   border-radius: inherit;
@@ -251,8 +207,8 @@
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(var(--accent-rgb), 0.40) 40%,
-      rgba(var(--accent-rgb), 0.15) 70%,
+      rgba(255, 255, 255, 0.14) 40%,
+      rgba(255, 255, 255, 0.06) 70%,
       transparent 100%
     );
   }
@@ -325,32 +281,19 @@
 .navPill {
   position: absolute;
   inset: 0;
-  border-radius: var(--radius-md);
-  background: rgba(var(--accent-rgb), 0.10);
-  box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.14), var(--glass-highlight-sm);
+  border-radius: var(--radius-full);
+  background: var(--gradient-cta);
+  box-shadow: 0 10px 24px -10px rgba(47, 91, 234, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   pointer-events: none;
   z-index: 0;
-
-  /* Accent tick rides along with the pill */
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    height: 18px;
-    width: 3px;
-    margin-top: -9px;
-    background: var(--gradient-accent);
-    border-radius: 0 var(--radius-full) var(--radius-full) 0;
-  }
 }
 
 .navLink {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
-  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  border-radius: var(--radius-full);
   cursor: pointer;
   border: none;
   width: 100%;
@@ -376,7 +319,7 @@
 
   @media (hover: hover) {
     &:hover {
-      background: rgba(var(--text-rgb), 0.045);
+      background: rgba(255, 255, 255, 0.06);
       color: var(--text);
 
       svg {
@@ -388,14 +331,14 @@
 }
 
 .navLinkActive {
-  color: var(--accent) !important;
+  color: #FFFFFF !important;
   font-weight: 600;
 
   &:hover { background: transparent !important; }
 
   svg {
     opacity: 1 !important;
-    color: var(--accent);
+    color: #FFFFFF;
     transform: none !important;
   }
 }
@@ -446,7 +389,7 @@
 
 .navDivider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(var(--border-rgb), 0.55), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
   margin: 10px 6px;
   flex-shrink: 0;
 }
@@ -532,7 +475,7 @@
 /* ── User bottom section ──────────────────────────────────────────── */
 .userBottom {
   margin-top: auto;
-  border-top: 1px solid rgba(var(--border-rgb), 0.30);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 14px;
   flex-shrink: 0;
   display: flex;
@@ -545,11 +488,10 @@
   align-items: center;
   gap: 10px;
   padding: 10px;
-  border-radius: var(--radius);
-  background: rgba(var(--accent-rgb), 0.05);
-  border: 1px solid rgba(var(--accent-rgb), 0.09);
-  backdrop-filter: blur(8px);
-  cursor: default;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
   overflow: hidden;
   transition: var(--transition-smooth);
   position: relative;
@@ -566,9 +508,8 @@
   }
 
   &:hover {
-    background: rgba(var(--accent-rgb), 0.08);
-    border-color: rgba(var(--accent-rgb), 0.18);
-    box-shadow: var(--glass-highlight-sm);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(122, 162, 255, 0.3);
   }
 }
 
@@ -620,6 +561,8 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  position: relative;
+  z-index: 1;
   margin-left: calc(var(--sidebar-w) + clamp(8px, 2vw, 24px));
   transition: margin-left 0.26s cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -645,32 +588,16 @@
   top: clamp(8px, 2vw, 16px);
   margin: 0 clamp(8px, 2vw, 24px) clamp(16px, 2vw, 24px);
   z-index: var(--z-header);
-  background: rgba(var(--sidebar-rgb), var(--header-opacity));
-  backdrop-filter: blur(40px) saturate(220%) brightness(1.02);
-  -webkit-backdrop-filter: blur(40px) saturate(220%) brightness(1.02);
-  border: 1px solid rgba(var(--border-rgb), 0.4);
+  background: var(--glass-card);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md), var(--glass-highlight-sm);
+  box-shadow: var(--shadow-card);
   padding: 0 clamp(16px, 3vw, 24px);
   height: var(--header-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-
-  /* Top specular highlight rim */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 24px;
-    right: 24px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.45), rgba(255, 255, 255, 0.45), transparent);
-    pointer-events: none;
-    border-radius: var(--radius-full);
-  }
 
   @media (max-width: 767px) {
     top: 12px;
@@ -678,12 +605,6 @@
     height: var(--header-h-mobile);
     padding: 0 16px;
     border-radius: var(--radius-lg);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: var(--card);
   }
 }
 
@@ -709,7 +630,7 @@
   gap: 6px;
   padding: 5px 12px;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(var(--border-rgb), 0.38);
+  border: 1px solid var(--border);
   font-size: 12px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -781,8 +702,9 @@
 
 .pageTitle {
   margin: 0;
-  font-size: clamp(14px, 1.5vw, 17px);
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: clamp(15px, 1.5vw, 18px);
+  font-weight: 600;
   color: var(--text);
   letter-spacing: -0.03em;
   overflow: hidden;
@@ -870,12 +792,12 @@
 
 .bellBtn {
   position: relative;
-  width: 38px !important;
-  height: 38px !important;
-  min-width: 38px !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
   border-radius: var(--radius-full) !important;
-  border: 1px solid rgba(var(--border-rgb), 0.40) !important;
-  background: rgba(var(--bg-rgb), 0.40) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--bg) !important;
   color: var(--text-sec) !important;
   transition: background-color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), color 0.2s var(--ease-out) !important;
 
@@ -1438,12 +1360,12 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 38px;
-  padding: 0 8px 0 14px;
-  min-width: 210px;
+  height: 40px;
+  padding: 0 8px 0 16px;
+  min-width: 230px;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(var(--border-rgb), 0.40);
-  background: rgba(var(--bg-rgb), 0.40);
+  border: 1px solid var(--border);
+  background: var(--bg);
   color: var(--text-sec);
   font: inherit;
   font-size: 13px;

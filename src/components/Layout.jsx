@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
-import { useTheme, useAuth, useNotifs, useDocuments, useRequests, useReservations, useHours, useDataSync } from '../context';
+import { useAuth, useNotifs, useDocuments, useRequests, useReservations, useHours, useDataSync } from '../context';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
@@ -10,11 +10,10 @@ import {
   UsersRound, Timer, Check, SlidersHorizontal, Clock, ChevronLeft, ChevronRight, Search
 } from 'lucide-react';
 
-import logoColor from '../assets/logos/logo-color.png';
 import logoWhite from '../assets/logos/logo-white.png';
 import logoIcon from '../assets/logos/logo-icon.png';
 
-import { Avatar, Button, TopProgress, PageLoader } from './ui';
+import { Avatar, Button, TopProgress, PageLoader, AnimatedBackdrop } from './ui';
 import OnboardingModal from './OnboardingModal';
 import { NotificationsDropdown } from './NotificationsDropdown';
 import { PolicyModal } from './PolicyModal';
@@ -131,7 +130,6 @@ export default function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const page = location.pathname.replace('/', '') || 'dashboard';
-  const { theme } = useTheme();
   const { liveNotifs = [], notifications = [], markNotifRead, markAllNotifsRead } = useNotifs();
   const { onboardingDocUrl } = useDocuments();
   const { requests = [] } = useRequests();
@@ -276,7 +274,7 @@ export default function Layout({ children }) {
         <div className={clsx(styles.logoArea, { [styles.logoAreaCollapsed]: isCollapsed })}>
           <div className={styles.logoMark}>
             <img
-              src={isCollapsed ? logoIcon : (theme === 'dark' ? logoWhite : logoColor)}
+              src={isCollapsed ? logoIcon : logoWhite}
               alt="Margube"
               className={clsx({ [styles.logoIconCollapsed]: isCollapsed })}
             />
@@ -381,10 +379,9 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className={styles.layout}>
-      {/* Two slow ambient light fields — what the glass surfaces refract */}
-      <div className={styles.bgBlob1} aria-hidden="true" />
-      <div className={styles.bgBlob2} aria-hidden="true" />
+    <div className={clsx(styles.layout, 'app-shell')}>
+      {/* Same animated backdrop as the login: drifting glows + dot grid */}
+      <AnimatedBackdrop />
 
       {/* ── Desktop sidebar ──────────────────────────────────────────── */}
       <aside
@@ -411,6 +408,7 @@ export default function Layout({ children }) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               className={styles.mobileBackdrop}
+              data-scrim
               onClick={() => setSideOpen(false)}
             />
             <motion.aside
@@ -540,14 +538,12 @@ export default function Layout({ children }) {
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={page}
-              initial={{ opacity: 0, y: 12, filter: 'blur(6px)' }}
-              animate={{
-                opacity: 1, y: 0, filter: 'blur(0px)',
-                transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] },
-                // A lingering filter would trap position:fixed modals inside this wrapper
-                transitionEnd: { filter: 'none' },
-              }}
-              exit={{ opacity: 0, y: -6, filter: 'blur(4px)', transition: { duration: 0.14, ease: [0.4, 0, 1, 1] } }}
+              className="page-stagger"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, transition: { duration: 0.24, ease: [0.16, 1, 0.3, 1] } }}
+              exit={{ opacity: 0, y: -6, transition: { duration: 0.14, ease: [0.4, 0, 1, 1] } }}
+              // A lingering transform would trap position:fixed modals inside this wrapper
+              transitionEnd={{ transform: 'none' }}
               style={{ width: '100%' }}
             >
               {/* First data sync shows the page skeleton instead of empty states */}

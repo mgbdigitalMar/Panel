@@ -177,3 +177,8 @@
 @media (prefers-reduced-motion: reduce) {
   .accentBar { animation: none; width: 100%; }
 }
+
+/* Two-up cards on phones: let the trend pill drop below the icon instead of overflowing */
+@media (max-width: 479px) {
+  .topRow { flex-wrap: wrap; }
+}

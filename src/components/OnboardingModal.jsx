@@ -46,7 +46,7 @@ export default function OnboardingModal() {
   const progress = ((step + 1) / SLIDES.length) * 100;
 
   return (
-    <div className={styles.overlay}>
+    <div className={styles.overlay} role="dialog" aria-modal="true" aria-label="Bienvenida a la intranet" data-scrim>
       <motion.div
         initial={{ opacity: 0, scale: 0.94, y: 24 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}

@@ -1,0 +1,84 @@
+/* ═══════════════════════════════════════════════════════════════════
+   ANIMATED BACKDROP — drifting glows + dot grid behind the app shell
+═══════════════════════════════════════════════════════════════════ */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+.glowA,
+.glowB {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.glowA {
+  top: -30vmax;
+  left: -12vmax;
+  width: 80vmax;
+  height: 80vmax;
+  background: radial-gradient(circle closest-side,
+    rgba(var(--accent-rgb), 0.16) 0%,
+    rgba(var(--accent-rgb), 0.06) 50%,
+    transparent 100%);
+  animation: backdrop-drift-a 26s ease-in-out infinite alternate;
+}
+
+.glowB {
+  bottom: -34vmax;
+  right: -18vmax;
+  width: 76vmax;
+  height: 76vmax;
+  background: radial-gradient(circle closest-side,
+    rgba(14, 159, 154, 0.10) 0%,
+    rgba(14, 159, 154, 0.04) 50%,
+    transparent 100%);
+  animation: backdrop-drift-b 32s ease-in-out infinite alternate;
+
+  [data-theme='dark'] & {
+    background: radial-gradient(circle closest-side,
+      rgba(14, 159, 154, 0.14) 0%,
+      rgba(14, 159, 154, 0.05) 50%,
+      transparent 100%);
+  }
+}
+
+/* Dot grid along the top, fading out downward */
+.dots {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 460px;
+  background-image: radial-gradient(rgba(var(--text-rgb), 0.16) 1px, transparent 1.5px);
+  background-size: 20px 20px;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.4) 45%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.4) 45%, transparent 100%);
+  will-change: opacity;
+  animation: backdrop-breathe 8s ease-in-out infinite alternate;
+}
+
+@keyframes backdrop-drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(6vw, 5vh, 0) scale(1.08); }
+}
+
+@keyframes backdrop-drift-b {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-7vw, -6vh, 0); }
+}
+
+@keyframes backdrop-breathe {
+  from { opacity: 0.5; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glowA,
+  .glowB,
+  .dots { animation: none; }
+}

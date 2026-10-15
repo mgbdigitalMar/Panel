@@ -27,6 +27,7 @@ export function PolicyModal({
           role="dialog"
           aria-modal="true"
           aria-label="Lectura obligatoria"
+          data-scrim
         >
           <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.96 }}
