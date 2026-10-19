@@ -1,3 +1,5 @@
+@use '../../../styles/patterns' as p;
+
 /* ═══════════════════════════════════════════════════════════════════
    STATCARD — compact KPI tile
    Label + tinted icon on top, figure below. Only tiles that navigate
@@ -13,9 +15,7 @@
   min-width: 0;
   padding: 18px 20px 20px;
   border-radius: 20px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-card);
+  @include p.glass;
   color: var(--text);
   font: inherit;
   text-align: left;
@@ -111,7 +111,7 @@
 @media (hover: hover) and (pointer: fine) {
   .interactive:hover {
     border-color: rgba(var(--accent-rgb), 0.35);
-    background: var(--glass-card-hover);
+    background: var(--lg-sheen), var(--lg-fill-hover);
 
     .go {
       color: var(--accent);

@@ -1,3 +1,5 @@
+@use '../../../styles/patterns' as p;
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -70,7 +72,7 @@
   background: var(--gradient-cta);
   color: #FFFFFF;
   border-color: transparent;
-  box-shadow: var(--shadow-cta);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
 
   /* Glass sheen that crosses the button once on hover */
   &::after {
@@ -91,39 +93,29 @@
   }
 
   &:hover:not(:disabled) {
-    box-shadow: var(--shadow-cta-hover);
     filter: brightness(1.06);
   }
 
   &:focus-visible {
     box-shadow:
       0 0 0 2px var(--bg),
-      0 0 0 4px rgba(var(--accent-rgb), 0.45),
-      var(--shadow-accent);
+      0 0 0 4px rgba(var(--accent-rgb), 0.45);
   }
 }
 
 .variant-secondary {
-  background: var(--glass-card-hover);
+  @include p.glass;
   color: var(--text);
-  border-color: var(--border);
-  box-shadow: var(--shadow-xs);
 
   &:hover:not(:disabled) {
-    background: var(--glass-card-hover);
+    background: var(--lg-sheen), var(--lg-fill-hover);
     border-color: var(--border-2);
-    box-shadow: var(--shadow-sm);
   }
 
   &:focus-visible {
     box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px rgba(var(--accent-rgb), 0.25);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: var(--card);
-  }
 }
 
 .variant-danger {

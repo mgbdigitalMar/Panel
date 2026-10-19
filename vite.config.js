@@ -11,7 +11,8 @@ export default defineConfig({
         name: 'Margube Intranet',
         short_name: 'Margube',
         description: 'Intranet corporativa de Margube',
-        theme_color: '#ffffff',
+        theme_color: '#0A0C10',
+        background_color: '#0A0C10',
         icons: [
           {
             src: '/pwa-192x192.png',

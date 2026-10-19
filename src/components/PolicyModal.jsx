@@ -21,7 +21,7 @@ export function PolicyModal({
             zIndex: 'var(--z-toast)',
             display: 'flex',
             flexDirection: 'column',
-            padding: 'clamp(12px, 3vw, 24px)',
+            padding: 'max(clamp(12px, 3vw, 24px), env(safe-area-inset-top)) clamp(12px, 3vw, 24px) max(clamp(12px, 3vw, 24px), env(safe-area-inset-bottom))',
             backdropFilter: 'blur(8px)',
           }}
           role="dialog"

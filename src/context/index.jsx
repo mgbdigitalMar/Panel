@@ -29,6 +29,9 @@ export function ThemeProvider({ children }) {
   const applyMode = (m) => {
     const resolved = resolveTheme(m);
     document.documentElement.setAttribute('data-theme', resolved);
+    document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
+      meta.setAttribute('content', resolved === 'dark' ? '#0A0C10' : '#F2F4F8');
+    });
     try { localStorage.setItem('app-theme-mode', m); } catch {}
   }
 

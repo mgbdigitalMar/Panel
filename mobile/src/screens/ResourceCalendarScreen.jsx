@@ -434,7 +434,7 @@ export default function ResourceCalendarScreen() {
       >
         <View style={{ borderRadius: 20, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderBottomWidth: 1, borderBottomColor: colors.divider }}>
-            <IconTile icon={type === 'room' ? Building2 : Car} tone={type === 'room' ? 'accent' : 'teal'} size={38} radius={12} />
+            <IconTile icon={type === 'room' ? Building2 : Car} tone={type === 'room' ? 'accent' : 'teal'} size={38} />
             <View style={{ flex: 1 }}>
               <T size={15} weight="semibold">{title}</T>
               <T size={13} color={colors.text3}>{meta}</T>

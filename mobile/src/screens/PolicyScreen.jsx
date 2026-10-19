@@ -61,7 +61,7 @@ export default function PolicyScreen() {
   else {
     body = (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 28, gap: 16 }}>
-        <IconTile icon={FileText} tone="accent" size={64} radius={20} />
+        <IconTile icon={FileText} tone="accent" size={64} />
         <T size={18} weight="semibold" style={{ textAlign: 'center' }}>{POLICY_TITLE}</T>
         <T size={14} color={colors.text2} style={{ textAlign: 'center' }}>
           Ábrelo con tu lector de PDF, léelo hasta el final y vuelve aquí para confirmar.

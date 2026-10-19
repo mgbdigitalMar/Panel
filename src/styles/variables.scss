@@ -225,6 +225,21 @@
   --glass-highlight-sm: inset 0 1px 0 rgba(255, 255, 255, 0.60);
   --card-hover-shimmer: linear-gradient(115deg, transparent 0%, transparent 40%, rgba(255, 255, 255, 0.60) 50%, transparent 60%, transparent 100%);
 
+
+  /* ── Liquid glass — same values as the app (mobile/src/theme/tokens.js) ──
+     Tinted glass for cards: translucent fill, hairline edge, bright top rim, a sheen, no shadow.
+     Chrome glass (header, drawer, modals, popovers) adds a real backdrop blur. */
+  --lg-fill:        rgba(255, 255, 255, 0.66);
+  --lg-fill-hover:  rgba(255, 255, 255, 0.84);
+  --lg-edge:        rgba(17, 20, 27, 0.08);
+  --lg-rim:         rgba(255, 255, 255, 0.95);
+  --lg-sheen:       linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 55%);
+  --lg-chrome:      rgba(255, 255, 255, 0.72);
+  --lg-blur:        blur(22px) saturate(170%);
+  --lg-active:      #FFFFFF;
+  --lg-wash-a:      rgba(47, 91, 234, 0.13);
+  --lg-wash-b:      rgba(14, 159, 154, 0.08);
+
   /* ── RGB for rgba() ────────────────────────────────────────────── */
   --bg-rgb:         242, 244, 248;
   --sidebar-rgb:    255, 255, 255;
@@ -323,6 +338,19 @@
   --glass-highlight:    inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255,255,255,0.05);
   --glass-highlight-sm: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --card-hover-shimmer: linear-gradient(115deg, transparent 0%, transparent 40%, rgba(255, 255, 255, 0.12) 50%, transparent 60%, transparent 100%);
+
+
+  /* ── Liquid glass (dark) ── */
+  --lg-fill:        rgba(30, 34, 45, 0.55);
+  --lg-fill-hover:  rgba(38, 43, 56, 0.7);
+  --lg-edge:        rgba(255, 255, 255, 0.08);
+  --lg-rim:         rgba(255, 255, 255, 0.2);
+  --lg-sheen:       linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 55%);
+  --lg-chrome:      rgba(19, 22, 29, 0.66);
+  --lg-blur:        blur(24px) saturate(170%);
+  --lg-active:      rgba(255, 255, 255, 0.14);
+  --lg-wash-a:      rgba(122, 162, 255, 0.2);
+  --lg-wash-b:      rgba(14, 159, 154, 0.13);
 
   /* ── RGB for rgba() ─────────────────────────────────────────── */
   --bg-rgb:           6, 11, 20;

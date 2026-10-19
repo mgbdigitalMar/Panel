@@ -4,6 +4,8 @@ import { ActivityIndicator, Image, Modal, Pressable, ScrollView, Switch, View } 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, Inbox, X, Info, AlertTriangle, ArrowRight, ArrowUpRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import Svg, { Circle } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../context/ThemeContext';
 import { tone as toneOf, glassSurface, BRAND } from '../../theme/tokens';
 import { initials as toInitials, avatarColor } from '../../utils/format';
@@ -13,8 +15,8 @@ import { GradientFill, leafRadii } from './Brand';
 import { GlassFill } from './LiquidGlass';
 
 /**
- * Segmented tabs (web: tabs-row): a liquid-glass pill track; the active tab is a flat solid accent pill.
- * options: [{ value, label, color? }] — `color` recolours that option's active pill.
+ * Segmented tabs: a liquid-glass pill track; the active option is a lighter glass pill.
+ * options: [{ value, label, color? }] — `color` recolours that option's active label.
  */
 export function Segmented({ options, value, onChange, height = 44, style }) {
   const { colors } = useTheme();
@@ -26,7 +28,6 @@ export function Segmented({ options, value, onChange, height = 44, style }) {
       <GlassFill radius={height / 2 + 4} />
       {options.map((o) => {
         const on = o.value === value;
-        const fill = o.color || colors.accent;
         return (
           <Pressable
             key={o.value}
@@ -36,10 +37,11 @@ export function Segmented({ options, value, onChange, height = 44, style }) {
             onPress={() => { if (!on) { Haptics.selectionAsync().catch(() => {}); onChange(o.value); } }}
             style={({ pressed }) => ({
               flex: 1, minWidth: 0, height: height - 8, borderRadius: (height - 8) / 2, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8,
-              backgroundColor: on ? fill : pressed ? colors.neutralSoft : 'transparent',
+              backgroundColor: on ? colors.segOn : pressed ? colors.neutralSoft : 'transparent',
+              borderWidth: on ? 1 : 0, borderColor: colors.glassBorder,
             })}
           >
-            <T size={13.5} weight="semibold" color={on ? colors.onAccent : colors.text2} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{o.label}</T>
+            <T size={14} weight={on ? 'semibold' : 'medium'} color={on ? (o.color || colors.segOnText) : colors.text3} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{o.label}</T>
           </Pressable>
         );
       })}
@@ -102,13 +104,13 @@ export function Avatar({ name, initials, src, size = 42, color, ring, style }) {
   );
 }
 
-/** Rounded icon tile tinted by tone ('accent' | 'teal' | 'amber' | 'green' | 'rose' | 'purple'). */
-export function IconTile({ icon: Icon, tone = 'accent', size = 40, radius }) {
+/** Round icon tinted by tone; `solid` fills it with the tone (the active item, like the reference). Tone ('accent' | 'teal' | 'amber' | 'green' | 'rose' | 'purple'). */
+export function IconTile({ icon: Icon, tone = 'accent', size = 40, radius, solid }) {
   const { colors } = useTheme();
   const [bg, fg] = toneOf(colors, tone);
   return (
-    <View style={{ width: size, height: size, borderRadius: radius ?? Math.round(size * 0.3), backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
-      <Icon size={Math.round(size * 0.48)} color={fg} strokeWidth={1.9} />
+    <View style={{ width: size, height: size, borderRadius: radius ?? size / 2, backgroundColor: solid ? fg : bg, alignItems: 'center', justifyContent: 'center' }}>
+      <Icon size={Math.round(size * 0.46)} color={solid ? colors.bg : fg} strokeWidth={1.9} />
     </View>
   );
 }
@@ -144,7 +146,7 @@ function ActionTile({ icon, tone = 'accent', label, sub, badge, onPress, width }
     >
       <GlassFill radius={radius} />
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <IconTile icon={icon} tone={tone} size={40} radius={13} />
+        <IconTile icon={icon} tone={tone} size={40} />
         {badge ? (
           <View style={{ minWidth: 24, height: 24, paddingHorizontal: 7, borderRadius: 12, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center' }}>
             <T size={12} weight="bold" color="#FFFFFF" style={{ lineHeight: 14 }}>{badge > 99 ? '99+' : badge}</T>
@@ -158,6 +160,91 @@ function ActionTile({ icon, tone = 'accent', label, sub, badge, onPress, width }
         {sub ? <T size={12.5} color={colors.text3} numberOfLines={1}>{sub}</T> : null}
       </View>
     </PressScale>
+  );
+}
+
+/** Text tabs with superscript counts (reference: All Courses¹² Completed⁷). options: [{ value, label, count }] */
+export function CountTabs({ options, value, onChange, style }) {
+  const { colors } = useTheme();
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={[{ marginHorizontal: -20, flexGrow: 0 }, style]}
+      contentContainerStyle={{ paddingHorizontal: 20, gap: 22 }} accessibilityRole="tablist">
+      {options.map((o) => {
+        const on = o.value === value;
+        return (
+          <Pressable
+            key={o.value}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: on }}
+            accessibilityLabel={o.count != null ? `${o.label}, ${o.count}` : o.label}
+            hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
+            onPress={() => { if (!on) { Haptics.selectionAsync().catch(() => {}); onChange(o.value); } }}
+            style={{ minHeight: 36, justifyContent: 'center' }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+              <T size={15} weight={on ? 'semibold' : 'regular'} color={on ? colors.text : colors.text3}>{o.label}</T>
+              {o.count != null ? (
+                <T size={10.5} weight="semibold" color={on ? colors.accentFg : colors.text3} style={{ marginLeft: 2, marginTop: -2, lineHeight: 13 }}>{o.count}</T>
+              ) : null}
+            </View>
+            <View style={{ height: 2, marginTop: 4, borderRadius: 1, backgroundColor: on ? colors.accent : 'transparent', width: 16 }} />
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
+/** Progress ring (reference: the day rings). `value` 0–100; children sit in the middle. */
+export function Ring({ value = 0, size = 44, stroke = 3.5, color, track, children, accessibilityLabel }) {
+  const { colors } = useTheme();
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const pct = Math.max(0, Math.min(100, Number(value) || 0));
+  return (
+    <View
+      accessible={!!accessibilityLabel}
+      accessibilityLabel={accessibilityLabel}
+      style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}
+    >
+      <Svg width={size} height={size} style={{ position: 'absolute', transform: [{ rotate: '-90deg' }] }}>
+        <Circle cx={size / 2} cy={size / 2} r={r} stroke={track || colors.ringTrack} strokeWidth={stroke} fill="none" />
+        {pct > 0 ? (
+          <Circle cx={size / 2} cy={size / 2} r={r} stroke={color || colors.accent} strokeWidth={stroke} fill="none"
+            strokeLinecap="round" strokeDasharray={`${(c * pct) / 100} ${c}`} />
+        ) : null}
+      </Svg>
+      {children}
+    </View>
+  );
+}
+
+/**
+ * Glass card with the brand blue washing in from the top-left (reference: the highlighted schedule card).
+ * Use for the one item that is "now" in a list; the rest stay plain glass.
+ */
+export function WashCard({ children, onPress, radius = 24, padding = 16, style, accessibilityLabel }) {
+  const { colors } = useTheme();
+  const body = (
+    <>
+      <LinearGradient pointerEvents="none" colors={colors.wash} locations={[0, 0.45, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: radius }} />
+      {children}
+    </>
+  );
+  const s = [{ borderRadius: radius, padding, ...glassSurface(colors), borderColor: colors.accentBorder, overflow: 'hidden' }, style];
+  if (onPress) return <PressScale onPress={onPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel} scaleTo={0.98} style={s}>{body}</PressScale>;
+  return <View style={s}>{body}</View>;
+}
+
+/** Small time/status pill used at the bottom of agenda cards (reference: 11:30 AM). */
+export function Pill({ label, mono, tone }) {
+  const { colors } = useTheme();
+  const [bg, fg] = tone ? toneOf(colors, tone) : [colors.segOn, colors.text];
+  return (
+    <View style={{ alignSelf: 'flex-start', height: 28, paddingHorizontal: 11, borderRadius: 14, justifyContent: 'center', backgroundColor: bg, borderWidth: tone ? 0 : 1, borderColor: colors.glassBorder }}>
+      <T size={12.5} weight="semibold" mono={mono} color={fg} numberOfLines={1}>{label}</T>
+    </View>
   );
 }
 

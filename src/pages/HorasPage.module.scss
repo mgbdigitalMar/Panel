@@ -12,12 +12,8 @@
 }
 
 .statsGrid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(8px, 1.5vw, 14px);
+  @include p.stat-grid(4, 2);
   margin-bottom: 4px;
-
-  @media (max-width: 899px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* Wrapper for each tab's motion.div — propagates the gap to its children */

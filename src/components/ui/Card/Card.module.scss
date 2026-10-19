@@ -1,8 +1,8 @@
+@use '../../../styles/patterns' as p;
+
 .card {
-  background: var(--card);
-  border: 1px solid var(--border);
+  @include p.glass;
   border-radius: 22px;
-  box-shadow: var(--shadow-card);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -28,14 +28,12 @@
     background 200ms var(--ease-apple-fluid);
 
   &:hover {
-    box-shadow: var(--shadow-lg);
     border-color: rgba(var(--accent-rgb), 0.30);
-    background: var(--glass-card-hover);
+    background: var(--lg-sheen), var(--lg-fill-hover);
     /* Let Framer Motion handle transform via scale() */
   }
 
   &:active {
-    box-shadow: var(--shadow-sm);
     /* Scale feedback via Framer Motion */
   }
 }

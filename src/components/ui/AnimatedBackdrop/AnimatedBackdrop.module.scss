@@ -5,6 +5,10 @@
 .backdrop {
   position: fixed;
   inset: 0;
+
+  /* Phones scroll the window: a fixed full-screen layer here makes iOS 26 Safari paint solid
+     strips under its toolbars. Scrolling with the page keeps them see-through. */
+  @media (max-width: 1023px) { position: absolute; }
   z-index: 0;
   overflow: hidden;
   pointer-events: none;

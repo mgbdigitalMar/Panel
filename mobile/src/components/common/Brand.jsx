@@ -145,3 +145,60 @@ export function BrandTag({ label, icon: Icon }) {
     </View>
   );
 }
+
+/** White chip on a hero card (reference: "Active"). */
+export function HeroChip({ label, icon: Icon }) {
+  return (
+    <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5, height: 28, paddingHorizontal: 12, borderRadius: 14, backgroundColor: '#FFFFFF' }}>
+      {Icon ? <Icon size={13} color={BRAND.navy} strokeWidth={2.2} /> : null}
+      <T size={12.5} weight="semibold" color={BRAND.navy} numberOfLines={1}>{label}</T>
+    </View>
+  );
+}
+
+/** The big leaf behind a hero card, standing in for the reference's photo silhouette. */
+const HeroArt = memo(function HeroArt({ width, height }) {
+  const size = Math.min(height * 1.05, width * 0.78);
+  const s = size / 48;
+  const x = width - size * 0.82;
+  const y = height - size * 0.98;
+  return (
+    <Svg pointerEvents="none" width={width} height={height} style={{ position: 'absolute', top: 0, left: 0 }}>
+      <Defs>
+        <RadialGradient id="heroLight" cx="0.8" cy="0.15" r="0.75" gradientUnits="objectBoundingBox">
+          <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.28} />
+          <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
+        </RadialGradient>
+      </Defs>
+      <Rect x="0" y="0" width={width} height={height} fill="url(#heroLight)" />
+      <Path d={LEAF_PATH} transform={`translate(${x} ${y}) scale(${s})`} fill="rgba(255,255,255,0.08)"
+        stroke="rgba(255,255,255,0.26)" strokeWidth={1.4 / s} strokeLinejoin="round" />
+      <Path d={VEIN_PATH} transform={`translate(${x} ${y}) scale(${s})`} fill="none"
+        stroke="rgba(255,255,255,0.26)" strokeWidth={1.4 / s} strokeLinecap="round" />
+    </Svg>
+  );
+});
+
+/**
+ * Hero card (reference: "AI for Creators"): brand blue running into navy, a large leaf
+ * where the reference has a photo, and a dark fade at the bottom so white text stays legible.
+ * Same colours in both themes, like the brand panel.
+ */
+export function HeroCard({ children, style, padding = 20, radius = 30, minHeight = 230 }) {
+  const [size, setSize] = useState(null);
+  return (
+    <View
+      onLayout={(e) => {
+        const { width, height } = e.nativeEvent.layout;
+        if (!size || Math.abs(size.width - width) > 1 || Math.abs(size.height - height) > 1) setSize({ width, height });
+      }}
+      style={[{ borderRadius: radius, padding, minHeight, overflow: 'hidden', backgroundColor: BRAND.blue }, style]}
+    >
+      <LinearGradient pointerEvents="none" colors={['#7AA2FF', BRAND.blue, '#1B2C6E', BRAND.navy]} locations={[0, 0.38, 0.78, 1]}
+        start={{ x: 0.15, y: 0 }} end={{ x: 0.85, y: 1 }} style={FILL} />
+      {size ? <HeroArt width={size.width} height={size.height} /> : null}
+      <LinearGradient pointerEvents="none" colors={['rgba(17,20,27,0)', 'rgba(17,20,27,0.5)']} locations={[0.35, 1]} style={FILL} />
+      {children}
+    </View>
+  );
+}

@@ -44,7 +44,8 @@ html {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  padding-top: env(safe-area-inset-top);
+  /* No top inset here: the page runs edge to edge under the status bar and Safari's
+     floating toolbar (iOS 26). The sticky header pads itself with the safe area instead. */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
@@ -53,6 +54,9 @@ html, body {
   overflow-x: hidden;
   min-height: 100%;
 }
+
+/* The canvas behind Safari's translucent bars and overscroll follows the app theme */
+html { background: var(--bg); }
 
 /* ── Body ─────────────────────────────────────────────────────────── */
 body {

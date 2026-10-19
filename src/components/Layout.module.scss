@@ -1,3 +1,5 @@
+@use '../styles/patterns' as p;
+
 /* ═══════════════════════════════════════════════════════════════════
    LAYOUT — Margube workspace shell
    An open canvas (the login's animated backdrop) holds the sidebar and
@@ -413,10 +415,8 @@ $header-h-mobile: 64px;
   display: grid;
   place-items: center;
   border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--card);
+  @include p.glass;
   color: var(--text-sec);
-  box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: left 0.28s var(--ease-apple-fluid), color 0.15s, border-color 0.15s, transform 0.15s var(--ease-out);
 
@@ -480,10 +480,12 @@ $header-h-mobile: 64px;
   background: transparent;
 
   @media (max-width: 1023px) {
-    height: $header-h-mobile;
-    padding: 0 12px;
+    height: calc(#{$header-h-mobile} + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) 12px 0;
     gap: 8px;
-    background: var(--bg-2);
+    @include p.glass-chrome;
+    border-width: 0 0 1px;
+    box-shadow: none;
   }
 }
 
@@ -526,14 +528,12 @@ $header-h-mobile: 64px;
   max-width: 560px;
   height: 48px;
   padding: 0 8px 0 18px;
-  border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  background: var(--card);
+  @include p.glass;
   color: var(--text-mut);
   font: inherit;
   font-size: 14px;
   cursor: pointer;
-  box-shadow: var(--shadow-xs);
   transition: border-color 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), color 0.15s;
 
   &:focus-visible {
@@ -609,9 +609,8 @@ $header-h-mobile: 64px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  border: 1px solid var(--border);
   border-radius: 50%;
-  background: var(--card);
+  @include p.glass;
   color: var(--text-sec);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -691,7 +690,11 @@ $header-h-mobile: 64px;
   flex: 1;
   min-height: calc(100dvh - #{$header-h});
   padding: clamp(24px, 3vw, 44px) clamp(20px, 3.2vw, 52px) calc(clamp(32px, 4vw, 56px) + env(safe-area-inset-bottom));
-  background: var(--bg);
+  /* Same wash as the app's backdrop: brand blue from the top, teal from the right */
+  background:
+    radial-gradient(90% 420px at 30% -60px, var(--lg-wash-a), transparent 70%),
+    radial-gradient(55% 380px at 105% 340px, var(--lg-wash-b), transparent 70%),
+    var(--bg);
   border-top-left-radius: 44px;
   box-shadow: inset 1px 1px 0 rgba(var(--text-rgb), 0.05);
 

@@ -24,7 +24,7 @@ function MenuRow({ icon, tone = 'accent', label, value, valueColor, badge, onPre
   const { colors } = useTheme();
   const body = (
     <>
-      {icon ? <IconTile icon={icon} tone={tone} size={34} radius={10} /> : null}
+      {icon ? <IconTile icon={icon} tone={tone} size={34} /> : null}
       <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
         <T size={15} weight="medium" numberOfLines={1}>{label}</T>
         {value ? <T size={12.5} color={valueColor || colors.text3} numberOfLines={1}>{value}</T> : null}
@@ -145,7 +145,7 @@ export default function SettingsScreen() {
         <GlassCard padding={0}>
           <View style={{ paddingVertical: 12, paddingHorizontal: 14, gap: 12, borderBottomWidth: 1, borderBottomColor: colors.divider }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <IconTile icon={mode === 'dark' ? Moon : mode === 'light' ? Sun : SunMoon} tone="neutral" size={34} radius={10} />
+              <IconTile icon={mode === 'dark' ? Moon : mode === 'light' ? Sun : SunMoon} tone="neutral" size={34} />
               <T size={15} weight="medium" style={{ flex: 1 }}>Apariencia</T>
             </View>
             <Segmented value={mode} onChange={setMode} height={40}

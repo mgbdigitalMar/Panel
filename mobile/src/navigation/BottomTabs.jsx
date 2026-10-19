@@ -2,13 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { Animated, View, Pressable } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Home, CalendarDays, Inbox, Timer, LayoutGrid } from 'lucide-react-native';
+import { Home, CalendarDays, Inbox, Timer, LayoutGrid, Plus } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { T } from '../components/common/Text';
 import { GlassFill } from '../components/common/LiquidGlass';
+import { PressScale } from '../components/common/Pressable';
 import { useReduceMotion } from '../components/common/AuthBackdrop';
 import { usePendingApprovals } from '../hooks/usePendingApprovals';
 import { TAB_BAR_HEIGHT } from './tabBarMetrics';
@@ -28,7 +29,7 @@ const TABS = [
   { name: 'Settings', label: 'Más', icon: LayoutGrid, component: SettingsScreen },
 ];
 
-/** One tab: the active one gets a solid accent pill that springs in behind its icon. */
+/** One tab, icon only: the active one gets a filled accent circle that springs in (reference nav). */
 function TabItem({ tab, focused, badge, onPress, onLongPress }) {
   const { colors } = useTheme();
   const reduce = useReduceMotion();
@@ -36,10 +37,11 @@ function TabItem({ tab, focused, badge, onPress, onLongPress }) {
 
   useEffect(() => {
     if (reduce) { on.setValue(focused ? 1 : 0); return; }
-    Animated.spring(on, { toValue: focused ? 1 : 0, damping: 18, stiffness: 260, mass: 0.7, useNativeDriver: true }).start();
+    Animated.spring(on, { toValue: focused ? 1 : 0, damping: 16, stiffness: 260, mass: 0.7, useNativeDriver: true }).start();
   }, [focused, reduce, on]);
 
   const Icon = tab.icon;
+  const dot = TAB_BAR_HEIGHT - 16;
   return (
     <Pressable
       onPress={onPress}
@@ -47,22 +49,22 @@ function TabItem({ tab, focused, badge, onPress, onLongPress }) {
       accessibilityRole="tab"
       accessibilityState={{ selected: focused }}
       accessibilityLabel={badge ? `${tab.label}, ${badge} pendientes` : tab.label}
-      style={{ flex: 1, height: '100%', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+      style={{ flex: 1, height: '100%', alignItems: 'center', justifyContent: 'center' }}
     >
-      <View style={{ width: 54, height: 32, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ width: dot, height: dot, alignItems: 'center', justifyContent: 'center' }}>
         <Animated.View
           pointerEvents="none"
           style={{
-            position: 'absolute', top: 0, left: 0, width: 54, height: 32, borderRadius: 16, backgroundColor: colors.navActive,
+            position: 'absolute', width: dot, height: dot, borderRadius: dot / 2, backgroundColor: colors.navActive,
             opacity: on,
-            transform: [{ scaleX: on.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1] }) }],
+            transform: [{ scale: on.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }],
           }}
         />
-        <Icon size={21} color={focused ? colors.navActiveIcon : colors.text3} strokeWidth={focused ? 2.2 : 1.9} />
+        <Icon size={22} color={focused ? colors.navActiveIcon : colors.text2} strokeWidth={focused ? 2.1 : 1.8} />
         {badge ? (
           <View
             style={{
-              position: 'absolute', top: -4, right: 4, minWidth: 18, height: 18, paddingHorizontal: 4, borderRadius: 9,
+              position: 'absolute', top: 2, right: 0, minWidth: 18, height: 18, paddingHorizontal: 4, borderRadius: 9,
               backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.bg,
             }}
           >
@@ -70,36 +72,31 @@ function TabItem({ tab, focused, badge, onPress, onLongPress }) {
           </View>
         ) : null}
       </View>
-      <T
-        size={11}
-        weight={focused ? 'semibold' : 'medium'}
-        color={focused ? colors.text : colors.text3}
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        minimumFontScale={0.8}
-        maxFontSizeMultiplier={1.15}
-      >
-        {tab.label}
-      </T>
     </Pressable>
   );
 }
 
-/** Floating liquid-glass tab bar above the home indicator. No shadow. */
+/** Floating glass nav pill + a separate round "new request" button beside it (reference nav + search circle). */
 function TabBar({ state, navigation, badges }) {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   return (
-    <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, alignItems: 'center', paddingHorizontal: Math.max(12, insets.left, insets.right) }}>
+    <View
+      pointerEvents="box-none"
+      style={{
+        position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', justifyContent: 'center', gap: 10,
+        paddingHorizontal: Math.max(16, insets.left, insets.right), paddingBottom: Math.max(insets.bottom, 10),
+      }}
+    >
       <View
         accessibilityRole="tablist"
         style={{
-          width: '100%',
-          maxWidth: 480,
+          flex: 1,
+          maxWidth: 400,
           height: TAB_BAR_HEIGHT,
-          marginBottom: Math.max(insets.bottom, 10),
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 4,
+          paddingHorizontal: 6,
           borderRadius: TAB_BAR_HEIGHT / 2,
         }}
       >
@@ -120,6 +117,16 @@ function TabBar({ state, navigation, badges }) {
           );
         })}
       </View>
+      <PressScale
+        onPress={() => { Haptics.selectionAsync().catch(() => {}); navigation.navigate('NewRequest'); }}
+        accessibilityRole="button"
+        accessibilityLabel="Nueva solicitud"
+        scaleTo={0.92}
+        style={{ width: TAB_BAR_HEIGHT, height: TAB_BAR_HEIGHT, borderRadius: TAB_BAR_HEIGHT / 2, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <GlassFill radius={TAB_BAR_HEIGHT / 2} />
+        <Plus size={24} color={colors.text} strokeWidth={2} />
+      </PressScale>
     </View>
   );
 }

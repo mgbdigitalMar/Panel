@@ -1,9 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAuth, useTheme } from '../context';
 import logoColor from '../assets/logos/logo-color.png';
 import logoWhite from '../assets/logos/logo-white.png';
 import {
-  Eye, EyeOff, AlertCircle, LogIn, Lock, Loader2, Sun, Moon,
+  Eye, EyeOff, AlertCircle, LogIn, Lock, Loader2, Sun, Moon, Info, X, Mail,
   CalendarDays, Car, DoorOpen, Home, Users, FileText,
 } from 'lucide-react';
 import styles from './LoginPage.module.scss';
@@ -35,6 +35,37 @@ const fadeUp = {
   hidden: { opacity: 0, y: 14 },
   show:   { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
 };
+
+/** True below the split layout's breakpoint: phones get the app's login instead of the framed split. */
+function useNarrow(query = '(max-width: 959px)') {
+  const [narrow, setNarrow] = useState(() => window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const onChange = (e) => setNarrow(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [query]);
+  return narrow;
+}
+
+const HELP_MAIL = 'mailto:rrhh@margube.com?subject=Acceso%20a%20la%20intranet';
+
+/** The app's brand orb: blue sphere with the leaf, a halo, two radar ripples and a slow float. */
+function BrandOrb() {
+  return (
+    <div className={styles.mOrb} aria-hidden="true">
+      <span className={styles.mOrbHalo} />
+      <span className={styles.mOrbRipple} />
+      <span className={`${styles.mOrbRipple} ${styles.mOrbRippleLate}`} />
+      <span className={styles.mOrbSphere}>
+        <svg viewBox="0 0 48 48" width="62" height="62">
+          <path d={LEAF_PATH} fill="none" stroke="#FFFFFF" strokeWidth="3" strokeLinejoin="round" />
+          <path d={VEIN_PATH} fill="none" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      </span>
+    </div>
+  );
+}
 
 function LeafGlyph({ size = 18 }) {
   return (
@@ -75,6 +106,151 @@ export default function LoginPage() {
   }, [email, pass, login, loading]);
 
   const isDark = theme === 'dark';
+  const narrow = useNarrow();
+  const [help, setHelp] = useState(false);
+
+  /* ── Phones: the same login as the app ──────────────────────────── */
+  if (narrow) {
+    return (
+      <MotionConfig reducedMotion="user">
+        <div className={styles.mPage}>
+          <AnimatedBackdrop />
+          <motion.div className={styles.mColumn} variants={stagger} initial="hidden" animate="show">
+            <motion.div variants={fadeUp} className={styles.mTop}>
+                <button
+                  type="button"
+                  className={styles.mIconBtn}
+                  onClick={() => setMode(isDark ? 'light' : 'dark')}
+                  aria-label={isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+                >
+                  {isDark ? <Sun size={21} /> : <Moon size={21} />}
+                </button>
+                <button
+                  type="button"
+                  className={styles.mIconBtn}
+                  onClick={() => setHelp(h => !h)}
+                  aria-label="Ayuda para acceder"
+                  aria-expanded={help}
+                  aria-controls="login-help"
+                >
+                  <Info size={21} />
+                </button>
+            </motion.div>
+
+            {/* Orb, title and form centred in the space between the top bar and the footer */}
+            <div className={styles.mCenter}>
+              <motion.div variants={fadeUp}><BrandOrb /></motion.div>
+
+              <motion.div variants={fadeUp} className={styles.mIntro}>
+                <h1 className={styles.mTitle}>Te damos la bienvenida</h1>
+                <p className={styles.mSub}>Inicia sesión para acceder a tus reservas, solicitudes y novedades de Margube.</p>
+              </motion.div>
+
+              <AnimatePresence initial={false}>
+                {help && (
+                  <motion.div
+                    id="login-help"
+                    className={styles.mHelp}
+                    role="region"
+                    aria-label="Ayuda para acceder"
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6, transition: { duration: 0.14 } }}
+                  >
+                    <div className={styles.mHelpHead}>
+                      <strong>¿Primer acceso o contraseña olvidada?</strong>
+                      <button type="button" className={styles.mHelpClose} onClick={() => setHelp(false)} aria-label="Cerrar ayuda">
+                        <X size={16} />
+                      </button>
+                    </div>
+                    <p>RRHH te facilita una contraseña temporal. Al entrar por primera vez te pedirá crear una propia.</p>
+                    <p>Si la has olvidado, escribe a rrhh@margube.com para que te la restablezcan.</p>
+                    <a className={styles.mHelpLink} href={HELP_MAIL}><Mail size={16} /> Escribir a RRHH</a>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <motion.form variants={fadeUp} className={styles.mCard} onSubmit={handleLogin} noValidate>
+                <div className={styles.mField}>
+                  <label htmlFor="m-login-email" className={styles.mLabel}>Correo electrónico <span aria-hidden="true">*</span></label>
+                  <input
+                    id="m-login-email"
+                    className={styles.mInput}
+                    type="email"
+                    inputMode="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="nombre@margube.es"
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    required
+                    aria-invalid={!!err}
+                  />
+                </div>
+
+                <div className={styles.mField}>
+                  <label htmlFor="m-login-password" className={styles.mLabel}>Contraseña <span aria-hidden="true">*</span></label>
+                  <div className={styles.mInputWrap}>
+                    <input
+                      id="m-login-password"
+                      className={`${styles.mInput} ${styles.mInputIcon}`}
+                      type={showPass ? 'text' : 'password'}
+                      value={pass}
+                      onChange={e => setPass(e.target.value)}
+                      placeholder="Tu contraseña"
+                      autoComplete="current-password"
+                      required
+                      aria-invalid={!!err}
+                    />
+                    <button
+                      type="button"
+                      className={styles.mEye}
+                      onClick={() => setShowPass(v => !v)}
+                      aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                      aria-pressed={showPass}
+                    >
+                      {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                  <button type="button" className={styles.mForgot} onClick={() => setHelp(true)} aria-controls="login-help">
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                </div>
+
+                <AnimatePresence mode="wait">
+                  {err && (
+                    <motion.div
+                      key={errKey}
+                      className={styles.mError}
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0, x: [0, -7, 6, -4, 2, 0], transition: { duration: 0.42, ease: [0.16, 1, 0.3, 1] } }}
+                      exit={{ opacity: 0, y: -4, transition: { duration: 0.14 } }}
+                      role="alert"
+                    >
+                      <AlertCircle size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+                      <span>{err}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <motion.button type="submit" className={styles.mSubmit} disabled={loading} aria-busy={loading} whileTap={{ scale: 0.97 }}>
+                  {loading ? <Loader2 size={19} className={styles.spin} /> : <LogIn size={19} />}
+                  {loading ? 'Verificando…' : 'Iniciar sesión'}
+                </motion.button>
+              </motion.form>
+            </div>
+
+            <motion.footer variants={fadeUp} className={styles.mFooter}>
+              <button type="button" onClick={() => setHelp(true)} aria-controls="login-help">
+                ¿Primer acceso? <strong>Contacta con RRHH</strong>
+              </button>
+            </motion.footer>
+          </motion.div>
+        </div>
+      </MotionConfig>
+    );
+  }
 
   return (
     <MotionConfig reducedMotion="user">

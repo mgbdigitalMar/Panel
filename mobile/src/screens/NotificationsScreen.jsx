@@ -89,7 +89,7 @@ export default function NotificationsScreen() {
                   backgroundColor: n.read ? 'transparent' : colors.glass, borderWidth: 1, borderColor: n.read ? colors.divider : colors.glassBorder,
                 }}
               >
-                <IconTile icon={ENTITY_ICON[n.entity_type] || Bell} tone={tone} size={40} radius={13} />
+                <IconTile icon={ENTITY_ICON[n.entity_type] || Bell} tone={tone} size={40} />
                 <View style={{ flex: 1, gap: 3, minWidth: 0 }}>
                   <View style={{ flexDirection: 'row', gap: 8, alignItems: 'baseline' }}>
                     <T size={15} weight={n.read ? 'medium' : 'semibold'} style={{ flex: 1 }} color={n.read ? colors.text2 : colors.text}>{clean(n.title)}</T>

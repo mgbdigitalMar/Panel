@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Download, Plus, FileText } from 'lucide-react-native';
+import { Download, FileText } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -12,10 +12,9 @@ import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
 import { GlassCard } from '../components/common/GlassCard';
 import { IconButton } from '../components/common/GlassButton';
-import { Fab } from '../components/common/Fab';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { T } from '../components/common/Text';
-import { ChipRail, EmptyState, IconTile, Row, Segmented } from '../components/common/UI';
+import { ChipRail, CountTabs, EmptyState, IconTile, Row, Segmented } from '../components/common/UI';
 import { buildRequestItems, personalDaysSummary, requestDetail, requestTitle, requestTypeLabel, REQUEST_TONE } from '../utils/domain';
 import { addDays, startOfWeek, toISODate, DAY_LETTERS } from '../utils/format';
 import { exportCsv } from '../services/files';
@@ -74,8 +73,7 @@ export default function RequestsScreen() {
   };
 
   return (
-    <Screen tabBarSpace onRefresh={onRefresh} refreshing={refreshing}
-      fab={<Fab compact icon={Plus} label="Nueva solicitud" onPress={() => navigation.navigate('NewRequest')} />}>
+    <Screen tabBarSpace onRefresh={onRefresh} refreshing={refreshing}>
       <Header
         title="Solicitudes"
         right={filtered.length ? <IconButton icon={Download} onPress={exportList} accessibilityLabel="Descargar CSV" /> : null}
@@ -110,7 +108,7 @@ export default function RequestsScreen() {
         options={[{ value: 'mine', label: 'Mías' }, { value: 'team', label: 'Equipo' }]}
       />
 
-      <ChipRail
+      <CountTabs
         value={status}
         onChange={setStatus}
         options={[
