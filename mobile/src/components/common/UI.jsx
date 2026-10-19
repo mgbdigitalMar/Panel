@@ -1,37 +1,45 @@
-// Smaller building blocks from the design file.
-import { ActivityIndicator, Modal, Pressable, ScrollView, Switch, View } from 'react-native';
+// Smaller building blocks, styled after the web's components (src/components/ui, styles/_patterns.scss).
+import { useState } from 'react';
+import { ActivityIndicator, Image, Modal, Pressable, ScrollView, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Check, Inbox, X, Info, AlertTriangle } from 'lucide-react-native';
+import { Check, Inbox, X, Info, AlertTriangle, ArrowRight, ArrowUpRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../context/ThemeContext';
-import { tone as toneOf } from '../../theme/tokens';
+import { tone as toneOf, glassSurface, BRAND } from '../../theme/tokens';
 import { initials as toInitials, avatarColor } from '../../utils/format';
 import { PressScale } from './Pressable';
 import { T } from './Text';
+import { GradientFill, leafRadii } from './Brand';
+import { GlassFill } from './LiquidGlass';
 
-/** Segmented control (Ya / Bolsa / Debo, Semana / Mes…). options: [{ value, label, color? }] */
-export function Segmented({ options, value, onChange, height = 40, style }) {
-  const { colors, theme } = useTheme();
+/**
+ * Segmented tabs (web: tabs-row): a liquid-glass pill track; the active tab is a flat solid accent pill.
+ * options: [{ value, label, color? }] — `color` recolours that option's active pill.
+ */
+export function Segmented({ options, value, onChange, height = 44, style }) {
+  const { colors } = useTheme();
   return (
     <View
       accessibilityRole="tablist"
-      style={[{ flexDirection: 'row', padding: 4, borderRadius: 14, backgroundColor: colors.segTrack, borderWidth: 1, borderColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'transparent' }, style]}
+      style={[{ flexDirection: 'row', padding: 4, gap: 2, borderRadius: height / 2 + 4 }, style]}
     >
+      <GlassFill radius={height / 2 + 4} />
       {options.map((o) => {
         const on = o.value === value;
+        const fill = o.color || colors.accent;
         return (
           <Pressable
             key={o.value}
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
+            accessibilityLabel={o.label}
             onPress={() => { if (!on) { Haptics.selectionAsync().catch(() => {}); onChange(o.value); } }}
-            style={{
-              flex: 1, height: height - 8, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
-              backgroundColor: on ? colors.segOn : 'transparent',
-              ...(on ? { shadowColor: '#000', shadowOpacity: theme === 'dark' ? 0.35 : 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 2 } : null),
-            }}
+            style={({ pressed }) => ({
+              flex: 1, minWidth: 0, height: height - 8, borderRadius: (height - 8) / 2, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8,
+              backgroundColor: on ? fill : pressed ? colors.neutralSoft : 'transparent',
+            })}
           >
-            <T size={14} weight={on ? 'semibold' : 'medium'} color={on ? (o.color || colors.segOnText) : colors.text2} numberOfLines={1}>{o.label}</T>
+            <T size={13.5} weight="semibold" color={on ? colors.onAccent : colors.text2} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{o.label}</T>
           </Pressable>
         );
       })}
@@ -43,7 +51,7 @@ export function Segmented({ options, value, onChange, height = 40, style }) {
 export function ChipRail({ options, value, onChange, style }) {
   const { colors } = useTheme();
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={[{ marginHorizontal: -20 }, style]}
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={[{ marginHorizontal: -20, flexGrow: 0 }, style]}
       contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
       {options.map((o) => {
         const on = o.value === value;
@@ -52,16 +60,18 @@ export function ChipRail({ options, value, onChange, style }) {
             key={o.value}
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
-            onPress={() => { Haptics.selectionAsync().catch(() => {}); onChange(o.value); }}
+            onPress={() => { if (!on) { Haptics.selectionAsync().catch(() => {}); onChange(o.value); } }}
             style={{
-              height: 36, paddingHorizontal: 14, borderRadius: 18, justifyContent: 'center',
-              backgroundColor: on ? colors.chipOnBg : colors.glass,
-              borderWidth: on ? 0 : 1, borderColor: colors.glassBorderStrong,
+              height: 36, paddingHorizontal: 14, borderRadius: 18, flexDirection: 'row', alignItems: 'center', gap: 6,
+              ...(on ? { backgroundColor: colors.chipOnBg, borderWidth: 1, borderColor: colors.chipOnBg } : glassSurface(colors)),
             }}
           >
-            <T size={13} weight={on ? 'semibold' : 'medium'} color={on ? colors.chipOnText : colors.text2}>
-              {o.label}{o.count != null ? ` · ${o.count}` : ''}
-            </T>
+            <T size={13} weight="semibold" color={on ? colors.chipOnText : colors.text2}>{o.label}</T>
+            {o.count != null ? (
+              <View style={{ minWidth: 20, height: 20, paddingHorizontal: 6, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? 'rgba(255,255,255,0.24)' : colors.neutralSoft }}>
+                <T size={11} weight="bold" color={on ? colors.chipOnText : colors.text2} style={{ lineHeight: 13, fontVariant: ['tabular-nums'] }}>{o.count}</T>
+              </View>
+            ) : null}
           </Pressable>
         );
       })}
@@ -69,30 +79,92 @@ export function ChipRail({ options, value, onChange, style }) {
   );
 }
 
-export function Avatar({ name, initials, size = 42, color, style }) {
+/** Person avatar in the Margube leaf shape; shows the photo when there is one. */
+export function Avatar({ name, initials, src, size = 42, color, ring, style }) {
   const bg = color || avatarColor(name);
-  return (
-    <View style={[{ width: size, height: size, borderRadius: size / 2, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }, style]}>
-      <T size={Math.round(size * 0.34)} weight="bold" color="#11141B">{initials || toInitials(name)}</T>
+  const avatar = (
+    <View
+      accessibilityLabel={name || undefined}
+      style={[{ width: size, height: size, ...leafRadii(size), backgroundColor: bg, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }, !ring && style]}
+    >
+      {src ? (
+        <Image source={{ uri: src }} style={{ width: size, height: size }} accessibilityIgnoresInvertColors />
+      ) : (
+        <T size={Math.round(size * 0.36)} weight="semibold" heading color="#11141B" style={{ lineHeight: Math.round(size * 0.46) }}>{initials || toInitials(name)}</T>
+      )}
     </View>
+  );
+  if (!ring) return avatar;
+  // Leaf outline around the avatar (profile identity, like the web's sidebar)
+  const pad = 3;
+  return (
+    <View style={[{ padding: pad, ...leafRadii(size + pad * 2), borderWidth: 1.5, borderColor: ring }, style]}>{avatar}</View>
   );
 }
 
 /** Rounded icon tile tinted by tone ('accent' | 'teal' | 'amber' | 'green' | 'rose' | 'purple'). */
-export function IconTile({ icon: Icon, tone = 'accent', size = 40, radius = 13 }) {
+export function IconTile({ icon: Icon, tone = 'accent', size = 40, radius }) {
   const { colors } = useTheme();
   const [bg, fg] = toneOf(colors, tone);
   return (
-    <View style={{ width: size, height: size, borderRadius: radius, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
-      <Icon size={Math.round(size * 0.5)} color={fg} strokeWidth={1.8} />
+    <View style={{ width: size, height: size, borderRadius: radius ?? Math.round(size * 0.3), backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
+      <Icon size={Math.round(size * 0.48)} color={fg} strokeWidth={1.9} />
     </View>
   );
 }
 
-/** List row: [left] title/subtitle [right]. Use `first`/`last` to build grouped lists. */
-export function Row({ left, title, subtitle, right, onPress, first = true, last = true, style, titleWeight = 'semibold', subtitleLines = 2 }) {
+/**
+ * Quick-access grid: liquid-glass tiles that share the full width — two columns on phones,
+ * four once there is room. items: [{ key, icon, tone, label, sub, badge, onPress }]
+ */
+export function ActionGrid({ items, gap = 10, style }) {
+  const [width, setWidth] = useState(0);
+  const cols = width >= 560 ? 4 : 2;
+  const tileW = width ? Math.floor((width - gap * (cols - 1)) / cols) : 0;
+  return (
+    <View
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+      style={[{ flexDirection: 'row', flexWrap: 'wrap', gap }, style]}
+    >
+      {tileW ? items.map(({ key, ...it }) => <ActionTile key={key || it.label} {...it} width={tileW} />) : null}
+    </View>
+  );
+}
+
+function ActionTile({ icon, tone = 'accent', label, sub, badge, onPress, width }) {
   const { colors } = useTheme();
-  const radius = { tl: first ? 20 : 6, bl: last ? 20 : 6 };
+  const radius = 22;
+  return (
+    <PressScale
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={[label, sub, badge ? `${badge} pendientes` : null].filter(Boolean).join(', ')}
+      scaleTo={0.96}
+      style={{ width, minHeight: 112, borderRadius: radius, padding: 14, gap: 12, justifyContent: 'space-between' }}
+    >
+      <GlassFill radius={radius} />
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <IconTile icon={icon} tone={tone} size={40} radius={13} />
+        {badge ? (
+          <View style={{ minWidth: 24, height: 24, paddingHorizontal: 7, borderRadius: 12, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center' }}>
+            <T size={12} weight="bold" color="#FFFFFF" style={{ lineHeight: 14 }}>{badge > 99 ? '99+' : badge}</T>
+          </View>
+        ) : (
+          <ArrowUpRight size={18} color={colors.text3} strokeWidth={2} />
+        )}
+      </View>
+      <View style={{ gap: 2 }}>
+        <T size={15} weight="semibold" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{label}</T>
+        {sub ? <T size={12.5} color={colors.text3} numberOfLines={1}>{sub}</T> : null}
+      </View>
+    </PressScale>
+  );
+}
+
+/** List row: [left] title/subtitle [right]. Use `first`/`last` to build grouped lists. */
+export function Row({ left, title, subtitle, right, onPress, first = true, last = true, style, titleWeight = 'semibold', subtitleLines = 2, accessibilityLabel }) {
+  const { colors } = useTheme();
+  const radius = { tl: first ? 18 : 6, bl: last ? 18 : 6 };
   const content = (
     <>
       {left}
@@ -104,21 +176,73 @@ export function Row({ left, title, subtitle, right, onPress, first = true, last 
     </>
   );
   const s = [{
-    flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 16,
-    backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder,
+    flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 13, paddingHorizontal: 14, minHeight: 64,
+    ...glassSurface(colors),
+    ...(first ? null : { borderTopColor: colors.glassBorder }),
     borderTopLeftRadius: radius.tl, borderTopRightRadius: radius.tl, borderBottomLeftRadius: radius.bl, borderBottomRightRadius: radius.bl,
   }, style];
-  if (onPress) return <PressScale onPress={onPress} accessibilityRole="button" style={s}>{content}</PressScale>;
+  if (onPress) {
+    return (
+      <PressScale onPress={onPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel} scaleTo={0.985} style={s}>{content}</PressScale>
+    );
+  }
   return <View style={s}>{content}</View>;
+}
+
+/** Section heading that sits on the screen, above its cards (web: SectionHead + "Ver todo →"). */
+export function SectionHead({ title, action, onAction, icon: Icon, count, style }) {
+  const { colors } = useTheme();
+  return (
+    <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, minHeight: 32 }, style]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+        {Icon ? <Icon size={18} color={colors.accentFg} strokeWidth={2} /> : null}
+        <T size={18} weight="semibold" accessibilityRole="header" numberOfLines={1} style={{ flexShrink: 1 }}>{title}</T>
+        {count != null ? (
+          <View style={{ minWidth: 22, height: 22, paddingHorizontal: 7, borderRadius: 11, backgroundColor: colors.neutralSoft, alignItems: 'center', justifyContent: 'center' }}>
+            <T size={11.5} weight="bold" color={colors.text2} style={{ lineHeight: 14 }}>{count}</T>
+          </View>
+        ) : null}
+      </View>
+      {action ? (
+        <Pressable onPress={onAction} hitSlop={10} accessibilityRole="button"
+          style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 4, height: 32, paddingHorizontal: 12, borderRadius: 16, backgroundColor: pressed ? colors.accentSoft : 'transparent' })}>
+          <T size={13.5} weight="semibold" color={colors.accentFg}>{action}</T>
+          <ArrowRight size={14} color={colors.accentFg} strokeWidth={2.2} />
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+/** Thin progress bar; `gradient` paints the fill with the CTA gradient (web: workday bar). */
+export function ProgressBar({ value = 0, color, track, height = 6, gradient, accessibilityLabel }) {
+  const { colors } = useTheme();
+  const pct = Math.max(0, Math.min(100, Number(value) || 0));
+  return (
+    <View
+      accessibilityRole="progressbar"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityValue={{ min: 0, max: 100, now: Math.round(pct) }}
+      style={{ height, borderRadius: height / 2, backgroundColor: track || colors.segTrack, overflow: 'hidden' }}
+    >
+      {pct > 0 ? (
+        <View style={{ width: `${pct}%`, height, borderRadius: height / 2, backgroundColor: gradient ? 'transparent' : (color || colors.accent), overflow: 'hidden' }}>
+          {gradient ? <GradientFill radius={height / 2} colors={[BRAND.blue, '#5B7CFF', '#7AA2FF']} /> : null}
+        </View>
+      ) : null}
+    </View>
+  );
 }
 
 export function EmptyState({ icon: Icon = Inbox, title, message, action }) {
   const { colors } = useTheme();
   return (
     <View style={{ alignItems: 'center', paddingVertical: 36, paddingHorizontal: 24, gap: 10 }}>
-      <IconTile icon={Icon} tone="accent" size={56} radius={18} />
-      <T size={17} weight="semibold" style={{ textAlign: 'center' }}>{title}</T>
-      {message ? <T size={14} color={colors.text3} style={{ textAlign: 'center' }}>{message}</T> : null}
+      <View style={{ width: 64, height: 64, ...leafRadii(64), backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
+        <Icon size={28} color={colors.accentFg} strokeWidth={1.8} />
+      </View>
+      <T size={17} weight="semibold" align="center">{title}</T>
+      {message ? <T size={14} color={colors.text3} align="center" style={{ maxWidth: 300 }}>{message}</T> : null}
       {action ? <View style={{ marginTop: 6 }}>{action}</View> : null}
     </View>
   );
@@ -127,7 +251,7 @@ export function EmptyState({ icon: Icon = Inbox, title, message, action }) {
 export function Loading({ label = 'Cargando…' }) {
   const { colors } = useTheme();
   return (
-    <View style={{ paddingVertical: 40, alignItems: 'center', gap: 12 }}>
+    <View style={{ paddingVertical: 40, alignItems: 'center', gap: 12 }} accessibilityRole="progressbar" accessibilityLabel={label}>
       <ActivityIndicator color={colors.accent} />
       <T size={13} color={colors.text3}>{label}</T>
     </View>
@@ -138,9 +262,12 @@ export function Loading({ label = 'Cargando…' }) {
 export function Banner({ tone = 'accent', title, children, icon }) {
   const { colors } = useTheme();
   const [bg, fg] = toneOf(colors, tone);
-  const Icon = icon || (tone === 'danger' || tone === 'rose' ? AlertTriangle : tone === 'amber' || tone === 'warning' ? AlertTriangle : Info);
+  const Icon = icon || (tone === 'danger' || tone === 'rose' || tone === 'amber' || tone === 'warning' ? AlertTriangle : Info);
   return (
-    <View style={{ flexDirection: 'row', gap: 10, padding: 14, borderRadius: 18, backgroundColor: bg }}>
+    <View
+      accessibilityRole={tone === 'danger' || tone === 'rose' ? 'alert' : undefined}
+      style={{ flexDirection: 'row', gap: 10, padding: 14, borderRadius: 16, backgroundColor: bg }}
+    >
       <Icon size={18} color={fg} style={{ marginTop: 1 }} />
       <View style={{ flex: 1, gap: 2 }}>
         {title ? <T size={14} weight="semibold" color={fg}>{title}</T> : null}
@@ -154,14 +281,15 @@ export function Checkbox({ checked, onChange, label, disabled }) {
   const { colors } = useTheme();
   return (
     <Pressable
-      onPress={() => !disabled && onChange(!checked)}
+      onPress={() => { if (!disabled) { Haptics.selectionAsync().catch(() => {}); onChange(!checked); } }}
       accessibilityRole="checkbox"
       accessibilityState={{ checked, disabled }}
-      style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', opacity: disabled ? 0.5 : 1 }}
+      hitSlop={6}
+      style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', opacity: disabled ? 0.5 : 1, minHeight: 28 }}
     >
       <View style={{
         width: 24, height: 24, borderRadius: 8, marginTop: 1, alignItems: 'center', justifyContent: 'center',
-        backgroundColor: checked ? colors.accent : 'transparent', borderWidth: checked ? 0 : 1.5, borderColor: colors.text3,
+        backgroundColor: checked ? colors.accent : colors.inputBg, borderWidth: checked ? 0 : 1.5, borderColor: colors.glassBorderStrong,
       }}
       >
         {checked ? <Check size={16} color={colors.onAccent} strokeWidth={3} /> : null}
@@ -173,18 +301,22 @@ export function Checkbox({ checked, onChange, label, disabled }) {
 
 export function Stepper({ value, onChange, min = 0, max = 999, step = 1, format = (v) => String(v), label }) {
   const { colors } = useTheme();
-  const btn = (txt, next, a11y, filled) => (
-    <PressScale
-      onPress={() => { Haptics.selectionAsync().catch(() => {}); onChange(Math.max(min, Math.min(max, next))); }}
-      accessibilityRole="button"
-      accessibilityLabel={a11y}
-      style={{ width: 44, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: filled ? colors.segOn : 'transparent' }}
-    >
-      <T size={20} weight="medium">{txt}</T>
-    </PressScale>
-  );
+  const btn = (txt, next, a11y, filled) => {
+    const blocked = next < min || next > max;
+    return (
+      <PressScale
+        onPress={() => { Haptics.selectionAsync().catch(() => {}); onChange(Math.max(min, Math.min(max, next))); }}
+        disabled={blocked}
+        accessibilityRole="button"
+        accessibilityLabel={a11y}
+        style={{ width: 44, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: filled ? colors.accent : colors.glassFill }}
+      >
+        <T size={20} weight="medium" color={filled ? colors.onAccent : colors.text} style={{ lineHeight: 24 }}>{txt}</T>
+      </PressScale>
+    );
+  };
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, padding: 4, borderRadius: 14, backgroundColor: colors.segTrack }}
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, padding: 4, borderRadius: 24, backgroundColor: colors.segTrack }}
       accessibilityLabel={label}>
       {btn('−', value - step, 'Menos', false)}
       <T mono weight="semibold" size={15} style={{ minWidth: 40, textAlign: 'center' }}>{format(value)}</T>
@@ -196,17 +328,18 @@ export function Stepper({ value, onChange, min = 0, max = 999, step = 1, format 
 export function SwitchRow({ title, subtitle, value, onValueChange, disabled }) {
   const { colors } = useTheme();
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 14, backgroundColor: colors.glass }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 14, minHeight: 56 }}>
       <View style={{ flex: 1, gap: 2 }}>
-        <T size={15}>{title}</T>
+        <T size={15} weight="medium">{title}</T>
         {subtitle ? <T size={12.5} color={colors.text3}>{subtitle}</T> : null}
       </View>
       <Switch
         value={value}
         onValueChange={onValueChange}
         disabled={disabled}
-        trackColor={{ false: colors.segTrack, true: '#34C77B' }}
+        trackColor={{ false: colors.segTrack, true: colors.accent }}
         thumbColor="#FFFFFF"
+        ios_backgroundColor={colors.segTrack}
         accessibilityLabel={title}
       />
     </View>
@@ -219,19 +352,18 @@ export function Sheet({ visible, onClose, title, children, footer }) {
   const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>
-      <Pressable style={{ flex: 1, backgroundColor: colors.overlay }} onPress={onClose} accessibilityLabel="Cerrar" />
+      <Pressable style={{ flex: 1, backgroundColor: colors.overlay }} onPress={onClose} accessibilityRole="button" accessibilityLabel="Cerrar" />
       <View style={{
         maxHeight: '90%', width: '100%', maxWidth: 560, alignSelf: 'center', backgroundColor: colors.sheetBg,
-        borderTopLeftRadius: 30, borderTopRightRadius: 30, borderTopWidth: 1, borderColor: colors.glassBorderStrong,
-        paddingTop: 10, paddingBottom: Math.max(insets.bottom, 12) + 12, shadowColor: '#000000',
-        shadowOffset: { width: 0, height: -8 }, shadowOpacity: 0.35, shadowRadius: 22, elevation: 20,
+        borderTopLeftRadius: 28, borderTopRightRadius: 28, borderTopWidth: 1, borderColor: colors.glassBorder,
+        paddingTop: 10, paddingBottom: Math.max(insets.bottom, 12) + 12,
       }}
       >
-        <View style={{ alignSelf: 'center', width: 40, height: 5, borderRadius: 3, backgroundColor: colors.text3, opacity: 0.5 }} />
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6 }}>
-          <T size={22} weight="semibold" style={{ flex: 1 }}>{title}</T>
+        <View style={{ alignSelf: 'center', width: 36, height: 5, borderRadius: 3, backgroundColor: colors.glassBorderStrong }} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6 }}>
+          <T size={20} weight="semibold" style={{ flex: 1 }} accessibilityRole="header">{title}</T>
           <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Cerrar" hitSlop={8}
-            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.glassStrong, alignItems: 'center', justifyContent: 'center' }}>
+            style={({ pressed }) => ({ width: 36, height: 36, borderRadius: 18, backgroundColor: pressed ? colors.segTrack : colors.glassStrong, alignItems: 'center', justifyContent: 'center' })}>
             <X size={18} color={colors.text} />
           </Pressable>
         </View>
@@ -244,9 +376,9 @@ export function Sheet({ visible, onClose, title, children, footer }) {
   );
 }
 
-export function Divider() {
+export function Divider({ inset = 0 }) {
   const { colors } = useTheme();
-  return <View style={{ height: 1, backgroundColor: colors.divider }} />;
+  return <View style={{ height: 1, marginLeft: inset, backgroundColor: colors.divider }} />;
 }
 
 /** Key/value line used in detail screens. */

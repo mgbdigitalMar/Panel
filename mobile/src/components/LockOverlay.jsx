@@ -58,7 +58,6 @@ export default function LockOverlay() {
             alignSelf: 'center',
             borderRadius: 32, padding: 22, paddingTop: 28, gap: 18, alignItems: 'center',
             backgroundColor: colors.sheetBg, borderWidth: 1, borderColor: colors.glassBorderStrong,
-            shadowColor: '#000', shadowOpacity: 0.5, shadowRadius: 40, shadowOffset: { width: 0, height: 30 }, elevation: 20,
           }}
         >
           <View>

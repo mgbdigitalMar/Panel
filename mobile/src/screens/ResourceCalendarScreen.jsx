@@ -240,13 +240,6 @@ export default function ResourceCalendarScreen() {
                     borderWidth: on ? 1.5 : 1,
                     borderColor: on ? colors.accentBorder : isToday ? colors.accent : colors.glassBorder,
                     opacity: past && !on ? 0.55 : 1,
-                    ...(on ? {
-                      shadowColor: colors.accent,
-                      shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.35,
-                      shadowRadius: 8,
-                      elevation: 4,
-                    } : null),
                   }}
                 >
                   <T
@@ -396,7 +389,7 @@ export default function ResourceCalendarScreen() {
                       accessibilityLabel={fmtDayShort(d)}
                       style={{
                         height: 46, borderRadius: 12, alignItems: 'center', justifyContent: 'center', gap: 4,
-                        backgroundColor: isToday ? colors.chipOnBg : inMonth && !weekend ? colors.glass : 'transparent',
+                        backgroundColor: isToday ? colors.chipOnBg : inMonth && !weekend ? colors.glassStrong : 'transparent',
                       }}
                     >
                       <T mono weight="semibold" size={14} color={isToday ? colors.chipOnText : !inMonth ? 'transparent' : weekend ? colors.muted : colors.text}>{d.getDate()}</T>

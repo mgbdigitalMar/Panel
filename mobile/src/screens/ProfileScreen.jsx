@@ -15,6 +15,7 @@ import { GlassInput } from '../components/common/GlassInput';
 import { GlassButton } from '../components/common/GlassButton';
 import { T, Label } from '../components/common/Text';
 import { Avatar, InfoLine, Segmented, IconTile, Banner } from '../components/common/UI';
+import { BrandPanel, BrandTag, ON_BRAND } from '../components/common/Brand';
 import { WORK_MODES } from './EmployeesScreen';
 import { MIN_PASSWORD, StrengthMeter } from './ChangePasswordScreen';
 import { fmtDate } from '../utils/format';
@@ -57,11 +58,20 @@ export default function ProfileScreen() {
   return (
     <Screen>
       <Header back title="" />
-      <View style={{ alignItems: 'center', gap: 8 }}>
-        <Avatar name={user?.name} initials={user?.avatar} size={84} />
-        <T size={24} weight="semibold" style={{ textAlign: 'center' }}>{user?.name}</T>
-        <T size={14} color={colors.text3}>{user?.position || (user?.role === 'admin' ? 'Administrador' : 'Empleado')}</T>
-      </View>
+
+      {/* Identity: the brand panel with the person's leaf avatar (web ProfilePage) */}
+      <BrandPanel padding={22} style={{ gap: 16 }}>
+        <Avatar name={user?.name} initials={user?.avatar} src={user?.avatarUrl} size={76} ring="rgba(255,255,255,0.28)" />
+        <View style={{ gap: 4 }}>
+          <T size={24} weight="semibold" color={ON_BRAND.text} accessibilityRole="header">{user?.name}</T>
+          <T size={14} color={ON_BRAND.text2}>{user?.position || (user?.role === 'admin' ? 'Administrador' : 'Empleado')}</T>
+        </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+          {user?.dept ? <BrandTag label={user.dept} /> : null}
+          <BrandTag label={user?.role === 'admin' ? 'Administrador' : 'Empleado'} />
+          <BrandTag label={WORK_MODES[user?.workMode || 'Office']?.label || 'Oficina'} />
+        </View>
+      </BrandPanel>
 
       <GlassCard padding={0}>
         <InfoLine label="Email" value={user?.email} />

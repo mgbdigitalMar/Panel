@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { View, Pressable } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Animated, View, Pressable } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Home, CalendarDays, Inbox, Timer, LayoutGrid } from 'lucide-react-native';
@@ -8,7 +8,10 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { T } from '../components/common/Text';
+import { GlassFill } from '../components/common/LiquidGlass';
+import { useReduceMotion } from '../components/common/AuthBackdrop';
 import { usePendingApprovals } from '../hooks/usePendingApprovals';
+import { TAB_BAR_HEIGHT } from './tabBarMetrics';
 import DashboardScreen from '../screens/DashboardScreen';
 import ReservationsScreen from '../screens/ReservationsScreen';
 import RequestsScreen from '../screens/RequestsScreen';
@@ -25,132 +28,95 @@ const TABS = [
   { name: 'Settings', label: 'Más', icon: LayoutGrid, component: SettingsScreen },
 ];
 
-/** Floating liquid glass tab bar with elevated island layout. */
+/** One tab: the active one gets a solid accent pill that springs in behind its icon. */
+function TabItem({ tab, focused, badge, onPress, onLongPress }) {
+  const { colors } = useTheme();
+  const reduce = useReduceMotion();
+  const [on] = useState(() => new Animated.Value(focused ? 1 : 0));
+
+  useEffect(() => {
+    if (reduce) { on.setValue(focused ? 1 : 0); return; }
+    Animated.spring(on, { toValue: focused ? 1 : 0, damping: 18, stiffness: 260, mass: 0.7, useNativeDriver: true }).start();
+  }, [focused, reduce, on]);
+
+  const Icon = tab.icon;
+  return (
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: focused }}
+      accessibilityLabel={badge ? `${tab.label}, ${badge} pendientes` : tab.label}
+      style={{ flex: 1, height: '100%', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+    >
+      <View style={{ width: 54, height: 32, alignItems: 'center', justifyContent: 'center' }}>
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: 'absolute', top: 0, left: 0, width: 54, height: 32, borderRadius: 16, backgroundColor: colors.navActive,
+            opacity: on,
+            transform: [{ scaleX: on.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1] }) }],
+          }}
+        />
+        <Icon size={21} color={focused ? colors.navActiveIcon : colors.text3} strokeWidth={focused ? 2.2 : 1.9} />
+        {badge ? (
+          <View
+            style={{
+              position: 'absolute', top: -4, right: 4, minWidth: 18, height: 18, paddingHorizontal: 4, borderRadius: 9,
+              backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.bg,
+            }}
+          >
+            <T size={9.5} weight="bold" color="#FFFFFF" style={{ lineHeight: 11 }}>{badge > 99 ? '99+' : badge}</T>
+          </View>
+        ) : null}
+      </View>
+      <T
+        size={11}
+        weight={focused ? 'semibold' : 'medium'}
+        color={focused ? colors.text : colors.text3}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.8}
+        maxFontSizeMultiplier={1.15}
+      >
+        {tab.label}
+      </T>
+    </Pressable>
+  );
+}
+
+/** Floating liquid-glass tab bar above the home indicator. No shadow. */
 function TabBar({ state, navigation, badges }) {
-  const { colors, theme } = useTheme();
   const insets = useSafeAreaInsets();
   return (
-    <View
-      pointerEvents="box-none"
-      style={{
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        bottom: 0,
-        alignItems: 'center',
-      }}
-    >
+    <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, alignItems: 'center', paddingHorizontal: Math.max(12, insets.left, insets.right) }}>
       <View
         accessibilityRole="tablist"
         style={{
-          width: '92%',
-          maxWidth: 440,
-          marginBottom: Math.max(insets.bottom, 10) + 4,
+          width: '100%',
+          maxWidth: 480,
+          height: TAB_BAR_HEIGHT,
+          marginBottom: Math.max(insets.bottom, 10),
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'space-around',
-          paddingVertical: 8,
-          paddingHorizontal: 6,
-          backgroundColor: colors.navBg,
-          borderRadius: 32,
-          borderWidth: 1.2,
-          borderColor: colors.navBorder || colors.glassBorderStrong,
-          borderTopColor: colors.navBorderTop || colors.glassBorderStrong,
-          shadowColor: theme === 'dark' ? '#000000' : '#11141B',
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: theme === 'dark' ? 0.55 : 0.14,
-          shadowRadius: 26,
-          elevation: 16,
-          overflow: 'hidden',
+          paddingHorizontal: 4,
+          borderRadius: TAB_BAR_HEIGHT / 2,
         }}
       >
-        {/* Specular glass reflection line at top */}
-        <View
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 20,
-            right: 20,
-            height: 1.2,
-            backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.95)',
-            borderRadius: 1,
-          }}
-        />
+        <GlassFill radius={TAB_BAR_HEIGHT / 2} />
         {state.routes.map((route, index) => {
           const tab = TABS.find((t) => t.name === route.name);
           const focused = state.index === index;
-          const Icon = tab.icon;
-          const badge = badges[route.name];
           const onPress = () => {
             const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
             if (!focused && !event.defaultPrevented) {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+              Haptics.selectionAsync().catch(() => {});
               navigation.navigate(route.name);
             }
           };
+          const onLongPress = () => navigation.emit({ type: 'tabLongPress', target: route.key });
           return (
-            <Pressable
-              key={route.key}
-              onPress={onPress}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: focused }}
-              accessibilityLabel={badge ? `${tab.label}, ${badge} pendientes` : tab.label}
-              style={{ flex: 1, alignItems: 'center', gap: 2, paddingVertical: 2 }}
-            >
-              <View
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: focused ? colors.navActive : 'transparent',
-                  borderWidth: focused ? 1.5 : 0,
-                  borderColor: focused ? colors.accentBorder : 'transparent',
-                  ...(focused ? {
-                    shadowColor: colors.accent,
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: theme === 'dark' ? 0.35 : 0.15,
-                    shadowRadius: 6,
-                    elevation: 3,
-                  } : null),
-                }}
-              >
-                <Icon size={20} color={focused ? colors.accent : colors.text3} strokeWidth={focused ? 2.3 : 1.8} />
-                {badge ? (
-                  <View
-                    style={{
-                      position: 'absolute',
-                      top: -2,
-                      right: -2,
-                      minWidth: 16,
-                      height: 16,
-                      paddingHorizontal: 4,
-                      borderRadius: 8,
-                      backgroundColor: colors.danger,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderWidth: 1.5,
-                      borderColor: colors.navBg,
-                    }}
-                  >
-                    <T size={9.5} weight="bold" color="#FFFFFF" style={{ lineHeight: 11 }}>
-                      {badge > 99 ? '99+' : badge}
-                    </T>
-                  </View>
-                ) : null}
-              </View>
-              <T
-                size={11}
-                weight={focused ? 'semibold' : 'medium'}
-                color={focused ? colors.accent : colors.text3}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-              >
-                {tab.label}
-              </T>
-            </Pressable>
+            <TabItem key={route.key} tab={tab} focused={focused} badge={badges[route.name]} onPress={onPress} onLongPress={onLongPress} />
           );
         })}
       </View>

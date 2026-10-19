@@ -14,6 +14,7 @@ import { GlassCard } from '../components/common/GlassCard';
 import { GlassInput, DateField } from '../components/common/GlassInput';
 import { GlassButton } from '../components/common/GlassButton';
 import { PressScale } from '../components/common/Pressable';
+import { GlassFill } from '../components/common/LiquidGlass';
 import { FileField } from '../components/common/FileField';
 import { T } from '../components/common/Text';
 import { Banner, Checkbox } from '../components/common/UI';
@@ -52,43 +53,30 @@ const CONDITIONS = {
 
 const TYPE_ICONS = Object.fromEntries(TYPES.map((t) => [t.id, requestIcon(t.id)]));
 
+/** Request type: a liquid-glass tile with the full name; the chosen one turns accent. Half width, two per row. */
 function TypeTile({ type, active, onPress }) {
   const { colors } = useTheme();
   const Icon = TYPE_ICONS[type.id];
+  const radius = 18;
   return (
     <PressScale
       onPress={onPress}
       accessibilityRole="radio"
       accessibilityState={{ checked: active }}
-      accessibilityLabel={type.fullLabel || type.label}
+      accessibilityLabel={type.fullLabel}
+      scaleTo={0.97}
       style={{
-        flex: 1,
-        minWidth: 0,
-        height: 78,
-        borderRadius: 18,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 6,
-        paddingVertical: 10,
-        paddingHorizontal: 4,
-        backgroundColor: colors.glass,
-        borderWidth: active ? 1.5 : 1,
-        borderColor: active ? colors.accentBorder : colors.glassBorder,
+        flexGrow: 1, flexBasis: '45%', minHeight: 60, borderRadius: radius,
+        flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, paddingHorizontal: 12,
+        ...(active ? { backgroundColor: colors.accentSoft, borderWidth: 1.5, borderColor: colors.accent } : null),
       }}
     >
-      <View style={{ position: 'relative' }}>
-        <Icon size={22} color={active ? colors.accent : colors.text3} strokeWidth={active ? 2.2 : 1.8} />
+      {active ? null : <GlassFill radius={radius} sheen={false} />}
+      <View style={{ width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: active ? colors.accent : colors.neutralSoft }}>
+        <Icon size={18} color={active ? colors.onAccent : colors.text2} strokeWidth={2} />
       </View>
-      <T
-        size={11.5}
-        weight={active ? 'bold' : 'medium'}
-        color={active ? colors.accent : colors.text}
-        numberOfLines={1}
-        align="center"
-        adjustsFontSizeToFit
-        style={{ maxWidth: '100%' }}
-      >
-        {type.label}
+      <T size={14} weight="semibold" color={active ? colors.accentFg : colors.text} numberOfLines={2} style={{ flex: 1 }}>
+        {type.fullLabel}
       </T>
     </PressScale>
   );
@@ -207,7 +195,7 @@ export default function NewRequestScreen() {
     >
       <ModalHeader title="Nueva solicitud" />
 
-      <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', gap: 8 }}>
+      <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {TYPES.map((t) => (
           <TypeTile key={t.id} type={t} active={type === t.id} onPress={() => changeType(t.id)} />
         ))}

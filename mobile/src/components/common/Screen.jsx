@@ -1,34 +1,41 @@
 import { memo } from 'react';
-import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Defs, RadialGradient, Stop, Circle } from 'react-native-svg';
+import Svg, { Defs, RadialGradient, Stop, Ellipse } from 'react-native-svg';
 import { useTheme } from '../../context/ThemeContext';
+import { TAB_BAR_HEIGHT } from '../../navigation/tabBarMetrics';
+
+// Content column: phones use the full width; tablets and landscape get a readable measure.
+export const CONTENT_MAX = 640;
+export const GUTTER = 20;
 
 /**
- * The design's two blurred colour blobs, drawn as radial gradients
- * (cheap on Android, unlike a real blur).
+ * Backdrop: the brand blue washing in from the top and teal from the right edge — the same hues
+ * as the web, laid out like the reference's colour bleed. Radial gradients, drawn once.
  */
 export const Glow = memo(function Glow({ variant = 'default' }) {
   const { colors } = useTheme();
-  const a = { cx: variant === 'login' ? 170 : 90, cy: variant === 'login' ? 150 : 40, r: 260 };
-  const b = { cx: 400, cy: variant === 'login' ? 340 : 220, r: 210 };
+  const { width } = useWindowDimensions();
+  const h = 760;
+  const a = { cx: variant === 'login' ? width * 0.5 : width * 0.3, cy: variant === 'login' ? 120 : -40, rx: width * 0.95, ry: 330 };
+  const b = { cx: width * 1.08, cy: variant === 'login' ? 420 : 340, rx: width * 0.6, ry: 300 };
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <Svg width="100%" height={620} viewBox="0 0 390 620" preserveAspectRatio="xMidYMin slice">
+      <Svg width={width} height={h}>
         <Defs>
           <RadialGradient id="ga" cx="50%" cy="50%" r="50%">
             <Stop offset="0" stopColor={colors.glowA} stopOpacity={colors.glowAOpacity} />
-            <Stop offset="0.55" stopColor={colors.glowA} stopOpacity={colors.glowAOpacity * 0.35} />
+            <Stop offset="0.45" stopColor={colors.glowA} stopOpacity={colors.glowAOpacity * 0.45} />
             <Stop offset="1" stopColor={colors.glowA} stopOpacity={0} />
           </RadialGradient>
           <RadialGradient id="gb" cx="50%" cy="50%" r="50%">
             <Stop offset="0" stopColor={colors.glowB} stopOpacity={colors.glowBOpacity} />
-            <Stop offset="0.55" stopColor={colors.glowB} stopOpacity={colors.glowBOpacity * 0.35} />
+            <Stop offset="0.45" stopColor={colors.glowB} stopOpacity={colors.glowBOpacity * 0.4} />
             <Stop offset="1" stopColor={colors.glowB} stopOpacity={0} />
           </RadialGradient>
         </Defs>
-        <Circle cx={a.cx} cy={a.cy} r={a.r} fill="url(#ga)" />
-        <Circle cx={b.cx} cy={b.cy} r={b.r} fill="url(#gb)" />
+        <Ellipse cx={a.cx} cy={a.cy} rx={a.rx} ry={a.ry} fill="url(#ga)" />
+        <Ellipse cx={b.cx} cy={b.cy} rx={b.rx} ry={b.ry} fill="url(#gb)" />
       </Svg>
     </View>
   );
@@ -45,19 +52,22 @@ export function Screen({
 }) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const bottomSpace = (footer ? 20 : tabBarSpace ? (104 + Math.max(insets.bottom, 12)) : 32) + (footer ? insets.bottom : 0);
+  const bottomSpace = (footer ? 20 : tabBarSpace ? (TAB_BAR_HEIGHT + Math.max(insets.bottom, 10) + 28) : 32 + insets.bottom) + (fab ? 64 : 0);
+  const gutter = padded ? Math.max(GUTTER, insets.left, insets.right) : 0;
 
   const content = scroll ? (
     <ScrollView
       ref={scrollRef}
       keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      showsVerticalScrollIndicator={false}
       contentContainerStyle={[
         {
           paddingTop: insets.top + 12,
           paddingBottom: bottomSpace,
-          paddingHorizontal: padded ? 20 : 0,
-          gap: 16,
-          maxWidth: 680,
+          paddingHorizontal: gutter,
+          gap: 18,
+          maxWidth: CONTENT_MAX + gutter * 2,
           width: '100%',
           alignSelf: 'center',
         },
@@ -71,7 +81,7 @@ export function Screen({
       {children}
     </ScrollView>
   ) : (
-    <View style={[{ flex: 1, paddingTop: insets.top + 12, paddingHorizontal: padded ? 20 : 0, maxWidth: 680, width: '100%', alignSelf: 'center' }, contentStyle]}>{children}</View>
+    <View style={[{ flex: 1, paddingTop: insets.top + 12, paddingHorizontal: gutter, maxWidth: CONTENT_MAX + gutter * 2, width: '100%', alignSelf: 'center' }, contentStyle]}>{children}</View>
   );
 
   const body = (
@@ -81,11 +91,11 @@ export function Screen({
       {fab}
       {footer ? (
         <View style={{
-          paddingHorizontal: 20, paddingTop: 14, paddingBottom: insets.bottom + 14, gap: 10,
+          paddingHorizontal: GUTTER, paddingTop: 14, paddingBottom: Math.max(insets.bottom, 8) + 14, gap: 10,
           backgroundColor: colors.navBg, borderTopWidth: 1, borderTopColor: colors.divider,
         }}
         >
-          <View style={{ maxWidth: 680, width: '100%', alignSelf: 'center', gap: 10 }}>
+          <View style={{ maxWidth: CONTENT_MAX, width: '100%', alignSelf: 'center', gap: 10 }}>
             {footer}
           </View>
         </View>

@@ -1,31 +1,40 @@
 import { ActivityIndicator, View } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
+import { BRAND } from '../../theme/tokens';
+import { GradientFill } from './Brand';
+import { GlassFill } from './LiquidGlass';
 import { PressScale } from './Pressable';
 import { T } from './Text';
 
-const SIZES = {
-  lg: { height: 54, radius: 17, font: 17, icon: 20, px: 22 },
-  md: { height: 48, radius: 16, font: 15, icon: 18, px: 18 },
-  sm: { height: 40, radius: 12, font: 14, icon: 16, px: 14 },
+// Pill buttons, like the web (--radius-full). Heights line up with the controls around them:
+// lg = text inputs (52), md = 48, sm = the 44 dp round icon buttons — never below the 44 dp touch minimum.
+export const BUTTON_SIZES = {
+  lg: { height: 52, font: 16, icon: 19, px: 22 },
+  md: { height: 48, font: 15, icon: 18, px: 20 },
+  sm: { height: 44, font: 14, icon: 17, px: 16 },
 };
 
 /**
- * Buttons from the design system.
- * variant: 'primary' (accent fill) | 'glass' | 'danger' | 'success' | 'ghost'
+ * Buttons from the design system. Flat — no drop shadows.
+ * variant: 'primary' (blue CTA gradient) | 'glass' (liquid glass) | 'danger' | 'success' | 'ghost'
+ * `color` gives a primary button a flat custom fill instead of the gradient.
  */
 export function GlassButton({
   title, onPress, variant = 'primary', size = 'md', icon: Icon, loading, disabled, style, color, accessibilityLabel, children,
 }) {
   const { colors } = useTheme();
-  const s = SIZES[size];
+  const s = BUTTON_SIZES[size];
+  const radius = s.height / 2;
   const v = {
-    primary: { bg: color || colors.accent, fg: colors.onAccent, border: 'transparent' },
-    glass: { bg: colors.glassStrong, fg: colors.text, border: colors.glassBorderStrong },
-    danger: { bg: colors.dangerSoft, fg: colors.dangerFg, border: 'transparent' },
-    success: { bg: colors.successSoft, fg: colors.successFg, border: 'transparent' },
-    ghost: { bg: 'transparent', fg: colors.accentFg, border: 'transparent' },
+    // A custom fill follows the theme's on-accent ink (dark ink on dark mode's pastel fills)
+    primary: { bg: color || BRAND.blue, fg: color ? colors.onAccent : '#FFFFFF' },
+    glass: { bg: 'transparent', fg: colors.text },
+    danger: { bg: colors.dangerSoft, fg: colors.dangerFg },
+    success: { bg: colors.successSoft, fg: colors.successFg },
+    ghost: { bg: 'transparent', fg: colors.accentFg },
   }[variant];
   const isDisabled = disabled || loading;
+  const gradient = variant === 'primary' && !color;
 
   return (
     <PressScale
@@ -36,25 +45,24 @@ export function GlassButton({
       accessibilityState={{ disabled: !!isDisabled, busy: !!loading }}
       style={[{
         height: s.height,
-        borderRadius: s.radius,
-        paddingHorizontal: s.px,
-        backgroundColor: v.bg,
-        borderWidth: v.border === 'transparent' ? 0 : 1,
-        borderColor: v.border,
+        minWidth: s.height,
+        borderRadius: radius,
+        paddingHorizontal: title ? s.px : 0,
+        backgroundColor: gradient ? 'transparent' : v.bg,
         alignItems: 'center',
         justifyContent: 'center',
         flexDirection: 'row',
-        gap: 10,
-      }, variant === 'primary' && !isDisabled && {
-        shadowColor: colors.accent, shadowOpacity: 0.35, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 4,
+        gap: 8,
       }, style]}
     >
+      {gradient ? <GradientFill radius={radius} /> : null}
+      {variant === 'glass' ? <GlassFill radius={radius} /> : null}
       {loading ? (
         <ActivityIndicator color={v.fg} />
       ) : (
         <>
           {Icon ? <Icon size={s.icon} color={v.fg} strokeWidth={2} /> : null}
-          {title ? <T size={s.font} weight="semibold" color={v.fg} numberOfLines={1}>{title}</T> : null}
+          {title ? <T size={s.font} weight="semibold" color={v.fg} numberOfLines={1} style={{ flexShrink: 1 }}>{title}</T> : null}
           {children}
         </>
       )}
@@ -62,7 +70,7 @@ export function GlassButton({
   );
 }
 
-/** Round icon-only button (back, close, bell…). 44 dp hit target. */
+/** Round liquid-glass icon button (back, close, bell…). 44 dp hit target. */
 export function IconButton({ icon: Icon, onPress, accessibilityLabel, size = 44, badge, variant = 'glass', style }) {
   const { colors } = useTheme();
   return (
@@ -70,22 +78,14 @@ export function IconButton({ icon: Icon, onPress, accessibilityLabel, size = 44,
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      hitSlop={6}
-      style={[{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: variant === 'glass' ? colors.glassStrong : 'transparent',
-        borderWidth: variant === 'glass' ? 1 : 0,
-        borderColor: colors.glassBorderStrong,
-      }, style]}
+      hitSlop={size < 44 ? (44 - size) / 2 + 2 : 4}
+      style={[{ width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center' }, style]}
     >
-      <Icon size={22} color={colors.text} strokeWidth={1.8} />
+      {variant === 'glass' ? <GlassFill radius={size / 2} sheen={false} /> : null}
+      <Icon size={size >= 44 ? 21 : 19} color={colors.text} strokeWidth={1.9} />
       {badge ? (
         <View style={{
-          position: 'absolute', top: -2, right: -2, minWidth: 18, height: 18, paddingHorizontal: 5, borderRadius: 9,
+          position: 'absolute', top: -3, right: -3, minWidth: 18, height: 18, paddingHorizontal: 5, borderRadius: 9,
           backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.bg,
         }}
         >

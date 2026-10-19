@@ -13,6 +13,7 @@ import { Banner } from '../components/common/UI';
 import { biometricSupport } from '../services/biometrics';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { firstName } from '../utils/format';
+import { glassSurface } from '../theme/tokens';
 
 /** Staggered fade-up for the screen's blocks, on the native driver. */
 function useEntrance(count, reduce) {
@@ -101,7 +102,8 @@ export default function LoginScreen() {
         </Animated.View>
 
         {/* Orb + heading */}
-        <Animated.View style={[{ alignItems: 'center', marginTop: -24 }, aOrb]}>
+        {/* Pulled up under the top bar: must not swallow taps meant for its buttons */}
+        <Animated.View pointerEvents="none" style={[{ alignItems: 'center', marginTop: -24 }, aOrb]}>
           <BrandOrb size={100} />
         </Animated.View>
 
@@ -115,7 +117,8 @@ export default function LoginScreen() {
         </Animated.View>
 
         {/* Form */}
-        <Animated.View style={[{ gap: 16, marginTop: 28 }, aForm]}>
+        {/* Form on a glass panel over the animated backdrop (plain glass: the entrance fade would stop native glass) */}
+        <Animated.View style={[{ gap: 16, marginTop: 28, padding: 18, borderRadius: 28, ...glassSurface(colors) }, aForm]}>
           {!isSupabaseConfigured ? (
             <Banner tone="danger" title="Configuración incompleta">Falta la conexión con el servidor (EXPO_PUBLIC_SUPABASE_URL / KEY).</Banner>
           ) : null}
@@ -160,7 +163,7 @@ export default function LoginScreen() {
           {canBio ? (
             <>
               <Divider label="o continúa con" />
-              <GlassButton title={`Entrar con ${bio.label}`} icon={Fingerprint} variant="glass" size="md" onPress={bioLogin} />
+              <GlassButton title={`Entrar con ${bio.label}`} icon={Fingerprint} variant="glass" size="lg" onPress={bioLogin} />
             </>
           ) : null}
         </Animated.View>

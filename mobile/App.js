@@ -4,10 +4,13 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Geist_400Regular } from '@expo-google-fonts/geist/400Regular';
-import { Geist_500Medium } from '@expo-google-fonts/geist/500Medium';
-import { Geist_600SemiBold } from '@expo-google-fonts/geist/600SemiBold';
-import { Geist_700Bold } from '@expo-google-fonts/geist/700Bold';
+import { Inter_400Regular } from '@expo-google-fonts/inter/400Regular';
+import { Inter_500Medium } from '@expo-google-fonts/inter/500Medium';
+import { Inter_600SemiBold } from '@expo-google-fonts/inter/600SemiBold';
+import { Inter_700Bold } from '@expo-google-fonts/inter/700Bold';
+import { Poppins_500Medium } from '@expo-google-fonts/poppins/500Medium';
+import { Poppins_600SemiBold } from '@expo-google-fonts/poppins/600SemiBold';
+import { Poppins_700Bold } from '@expo-google-fonts/poppins/700Bold';
 import { GeistMono_500Medium } from '@expo-google-fonts/geist-mono/500Medium';
 import { GeistMono_600SemiBold } from '@expo-google-fonts/geist-mono/600SemiBold';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
@@ -24,7 +27,8 @@ function Shell() {
   const { authLoading, touch, user, locked } = useAuth();
   const [navReady, setNavReady] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
-    Geist_400Regular, Geist_500Medium, Geist_600SemiBold, Geist_700Bold, GeistMono_500Medium, GeistMono_600SemiBold,
+    Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold,
+    Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold, GeistMono_500Medium, GeistMono_600SemiBold,
   });
   const fontsReady = fontsLoaded || !!fontError;
   const ready = fontsReady && themeReady && !authLoading;

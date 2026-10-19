@@ -34,7 +34,7 @@ function ToastItem({ toast, onDismiss }) {
       <Pressable
         onPress={() => { onDismiss(toast.id); toast.onPress?.(); }}
         accessibilityRole="alert"
-        style={[styles.toast, { backgroundColor: colors.sheetBg, borderColor: colors.glassBorderStrong, shadowColor: colors.shadow }]}
+        style={[styles.toast, { backgroundColor: colors.sheetBg, borderColor: colors.glassBorder, shadowColor: colors.shadow, shadowOpacity: Math.min(0.5, colors.shadowOpacity * 2) }]}
       >
         <View style={[styles.icon, { backgroundColor: bg }]}>
           <Icon size={18} color={fg} />
@@ -86,7 +86,7 @@ export function useToast() {
 }
 
 const styles = StyleSheet.create({
-  host: { position: 'absolute', left: 12, right: 12, gap: 8, zIndex: 1000, elevation: 1000 },
+  host: { position: 'absolute', left: 12, right: 12, gap: 8, alignItems: 'center', zIndex: 1000, elevation: 1000 },
   toast: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -95,7 +95,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 1,
     shadowRadius: 24,
     elevation: 12,
   },

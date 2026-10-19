@@ -48,8 +48,8 @@ export const GlassInput = forwardRef(function GlassInput({
             {...rest}
             style={[{
               minHeight: multiline ? 24 * rows + 24 : 52,
-              borderRadius: 16,
-              borderWidth: 1,
+              borderRadius: 14,
+              borderWidth: focused || error ? 1.5 : 1,
               borderColor: error ? colors.dangerFg : focused ? colors.accent : colors.inputBorder,
               backgroundColor: colors.inputBg,
               color: colors.text,
@@ -88,7 +88,7 @@ function PickerBox({ icon: Icon, text, placeholder, onPress, label }) {
       accessibilityRole="button"
       accessibilityLabel={label}
       style={{
-        height: 52, borderRadius: 16, borderWidth: 1, borderColor: colors.inputBorder, backgroundColor: colors.inputBg,
+        height: 52, borderRadius: 14, borderWidth: 1, borderColor: colors.inputBorder, backgroundColor: colors.inputBg,
         paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 10,
       }}
     >

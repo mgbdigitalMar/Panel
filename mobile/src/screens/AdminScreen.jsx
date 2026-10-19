@@ -13,6 +13,7 @@ import { useToast } from '../context/ToastContext';
 import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
 import { GlassButton } from '../components/common/GlassButton';
+import { GlassFill } from '../components/common/LiquidGlass';
 import { PressScale } from '../components/common/Pressable';
 import { Tag } from '../components/common/StatusBadge';
 import { T } from '../components/common/Text';
@@ -87,10 +88,10 @@ export default function AdminScreen() {
       position: 'absolute', left: 16, right: 16, bottom: insets.bottom + 16,
       maxWidth: 580, width: '100%', alignSelf: 'center',
       flexDirection: 'row', alignItems: 'center', gap: 10,
-      padding: 10, paddingLeft: 16, borderRadius: 22, backgroundColor: colors.sheetBg, borderWidth: 1, borderColor: colors.glassBorderStrong,
-      shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 10,
+      padding: 10, paddingLeft: 16, borderRadius: 22,
     }}
     >
+      <GlassFill radius={22} />
       <T size={14} weight="semibold" style={{ flex: 1 }} numberOfLines={1}>{selected.length} seleccionada{selected.length === 1 ? '' : 's'}</T>
       <GlassButton title="Rechazar" variant="danger" size="sm" disabled={busy} onPress={() => confirmBulk(false)} />
       <GlassButton title="Aprobar" size="sm" loading={busy} onPress={() => confirmBulk(true)} />

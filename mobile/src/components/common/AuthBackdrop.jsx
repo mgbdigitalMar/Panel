@@ -2,6 +2,7 @@ import { memo, useEffect, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Path, Pattern, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { useTheme } from '../../context/ThemeContext';
+import { LEAF_PATH, VEIN_PATH } from './Brand';
 
 /*
  * Animated backdrop for the auth screens.
@@ -12,9 +13,6 @@ import { useTheme } from '../../context/ThemeContext';
  * layers are cached as GPU textures. Reduce Motion turns every loop off.
  */
 
-// Leaf geometry, traced from the Margube mark (48×48 box) — same as the web loader
-const LEAF_PATH = 'M9.5 39.5C9.5 22 14.5 10 25 9.2L39.5 8.8V24C39.5 34 33 39.5 24 39.5Z';
-const VEIN_PATH = 'M10.5 38.5C12.5 31 16.5 26.8 22 24';
 
 const sine = Easing.inOut(Easing.sin);
 

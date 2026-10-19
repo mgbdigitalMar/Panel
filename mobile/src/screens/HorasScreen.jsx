@@ -10,12 +10,12 @@ import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
 import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
-import { GlassCard } from '../components/common/GlassCard';
 import { GlassButton, IconButton } from '../components/common/GlassButton';
 import { DateField } from '../components/common/GlassInput';
 import { Tag } from '../components/common/StatusBadge';
-import { T, Label } from '../components/common/Text';
+import { T } from '../components/common/Text';
 import { EmptyState, Segmented } from '../components/common/UI';
+import { BrandPanel, ON_BRAND } from '../components/common/Brand';
 import { hourStats, HOUR_LABEL, HOUR_TONE } from '../utils/domain';
 import { fmtHM, fmtHMSigned, parseDate, MONTHS_SHORT, toISODate, fmtDate } from '../utils/format';
 import { exportCsv } from '../services/files';
@@ -96,9 +96,9 @@ export default function HorasScreen() {
         title="Horas"
         right={(
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            {user?.role === 'admin' ? <IconButton icon={Users} size={40} onPress={() => navigation.navigate('AdminHours')} accessibilityLabel="Horas del equipo" /> : null}
+            {user?.role === 'admin' ? <IconButton icon={Users} onPress={() => navigation.navigate('AdminHours')} accessibilityLabel="Horas del equipo" /> : null}
             {rows.length ? (
-              <IconButton icon={Download} size={40} accessibilityLabel="Descargar CSV" onPress={async () => {
+              <IconButton icon={Download} accessibilityLabel="Descargar CSV" onPress={async () => {
                 try { await exportHoursCsv(rows, `horas-${toISODate(new Date())}.csv`); } catch (e) { toast.error(toUserMessage(e)); }
               }} />
             ) : null}
@@ -107,35 +107,35 @@ export default function HorasScreen() {
         )}
       />
 
-      <GlassCard radius={26} padding={20} strong style={{ gap: 14 }}>
-        <Label>Saldo aprobado{from || to ? ' · periodo filtrado' : ''}</Label>
+      <BrandPanel padding={20} style={{ gap: 14 }}>
+        <T size={12} weight="semibold" color={ON_BRAND.text2} upper>Saldo aprobado{from || to ? ' · periodo filtrado' : ''}</T>
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
-          <T mono weight="semibold" size={48} tracking={-2} style={{ lineHeight: 52 }} color={stats.balance < 0 ? colors.dangerFg : colors.text} numberOfLines={1} adjustsFontSizeToFit>
+          <T mono weight="semibold" size={48} style={{ lineHeight: 56, flexShrink: 1 }} color={stats.balance < 0 ? '#FB7185' : ON_BRAND.text} numberOfLines={1} adjustsFontSizeToFit>
             {fmtHMSigned(stats.balance)}
           </T>
-          <T size={15} color={colors.text3} style={{ paddingBottom: 8 }}>horas</T>
+          <T size={15} color={ON_BRAND.text3} style={{ paddingBottom: 10 }}>horas</T>
         </View>
-        <View style={{ flexDirection: 'row', height: 8, borderRadius: 4, overflow: 'hidden', gap: 2 }}>
-          <View style={{ flex: Math.max(0.0001, stats.credit / total), backgroundColor: colors.success }} />
-          <View style={{ flex: Math.max(0.0001, stats.debe / total), backgroundColor: colors.danger }} />
-          <View style={{ flex: Math.max(0.0001, stats.pending / total), backgroundColor: colors.warning }} />
+        <View style={{ flexDirection: 'row', height: 8, borderRadius: 4, overflow: 'hidden', gap: 2, backgroundColor: ON_BRAND.track }}>
+          {stats.credit > 0 ? <View style={{ flex: stats.credit / total, backgroundColor: '#34D399' }} /> : null}
+          {stats.debe > 0 ? <View style={{ flex: stats.debe / total, backgroundColor: '#FB7185' }} /> : null}
+          {stats.pending > 0 ? <View style={{ flex: stats.pending / total, backgroundColor: '#F5B544' }} /> : null}
         </View>
-        <View style={{ gap: 8 }}>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
           {[
-            ['Ganadas', `+${fmtHM(stats.credit)}`, colors.success],
-            ['Debo', `−${fmtHM(stats.debe)}`, colors.danger],
-            ['En revisión', `+${fmtHM(stats.pending)}`, colors.warning],
+            ['Ganadas', `+${fmtHM(stats.credit)}`, '#34D399'],
+            ['Debo', `−${fmtHM(stats.debe)}`, '#FB7185'],
+            ['En revisión', `+${fmtHM(stats.pending)}`, '#F5B544'],
           ].map(([label, value, c]) => (
-            <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View key={label} style={{ flex: 1, minWidth: 0, gap: 3 }} accessible accessibilityLabel={`${label}: ${value}`}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c }} />
-                <T size={14} color={colors.text2}>{label}</T>
+                <T size={12.5} color={ON_BRAND.text2} numberOfLines={1}>{label}</T>
               </View>
-              <T mono weight="semibold" size={14}>{value}</T>
+              <T mono weight="semibold" size={15} color={ON_BRAND.text} numberOfLines={1} adjustsFontSizeToFit>{value}</T>
             </View>
           ))}
         </View>
-      </GlassCard>
+      </BrandPanel>
 
       <Segmented value={filter} onChange={setFilter} height={40}
         options={[{ value: 'all', label: 'Todo' }, { value: 'ya', label: 'Ya' }, { value: 'bolsa', label: 'Bolsa' }, { value: 'debe', label: 'Debo' }]} />

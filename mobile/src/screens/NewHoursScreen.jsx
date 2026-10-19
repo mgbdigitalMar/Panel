@@ -75,7 +75,7 @@ export default function NewHoursScreen() {
               <T mono size={15} color={colors.text3}>{fmtHMSigned(balance)} → </T>{fmtHMSigned(after)}
             </T>
           </View>
-          <GlassButton title={CTA[mode]} size="lg" color={mode === 'ya' ? colors.success : mode === 'debe' ? colors.danger : colors.accent}
+          <GlassButton title={CTA[mode]} size="lg" color={mode === 'ya' ? colors.success : mode === 'debe' ? colors.danger : undefined}
             onPress={submit} loading={saving} disabled={!date || !reason.trim()} />
         </>
       )}

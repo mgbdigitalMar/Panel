@@ -44,8 +44,8 @@ export function FileField({ label, value, onChange, kind = 'any', camera = true,
         </View>
       ) : (
         <View style={{ flexDirection: 'row', gap: 10 }}>
-          <GlassButton title="Añadir archivo" icon={Paperclip} variant="glass" size="md" style={{ flex: 1 }} onPress={() => run(() => pickDocument(kind))} />
-          {camera ? <GlassButton title="Foto" icon={Camera} variant="glass" size="md" onPress={() => run(takePhoto)} /> : null}
+          <GlassButton title="Añadir archivo" icon={Paperclip} variant="glass" size="lg" style={{ flex: 1 }} onPress={() => run(() => pickDocument(kind))} />
+          {camera ? <GlassButton title="Foto" icon={Camera} variant="glass" size="lg" onPress={() => run(takePhoto)} /> : null}
         </View>
       )}
       {!value && hint ? <T size={12.5} color={colors.text3}>{hint}</T> : null}
