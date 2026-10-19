@@ -52,6 +52,7 @@ html {
 
 html, body {
   overflow-x: hidden;
+  overflow-x: clip;   /* clip keeps position: sticky working (hidden made body a scroll container) */
   min-height: 100%;
 }
 

@@ -8,7 +8,13 @@
 
   /* Phones scroll the window: a fixed full-screen layer here makes iOS 26 Safari paint solid
      strips under its toolbars. Scrolling with the page keeps them see-through. */
-  @media (max-width: 1023px) { position: absolute; }
+  @media (max-width: 1023px) {
+    position: absolute;
+    /* iOS 26 Safari colours the status bar and the area under its toolbar with the <html>
+       background: fade the glows out at both edges so the page meets those areas seamlessly */
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 120px, #000 calc(100% - 160px), transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 120px, #000 calc(100% - 160px), transparent 100%);
+  }
   z-index: 0;
   overflow: hidden;
   pointer-events: none;

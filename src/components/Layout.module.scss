@@ -28,6 +28,8 @@ $header-h-mobile: 64px;
 
   @media (max-width: 1023px) {
     grid-template-columns: minmax(0, 1fr);
+    /* Same colour as <html>: iOS 26 Safari paints the status bar with it at rest */
+    background: var(--bg);
   }
 }
 
@@ -483,10 +485,35 @@ $header-h-mobile: 64px;
     height: calc(#{$header-h-mobile} + env(safe-area-inset-top));
     padding: env(safe-area-inset-top) 12px 0;
     gap: 8px;
-    @include p.glass-chrome;
-    border-width: 0 0 1px;
-    box-shadow: none;
+    /* iOS 26 Safari turns a sticky bar that has its own background or backdrop-filter into a
+       solid strip under the status bar. It ignores pseudo-elements, so the glass lives on ::before. */
+    background: transparent;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      @include p.glass-chrome;
+      border-width: 0 0 1px;
+      box-shadow: none;
+    }
+
+    /* At the top of the page the bar is clear (matches <html>); the glass fades in as you scroll */
+    @supports (animation-timeline: scroll()) {
+      &::before {
+        opacity: 0;
+        animation: header-glass-in linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 48px;
+      }
+    }
   }
+}
+
+@keyframes header-glass-in {
+  to { opacity: 1; }
 }
 
 .headerLeft {
