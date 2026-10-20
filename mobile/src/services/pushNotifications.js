@@ -116,6 +116,15 @@ async function ensureChannel() {
  * @returns {Promise<{ ok: boolean, reason?: string }>}
  */
 export async function registerForPushNotificationsAsync(userId) {
+  lastPushRegistration = await registerDevice(userId);
+  if (!lastPushRegistration.ok && __DEV__) console.warn('[pushNotifications] not registered:', lastPushRegistration.reason);
+  return lastPushRegistration;
+}
+
+/** Result of the last registration attempt, shown in Ajustes (null = not attempted yet). */
+export let lastPushRegistration = null;
+
+async function registerDevice(userId) {
   try {
     if (isAndroidExpoGo || !NativeNotifications) {
       if (__DEV__) {

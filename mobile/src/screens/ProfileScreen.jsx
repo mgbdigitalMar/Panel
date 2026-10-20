@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { FileText, ChevronRight, KeyRound } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
+import { allowedWorkModes } from '@shared/services/workMode.js';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -24,8 +25,8 @@ export default function ProfileScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation();
   const toast = useToast();
-  const { user, setCurrentUser, changePassword } = useAuth();
-  const { documents } = useData();
+  const { user, changePassword } = useAuth();
+  const { documents, requests, setWorkMode } = useData();
   const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
   const [pwErr, setPwErr] = useState('');
   const [saving, setSaving] = useState(false);
@@ -35,11 +36,14 @@ export default function ProfileScreen() {
   const changeMode = async (mode) => {
     if (mode === (user?.workMode || 'Office')) return;
     setModeSaving(true);
-    const { error } = await setCurrentUser({ workMode: mode });
+    const { error } = await setWorkMode(user.id, mode);
     setModeSaving(false);
     if (error) toast.error(toUserMessage(error));
+    else if (mode === 'Office') toast.success('Has vuelto a la oficina', 'Se ha avisado a administración.');
     else toast.success('Modo de trabajo actualizado correctamente');
   };
+  // Remote / external need an approved request covering today
+  const allowedModes = allowedWorkModes(requests, user?.id);
 
   const savePassword = async () => {
     setPwErr('');
@@ -93,8 +97,12 @@ export default function ProfileScreen() {
       <View style={{ gap: 10 }}>
         <Label>Modo de trabajo{modeSaving ? ' · guardando…' : ''}</Label>
         <Segmented value={user?.workMode || 'Office'} onChange={changeMode} height={44}
-          options={Object.entries(WORK_MODES).map(([k, m]) => ({ value: k, label: m.label }))} />
-        <T size={12.5} color={colors.text3}>Se ajusta solo cuando tienes una solicitud de remoto o externo aprobada para hoy.</T>
+          options={Object.entries(WORK_MODES).map(([k, m]) => ({ value: k, label: m.label, disabled: modeSaving || !allowedModes.has(k) }))} />
+        <T size={12.5} color={colors.text3}>
+          {(user?.workMode || 'Office') === 'Office'
+            ? 'Remoto y externo se activan solos cuando administración aprueba tu solicitud para hoy.'
+            : 'Si vuelves antes a la oficina, elige Oficina: se avisará a administración.'}
+        </T>
       </View>
 
       <View style={{ gap: 10 }}>

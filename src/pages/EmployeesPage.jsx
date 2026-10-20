@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '../context';
+import { useAuth, useRequests } from '../context';
+import { allowedWorkModes } from '../../shared/services/workMode.js';
 import { Avatar, Badge, Card, StatCard, Section } from '../components/ui';
 import { Home, Building2, MapPin, LayoutGrid, List, Search } from 'lucide-react';
 import styles from './EmployeesPage.module.scss';
 import clsx from 'clsx';
-import { supabase } from '../utils/supabase';
 
 const WORK_MODES = {
   Office: { label: 'Oficina',   icon: Building2, color: 'var(--accent)',  bg: 'var(--accent-bg)'  },
@@ -26,7 +26,10 @@ function WorkModeBadge({ mode }) {
 }
 
 export default function EmployeesPage() {
-  const { user, employees, setEmployees, setCurrentUser } = useAuth();
+  const { user, employees, setEmployees } = useAuth();
+  const { requests, changeWorkMode } = useRequests();
+  // Admins set any mode; an employee needs an approved request for remote / external
+  const modeAllowed = (emp, mode) => user.role === 'admin' || allowedWorkModes(requests, emp.id).has(mode);
   const [filter, setFilter] = useState('all');
   const [view, setView] = useState('grid');
 
@@ -49,25 +52,15 @@ export default function EmployeesPage() {
   }, [employees, filter, query]);
 
   const handleWorkModeChange = async (empId, mode) => {
-    try {
-      // Optimistic local update
-      setEmployees(employees.map(e => e.id === empId ? { ...e, workMode: mode } : e));
-      if (empId === user?.id) {
-        await setCurrentUser({ id: empId, workMode: mode });
-      } else {
-        // Persist to Supabase with confirmation
-        const { error } = await supabase
-          .from('profiles')
-          .update({ work_mode: mode })
-          .eq('id', empId);
-        if (error) throw error;
-      }
-      console.log('Work mode updated successfully');
-    } catch (err) {
-      console.error('Failed to update work_mode:', err);
-      // Revert on error
-      setEmployees(prev => prev.map(e => e.id === empId ? { ...e, workMode: 'Office' } : e));
-      alert(`Error: ${err.message}`);
+    const previous = employees.find(e => e.id === empId)?.workMode;
+    if (mode === previous) return;
+    // Optimistic local update
+    setEmployees(prev => prev.map(e => e.id === empId ? { ...e, workMode: mode } : e));
+    const { error } = await changeWorkMode(empId, mode);
+    if (error) {
+      console.error('Failed to update work_mode:', error);
+      setEmployees(prev => prev.map(e => e.id === empId ? { ...e, workMode: previous } : e));
+      alert(`Error: ${error.message}`);
     }
   };
 
@@ -185,6 +178,7 @@ export default function EmployeesPage() {
                         <button
                           key={key}
                           onClick={() => handleWorkModeChange(emp.id, key)}
+                          disabled={emp.workMode !== key && !modeAllowed(emp, key)}
                           className={clsx(styles.modeBtn, { [styles.modeBtnActive]: emp.workMode === key })}
                           style={emp.workMode === key ? { background: meta.bg, color: meta.color, borderColor: meta.color } : {}}
                           title={meta.label}
@@ -233,7 +227,7 @@ export default function EmployeesPage() {
                             className={styles.modeSelect}
                           >
                             {Object.entries(WORK_MODES).map(([k, m]) => (
-                              <option key={k} value={k}>{m.label}</option>
+                              <option key={k} value={k} disabled={!modeAllowed(emp, k)}>{m.label}</option>
                             ))}
                           </select>
                         ) : (

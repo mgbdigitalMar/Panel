@@ -4,6 +4,7 @@ import { Linking, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Mail, CalendarDays, UserX, Pencil } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
+import { allowedWorkModes } from '@shared/services/workMode.js';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -22,8 +23,8 @@ export default function EmployeeDetailScreen() {
   const navigation = useNavigation();
   const { params } = useRoute();
   const toast = useToast();
-  const { user, employees, setCurrentUser } = useAuth();
-  const { setWorkMode } = useData();
+  const { user, employees } = useAuth();
+  const { requests, setWorkMode } = useData();
   const [saving, setSaving] = useState(false);
   const emp = employees.find((e) => String(e.id) === String(params?.id));
 
@@ -40,12 +41,14 @@ export default function EmployeeDetailScreen() {
   const isAdmin = user?.role === 'admin';
   const canEdit = isMe || isAdmin;
   const wm = workModeOf(emp.workMode);
+  // Admins set any mode; an employee needs an approved request for remote / external
+  const allowedModes = isAdmin ? null : allowedWorkModes(requests, emp.id);
   const wmColor = wm.tone === 'green' ? colors.successFg : wm.tone === 'amber' ? colors.warningFg : colors.accentFg;
 
   const changeMode = async (mode) => {
     if (mode === (emp.workMode || 'Office')) return;
     setSaving(true);
-    const { error } = isMe ? await setCurrentUser({ workMode: mode }) : await setWorkMode(emp.id, mode);
+    const { error } = await setWorkMode(emp.id, mode);
     setSaving(false);
     if (error) toast.error(toUserMessage(error));
     else toast.success('Modo de trabajo actualizado');
@@ -102,7 +105,7 @@ export default function EmployeeDetailScreen() {
         <View style={{ gap: 10 }}>
           <Label>Modo de trabajo{saving ? ' · guardando…' : ''}</Label>
           <Segmented value={emp.workMode || 'Office'} onChange={changeMode} height={44}
-            options={Object.entries(WORK_MODES).map(([k, m]) => ({ value: k, label: m.label }))} />
+            options={Object.entries(WORK_MODES).map(([k, m]) => ({ value: k, label: m.label, disabled: saving || (allowedModes && !allowedModes.has(k)) }))} />
         </View>
       ) : null}
     </Screen>

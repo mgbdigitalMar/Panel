@@ -313,6 +313,7 @@ export function AuthProvider({ children }) {
     setBiometricEnabled,
     refreshEmployees: loadEmployees,
     setEmployees,
+    setUser,
   }), [user, employees, authLoading, locked, biometric, lastEmail, login, loginWithBiometrics, unlockWithBiometrics,
     unlockWithPassword, logout, touch, setCurrentUser, setNewPassword, changePassword, setBiometricEnabled, loadEmployees]);
 

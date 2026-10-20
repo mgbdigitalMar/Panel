@@ -18,7 +18,7 @@ import { ActionGrid, Avatar, Segmented, SwitchRow, IconTile } from '../component
 import { BrandPanel, ON_BRAND } from '../components/common/Brand';
 import { usePendingApprovals } from '../hooks/usePendingApprovals';
 import { biometricSupport, authenticate } from '../services/biometrics';
-import { Notifications, isAndroidExpoGo } from '../services/pushNotifications';
+import { Notifications, isAndroidExpoGo, lastPushRegistration } from '../services/pushNotifications';
 
 function MenuRow({ icon, tone = 'accent', label, value, valueColor, badge, onPress, last, children }) {
   const { colors } = useTheme();
@@ -93,7 +93,9 @@ export default function SettingsScreen() {
   const pushLabel = isAndroidExpoGo
     ? 'No disponible en Expo Go'
     : pushStatus === 'granted'
-      ? 'Activadas'
+      ? (lastPushRegistration && !lastPushRegistration.ok
+        ? (lastPushRegistration.reason === 'no-project-id' ? 'Falta el proyecto EAS' : 'Dispositivo sin registrar')
+        : 'Activadas')
       : pushStatus === 'denied'
         ? 'Bloqueadas en el sistema'
         : 'Sin configurar';

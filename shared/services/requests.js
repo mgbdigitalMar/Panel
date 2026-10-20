@@ -3,14 +3,16 @@
  * CRUD operations for the `requests` table.
  */
 import { createNotification, notifyAdmins } from './notifications.js';
+import { REQUEST_WORK_MODE, localISODate } from './workMode.js';
 
 /** Fetch all requests with employee join */
 export async function fetchRequests(supabase) {
   const { data, error } = await supabase
     .from('requests')
+    // `*` instead of a column list so the query keeps working before the
+    // returned_at migration has been run
     .select(`
-      id, type, status, reason, created_at,
-      start_date, end_date, days, item, amount, reviewed_by, reviewed_at,
+      *,
       employee:profiles!requests_employee_id_fkey(id, name, department, avatar_initials),
       reviewer:profiles!requests_reviewed_by_fkey(name)
     `)
@@ -35,6 +37,8 @@ export async function fetchRequests(supabase) {
     reviewerId: r.reviewed_by,
     reviewerName: r.reviewer?.name || null,
     reviewedAt: r.reviewed_at,
+    // undefined = column not created yet (see workMode.js)
+    returnedAt: 'returned_at' in r ? r.returned_at : undefined,
   }));
 }
 
@@ -86,12 +90,11 @@ export async function updateRequestStatus(supabase, employees, id, status, revie
     return { error };
   }
 
-  // If approving a remote request, update work mode if currently active
-  if (status === 'approved' && (reqData?.type === 'external' || reqData?.type === 'remoto')) {
-    const today = new Date().toISOString().split('T')[0];
+  // Approving a remote / external request that covers today changes the work mode at once
+  if (status === 'approved' && REQUEST_WORK_MODE[reqData?.type] && employeeId) {
+    const today = localISODate();
     if (today >= reqData.start_date && today <= reqData.end_date) {
-      const targetMode = reqData.type === 'external' ? 'externo' : 'remoto';
-      await supabase.from('profiles').update({ work_mode: targetMode }).eq('id', employeeId);
+      await supabase.from('profiles').update({ work_mode: REQUEST_WORK_MODE[reqData.type] }).eq('id', employeeId);
     }
   }
 

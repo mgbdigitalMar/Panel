@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useAuth, useDocuments } from "../context";
+import { useAuth, useDocuments, useRequests } from "../context";
+import { allowedWorkModes } from "../../shared/services/workMode.js";
 import { Input, Button, Card, Select, Badge, Avatar, Portal, useInertApp } from "../components/ui";
 import {
   Save,
@@ -46,8 +47,9 @@ function getViewerUrl(url) {
 }
 
 export default function ProfilePage() {
-  const { user, setCurrentUser, employees } = useAuth();
+  const { user, employees } = useAuth();
   const { documents, updateDocumentStatus } = useDocuments();
+  const { requests, changeWorkMode } = useRequests();
 
   // Only show documents explicitly sent to the current user
   const myDocs = (documents || []).filter(
@@ -72,8 +74,11 @@ export default function ProfilePage() {
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-    workMode: user?.workMode || DEFAULT_WORK_MODE,
   });
+  // Follows the profile live: an approved request or another device can change it
+  const workMode = user?.workMode || DEFAULT_WORK_MODE;
+  // Remote / external need an approved request covering today
+  const allowedModes = allowedWorkModes(requests, user?.id);
   const [loading, setLoading] = useState(false);
   const [workModeLoading, setWorkModeLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -83,20 +88,19 @@ export default function ProfilePage() {
 
 
   const handleWorkModeChange = async (mode) => {
-    if (mode === form.workMode) return;
+    if (mode === workMode) return;
     setWorkModeLoading(true);
     setMessage("");
-    try {
-      setForm({ ...form, workMode: mode });
-      await setCurrentUser({ id: user.id, workMode: mode });
-      setMessage("Modo de trabajo actualizado correctamente.");
-    } catch (error) {
+    const { error } = await changeWorkMode(user.id, mode);
+    if (error) {
       console.error("Error updating work mode:", error);
-      setForm({ ...form, workMode: user?.workMode || DEFAULT_WORK_MODE });
       setMessage("Error al actualizar el modo de trabajo. Intenta de nuevo.");
-    } finally {
-      setWorkModeLoading(false);
+    } else {
+      setMessage(mode === DEFAULT_WORK_MODE
+        ? "Has vuelto a la oficina. Se ha avisado a administración."
+        : "Modo de trabajo actualizado correctamente.");
     }
+    setWorkModeLoading(false);
   };
 
   const handlePasswordChange = async () => {
@@ -144,7 +148,6 @@ export default function ProfilePage() {
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
-        workMode: form.workMode,
       });
     } catch (error) {
       console.error("Password change error:", error);
@@ -163,7 +166,7 @@ export default function ProfilePage() {
           <p className={styles.heroRole}>{[user?.position, user?.dept].filter(Boolean).join(' · ') || 'Margube'}</p>
           <div className={styles.heroTags}>
             <span className={styles.heroTag}><Shield size={12} aria-hidden="true" /> {user?.role === 'admin' ? 'Administrador' : 'Empleado'}</span>
-            <span className={styles.heroTag}><MapPin size={12} aria-hidden="true" /> {WORK_MODES[form.workMode]?.label || 'Oficina'}</span>
+            <span className={styles.heroTag}><MapPin size={12} aria-hidden="true" /> {WORK_MODES[workMode]?.label || 'Oficina'}</span>
             {user?.email && <span className={styles.heroTag}><Mail size={12} aria-hidden="true" /> {user.email}</span>}
           </div>
         </div>
@@ -219,16 +222,22 @@ export default function ProfilePage() {
           </div>
           <Select
             label=""
-            value={form.workMode}
+            value={workMode}
             onChange={handleWorkModeChange}
             options={Object.entries(WORK_MODES).map(([k, m]) => ({
               value: k,
               label: m.label,
+              disabled: k !== workMode && !allowedModes.has(k),
             }))}
             className={styles.select}
             loading={workModeLoading}
             disabled={workModeLoading}
           />
+          <p className={styles.hint}>
+            {workMode === DEFAULT_WORK_MODE
+              ? "Remoto y externo se activan solos cuando administración aprueba tu solicitud para hoy."
+              : "Si vuelves antes a la oficina, elige Oficina: se avisará a administración."}
+          </p>
         </Card>
         </div>
 

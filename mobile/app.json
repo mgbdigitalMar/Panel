@@ -73,6 +73,11 @@
       ],
       "expo-asset"
     ],
-    "extra": {}
+    "extra": {
+      "eas": {
+        "projectId": "ae4810c2-ea4c-41da-a9ed-d9240d55e62d"
+      }
+    },
+    "owner": "margubes-team"
   }
 }

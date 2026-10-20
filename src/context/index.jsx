@@ -8,6 +8,9 @@ import {
   showSystemNotification, playNotificationSound, notificationsEnabled,
   enablePush, disablePush, getRegistration, listenForNotificationClicks,
 } from '../services/webPush'
+import {
+  workModeFromRequests, changeWorkMode as changeWorkModeSvc, REQUEST_WORK_MODE, localISODate,
+} from '../../shared/services/workMode.js'
 
 // ─── THEME CONTEXT ────────────────────────────────────────────
 export const ThemeCtx = createContext()
@@ -184,9 +187,9 @@ const [readIds, setReadIds] = useState(() => {
   async function fetchRequests() {
     const { data, error } = await supabase
       .from('requests')
+      // `*` so the query keeps working before the returned_at migration has been run
       .select(`
-        id, type, status, reason, created_at,
-        start_date, end_date, days, item, amount,
+        *,
         employee:profiles!requests_employee_id_fkey(id, name, department, avatar_initials)
       `)
       .order('created_at', { ascending: false })
@@ -206,6 +209,8 @@ const [readIds, setReadIds] = useState(() => {
       // purchase
       item: r.item,
       amount: r.amount,
+      // went back to the office early (undefined = column not created yet)
+      returnedAt: 'returned_at' in r ? r.returned_at : undefined,
     })))
   }
 
@@ -611,34 +616,28 @@ const [readIds, setReadIds] = useState(() => {
     }
   }, [user?.id])
 
-  // Sync work mode for the current user based on approved remote requests
+  // Work mode follows the approved remote / external requests (shared/services/workMode.js)
+  const [syncingMode, setSyncingMode] = useState(null)
   useEffect(() => {
-    if (!user?.id || loadingData) return;
-
-    const syncMode = async () => {
-      const today = new Date().toISOString().split('T')[0];
-      const activeRemote = requests.find(r => 
-        r.employeeId === user.id && 
-        (r.type === 'external' || r.type === 'remoto') && 
-        r.status === 'approved' && 
-        today >= r.startDate && 
-        today <= r.endDate
-      );
-
-      if (activeRemote) {
-        const targetMode = activeRemote.type === 'external' ? 'externo' : 'remoto';
-        if (user.workMode !== targetMode) {
-          console.log(`Syncing work mode to ${targetMode} (active request found)`);
-          await supabase.from('profiles').update({ work_mode: targetMode }).eq('id', user.id);
-        }
-      } else if (!activeRemote && (user.workMode === 'externo' || user.workMode === 'remoto')) {
-        console.log('Reverting work mode to Office (no active remote request)');
-        await supabase.from('profiles').update({ work_mode: 'Office' }).eq('id', user.id);
-      }
-    };
-
-    syncMode();
+    if (!user?.id || loadingData || syncingMode) return;
+    const target = workModeFromRequests(requests, user);
+    if (!target) return;
+    setSyncingMode(target);
+    supabase.from('profiles').update({ work_mode: target }).eq('id', user.id).then(({ error }) => {
+      if (error) console.error('syncWorkMode:', error);
+      else auth?.patchUser?.({ workMode: target });
+      setSyncingMode(null);
+    });
   }, [user?.id, user?.workMode, requests, loadingData]);
+
+  // Employee (own profile) or admin (directory) changes a work mode
+  const changeWorkMode = async (employeeId, mode) => {
+    const employee = employees.find(e => e.id === employeeId) || (user?.id === employeeId ? user : { id: employeeId })
+    const res = await changeWorkModeSvc(supabase, employees, { employee, mode, requests, actorId: user?.id })
+    if (!res.error && employeeId === user?.id) auth?.patchUser?.({ workMode: mode })
+    await Promise.all([fetchRequests(), auth?.refreshEmployees?.()])
+    return res
+  }
 
   // ── Write helpers ─────────────────────────────────────────
   const createRequest = async (employeeId, payload) => {
@@ -670,12 +669,11 @@ const [readIds, setReadIds] = useState(() => {
     }).eq('id', id)
     if (error) { console.error(error); return }
 
-    // If approving a remote request, update work mode immediately if it's currently active
-    if (status === 'approved' && (reqData?.type === 'external' || reqData?.type === 'remoto')) {
-      const today = new Date().toISOString().split('T')[0];
+    // Approving a remote / external request that covers today changes the work mode at once
+    if (status === 'approved' && REQUEST_WORK_MODE[reqData?.type] && employeeId) {
+      const today = localISODate();
       if (today >= reqData.start_date && today <= reqData.end_date) {
-        const targetMode = reqData.type === 'external' ? 'externo' : 'remoto';
-        await supabase.from('profiles').update({ work_mode: targetMode }).eq('id', employeeId);
+        await supabase.from('profiles').update({ work_mode: REQUEST_WORK_MODE[reqData.type] }).eq('id', employeeId);
       }
     }
 
@@ -1006,7 +1004,7 @@ const [readIds, setReadIds] = useState(() => {
   const setRequests     = (fn) => setRequestsState(fn)
   const setReservations = (fn) => setReservationsState(fn)
 
-  const requestValue = useMemo(() => ({ requests, setRequests, createRequest, updateRequestStatus, deleteRequest }), [requests]);
+  const requestValue = useMemo(() => ({ requests, setRequests, createRequest, updateRequestStatus, deleteRequest, changeWorkMode }), [requests, employees, user]);
   const resValue = useMemo(() => ({ reservations, setReservations, rooms, vehicles, createReservation, updateReservationStatus, deleteReservation }), [reservations, rooms, vehicles]);
   const docValue = useMemo(() => ({ documents, sendDocument, updateDocumentStatus, uploadDocumentFile, deleteDocument, onboardingDocUrl: documents?.find(d => d.title === '__ONBOARDING_DOC__')?.fileUrl || null, deleteEmployeeData }), [documents]);
   const hourValue = useMemo(() => ({ hourCompensations, createHourCompensation, updateHourCompensationStatus, deleteHourCompensation }), [hourCompensations]);
@@ -1194,14 +1192,28 @@ export function AuthProvider({ children }) {
           schema: 'public', 
           table: 'profiles'
         }, 
-        () => {
+        (payload) => {
           loadAllEmployees()
-          console.log('Profiles updated via realtime - employees refreshed')
+          // Own row (e.g. work mode set by an approved request): refresh the session user
+          setUser(prev => (prev && payload.new?.id === prev.id ? { ...prev, ...mapProfile(payload.new) } : prev))
         }
       )
       .subscribe()
 
+    // Back from the background: catch profile changes the socket may have missed
+    const handleVisibility = async () => {
+      if (document.visibilityState !== 'visible') return
+      loadAllEmployees()
+      let id = null
+      try { id = JSON.parse(localStorage.getItem('margube_session') || 'null')?.id } catch { /* corrupt entry */ }
+      if (!id) return
+      const { data } = await supabase.from('profiles').select('*').eq('id', id).single()
+      if (data) setUser(prev => (prev && prev.id === data.id ? { ...prev, ...mapProfile(data) } : prev))
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
       supabase.removeChannel(profilesChannel)
     }
   }, [])
@@ -1354,10 +1366,14 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Local-only update of the session user (the row was already written)
+  const patchUser = (updates) => setUser(prev => (prev ? { ...prev, ...updates } : prev))
+
   const contextValue = useMemo(() => ({
     user, login, logout, setLastActivity,
     employees, setEmployees,
-    setCurrentUser,
+    setCurrentUser, patchUser,
+    refreshEmployees: loadAllEmployees,
     needsOnboarding, setNeedsOnboarding,
     authLoading,
   }), [user, employees, needsOnboarding, authLoading])

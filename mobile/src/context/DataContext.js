@@ -19,7 +19,7 @@ export const ONBOARDING_DOC_TITLE = '__ONBOARDING_DOC__';
 
 
 export function DataProvider({ children }) {
-  const { user, employees, refreshEmployees } = useAuth();
+  const { user, employees, refreshEmployees, setUser } = useAuth();
   const toast = useToast();
 
   const [requests, setRequests] = useState([]);
@@ -36,7 +36,9 @@ export function DataProvider({ children }) {
 
   const userRef = useRef(user);
   const employeesRef = useRef(employees);
+  const requestsRef = useRef(requests);
   useEffect(() => { userRef.current = user; employeesRef.current = employees; }, [user, employees]);
+  useEffect(() => { requestsRef.current = requests; }, [requests]);
 
   // ── fetchers ────────────────────────────────────────────────────
   const loadRequests = useCallback(async () => setRequests(await svc.fetchRequests(supabase)), []);
@@ -150,20 +152,21 @@ export function DataProvider({ children }) {
   const unreadCount = useMemo(() => myNotifications.filter((n) => !n.read).length, [myNotifications]);
   useEffect(() => { if (user?.id) setBadgeCount(unreadCount); }, [unreadCount, user?.id]);
 
-  // ── work mode sync (same rule as the web) ──────────────────────
+  // ── work mode sync (same rule as the web, see shared/services/workMode.js) ──
+  const syncingMode = useRef(null);
   useEffect(() => {
     if (!user?.id || loadingData) return;
-    const today = todayISO();
-    const active = requests.find((r) => r.employeeId === user.id
-      && (r.type === 'external' || r.type === 'remoto')
-      && r.status === 'approved' && today >= r.startDate && today <= r.endDate);
-    if (active) {
-      const target = active.type === 'external' ? 'externo' : 'remoto';
-      if (user.workMode !== target) supabase.from('profiles').update({ work_mode: target }).eq('id', user.id).then(() => {});
-    } else if (user.workMode === 'externo' || user.workMode === 'remoto') {
-      supabase.from('profiles').update({ work_mode: 'Office' }).eq('id', user.id).then(() => {});
-    }
-  }, [user?.id, user?.workMode, requests, loadingData]);
+    const target = svc.workModeFromRequests(requests, user);
+    if (!target || syncingMode.current === target) return;
+    syncingMode.current = target;
+    supabase.from('profiles').update({ work_mode: target }).eq('id', user.id).then(({ error }) => {
+      if (error) logError('syncWorkMode', error);
+      // The profiles realtime event refreshes `user`; refresh anyway in case it is missed
+      refreshEmployees();
+      setUser((prev) => (prev && !error ? { ...prev, workMode: target } : prev));
+      syncingMode.current = null;
+    });
+  }, [user, requests, loadingData, refreshEmployees, setUser]);
 
   // ── writes: employee features ─────────────────────────────────
   const emps = () => employeesRef.current;
@@ -284,11 +287,15 @@ export function DataProvider({ children }) {
       return res || { error: null };
     },
 
-    // Work mode of any employee (admin) or self — EmployeesPage on the web
+    // Work mode of any employee (admin) or self — EmployeesPage / ProfilePage on the web.
+    // Going back to the office ends the active request early and notifies the admins.
     setWorkMode: async (employeeId, mode) => {
-      const { error } = await supabase.from('profiles').update({ work_mode: mode }).eq('id', employeeId);
-      await refreshEmployees();
-      return { error };
+      const employee = emps().find((e) => e.id === employeeId)
+        || (userRef.current?.id === employeeId ? userRef.current : { id: employeeId });
+      const res = await svc.changeWorkMode(supabase, emps(), { employee, mode, requests: requestsRef.current, actorId: uid() });
+      if (!res.error && employeeId === uid()) setUser((prev) => (prev ? { ...prev, workMode: mode } : prev));
+      await Promise.all([refreshEmployees(), loadRequests()]);
+      return res;
     },
 
     // ── admin: employees (AdminPage) ──
@@ -379,7 +386,7 @@ export function DataProvider({ children }) {
       return { error };
     },
   }), [rooms, vehicles, documents, personalDays, loadRequests, loadPersonalDays, loadReservations, loadHours,
-    loadDocuments, loadNews, loadRooms, loadVehicles, refreshEmployees, refetchAll]);
+    loadDocuments, loadNews, loadRooms, loadVehicles, refreshEmployees, refetchAll, setUser]);
 
   const refresh = useCallback(async () => {
     try {

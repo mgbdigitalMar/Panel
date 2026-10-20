@@ -16,7 +16,7 @@ import { GlassFill } from './LiquidGlass';
 
 /**
  * Segmented tabs: a liquid-glass pill track; the active option is a lighter glass pill.
- * options: [{ value, label, color? }] — `color` recolours that option's active label.
+ * options: [{ value, label, color?, disabled? }] — `color` recolours that option's active label.
  */
 export function Segmented({ options, value, onChange, height = 44, style }) {
   const { colors } = useTheme();
@@ -32,10 +32,12 @@ export function Segmented({ options, value, onChange, height = 44, style }) {
           <Pressable
             key={o.value}
             accessibilityRole="tab"
-            accessibilityState={{ selected: on }}
+            accessibilityState={{ selected: on, disabled: !!o.disabled }}
             accessibilityLabel={o.label}
+            disabled={o.disabled}
             onPress={() => { if (!on) { Haptics.selectionAsync().catch(() => {}); onChange(o.value); } }}
             style={({ pressed }) => ({
+              opacity: o.disabled && !on ? 0.4 : 1,
               flex: 1, minWidth: 0, height: height - 8, borderRadius: (height - 8) / 2, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8,
               backgroundColor: on ? colors.segOn : pressed ? colors.neutralSoft : 'transparent',
               borderWidth: on ? 1 : 0, borderColor: colors.glassBorder,
