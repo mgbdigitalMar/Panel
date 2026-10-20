@@ -56,7 +56,7 @@ El perfil `preview` genera una APK autónoma: lleva el JS dentro, no necesita `e
    ```
 2. **Firebase** — en <https://console.firebase.google.com>:
    - Crear proyecto → *Añadir app Android* con el paquete `com.margube.intranet`.
-   - Descargar `google-services.json` y guardarlo en `mobile/google-services.json` (se sube a git; `app.config.js` lo incluye automáticamente si existe).
+   - Descargar `google-services.json` y guardarlo en `mobile/google-services.json` (está en `.gitignore`, no se sube; `app.config.js` lo incluye automáticamente si existe). Para builds en EAS: `eas env:create --name GOOGLE_SERVICES_JSON --type file --value ./google-services.json --visibility secret`.
    - *Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada*. Ese JSON es secreto: **no** va a git (está en `.gitignore`).
 3. **Subir la clave FCM V1 a EAS**
    ```bash

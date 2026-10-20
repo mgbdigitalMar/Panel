@@ -18,7 +18,9 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 # Firebase service account (FCM V1) — se sube a EAS, nunca a git.
-# google-services.json SÍ se sube: solo tiene identificadores públicos.
+# google-services.json tampoco se sube: en EAS se pasa como variable de tipo
+# archivo (GOOGLE_SERVICES_JSON), en local basta con tenerlo en mobile/.
+google-services.json
 *firebase-adminsdk*.json
 service-account*.json
 
