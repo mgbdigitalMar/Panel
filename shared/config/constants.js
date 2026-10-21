@@ -48,17 +48,11 @@ export const ENTITY_NAV_MAP_ADMIN = {
 };
 
 /**
- * Web path a notification opens. Chat messages open the conversation
- * (RequestsPage reads ?chat=<entity_type>-<entity_id>).
+ * Web path a notification opens.
  * Keep in sync with public/push-sw.js and supabase/functions/send-push.
  */
 export function notificationWebPath(notif, isAdmin = false) {
-  const type = notif?.entity_type;
-  const id = notif?.entity_id;
-  if (notif?.type === 'message' && id && (type === 'request' || type === 'personal_day')) {
-    return `/requests?chat=${type}-${encodeURIComponent(id)}`;
-  }
-  return '/' + ((isAdmin ? ENTITY_NAV_MAP_ADMIN : ENTITY_NAV_MAP)[type] || 'dashboard');
+  return '/' + ((isAdmin ? ENTITY_NAV_MAP_ADMIN : ENTITY_NAV_MAP)[notif?.entity_type] || 'dashboard');
 }
 
 // ── Idle timeouts (ms) ──────────────────────────────────────────────

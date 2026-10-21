@@ -1088,3 +1088,60 @@
   color: var(--text-mut);
   white-space: nowrap;
 }
+
+/* ── Internal rules acceptance (table toggle + modal) ──────────────── */
+.policyToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.18s var(--ease-out), transform 0.12s var(--ease-out);
+
+  &:hover:not(:disabled) { filter: brightness(1.12); }
+  &:active:not(:disabled) { transform: scale(0.96); }
+  &:disabled { opacity: 0.6; cursor: progress; }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
+
+.policyAccepted {
+  background: var(--success-bg);
+  color: var(--success);
+  border-color: rgba(var(--success-rgb), 0.22);
+}
+
+.policyPending {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border-color: rgba(var(--warning-rgb), 0.22);
+}
+
+.policyCheck {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 4px;
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  > span { display: flex; flex-direction: column; gap: 3px; }
+}
+
+.policyCheckLabel {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}

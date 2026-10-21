@@ -571,7 +571,7 @@ const [readIds, setReadIds] = useState(() => {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
         if (payload.new.user_id === user?.id) {
           setNotifications(prev => [payload.new, ...prev.slice(0, 49)])
-          const icon = payload.new.type === 'success' ? '✅' : payload.new.type === 'error' ? '❌' : payload.new.type === 'message' ? '💬' : '🔔'
+          const icon = payload.new.type === 'success' ? '✅' : payload.new.type === 'error' ? '❌' : '🔔'
           pushNotif(icon, payload.new.title)
           notifyInBackground(payload.new)
         }

@@ -7,6 +7,12 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        // Navigations to real files (PDFs in /public, push-sw.js...) must reach the
+        // server; otherwise the SPA fallback serves index.html and the policy
+        // iframe renders the intranet inside itself instead of the PDF.
+        navigateFallbackDenylist: [/\/[^/?]+\.[^/?]+$/],
+      },
       manifest: {
         name: 'Margube Intranet',
         short_name: 'Margube',

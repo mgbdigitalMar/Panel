@@ -11,6 +11,10 @@ export function PolicyModal({
   onboardingDocUrl,
   setCurrentUser
 }) {
+  // Inside the document iframe (an outdated service worker can answer the PDF
+  // request with the app itself): never nest the modal again.
+  if (typeof window !== 'undefined' && window.self !== window.top) return null;
+
   return (
     <AnimatePresence>
       {user && policyAccepted !== true && (

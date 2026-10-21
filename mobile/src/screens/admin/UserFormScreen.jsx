@@ -13,7 +13,7 @@ import { ModalHeader } from '../../components/common/Header';
 import { GlassInput, DateField } from '../../components/common/GlassInput';
 import { GlassButton } from '../../components/common/GlassButton';
 import { T } from '../../components/common/Text';
-import { Banner, ChipRail, Segmented, WeekdayPicker } from '../../components/common/UI';
+import { Banner, ChipRail, Segmented, SwitchRow, WeekdayPicker } from '../../components/common/UI';
 import { MIN_PASSWORD } from '../ChangePasswordScreen';
 import { tempPassword } from './AdminUsersScreen';
 
@@ -38,6 +38,7 @@ export default function UserFormScreen() {
     birthdate: existing?.birthdate || '',
     workMode: existing?.workMode || 'Office',
     teleworkDays: existing?.teleworkDays || [],
+    policyAccepted: existing?.policyAccepted === true,
   });
   const [saving, setSaving] = useState(false);
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
@@ -95,6 +96,14 @@ export default function UserFormScreen() {
           ? `Cada ${formatTeleworkDays(form.teleworkDays)} su modo pasará a Remoto automáticamente; el resto de días, a Oficina.`
           : 'Sin días fijos: el modo solo cambia con solicitudes aprobadas o a mano.'}
       </T>
+      <SwitchRow
+        title="Ya ha aceptado las normas internas"
+        subtitle={form.policyAccepted
+          ? 'No se le pedirá leer el Procedimiento de Normas Internas 2026 al entrar.'
+          : 'Al entrar deberá leer y aceptar el Procedimiento de Normas Internas 2026.'}
+        value={form.policyAccepted}
+        onValueChange={set('policyAccepted')}
+      />
       {existing ? (
         <>
           <T size={13} weight="medium">Modo de trabajo</T>

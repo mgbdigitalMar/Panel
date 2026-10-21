@@ -23,10 +23,7 @@ self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
 
 /* Where a notification should take the person (mirrors notificationWebPath in shared/config/constants.js) */
-function routeFor(entityType, entityId, type) {
-  if (type === 'message' && entityId && (entityType === 'request' || entityType === 'personal_day')) {
-    return `/requests?chat=${entityType}-${encodeURIComponent(entityId)}`;
-  }
+function routeFor(entityType) {
   switch (entityType) {
     case 'request': return '/requests';
     case 'personal_day': return '/requests';
@@ -53,7 +50,7 @@ async function loadNotification(id) {
   }
 }
 
-function show({ id, title, body, entityType, entityId, type, unread }) {
+function show({ id, title, body, entityType, unread }) {
   return self.registration.showNotification(title || GENERIC.title, {
     body: body || GENERIC.body,
     icon: ICON,
@@ -61,7 +58,7 @@ function show({ id, title, body, entityType, entityId, type, unread }) {
     tag: id ? `margube-${id}` : 'margube',
     renotify: false,
     timestamp: Date.now(),
-    data: { url: routeFor(entityType, entityId, type), id },
+    data: { url: routeFor(entityType), id },
   }).then(() => {
     if (typeof unread === 'number' && self.navigator?.setAppBadge) {
       return unread > 0 ? self.navigator.setAppBadge(unread) : self.navigator.clearAppBadge();

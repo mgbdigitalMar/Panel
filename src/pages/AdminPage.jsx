@@ -136,7 +136,7 @@ export default function AdminPage() {
   };
 
 
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [] });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [], policyAccepted: false });
   const [resForm, setResForm] = useState({ id: null, name: '', capacity: '', floor: '', equipment: '', model: '', plate: '', year: '', type: 'Turismo' });
   const [editingRes, setEditingRes] = useState(false);
 
@@ -168,6 +168,7 @@ export default function AdminPage() {
         phone: form.phone,
         birthdate: form.birthdate || null,
         work_mode: form.workMode,
+        policy_accepted: form.policyAccepted,
         avatar_initials: avatar
       };
       // Telework schedule: only sent when it changes, so the form keeps working
@@ -216,6 +217,7 @@ export default function AdminPage() {
         phone: form.phone,
         birthdate: form.birthdate || null,
         first_login: true,
+        policy_accepted: form.policyAccepted,
         avatar_initials: avatar,
         ...(form.teleworkDays.length && {
           telework_days: [...form.teleworkDays].sort(),
@@ -235,7 +237,21 @@ export default function AdminPage() {
     }
     setShowModal(false);
     setEditEmp(null);
-        setForm({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [] });
+        setForm({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [], policyAccepted: false });
+  };
+
+  // The admin marks who has already accepted the internal rules (they skip the mandatory reading)
+  const [policySaving, setPolicySaving] = useState(null);
+  const togglePolicyAccepted = async (emp) => {
+    const accepted = emp.policyAccepted !== true;
+    setPolicySaving(emp.id);
+    setEmployees(prev => prev.map(e => e.id === emp.id ? { ...e, policyAccepted: accepted } : e));
+    const { error } = await supabase.from('profiles').update({ policy_accepted: accepted }).eq('id', emp.id);
+    if (error) {
+      setEmployees(prev => prev.map(e => e.id === emp.id ? { ...e, policyAccepted: !accepted } : e));
+      alert(`No se pudo actualizar: ${error.message}`);
+    }
+    setPolicySaving(null);
   };
 
   const handleEdit = emp => { 
@@ -250,7 +266,8 @@ export default function AdminPage() {
       phone: emp.phone, 
       birthdate: emp.birthdate,
       workMode: emp.workMode || 'Office',
-      teleworkDays: emp.teleworkDays || []
+      teleworkDays: emp.teleworkDays || [],
+      policyAccepted: emp.policyAccepted === true
     }); 
     setShowModal(true); 
   };
@@ -344,7 +361,7 @@ export default function AdminPage() {
         
         <div className={styles.controlsRight}>
           {tab === 'employees' && (
-            <Button icon={Plus} onClick={() => { setEditEmp(null); setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [] }); setShowModal(true); }}>
+            <Button icon={Plus} onClick={() => { setEditEmp(null); setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [], policyAccepted: false }); setShowModal(true); }}>
               Nuevo empleado
             </Button>
           )}
@@ -471,6 +488,19 @@ export default function AdminPage() {
                             label={emp.firstLogin ? 'Primer acceso pendiente' : 'Activo'} 
                             className={emp.firstLogin ? 'variant-warning' : 'variant-success'}
                           />
+                          <button
+                            type="button"
+                            className={clsx(styles.policyToggle, emp.policyAccepted === true ? styles.policyAccepted : styles.policyPending)}
+                            onClick={() => togglePolicyAccepted(emp)}
+                            disabled={policySaving === emp.id}
+                            aria-pressed={emp.policyAccepted === true}
+                            title={emp.policyAccepted === true
+                              ? 'Marcar como pendiente: se le pedirá leer las normas al entrar'
+                              : 'Marcar como aceptadas: no se le pedirá leer las normas al entrar'}
+                          >
+                            {emp.policyAccepted === true ? <Check size={12} strokeWidth={3} aria-hidden="true" /> : <Clock size={12} aria-hidden="true" />}
+                            {emp.policyAccepted === true ? 'Normas aceptadas' : 'Normas pendientes'}
+                          </button>
                           {(() => {
                             const mode = (emp.workMode || 'office').toLowerCase();
                             const isExterno = mode === 'externo' || mode === 'field';
@@ -966,6 +996,23 @@ export default function AdminPage() {
                   : 'Sin días fijos: el modo solo cambia con solicitudes aprobadas o a mano.'}
               </p>
             </div>
+          </div>
+          <div className={styles.fullWidth}>
+            <label className={styles.policyCheck}>
+              <input
+                type="checkbox"
+                checked={form.policyAccepted}
+                onChange={e => setForm({ ...form, policyAccepted: e.target.checked })}
+              />
+              <span>
+                <span className={styles.policyCheckLabel}>Ya ha aceptado las normas internas</span>
+                <span className={styles.teleworkHint}>
+                  {form.policyAccepted
+                    ? 'No se le pedirá leer el Procedimiento de Normas Internas 2026 al entrar.'
+                    : 'Al entrar deberá leer y aceptar el Procedimiento de Normas Internas 2026.'}
+                </span>
+              </span>
+            </label>
           </div>
         </div>
         {!editEmp && (

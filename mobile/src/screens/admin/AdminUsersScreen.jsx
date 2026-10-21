@@ -118,6 +118,9 @@ export default function AdminUsersScreen() {
                   <T size={12.5} color={first ? colors.warningFg : colors.text3} numberOfLines={1}>
                     {first ? `Primer acceso pendiente · ${e.dept || 'Sin asignar'}` : `${e.dept || 'Sin asignar'} · ${e.email}`}
                   </T>
+                  {e.policyAccepted !== true ? (
+                    <T size={12} weight="medium" color={colors.warningFg} numberOfLines={1}>Normas internas pendientes</T>
+                  ) : null}
                 </View>
                 <Tag label={e.role === 'admin' ? 'ADMIN' : 'Empleado'} tone={e.role === 'admin' ? 'purple' : 'neutral'} />
               </PressScale>

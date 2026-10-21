@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
-import { Bell, CheckCircle, XCircle, CheckCheck, Clock, ChevronRight, MessageCircle } from 'lucide-react';
+import { Bell, CheckCircle, XCircle, CheckCheck, Clock, ChevronRight } from 'lucide-react';
 import { notificationWebPath } from '../../shared/config/constants.js';
 import { Button } from './ui';
 import styles from './NotificationsDropdown.module.scss';
@@ -64,7 +64,7 @@ export function NotificationsDropdown({
               </div>
             ) : (
               notifications.map(n => {
-                const typeIcon = n.type === 'success' ? <CheckCircle size={14} /> : n.type === 'error' ? <XCircle size={14} /> : n.type === 'message' ? <MessageCircle size={14} /> : <Bell size={14} />;
+                const typeIcon = n.type === 'success' ? <CheckCircle size={14} /> : n.type === 'error' ? <XCircle size={14} /> : <Bell size={14} />;
                 const typeStyle = n.type === 'success' ? styles.notiSuccess : n.type === 'error' ? styles.notiWarning : styles.notiAccent;
                 const entityPath = notificationWebPath(n, user?.role === 'admin');
 

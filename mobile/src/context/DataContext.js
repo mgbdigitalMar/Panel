@@ -314,6 +314,7 @@ export function DataProvider({ children }) {
         phone: form.phone || null,
         birthdate: form.birthdate || null,
         avatar_initials: initials(form.name),
+        policy_accepted: form.policyAccepted === true,
       };
       // Telework schedule (same rule as the web AdminPage): only sent when it
       // changes, so the form keeps working before the telework migration is run.

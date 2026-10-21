@@ -130,10 +130,6 @@ async function sendWeb(
 // Mantener en sincronía con notificationWebPath (shared/config/constants.js) y public/push-sw.js.
 function webPath(notif: Notif, isAdmin: boolean) {
   const type = notif.entity_type
-  const id = notif.entity_id
-  if (notif.type === 'message' && id && (type === 'request' || type === 'personal_day')) {
-    return `/requests?chat=${type}-${encodeURIComponent(String(id))}`
-  }
   const map: Record<string, string> = {
     request: 'requests', personal_day: 'requests', document: 'profile',
     hour_compensation: isAdmin ? 'admin' : 'horas', reservation: 'reservations',
