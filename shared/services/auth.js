@@ -9,6 +9,20 @@
 import { mapProfile } from './profiles.js';
 
 /**
+ * Shared temporary password. It only opens accounts that are still on their
+ * first access (`first_login = true`); the person must then set their own.
+ */
+export const FIRST_ACCESS_PASSWORD = 'margube2026';
+
+const isBcryptHash = (value) => /^\$2[aby]\$\d{2}\$/.test(value);
+
+/** Whether `profile` may sign in with FIRST_ACCESS_PASSWORD */
+export function isFirstAccess(profile) {
+  return profile?.first_login === true || profile?.first_login === 'true'
+    || profile?.firstLogin === true || profile?.firstLogin === 'true';
+}
+
+/**
  * Verify password against stored hash.
  * @param {string} password - Plain text password
  * @param {string|null} passwordHash - Stored bcrypt hash
@@ -18,20 +32,16 @@ import { mapProfile } from './profiles.js';
 export function verifyPassword(password, passwordHash, bcryptModule) {
   if (!passwordHash) return false;
 
+  // Plaintext comparison only for values that are not a bcrypt hash (set by
+  // hand in the DB). Comparing against a real hash would let anyone who can
+  // read the hash sign in by typing the hash itself.
+  if (!isBcryptHash(passwordHash)) return password === passwordHash;
+
   try {
-    if (bcryptModule.compareSync(password, passwordHash)) {
-      return true;
-    }
+    return bcryptModule.compareSync(password, passwordHash);
   } catch (e) {
-    // Invalid hash format
+    return false;
   }
-
-  // Fallback: plaintext comparison (for manually-set passwords in DB)
-  if (password === passwordHash) {
-    return true;
-  }
-
-  return false;
 }
 
 /**
@@ -43,16 +53,14 @@ export function verifyPassword(password, passwordHash, bcryptModule) {
 export async function verifyPasswordAsync(password, passwordHash, bcryptModule) {
   if (!passwordHash) return false;
 
-  try {
-    if (await bcryptModule.compare(password, passwordHash)) {
-      return true;
-    }
-  } catch (e) {
-    // Invalid hash format
-  }
+  // See verifyPassword: never compare a bcrypt hash as plaintext
+  if (!isBcryptHash(passwordHash)) return password === passwordHash;
 
-  // Fallback: plaintext comparison (for manually-set passwords in DB)
-  return password === passwordHash;
+  try {
+    return await bcryptModule.compare(password, passwordHash);
+  } catch (e) {
+    return false;
+  }
 }
 
 /**

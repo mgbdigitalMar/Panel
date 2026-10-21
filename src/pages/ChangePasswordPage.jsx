@@ -7,6 +7,7 @@ import { Button, AnimatedBackdrop } from '../components/ui';
 import { Eye, EyeOff, ShieldCheck, AlertCircle, CheckCircle2, Save } from 'lucide-react';
 import styles from './ChangePasswordPage.module.scss';
 import { supabase } from '../utils/supabase';
+import { FIRST_ACCESS_PASSWORD } from '../../shared/services/auth.js';
 // bcrypt imported dynamically on demand
 
 export default function ChangePasswordPage() {
@@ -58,6 +59,10 @@ export default function ChangePasswordPage() {
     if (newPass !== confirm) { 
       setErr('Las contraseñas no coinciden.'); 
       return; 
+    }
+    if (newPass === FIRST_ACCESS_PASSWORD) {
+      setErr('Elige una contraseña distinta de la temporal.');
+      return;
     }
     setLoading(true);
 

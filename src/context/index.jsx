@@ -3,7 +3,6 @@ import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
 import bcrypt from 'bcryptjs'
-import { MOCK_DOCUMENTS, MOCK_HOUR_COMPENSATIONS } from '../data/mockData'
 import {
   showSystemNotification, playNotificationSound, notificationsEnabled,
   enablePush, disablePush, getRegistration, listenForNotificationClicks,
@@ -12,6 +11,7 @@ import {
   workModeSyncUpdate, changeWorkMode as changeWorkModeSvc, REQUEST_WORK_MODE, localISODate,
 } from '../../shared/services/workMode.js'
 import { mapProfile } from '../../shared/services/profiles.js'
+import { verifyPassword, isFirstAccess, FIRST_ACCESS_PASSWORD } from '../../shared/services/auth.js'
 
 // ─── THEME CONTEXT ────────────────────────────────────────────
 export const ThemeCtx = createContext()
@@ -257,21 +257,9 @@ const [readIds, setReadIds] = useState(() => {
         recipient:profiles!documents_recipient_id_fkey(name)
       `)
       .order('created_at', { ascending: false })
+    // On error keep what is on screen: showing sample data would look real
     if (error || !data) {
-      // Fallback to mock data (table may not exist yet or be empty)
       if (error) console.error('documents:', error)
-      setDocuments(MOCK_DOCUMENTS.map(d => ({
-        id: d.id,
-        title: d.title,
-        description: d.description,
-        fileUrl: d.file_url,
-        status: d.status,
-        createdAt: d.created_at,
-        senderId: d.sender_id,
-        senderName: d.senderName,
-        recipientId: d.recipient_id,
-        recipientName: d.recipientName,
-      })))
       return
     }
     setDocuments(data.map(d => ({
@@ -301,17 +289,6 @@ const [readIds, setReadIds] = useState(() => {
       .order('created_at', { ascending: false })
     if (error || !data) {
       if (error) console.error('hour_compensations:', error)
-      setHourCompensations(MOCK_HOUR_COMPENSATIONS.map(h => ({
-        id: h.id,
-        employeeId: h.employee_id,
-        employeeName: h.employeeName,
-        date: h.date,
-        reason: h.reason,
-        hours: h.hours,
-        type: h.type,
-        status: h.status,
-        createdAt: h.created_at,
-      })))
       return
     }
     setHourCompensations(data.map(h => ({
@@ -342,7 +319,6 @@ const [readIds, setReadIds] = useState(() => {
       .order('created_at', { ascending: false })
     if (error || !data) {
       if (error) console.error('personal_days:', error)
-      setPersonalDays([])
       return
     }
     setPersonalDays(data.map(p => ({
@@ -767,6 +743,26 @@ const [readIds, setReadIds] = useState(() => {
     const vehicleId = payload.type === 'vehicle' && payload.vehicle_id ? parseInt(payload.vehicle_id, 10) : null;
     const purpose = payload.purpose?.trim() || (payload.type === 'room' ? 'Reserva de sala' : 'Uso de vehículo');
 
+    // Same resource, same day, overlapping times (start < other end and end > other start).
+    // Asked to the database right before inserting, so the list on screen can't be stale.
+    const resourceCol = payload.type === 'room' ? 'room_id' : 'vehicle_id'
+    const { data: clash, error: clashErr } = await supabase.from('reservations')
+      .select('time_start, time_end')
+      .eq(resourceCol, payload.type === 'room' ? roomId : vehicleId)
+      .eq('date', payload.date)
+      .neq('status', 'cancelled') // reservation_status has no 'rejected'
+      .lt('time_start', payload.time_end)
+      .gt('time_end', payload.time_start)
+      .limit(1)
+    if (clashErr) {
+      console.error('createReservation (overlap check):', clashErr)
+      return { error: 'No se pudo comprobar la disponibilidad. Inténtalo de nuevo.' }
+    }
+    if (clash?.length) {
+      const c = clash[0]
+      return { error: `${rName} ya está reservado de ${c.time_start?.slice(0, 5)} a ${c.time_end?.slice(0, 5)} ese día. Elige otra franja u otro recurso.` }
+    }
+
     const { data, error } = await supabase.from('reservations').insert([{
       employee_id: employeeId,
       type: payload.type,
@@ -1008,11 +1004,14 @@ const [readIds, setReadIds] = useState(() => {
   const setRequests     = (fn) => setRequestsState(fn)
   const setReservations = (fn) => setReservationsState(fn)
 
-  const requestValue = useMemo(() => ({ requests, setRequests, createRequest, updateRequestStatus, deleteRequest, changeWorkMode }), [requests, employees, user]);
-  const resValue = useMemo(() => ({ reservations, setReservations, rooms, vehicles, createReservation, updateReservationStatus, deleteReservation }), [reservations, rooms, vehicles]);
-  const docValue = useMemo(() => ({ documents, sendDocument, updateDocumentStatus, uploadDocumentFile, deleteDocument, onboardingDocUrl: documents?.find(d => d.title === '__ONBOARDING_DOC__')?.fileUrl || null, deleteEmployeeData }), [documents]);
-  const hourValue = useMemo(() => ({ hourCompensations, createHourCompensation, updateHourCompensationStatus, deleteHourCompensation }), [hourCompensations]);
-  const pdValue = useMemo(() => ({ personalDays, createPersonalDay, updatePersonalDayStatus }), [personalDays]);
+  // The actions read `employees`, `user` and other lists from this render
+  // (e.g. notifyAdmins needs the admin list): they must be in the deps, or a
+  // value memoized before the employees loaded keeps notifying nobody.
+  const requestValue = useMemo(() => ({ requests, setRequests, createRequest, updateRequestStatus, deleteRequest, changeWorkMode }), [requests, personalDays, employees, user]);
+  const resValue = useMemo(() => ({ reservations, setReservations, rooms, vehicles, createReservation, updateReservationStatus, deleteReservation }), [reservations, rooms, vehicles, employees]);
+  const docValue = useMemo(() => ({ documents, sendDocument, updateDocumentStatus, uploadDocumentFile, deleteDocument, onboardingDocUrl: documents?.find(d => d.title === '__ONBOARDING_DOC__')?.fileUrl || null, deleteEmployeeData }), [documents, personalDays]);
+  const hourValue = useMemo(() => ({ hourCompensations, createHourCompensation, updateHourCompensationStatus, deleteHourCompensation }), [hourCompensations, employees]);
+  const pdValue = useMemo(() => ({ personalDays, createPersonalDay, updatePersonalDayStatus }), [personalDays, employees]);
   const newsValue = useMemo(() => ({ news, createNews, updateNews, deleteNews }), [news]);
   const notifValue = useMemo(() => ({ notifications, markNotifRead, markAllNotifsRead, readIds, markRead, markAllRead, liveNotifs }), [notifications, readIds, liveNotifs]);
   const syncValue = useMemo(() => ({ loadingData, refresh: refetchAll }), [loadingData]);
@@ -1209,6 +1208,9 @@ export function AuthProvider({ children }) {
     if (user) {
       const checkIdle = () => {
         if (!isVisible) return; // Pause when hidden
+        // Reading inside an iframe (e.g. the mandatory policy PDF) sends no
+        // mouse or key events to this page: don't count it as inactivity
+        if (user.policyAccepted !== true || document.activeElement?.tagName === 'IFRAME') return;
         const inactive = Date.now() - lastActivity > IDLE_TIMEOUT;
         if (inactive) {
           console.log('Idle timeout - logging out');
@@ -1223,6 +1225,19 @@ export function AuthProvider({ children }) {
       document.removeEventListener('visibilitychange', visibilityHandler);
     };
   }, [user, lastActivity])
+
+  // Keep the stored session's last activity current: restoreSession treats a
+  // stored time older than IDLE_TIMEOUT as stale, so without this a reload or
+  // a new tab opened a minute after signing in logs every tab out.
+  useEffect(() => {
+    if (!user?.id) return
+    try {
+      const stored = JSON.parse(localStorage.getItem('margube_session') || 'null')
+      if (stored?.id === user.id && lastActivity - (stored.lastActivity || 0) > 5000) {
+        localStorage.setItem('margube_session', JSON.stringify({ ...stored, lastActivity }))
+      }
+    } catch { /* corrupt or blocked storage */ }
+  }, [user?.id, lastActivity])
 
   // ── Background notifications ──────────────────────────────
   // Signed in + "Alertas de escritorio" on → link this browser's Web Push
@@ -1249,40 +1264,19 @@ export function AuthProvider({ children }) {
       return { ok: false, msg: `No se pudo obtener el perfil: ${error?.message || 'Perfil no encontrado'}` }
     }
 
-    // Verificamos si la contraseña coincide con el hash almacenado
-    let isValid = false;
-    if (profileRow.password_hash) {
-      try {
-        isValid = bcrypt.compareSync(pass, profileRow.password_hash);
-      } catch (e) {
-        // En caso de que el hash sea inválido por no tener el formato de bcrypt
-        isValid = false;
-      }
-      
-      // FALLBACK: Si en la base de datos alguien escribió la contraseña en texto plano (ej. manualmente)
-      if (!isValid && pass === profileRow.password_hash) {
-        isValid = true;
-      }
-    }
-
-    // DEV BYPASS: Permitir contraseñas de testing temporalmente por problemas con hashes en BD
-    if (!isValid && ['margube2026', 'test123', 'test1234'].includes(pass)) {
-      isValid = true;
-      console.log('DEV BYPASS: Validated via master testing password');
-    }
-
-    // Log for debugging
-    console.log('🔍 LOGIN DEBUG:', { email, hasHash: !!profileRow.password_hash, hashLen: profileRow.password_hash?.length, hashPreview: profileRow.password_hash?.slice(0,20), passLen: pass.length, isValid });
+    // Same rule as the app (mobile/src/context/AuthContext.js): the shared
+    // temporary password only opens accounts on their first access, and the
+    // person is then sent to /changePassword to set their own.
+    const isValid = (isFirstAccess(profileRow) && pass === FIRST_ACCESS_PASSWORD)
+      || verifyPassword(pass, profileRow.password_hash, bcrypt)
 
     if (!isValid) {
-      if (!profileRow.password_hash) {
-        return { ok: false, msg: 'Primera vez: Configura tu contraseña en "Cambiar contraseña". (password_hash null)' }
+      if (!profileRow.password_hash && !isFirstAccess(profileRow)) {
+        return { ok: false, msg: 'Tu cuenta aún no tiene contraseña. Pide a RRHH una contraseña temporal.' }
       }
-      console.log('Hash mismatch - clearing session to avoid stale');
       localStorage.removeItem('margube_session');
       return { ok: false, msg: 'Email o contraseña incorrectos. Verifica mayúsculas/números especiales.' }
     }
-    console.log('✅ Password verified for user:', profileRow.id);
 
     const mapped = mapProfile(profileRow)
     setUser(mapped)

@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { verifyPassword, verifyPasswordAsync, isFirstAccess, FIRST_ACCESS_PASSWORD } from '../shared/services/auth.js';
 
 export async function runAuthSecurityTests() {
   console.log('\n🔵 [SUITE 1: Autenticación, Seguridad y Sesión]');
@@ -22,22 +23,23 @@ export async function runAuthSecurityTests() {
   assert('bcrypt valida correctamente la contraseña original', bcrypt.compareSync(plainPassword, hash));
   assert('bcrypt rechaza una contraseña incorrecta', !bcrypt.compareSync('PasswordIncorrecta', hash));
 
-  // 2. Contraseñas maestras requeridas para el entorno del usuario
-  const masterPasswords = ['margube2026', 'test123', 'test1234'];
-  for (const master of masterPasswords) {
-    const isMasterValid = masterPasswords.includes(master);
-    assert(`Contraseña maestra/testing permitida: '${master}'`, isMasterValid);
+  // 2. Regla real de login (shared/services/auth.js, la usan la web y la app)
+  const isValidLogin = (row, pass) =>
+    (isFirstAccess(row) && pass === FIRST_ACCESS_PASSWORD) || verifyPassword(pass, row.password_hash, bcrypt);
+  const activeRow = { first_login: false, password_hash: hash };
+  const firstRow = { first_login: true, password_hash: null };
+  assert('Login acepta la contraseña propia', isValidLogin(activeRow, plainPassword));
+  assert('Pegar el hash como contraseña NO da acceso', !isValidLogin(activeRow, hash));
+  for (const master of ['margube2026', 'test123', 'test1234']) {
+    assert(`'${master}' NO abre una cuenta que ya tiene contraseña propia`, !isValidLogin(activeRow, master));
   }
-  assert('Contraseña aleatoria no es aceptada como maestra', !masterPasswords.includes('randomSecret999'));
+  assert(`'${FIRST_ACCESS_PASSWORD}' abre una cuenta en su primer acceso`, isValidLogin(firstRow, FIRST_ACCESS_PASSWORD));
+  assert("'test123' NO abre una cuenta en su primer acceso", !isValidLogin(firstRow, 'test123'));
+  assert('Una cuenta sin contraseña y sin primer acceso no entra', !isValidLogin({ first_login: false, password_hash: null }, FIRST_ACCESS_PASSWORD));
 
-  // 3. Fallback de contraseña en texto plano en base de datos
-  const mockDbRowWithPlaintext = {
-    email: 'test@margube.com',
-    password_hash: 'temporal123' // guardada en texto plano manualmente
-  };
-  const testInput = 'temporal123';
-  const isValidPlaintext = testInput === mockDbRowWithPlaintext.password_hash;
-  assert('Bypass de contraseña en texto plano funciona correctamente para perfiles sin bcrypt', isValidPlaintext);
+  // 3. Texto plano solo para valores que no son un hash bcrypt (puestos a mano en la BD)
+  assert('Contraseña en texto plano guardada a mano sigue funcionando', verifyPassword('temporal123', 'temporal123', bcrypt));
+  assert('verifyPasswordAsync también rechaza el hash como contraseña', !(await verifyPasswordAsync(hash, hash, bcrypt)));
 
   // 4. Mapeo de perfil (mapProfile)
   function mapProfile(row) {

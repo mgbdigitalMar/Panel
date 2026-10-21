@@ -23,6 +23,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       {({ user, authLoading }: any) => {
         if (authLoading) return <BootLoader />
         if (!user) return <Navigate to="/login" replace />
+        // First access: the temporary password must be replaced before using the intranet
+        if (user.firstLogin === true || user.firstLogin === 'true') return <Navigate to="/changePassword" replace />
         return (
           <Layout>
             {children}

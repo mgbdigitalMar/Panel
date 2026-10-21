@@ -48,9 +48,10 @@ export default function RequestsPage() {
   const conditionsRef = useRef(null);
 
   useEffect(() => {
+    // The declaration / conditions accepted for one type don't carry over to another
+    setForm(f => (f.acceptedTerms ? { ...f, acceptedTerms: false } : f));
     if (showModal && (reqType === 'external' || reqType === 'remoto')) {
       setConditionsRead(false);
-      setForm(f => ({ ...f, acceptedTerms: false }));
       
       setTimeout(() => {
         if (conditionsRef.current) {
@@ -112,8 +113,26 @@ export default function RequestsPage() {
     a.click(); URL.revokeObjectURL(url);
   };
 
+  // Required fields per type; null when the form can be sent
+  const formProblem = () => {
+    if (reqType === 'asuntos_propios') {
+      if (!form.date) return 'Indica el día que solicitas.';
+      if (!form.reason.trim()) return 'Indica el motivo de la solicitud.';
+    } else if (reqType === 'remoto' || reqType === 'external') {
+      if (!form.startDate || !form.endDate) return 'Indica la fecha de inicio y la de fin.';
+      if (form.endDate < form.startDate) return 'La fecha de fin no puede ser anterior a la de inicio.';
+    } else {
+      if (!form.item.trim()) return 'Indica el artículo o servicio.';
+      if (!(parseFloat(form.amount) > 0)) return 'Indica un importe mayor que 0.';
+    }
+    return null;
+  };
+
   const handleCreate = async () => {
+    const problem = formProblem();
+    if (problem) { alert(problem); return; }
     setLoading(true);
+    let created;
     if (reqType === 'asuntos_propios') {
       let fileUrl = null;
       if (file) {
@@ -131,7 +150,7 @@ export default function RequestsPage() {
           return;
         }
       }
-      await createPersonalDay({ employeeId: user.id, date: form.date, reason: form.reason, fileUrl });
+      created = await createPersonalDay({ employeeId: user.id, date: form.date, reason: form.reason, fileUrl });
     } else {
       let payload;
       if (reqType === 'external') {
@@ -141,9 +160,14 @@ export default function RequestsPage() {
       } else {
         payload = { type: 'purchase', item: form.item, amount: parseFloat(form.amount) || 0, reason: form.reason };
       }
-      await createRequest(user.id, payload);
+      created = await createRequest(user.id, payload);
     }
     setLoading(false);
+    if (!created) {
+      // Keep the form so nothing typed is lost
+      alert('No se pudo enviar la solicitud. Revisa tu conexión e inténtalo de nuevo.');
+      return;
+    }
     setShowModal(false);
     setForm({ startDate: '', endDate: '', date: '', reason: '', item: '', amount: '', acceptedTerms: false });
     setFile(null);

@@ -199,7 +199,9 @@ export default function Layout({ children }) {
   const isDark = theme === 'dark';
 
   /* ── Pending counts for nav badges ─────────────────────────────────── */
-  const pendingRequestsCount = requests.filter(r => r.status === 'pending').length;
+  // Requests and personal days; like reservations, an employee only counts their own
+  const pendingRequestsCount = [...requests, ...personalDays]
+    .filter(r => r.status === 'pending' && (user?.role === 'admin' || r.employeeId === user?.id)).length;
   const pendingReservationsCount = user?.role === 'admin'
     ? reservations.filter(r => r.status === 'pending').length
     : reservations.filter(r => r.status === 'pending' && r.employeeId === user?.id).length;
@@ -247,6 +249,14 @@ export default function Layout({ children }) {
       return next;
     });
   };
+
+  // An admin can mark the rules as pending again: start the reading over
+  useEffect(() => {
+    if (user && user.policyAccepted !== true) {
+      setPolicyRead(false);
+      setPolicyTimer(5);
+    }
+  }, [user?.id, user?.policyAccepted]);
 
   useEffect(() => {
     if (user && user.policyAccepted !== true && policyTimer > 0) {

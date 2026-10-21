@@ -196,7 +196,10 @@ export default function DashboardPage() {
       .slice(0, 4)
   , [employees]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const pendingCount = useMemo(() => requests.filter(r => r.status === 'pending').length, [requests]);
+  // Requests and personal days; an employee only counts their own (same as the nav badge)
+  const pendingCount = useMemo(() => [...requests, ...personalDays]
+    .filter(r => r.status === 'pending' && (user?.role === 'admin' || r.employeeId === user?.id)).length,
+  [requests, personalDays, user?.role, user?.id]);
   const requestsByMonth = useMemo(() => buildRequestsByMonth(requests, requestsYear), [requests, requestsYear]);
   const reservationsByWeek = useMemo(
     () => buildReservationsByWeek(reservations, chartMonth.year, chartMonth.month),
