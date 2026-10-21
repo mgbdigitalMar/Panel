@@ -1,3 +1,6 @@
+import { fetchRequests } from '../shared/services/requests.js';
+import { fetchPersonalDays } from '../shared/services/personalDays.js';
+
 export async function runBusinessLogicTests() {
   console.log('\n🔵 [SUITE 4: Lógica de Negocio y Validaciones]');
   let passed = 0;
@@ -122,6 +125,25 @@ export async function runBusinessLogicTests() {
   );
   assert('CSV incluye BOM UTF-8 para compatibilidad con Excel', csvOutput.startsWith('\uFEFF'));
   assert('CSV escapa valores con punto y coma entre comillas dobles', csvOutput.includes('"Reunión con cliente; urgente"'));
+
+  // 7. Privacidad: un empleado solo pide sus solicitudes y justificantes
+  function fakeSupabase(log) {
+    const builder = {
+      select() { return builder; },
+      order() { return builder; },
+      eq(col, val) { log.push([col, val]); return builder; },
+      then(resolve) { resolve({ data: [], error: null }); },
+    };
+    return { from: () => builder };
+  }
+  for (const [name, fetcher] of [['solicitudes', fetchRequests], ['asuntos propios', fetchPersonalDays]]) {
+    const empLog = [];
+    await fetcher(fakeSupabase(empLog), { employeeId: 'emp-1' });
+    assert(`Empleado: ${name} filtradas por employee_id`, empLog.some(([c, v]) => c === 'employee_id' && v === 'emp-1'));
+    const adminLog = [];
+    await fetcher(fakeSupabase(adminLog));
+    assert(`Admin: ${name} sin filtro (ve las de todos)`, adminLog.length === 0);
+  }
 
   return { passed, failed };
 }

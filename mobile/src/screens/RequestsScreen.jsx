@@ -102,11 +102,14 @@ export default function RequestsScreen() {
         </GlassCard>
       </View>
 
-      <Segmented
-        value={scope}
-        onChange={setScope}
-        options={[{ value: 'mine', label: 'Mías' }, { value: 'team', label: 'Equipo' }]}
-      />
+      {/* Employees only receive their own requests, so "Equipo" is for admins */}
+      {user?.role === 'admin' ? (
+        <Segmented
+          value={scope}
+          onChange={setScope}
+          options={[{ value: 'mine', label: 'Mías' }, { value: 'team', label: 'Equipo' }]}
+        />
+      ) : null}
 
       <CountTabs
         value={status}

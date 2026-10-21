@@ -5,9 +5,12 @@
 import { createNotification, notifyAdmins } from './notifications.js';
 import { removeStorageFile } from './documents.js';
 
-/** Fetch all personal days */
-export async function fetchPersonalDays(supabase) {
-  const { data, error } = await supabase
+/**
+ * Fetch personal days (with their supporting documents).
+ * Pass `employeeId` for an employee: they only get their own (admins get all).
+ */
+export async function fetchPersonalDays(supabase, { employeeId } = {}) {
+  let query = supabase
     .from('personal_days')
     .select(`
       id, date, reason, file_url, status, created_at, reviewed_at,
@@ -16,6 +19,8 @@ export async function fetchPersonalDays(supabase) {
       reviewer:profiles!personal_days_reviewed_by_fkey(name)
     `)
     .order('created_at', { ascending: false });
+  if (employeeId) query = query.eq('employee_id', employeeId);
+  const { data, error } = await query;
   if (error || !data) {
     if (error) console.error('fetchPersonalDays:', error);
     return [];

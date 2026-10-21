@@ -3,7 +3,7 @@ import { useTheme, useAuth } from '../context';
 import { Card, Avatar } from '../components/ui';
 import {
   Sun, Moon, Monitor, Layers, BellRing, BellOff, Volume2, VolumeX,
-  Palette, Check, User, Building, Wifi, Mail, MailX,
+  Palette, Check, User, Building, Wifi,
 } from 'lucide-react';
 import styles from './SettingsPage.module.scss';
 import clsx from 'clsx';
@@ -12,8 +12,6 @@ import {
   PREF_NOTIFS, notificationsSupported, notificationsEnabled,
   enablePush, disablePush, showSystemNotification,
 } from '../services/webPush';
-import { supabase } from '../utils/supabase';
-import { updateProfile } from '../../shared/services/profiles.js';
 
 const container = {
   hidden: {},
@@ -51,7 +49,7 @@ function Toggle({ checked, onChange, id }) {
 // ── Main Page ─────────────────────────────────────────────────────────
 export default function SettingsPage() {
   const { mode, setMode } = useTheme();
-  const { user, patchUser } = useAuth();
+  const { user } = useAuth();
 
   // ── Browser notifications ─────────────────────────────────────────
   const [browserNotifs, setBrowserNotifs] = useState(() => getLS('margube-browser-notifs', false));
@@ -94,18 +92,6 @@ export default function SettingsPage() {
     } finally {
       setNotifBusy(false);
     }
-  };
-
-  // ── Email notifications (stored in profiles.email_notifications) ──
-  const emailOn = user?.emailNotifications !== false;
-  const [emailBusy, setEmailBusy] = useState(false);
-  const handleEmailNotifs = async (val) => {
-    if (!user?.id) return;
-    setEmailBusy(true);
-    patchUser?.({ emailNotifications: val });
-    const res = await updateProfile(supabase, user.id, { emailNotifications: val });
-    if (res?.error) patchUser?.({ emailNotifications: !val });
-    setEmailBusy(false);
   };
 
   // ── Sounds ────────────────────────────────────────────────────────
@@ -216,28 +202,6 @@ export default function SettingsPage() {
             />
           </div>
 
-          <div className={styles.sep} />
-
-          <div className={styles.row}>
-            <div className={styles.rowInfo}>
-              <div className={clsx(styles.rowIcon, emailOn ? styles.iconSuccess : styles.iconNeutral)}>
-                {emailOn ? <Mail size={15} /> : <MailX size={15} />}
-              </div>
-              <div>
-                <span className={styles.rowLabel}>Avisos por email</span>
-                <span className={styles.rowDesc}>
-                  {user?.email
-                    ? `Recibe cada notificación también en ${user.email}`
-                    : 'Tu perfil no tiene un email asociado.'}
-                </span>
-              </div>
-            </div>
-            <Toggle
-              checked={emailOn && Boolean(user?.email)}
-              onChange={emailBusy || !user?.email ? () => {} : handleEmailNotifs}
-              id="email-notifs-toggle"
-            />
-          </div>
 
           <div className={styles.sep} />
 

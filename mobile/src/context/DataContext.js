@@ -41,13 +41,25 @@ export function DataProvider({ children }) {
   useEffect(() => { requestsRef.current = requests; }, [requests]);
 
   // ── fetchers ────────────────────────────────────────────────────
-  const loadRequests = useCallback(async () => setRequests(await svc.fetchRequests(supabase)), []);
+  // Employees only load their own requests and personal days (with their
+  // supporting documents); admins load everyone's.
+  const ownScope = () => {
+    const me = userRef.current;
+    return me?.role === 'admin' ? {} : { employeeId: me?.id };
+  };
+  const loadRequests = useCallback(async () => {
+    if (!userRef.current?.id) return setRequests([]);
+    setRequests(await svc.fetchRequests(supabase, ownScope()));
+  }, []);
   const loadReservations = useCallback(async () => setReservations(await svc.fetchReservations(supabase)), []);
   const loadRooms = useCallback(async () => setRooms(await svc.fetchRooms(supabase)), []);
   const loadVehicles = useCallback(async () => setVehicles(await svc.fetchVehicles(supabase)), []);
   const loadDocuments = useCallback(async () => setDocuments(await svc.fetchDocuments(supabase)), []);
   const loadHours = useCallback(async () => setHours(await svc.fetchHourCompensations(supabase)), []);
-  const loadPersonalDays = useCallback(async () => setPersonalDays(await svc.fetchPersonalDays(supabase)), []);
+  const loadPersonalDays = useCallback(async () => {
+    if (!userRef.current?.id) return setPersonalDays([]);
+    setPersonalDays(await svc.fetchPersonalDays(supabase, ownScope()));
+  }, []);
   const loadNews = useCallback(async () => setNews(await svc.fetchNews(supabase)), []);
   const loadNotifications = useCallback(async () => {
     const id = userRef.current?.id;

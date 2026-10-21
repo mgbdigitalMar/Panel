@@ -185,15 +185,20 @@ const [readIds, setReadIds] = useState(() => {
   }
 
   // ── Fetch helpers ─────────────────────────────────────────
+  // Employees only load their own requests and personal days (with their
+  // supporting documents); admins load everyone's.
+  const ownRowsOnly = (query) => (user?.role === 'admin' ? query : query.eq('employee_id', user?.id))
+
   async function fetchRequests() {
-    const { data, error } = await supabase
+    if (!user?.id) { setRequestsState([]); return }
+    const { data, error } = await ownRowsOnly(supabase
       .from('requests')
       // `*` so the query keeps working before the returned_at migration has been run
       .select(`
         *,
         employee:profiles!requests_employee_id_fkey(id, name, department, avatar_initials)
       `)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false }))
     if (error) { console.error('requests:', error); return }
     setRequestsState(data.map(r => ({
       id: r.id,
@@ -308,7 +313,8 @@ const [readIds, setReadIds] = useState(() => {
   }
 
   async function fetchPersonalDays() {
-    const { data, error } = await supabase
+    if (!user?.id) { setPersonalDays([]); return }
+    const { data, error } = await ownRowsOnly(supabase
       .from('personal_days')
       .select(`
         id, date, reason, file_url, status, created_at, reviewed_at,
@@ -316,7 +322,7 @@ const [readIds, setReadIds] = useState(() => {
         employee:profiles!personal_days_employee_id_fkey(name),
         reviewer:profiles!personal_days_reviewed_by_fkey(name)
       `)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false }))
     if (error || !data) {
       if (error) console.error('personal_days:', error)
       return

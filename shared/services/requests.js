@@ -5,9 +5,12 @@
 import { createNotification, notifyAdmins } from './notifications.js';
 import { REQUEST_WORK_MODE, localISODate } from './workMode.js';
 
-/** Fetch all requests with employee join */
-export async function fetchRequests(supabase) {
-  const { data, error } = await supabase
+/**
+ * Fetch requests with employee join.
+ * Pass `employeeId` for an employee: they only get their own (admins get all).
+ */
+export async function fetchRequests(supabase, { employeeId } = {}) {
+  let query = supabase
     .from('requests')
     // `*` instead of a column list so the query keeps working before the
     // returned_at migration has been run
@@ -17,6 +20,8 @@ export async function fetchRequests(supabase) {
       reviewer:profiles!requests_reviewed_by_fkey(name)
     `)
     .order('created_at', { ascending: false });
+  if (employeeId) query = query.eq('employee_id', employeeId);
+  const { data, error } = await query;
   if (error) {
     console.error('fetchRequests:', error);
     return [];

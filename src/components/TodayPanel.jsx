@@ -30,11 +30,16 @@ export function TodayPanel() {
     const fromPersonal = personalDays
       .filter(p => p.status === 'approved' && p.date === today)
       .map(p => ({ id: `p-${p.id}`, employeeId: p.employeeId, name: p.employeeName, kind: 'asuntos_propios' }));
-    // One row per person — a personal day outranks remote/external
+    // Employees only receive their own requests: for everyone else use the
+    // current work mode, which the team directory already shows to all.
+    const fromWorkMode = employees
+      .filter(e => e.workMode === 'remoto' || e.workMode === 'externo')
+      .map(e => ({ id: `w-${e.id}`, employeeId: e.id, name: e.name, kind: e.workMode === 'remoto' ? 'remoto' : 'external' }));
+    // One row per person — requests outrank the work mode, a personal day outranks both
     const byPerson = new Map();
-    [...fromRequests, ...fromPersonal].forEach(a => byPerson.set(a.employeeId || a.id, a));
+    [...fromWorkMode, ...fromRequests, ...fromPersonal].forEach(a => byPerson.set(a.employeeId || a.id, a));
     return [...byPerson.values()].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'es'));
-  }, [requests, personalDays, today]);
+  }, [requests, personalDays, employees, today]);
 
 
   return (

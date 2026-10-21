@@ -207,7 +207,8 @@ export default function RequestsPage() {
       <div className={styles.pageControls}>
         <div className={styles.tabsRow}>
           {tabBtn('all', 'Todas')}
-          {tabBtn('mine', 'Mis solicitudes')}
+          {/* Employees only receive their own requests: "Todas" already is theirs */}
+          {user?.role === 'admin' && tabBtn('mine', 'Mis solicitudes')}
           {tabBtn('asuntos_propios', 'Asuntos Propios')}
           {tabBtn('purchase', 'Compras')}
           {tabBtn('remoto', 'Remoto')}
