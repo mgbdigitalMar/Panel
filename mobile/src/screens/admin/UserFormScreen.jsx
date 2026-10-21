@@ -3,15 +3,17 @@ import { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { DEPARTMENTS } from '@shared/config/constants.js';
 import { toUserMessage } from '@shared/utils/errors.js';
+import { TELEWORK_WEEKDAYS, formatTeleworkDays } from '@shared/services/workMode.js';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { useToast } from '../../context/ToastContext';
+import { useTheme } from '../../context/ThemeContext';
 import { Screen } from '../../components/common/Screen';
 import { ModalHeader } from '../../components/common/Header';
 import { GlassInput, DateField } from '../../components/common/GlassInput';
 import { GlassButton } from '../../components/common/GlassButton';
 import { T } from '../../components/common/Text';
-import { Banner, ChipRail, Segmented } from '../../components/common/UI';
+import { Banner, ChipRail, Segmented, WeekdayPicker } from '../../components/common/UI';
 import { MIN_PASSWORD } from '../ChangePasswordScreen';
 import { tempPassword } from './AdminUsersScreen';
 
@@ -21,6 +23,7 @@ export default function UserFormScreen() {
   const navigation = useNavigation();
   const { params } = useRoute();
   const toast = useToast();
+  const { colors } = useTheme();
   const { employees } = useAuth();
   const { saveEmployee } = useData();
   const existing = params?.id ? employees.find((e) => e.id === params.id) : null;
@@ -34,6 +37,7 @@ export default function UserFormScreen() {
     phone: existing?.phone || '',
     birthdate: existing?.birthdate || '',
     workMode: existing?.workMode || 'Office',
+    teleworkDays: existing?.teleworkDays || [],
   });
   const [saving, setSaving] = useState(false);
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
@@ -80,6 +84,17 @@ export default function UserFormScreen() {
       <DateField label="Fecha de nacimiento" value={form.birthdate} onChange={set('birthdate')} maximumDate={new Date()} />
       <T size={13} weight="medium">Rol</T>
       <Segmented value={form.role} onChange={set('role')} options={[{ value: 'employee', label: 'Empleado' }, { value: 'admin', label: 'Administrador' }]} />
+      <T size={13} weight="medium">Días de teletrabajo</T>
+      <WeekdayPicker
+        options={TELEWORK_WEEKDAYS.map((w) => ({ value: w.day, short: w.short, label: w.label }))}
+        values={form.teleworkDays}
+        onChange={set('teleworkDays')}
+      />
+      <T size={12.5} color={colors.text3}>
+        {form.teleworkDays.length
+          ? `Cada ${formatTeleworkDays(form.teleworkDays)} su modo pasará a Remoto automáticamente; el resto de días, a Oficina.`
+          : 'Sin días fijos: el modo solo cambia con solicitudes aprobadas o a mano.'}
+      </T>
       {existing ? (
         <>
           <T size={13} weight="medium">Modo de trabajo</T>

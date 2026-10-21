@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useAuth, useReservations, useDocuments, useHours, useDataSync } from '../context';
+import { useAuth, useReservations, useDocuments, useHours, useDataSync, useRequests } from '../context';
 import { MOCK_ROOMS, MOCK_VEHICLES } from '../data/mockData';
 import { Avatar, Badge, Modal, Input, Select, Button, Card, ConfirmModal, Section } from '../components/ui';
 import { Search, Plus, Edit2, Trash2, Eye, EyeOff, Building, Car, FileText, Send, Clock, CheckCircle, Check, PenTool, Upload, X, Timer, Download } from 'lucide-react';
@@ -7,6 +7,8 @@ import styles from './AdminPage.module.scss';
 import clsx from 'clsx';
 // bcrypt imported dynamically on demand
 import { supabase } from '../utils/supabase';
+import { mapProfile } from '../../shared/services/profiles.js';
+import { TELEWORK_WEEKDAYS, teleworkScheduleUpdate, formatTeleworkDays, localISODate } from '../../shared/services/workMode.js';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const DEPARTMENTS = [
@@ -27,6 +29,7 @@ export default function AdminPage() {
   const { documents, sendDocument, uploadDocumentFile, deleteDocument, deleteEmployeeData } = useDocuments();
   const { hourCompensations = [], updateHourCompensationStatus, deleteHourCompensation } = useHours();
   const { refresh } = useDataSync();
+  const { requests } = useRequests();
 
   // Admin Bolsa Horas filters
   const [hoursFilterFrom, setHoursFilterFrom] = useState('');
@@ -133,7 +136,7 @@ export default function AdminPage() {
   };
 
 
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'office' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [] });
   const [resForm, setResForm] = useState({ id: null, name: '', capacity: '', floor: '', equipment: '', model: '', plate: '', year: '', type: 'Turismo' });
   const [editingRes, setEditingRes] = useState(false);
 
@@ -167,6 +170,19 @@ export default function AdminPage() {
         work_mode: form.workMode,
         avatar_initials: avatar
       };
+      // Telework schedule: only sent when it changes, so the form keeps working
+      // before supabase/migrations/20261021130000_telework_schedule.sql is run.
+      const sortedDays = [...form.teleworkDays].sort();
+      if (sortedDays.join() !== [...(editEmp.teleworkDays || [])].sort().join()) {
+        updateData.telework_days = sortedDays;
+        if (form.workMode === (editEmp.workMode || 'Office')) {
+          // Apply the new schedule to today right away
+          Object.assign(updateData, teleworkScheduleUpdate(requests, { ...editEmp, teleworkDays: sortedDays, teleworkAppliedOn: null }));
+        } else {
+          // The admin also picked today's mode by hand: keep it for today
+          updateData.telework_applied_on = localISODate();
+        }
+      }
       if (form.password) {
         // Hash en frontend — import dinámico
         const bcryptModule = await import('bcryptjs');
@@ -177,8 +193,14 @@ export default function AdminPage() {
       const { data, error } = await supabase.from('profiles').update(updateData).eq('id', editEmp.id).select().single();
       
       if (!error && data) {
-         setEmployees(employees.map(e => e.id === editEmp.id ? { ...e, ...form, avatar } : e));
-      } else { console.error("Error al actualizar", error); return; }
+         setEmployees(employees.map(e => e.id === editEmp.id ? { ...e, ...mapProfile(data) } : e));
+      } else {
+        console.error("Error al actualizar", error);
+        alert(/telework_/.test(error?.message || '')
+          ? 'Los días de teletrabajo aún no están disponibles: falta ejecutar la migración supabase/migrations/20261021130000_telework_schedule.sql en Supabase.'
+          : `No se pudo guardar el empleado: ${error?.message || 'error desconocido'}`);
+        return;
+      }
     } else {
       // Hash en frontend antes de insertar — import dinámico
       const bcryptModule = await import('bcryptjs');
@@ -194,16 +216,26 @@ export default function AdminPage() {
         phone: form.phone,
         birthdate: form.birthdate || null,
         first_login: true,
-        avatar_initials: avatar
+        avatar_initials: avatar,
+        ...(form.teleworkDays.length && {
+          telework_days: [...form.teleworkDays].sort(),
+          ...teleworkScheduleUpdate([], { id: 'new', teleworkDays: form.teleworkDays, workMode: 'Office' }),
+        }),
       }]).select().single();
 
       if (!error && data) {
-         setEmployees([...employees, { id: data.id, ...form, avatar, joinDate: data.join_date, firstLogin: true }]);
-      } else { console.error("Error al crear empleado", error); return; }
+         setEmployees([...employees, mapProfile(data)]);
+      } else {
+        console.error("Error al crear empleado", error);
+        alert(/telework_/.test(error?.message || '')
+          ? 'Los días de teletrabajo aún no están disponibles: falta ejecutar la migración supabase/migrations/20261021130000_telework_schedule.sql en Supabase.'
+          : `No se pudo crear el empleado: ${error?.message || 'error desconocido'}`);
+        return;
+      }
     }
     setShowModal(false);
     setEditEmp(null);
-        setForm({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'Office' });
+        setForm({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [] });
   };
 
   const handleEdit = emp => { 
@@ -217,7 +249,8 @@ export default function AdminPage() {
       position: emp.position, 
       phone: emp.phone, 
       birthdate: emp.birthdate,
-      workMode: emp.workMode || 'Office'
+      workMode: emp.workMode || 'Office',
+      teleworkDays: emp.teleworkDays || []
     }); 
     setShowModal(true); 
   };
@@ -311,7 +344,7 @@ export default function AdminPage() {
         
         <div className={styles.controlsRight}>
           {tab === 'employees' && (
-            <Button icon={Plus} onClick={() => { setEditEmp(null); setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '', workMode: 'Office' }); setShowModal(true); }}>
+            <Button icon={Plus} onClick={() => { setEditEmp(null); setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [] }); setShowModal(true); }}>
               Nuevo empleado
             </Button>
           )}
@@ -466,9 +499,16 @@ export default function AdminPage() {
                           const isRemote = mode === 'remote' || mode === 'remoto';
                           
                           return (
-                            <span className={clsx(styles.workModeBadge, isOffice ? styles.workModeOffice : isRemote ? styles.workModeRemote : styles.workModeExternal)}>
-                              {isOffice ? 'OFICINA' : isRemote ? 'REMOTO' : 'EXTERNO'}
-                            </span>
+                            <>
+                              <span className={clsx(styles.workModeBadge, isOffice ? styles.workModeOffice : isRemote ? styles.workModeRemote : styles.workModeExternal)}>
+                                {isOffice ? 'OFICINA' : isRemote ? 'REMOTO' : 'EXTERNO'}
+                              </span>
+                              {emp.teleworkDays?.length > 0 && (
+                                <span className={styles.teleworkSchedule} title={`Teletrabajo: ${formatTeleworkDays(emp.teleworkDays)}`}>
+                                  Teletrabajo: {TELEWORK_WEEKDAYS.filter(w => emp.teleworkDays.includes(w.day)).map(w => w.short).join(' · ')}
+                                </span>
+                              )}
+                            </>
                           );
                         })()}
                       </td>
@@ -895,6 +935,37 @@ export default function AdminPage() {
               { value: 'externo', label: 'Externo' }
             ]} 
           />
+          </div>
+          <div className={styles.fullWidth}>
+            <div className={styles.teleworkField} role="group" aria-labelledby="telework-days-label">
+              <span id="telework-days-label" className={styles.teleworkLabel}>Días de teletrabajo</span>
+              <div className={styles.weekdayPicker}>
+                {TELEWORK_WEEKDAYS.map(({ day, short, label }) => {
+                  const on = form.teleworkDays.includes(day);
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      aria-pressed={on}
+                      aria-label={label}
+                      title={label}
+                      className={clsx(styles.weekdayBtn, on && styles.weekdayBtnOn)}
+                      onClick={() => setForm({
+                        ...form,
+                        teleworkDays: on ? form.teleworkDays.filter(d => d !== day) : [...form.teleworkDays, day],
+                      })}
+                    >
+                      {short}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className={styles.teleworkHint}>
+                {form.teleworkDays.length
+                  ? `Cada ${formatTeleworkDays(form.teleworkDays)} su modo pasará a Remoto automáticamente; el resto de días, a Oficina.`
+                  : 'Sin días fijos: el modo solo cambia con solicitudes aprobadas o a mano.'}
+              </p>
+            </div>
           </div>
         </div>
         {!editEmp && (

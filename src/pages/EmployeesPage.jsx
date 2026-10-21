@@ -29,7 +29,7 @@ export default function EmployeesPage() {
   const { user, employees, setEmployees } = useAuth();
   const { requests, changeWorkMode } = useRequests();
   // Admins set any mode; an employee needs an approved request for remote / external
-  const modeAllowed = (emp, mode) => user.role === 'admin' || allowedWorkModes(requests, emp.id).has(mode);
+  const modeAllowed = (emp, mode) => user.role === 'admin' || allowedWorkModes(requests, emp.id, undefined, emp).has(mode);
   const [filter, setFilter] = useState('all');
   const [view, setView] = useState('grid');
 

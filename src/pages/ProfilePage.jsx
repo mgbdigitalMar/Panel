@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth, useDocuments, useRequests } from "../context";
-import { allowedWorkModes } from "../../shared/services/workMode.js";
+import { allowedWorkModes, formatTeleworkDays } from "../../shared/services/workMode.js";
 import { Input, Button, Card, Select, Badge, Avatar, Portal, useInertApp } from "../components/ui";
 import {
   Save,
@@ -78,7 +78,7 @@ export default function ProfilePage() {
   // Follows the profile live: an approved request or another device can change it
   const workMode = user?.workMode || DEFAULT_WORK_MODE;
   // Remote / external need an approved request covering today
-  const allowedModes = allowedWorkModes(requests, user?.id);
+  const allowedModes = allowedWorkModes(requests, user?.id, undefined, user);
   const [loading, setLoading] = useState(false);
   const [workModeLoading, setWorkModeLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -233,6 +233,11 @@ export default function ProfilePage() {
             loading={workModeLoading}
             disabled={workModeLoading}
           />
+          {user?.teleworkDays?.length > 0 && (
+            <p className={styles.hint}>
+              Teletrabajas los {formatTeleworkDays(user.teleworkDays)}: esos días tu modo pasa a Remoto automáticamente y el resto a Oficina.
+            </p>
+          )}
           <p className={styles.hint}>
             {workMode === DEFAULT_WORK_MODE
               ? "Remoto y externo se activan solos cuando administración aprueba tu solicitud para hoy."

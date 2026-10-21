@@ -11,6 +11,7 @@
  * Preferences live in localStorage, shared with the Ajustes page.
  */
 import { supabase } from '../utils/supabase';
+import { notificationWebPath } from '../../shared/config/constants.js';
 
 const SW_URL = '/push-sw.js';
 const SW_SCOPE = '/push/';
@@ -71,16 +72,15 @@ export function notificationsEnabled() {
  * Shows a system notification for a row of `notifications` (or any alert).
  * Same tag as the Web Push path, so it never shows twice.
  */
-export async function showSystemNotification({ id, title, body, entityType }) {
+export async function showSystemNotification({ id, title, body, entityType, entityId, type }) {
   if (!notificationsEnabled()) return;
-  const routes = { request: '/requests', document: '/profile', hour_compensation: '/horas', reservation: '/reservations' };
   const options = {
     body: body || '',
     icon: '/pwa-192x192.png',
     badge: '/pwa-192x192.png',
     tag: id ? `margube-${id}` : `margube-${Date.now()}`,
     renotify: false,
-    data: { url: routes[entityType] || '/dashboard', id },
+    data: { url: notificationWebPath({ entity_type: entityType, entity_id: entityId, type }), id },
   };
   const reg = await getRegistration();
   if (reg) {

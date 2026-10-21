@@ -20,7 +20,7 @@ import { registerForPushNotificationsAsync, unregisterPushNotificationsAsync, se
 
 const AuthCtx = createContext(null);
 
-export const PROFILE_COLUMNS = 'id,name,email,role,department,phone,position,avatar_initials,avatar_url,birthdate,join_date,work_mode,first_login,policy_accepted';
+export const PROFILE_COLUMNS = 'id,name,email,role,department,phone,position,avatar_initials,avatar_url,birthdate,join_date,work_mode,first_login,policy_accepted,telework_days,telework_applied_on';
 
 /** Temporary password valid for any account until its first password change. */
 export const FIRST_ACCESS_PASSWORD = 'margube2026';

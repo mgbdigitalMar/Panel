@@ -2,11 +2,14 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth, useRequests, usePersonalDays, useDocuments } from '../context';
 import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard, ConfirmModal, Section } from '../components/ui';
-import { Plus, Check, X, FileText, ExternalLink, Download, Trash2, Home, Briefcase, ShoppingCart, Calendar } from 'lucide-react';
+import { Plus, Check, X, FileText, ExternalLink, Download, Trash2, Home, Briefcase, ShoppingCart, Calendar, MessageCircle } from 'lucide-react';
 import styles from './RequestsPage.module.scss';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fmtDate, fmtRange, fmtMoney, plural } from '../utils/format';
+import { RequestChat } from '../components/RequestChat';
+import { supabase } from '../utils/supabase';
+import { fetchMessageCounts, messageKindFor } from '../../shared/services/messages.js';
 
 /** What was asked for: the day(s) for absences, the item and cost for purchases. */
 function requestDetail(r) {
@@ -21,6 +24,11 @@ function requestDetail(r) {
 // Requests and personal days live in separate tables, so ids can repeat across them
 const rowKey = (r) => `${r.type === 'asuntos_propios' ? 'pd' : 'rq'}-${r.id}`;
 
+// Key used by request_messages and notifications: `${entity_type}-${id}`
+const chatKey = (r) => `${messageKindFor(r.type)}-${r.id}`;
+
+const typeLabelOf = (type) => type === 'asuntos_propios' ? 'Asuntos Propios' : type === 'remoto' ? 'Remoto' : type === 'external' ? 'Trabajo Externo' : 'Compra';
+
 export default function RequestsPage() {
   const { user, employees } = useAuth();
   const { requests, createRequest, updateRequestStatus, deleteRequest } = useRequests();
@@ -34,6 +42,20 @@ export default function RequestsPage() {
   const [form, setForm]           = useState({ startDate: '', endDate: '', date: '', reason: '', item: '', amount: '', acceptedTerms: false });
   const [file, setFile]           = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [chatItem, setChatItem]   = useState(null);
+  const [msgCounts, setMsgCounts] = useState({});
+
+  // Message count per request for the chat buttons, kept live
+  useEffect(() => {
+    let alive = true;
+    const load = () => fetchMessageCounts(supabase).then(c => { if (alive) setMsgCounts(c); });
+    load();
+    const channel = supabase
+      .channel('realtime-request-messages-counts')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'request_messages' }, load)
+      .subscribe();
+    return () => { alive = false; supabase.removeChannel(channel); };
+  }, []);
 
   // ?nueva=1 (search, shortcuts) opens the request form straight away
   const [searchParams, setSearchParams] = useSearchParams();
@@ -82,6 +104,20 @@ export default function RequestsPage() {
     }))
   ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)), [requests, personalDays, employees]);
 
+  // ?chat=request-26 / ?chat=personal_day-3 (notifications, emails) opens that conversation
+  useEffect(() => {
+    const target = searchParams.get('chat');
+    if (!target) return;
+    const item = allItems.find(r => chatKey(r) === target);
+    if (item) {
+      setChatItem(item);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams, allItems]);
+
+  // Keep the open conversation's request (status, etc.) up to date
+  const chatRequest = chatItem && (allItems.find(r => chatKey(r) === chatKey(chatItem)) || chatItem);
+
   const filtered = useMemo(() => {
     if (tab === 'all') return allItems;
     if (tab === 'mine') return allItems.filter(r => r.employeeId === user?.id);
@@ -93,7 +129,7 @@ export default function RequestsPage() {
     const lines = [
       headers.join(';'),
       ...rows.map(r => {
-        const typeLabel = r.type === 'asuntos_propios' ? 'Asuntos Propios' : r.type === 'remoto' ? 'Remoto' : r.type === 'external' ? 'Trabajo Externo' : 'Compra';
+        const typeLabel = typeLabelOf(r.type);
         const detail = requestDetail(r);
         const status = r.status === 'approved' ? 'Aprobada' : r.status === 'rejected' ? 'Rechazada' : 'Pendiente';
         return [
@@ -222,7 +258,7 @@ export default function RequestsPage() {
             <table className="table">
               <thead>
                 <tr>
-                  {['Empleado', 'Tipo', 'Detalle', 'Fecha solicitud', 'Estado', user.role === 'admin' ? 'Acciones' : null].filter(Boolean).map(h => (
+                  {['Empleado', 'Tipo', 'Detalle', 'Fecha solicitud', 'Estado', 'Acciones'].map(h => (
                     <th key={h}>{h}</th>
                   ))}
                 </tr>
@@ -245,7 +281,7 @@ export default function RequestsPage() {
                       </div>
                     </td>
                     <td data-label="Tipo">
-                      <Badge status={r.type} label={r.type === 'asuntos_propios' ? 'Asuntos Propios' : r.type === 'remoto' ? 'Remoto' : r.type === 'external' ? 'Trabajo Externo' : 'Compra'} />
+                      <Badge status={r.type} label={typeLabelOf(r.type)} />
                     </td>
                     <td data-label="Detalle" className={styles.detailCell}>
                       {requestDetail(r)}
@@ -259,19 +295,33 @@ export default function RequestsPage() {
                       <time dateTime={r.createdAt}>{fmtDate(r.createdAt)}</time>
                     </td>
                     <td data-label="Estado"><Badge status={r.status} /></td>
-                    {user.role === 'admin' && (
-                      <td data-label="Acciones">
-                        <div className={styles.actionsCell}>
-                          {r.status === 'pending' && (
-                            <>
-                              <Button variant="action-success" iconOnly icon={Check} onClick={() => changeStatus(r.id, 'approved', r.employeeId, r.type)} title="Aprobar" />
-                              <Button variant="action-danger" iconOnly icon={X} onClick={() => changeStatus(r.id, 'rejected', r.employeeId, r.type)} title="Rechazar" />
-                            </>
-                          )}
-                          <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => setItemToDelete({ id: r.id, type: r.type })} title="Eliminar" />
-                        </div>
-                      </td>
-                    )}
+                    <td data-label="Acciones">
+                      <div className={styles.actionsCell}>
+                        {(user.role === 'admin' || r.employeeId === user.id) && (
+                          <button
+                            type="button"
+                            className={styles.chatBtn}
+                            onClick={() => setChatItem(r)}
+                            title="Mensajes"
+                            aria-label={msgCounts[chatKey(r)] ? `Mensajes (${msgCounts[chatKey(r)]})` : 'Mensajes'}
+                          >
+                            <MessageCircle size={15} />
+                            {msgCounts[chatKey(r)] > 0 && <span className={styles.chatCount}>{msgCounts[chatKey(r)]}</span>}
+                          </button>
+                        )}
+                        {user.role === 'admin' && (
+                          <>
+                            {r.status === 'pending' && (
+                              <>
+                                <Button variant="action-success" iconOnly icon={Check} onClick={() => changeStatus(r.id, 'approved', r.employeeId, r.type)} title="Aprobar" />
+                                <Button variant="action-danger" iconOnly icon={X} onClick={() => changeStatus(r.id, 'rejected', r.employeeId, r.type)} title="Rechazar" />
+                              </>
+                            )}
+                            <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => setItemToDelete({ id: r.id, type: r.type })} title="Eliminar" />
+                          </>
+                        )}
+                      </div>
+                    </td>
                   </motion.tr>
                 ))}
                 </AnimatePresence>
@@ -429,6 +479,17 @@ export default function RequestsPage() {
           <Button variant="ghost" onClick={() => setShowModal(false)} disabled={loading}>Cancelar</Button>
           <Button onClick={handleCreate} disabled={loading || ((reqType === 'external' || reqType === 'remoto' || reqType === 'asuntos_propios') && !form.acceptedTerms)}>{loading ? 'Enviando...' : 'Enviar solicitud'}</Button>
         </div>
+      </Modal>
+
+      <Modal open={!!chatRequest} onClose={() => setChatItem(null)} title="Conversación de la solicitud">
+        {chatRequest && (
+          <RequestChat
+            key={chatKey(chatRequest)}
+            request={chatRequest}
+            typeLabel={typeLabelOf(chatRequest.type)}
+            detail={requestDetail(chatRequest)}
+          />
+        )}
       </Modal>
 
       <ConfirmModal 

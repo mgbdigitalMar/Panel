@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
-import { Bell, CheckCircle, XCircle, CheckCheck, Clock, ChevronRight } from 'lucide-react';
+import { Bell, CheckCircle, XCircle, CheckCheck, Clock, ChevronRight, MessageCircle } from 'lucide-react';
+import { notificationWebPath } from '../../shared/config/constants.js';
 import { Button } from './ui';
 import styles from './NotificationsDropdown.module.scss';
 
@@ -63,23 +64,22 @@ export function NotificationsDropdown({
               </div>
             ) : (
               notifications.map(n => {
-                const typeIcon = n.type === 'success' ? <CheckCircle size={14} /> : n.type === 'error' ? <XCircle size={14} /> : <Bell size={14} />;
+                const typeIcon = n.type === 'success' ? <CheckCircle size={14} /> : n.type === 'error' ? <XCircle size={14} /> : n.type === 'message' ? <MessageCircle size={14} /> : <Bell size={14} />;
                 const typeStyle = n.type === 'success' ? styles.notiSuccess : n.type === 'error' ? styles.notiWarning : styles.notiAccent;
-                let entityNav = n.entity_type === 'request' ? 'requests' : n.entity_type === 'document' ? 'profile' : n.entity_type === 'hour_compensation' ? 'horas' : n.entity_type === 'reservation' ? 'reservations' : 'dashboard';
-                if (user?.role === 'admin' && n.entity_type === 'hour_compensation') entityNav = 'admin';
+                const entityPath = notificationWebPath(n, user?.role === 'admin');
 
                 return (
                   <div
                     key={n.id}
                     role="button"
                     className={clsx(styles.notiItem, { [styles.notiItemRead]: n.read })}
-                    onClick={() => { markNotifRead?.(n.id); navigate('/' + entityNav); setNotiMenu(false); }}
+                    onClick={() => { markNotifRead?.(n.id); navigate(entityPath); setNotiMenu(false); }}
                     tabIndex={0}
                     onKeyDown={e => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
                         markNotifRead?.(n.id);
-                        navigate('/' + entityNav);
+                        navigate(entityPath);
                         setNotiMenu(false);
                       }
                     }}

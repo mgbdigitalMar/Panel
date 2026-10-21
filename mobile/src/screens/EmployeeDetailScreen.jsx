@@ -4,7 +4,7 @@ import { Linking, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Mail, CalendarDays, UserX, Pencil } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
-import { allowedWorkModes } from '@shared/services/workMode.js';
+import { allowedWorkModes, formatTeleworkDays } from '@shared/services/workMode.js';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -42,7 +42,7 @@ export default function EmployeeDetailScreen() {
   const canEdit = isMe || isAdmin;
   const wm = workModeOf(emp.workMode);
   // Admins set any mode; an employee needs an approved request for remote / external
-  const allowedModes = isAdmin ? null : allowedWorkModes(requests, emp.id);
+  const allowedModes = isAdmin ? null : allowedWorkModes(requests, emp.id, undefined, emp);
   const wmColor = wm.tone === 'green' ? colors.successFg : wm.tone === 'amber' ? colors.warningFg : colors.accentFg;
 
   const changeMode = async (mode) => {
@@ -93,6 +93,7 @@ export default function EmployeeDetailScreen() {
           { label: 'Puesto / Cargo', value: emp.position || (emp.role === 'admin' ? 'Administrador' : 'Empleado') },
           { label: 'Rol', value: emp.role === 'admin' ? 'Administrador' : 'Empleado' },
           { label: 'Modo de trabajo', value: wm.label === 'Oficina' ? 'En la oficina' : wm.label },
+          emp.teleworkDays?.length ? { label: 'Días de teletrabajo', value: formatTeleworkDays(emp.teleworkDays) } : null,
           emp.phone ? { label: 'DNI / Contacto', value: emp.phone, mono: true } : null,
           emp.joinDate ? { label: 'En Margube desde', value: fmtDate(emp.joinDate) } : null,
           ((isAdmin || isMe) && emp.birthdate) ? { label: 'Fecha de nacimiento', value: fmtDate(emp.birthdate) } : null,

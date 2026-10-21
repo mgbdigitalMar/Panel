@@ -83,6 +83,40 @@ export function ChipRail({ options, value, onChange, style }) {
   );
 }
 
+/**
+ * Row of round day toggles (several can be on), e.g. telework weekdays.
+ * options: [{ value, short, label }] · values: array of the selected `value`s.
+ */
+export function WeekdayPicker({ options, values, onChange, style }) {
+  const { colors } = useTheme();
+  const [bg, fg] = toneOf(colors, 'success');
+  return (
+    <View style={[{ flexDirection: 'row', gap: 8 }, style]}>
+      {options.map((o) => {
+        const on = values.includes(o.value);
+        return (
+          <PressScale
+            key={o.value}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: on }}
+            accessibilityLabel={o.label}
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              onChange(on ? values.filter((v) => v !== o.value) : [...values, o.value]);
+            }}
+            style={{
+              flex: 1, maxWidth: 56, aspectRatio: 1, borderRadius: 999, alignItems: 'center', justifyContent: 'center',
+              ...(on ? { backgroundColor: bg, borderWidth: 1, borderColor: fg } : glassSurface(colors)),
+            }}
+          >
+            <T size={15} weight="bold" color={on ? fg : colors.text2}>{o.short}</T>
+          </PressScale>
+        );
+      })}
+    </View>
+  );
+}
+
 /** Person avatar in the Margube leaf shape; shows the photo when there is one. */
 export function Avatar({ name, initials, src, size = 42, color, ring, style }) {
   const bg = color || avatarColor(name);

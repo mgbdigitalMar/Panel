@@ -22,10 +22,14 @@ const GENERIC = { title: 'Margube Intranet', body: 'Tienes una nueva notificaciÃ
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
 
-/* Where a notification should take the person (mirrors NotificationsDropdown) */
-function routeFor(entityType) {
+/* Where a notification should take the person (mirrors notificationWebPath in shared/config/constants.js) */
+function routeFor(entityType, entityId, type) {
+  if (type === 'message' && entityId && (entityType === 'request' || entityType === 'personal_day')) {
+    return `/requests?chat=${entityType}-${encodeURIComponent(entityId)}`;
+  }
   switch (entityType) {
     case 'request': return '/requests';
+    case 'personal_day': return '/requests';
     case 'document': return '/profile';
     case 'hour_compensation': return '/horas';
     case 'reservation': return '/reservations';
@@ -38,7 +42,7 @@ async function loadNotification(id) {
   if (!id || !SUPABASE_URL || !SUPABASE_KEY) return null;
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/notifications?id=eq.${encodeURIComponent(id)}&select=id,title,body,type,entity_type`,
+      `${SUPABASE_URL}/rest/v1/notifications?id=eq.${encodeURIComponent(id)}&select=id,title,body,type,entity_type,entity_id`,
       { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
     );
     if (!res.ok) return null;
@@ -49,7 +53,7 @@ async function loadNotification(id) {
   }
 }
 
-function show({ id, title, body, entityType, unread }) {
+function show({ id, title, body, entityType, entityId, type, unread }) {
   return self.registration.showNotification(title || GENERIC.title, {
     body: body || GENERIC.body,
     icon: ICON,
@@ -57,7 +61,7 @@ function show({ id, title, body, entityType, unread }) {
     tag: id ? `margube-${id}` : 'margube',
     renotify: false,
     timestamp: Date.now(),
-    data: { url: routeFor(entityType), id },
+    data: { url: routeFor(entityType, entityId, type), id },
   }).then(() => {
     if (typeof unread === 'number' && self.navigator?.setAppBadge) {
       return unread > 0 ? self.navigator.setAppBadge(unread) : self.navigator.clearAppBadge();
@@ -78,6 +82,8 @@ self.addEventListener('push', (event) => {
       title: payload.title || row?.title,
       body: payload.body || row?.body,
       entityType: payload.entityType || row?.entity_type,
+      entityId: payload.entityId || row?.entity_id,
+      type: payload.type || row?.type,
       unread: payload.unread,
     });
   })());

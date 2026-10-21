@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { FileText, ChevronRight, KeyRound } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
-import { allowedWorkModes } from '@shared/services/workMode.js';
+import { allowedWorkModes, formatTeleworkDays } from '@shared/services/workMode.js';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -43,7 +43,7 @@ export default function ProfileScreen() {
     else toast.success('Modo de trabajo actualizado correctamente');
   };
   // Remote / external need an approved request covering today
-  const allowedModes = allowedWorkModes(requests, user?.id);
+  const allowedModes = allowedWorkModes(requests, user?.id, undefined, user);
 
   const savePassword = async () => {
     setPwErr('');
@@ -98,6 +98,11 @@ export default function ProfileScreen() {
         <Label>Modo de trabajo{modeSaving ? ' · guardando…' : ''}</Label>
         <Segmented value={user?.workMode || 'Office'} onChange={changeMode} height={44}
           options={Object.entries(WORK_MODES).map(([k, m]) => ({ value: k, label: m.label, disabled: modeSaving || !allowedModes.has(k) }))} />
+        {user?.teleworkDays?.length ? (
+          <T size={12.5} color={colors.text3}>
+            Teletrabajas los {formatTeleworkDays(user.teleworkDays)}: esos días tu modo pasa a Remoto automáticamente y el resto a Oficina.
+          </T>
+        ) : null}
         <T size={12.5} color={colors.text3}>
           {(user?.workMode || 'Office') === 'Office'
             ? 'Remoto y externo se activan solos cuando administración aprueba tu solicitud para hoy.'

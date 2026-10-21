@@ -9,8 +9,9 @@ import {
   enablePush, disablePush, getRegistration, listenForNotificationClicks,
 } from '../services/webPush'
 import {
-  workModeFromRequests, changeWorkMode as changeWorkModeSvc, REQUEST_WORK_MODE, localISODate,
+  workModeSyncUpdate, changeWorkMode as changeWorkModeSvc, REQUEST_WORK_MODE, localISODate,
 } from '../../shared/services/workMode.js'
+import { mapProfile } from '../../shared/services/profiles.js'
 
 // ─── THEME CONTEXT ────────────────────────────────────────────
 export const ThemeCtx = createContext()
@@ -446,7 +447,7 @@ const [readIds, setReadIds] = useState(() => {
     // share the `margube-<id>` tag with Web Push, so nothing shows twice.
     const notifyInBackground = (row) => {
       if (document.visibilityState === 'visible' && document.hasFocus()) return
-      showSystemNotification({ id: row.id, title: row.title, body: row.body, entityType: row.entity_type })
+      showSystemNotification({ id: row.id, title: row.title, body: row.body, entityType: row.entity_type, entityId: row.entity_id, type: row.type })
     }
 
     // Requests — all events
@@ -570,7 +571,7 @@ const [readIds, setReadIds] = useState(() => {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
         if (payload.new.user_id === user?.id) {
           setNotifications(prev => [payload.new, ...prev.slice(0, 49)])
-          const icon = payload.new.type === 'success' ? '✅' : payload.new.type === 'error' ? '❌' : '🔔'
+          const icon = payload.new.type === 'success' ? '✅' : payload.new.type === 'error' ? '❌' : payload.new.type === 'message' ? '💬' : '🔔'
           pushNotif(icon, payload.new.title)
           notifyInBackground(payload.new)
         }
@@ -616,19 +617,22 @@ const [readIds, setReadIds] = useState(() => {
     }
   }, [user?.id])
 
-  // Work mode follows the approved remote / external requests (shared/services/workMode.js)
+  // Work mode follows the telework schedule and the approved remote / external requests (shared/services/workMode.js)
   const [syncingMode, setSyncingMode] = useState(null)
   useEffect(() => {
     if (!user?.id || loadingData || syncingMode) return;
-    const target = workModeFromRequests(requests, user);
-    if (!target) return;
-    setSyncingMode(target);
-    supabase.from('profiles').update({ work_mode: target }).eq('id', user.id).then(({ error }) => {
+    const update = workModeSyncUpdate(requests, user);
+    if (!update) return;
+    setSyncingMode(update);
+    supabase.from('profiles').update(update).eq('id', user.id).then(({ error }) => {
       if (error) console.error('syncWorkMode:', error);
-      else auth?.patchUser?.({ workMode: target });
+      else auth?.patchUser?.({
+        ...(update.work_mode && { workMode: update.work_mode }),
+        ...(update.telework_applied_on && { teleworkAppliedOn: update.telework_applied_on }),
+      });
       setSyncingMode(null);
     });
-  }, [user?.id, user?.workMode, requests, loadingData]);
+  }, [user?.id, user?.workMode, user?.teleworkAppliedOn, requests, loadingData]);
 
   // Employee (own profile) or admin (directory) changes a work mode
   const changeWorkMode = async (employeeId, mode) => {
@@ -1063,36 +1067,6 @@ export function AuthProvider({ children }) {
   // Idle timeout
   const IDLE_TIMEOUT = 60 * 1000 // 1 min
   const [lastActivity, setLastActivity] = useState(Date.now())
-
-  // Map a Supabase profile row → app user shape
-  function mapProfile(profile) {
-    if (!profile) return null;
-    const rawDept = (profile.department || profile.dept || '').trim();
-    const dept = rawDept || 'Sin asignar';
-    const position = (profile.position || '').trim();
-    const phone = (profile.phone || '').trim();
-    const name = (profile.name || '').trim();
-    const email = (profile.email || '').trim();
-    const workMode = profile.work_mode || profile.workMode || 'Office';
-
-    return {
-      id:         profile.id,
-      name:       name,
-      email:      email,
-      role:       profile.role || 'employee',
-      dept:       dept,
-      department: dept,
-      phone:      phone,
-      position:   position,
-      avatar:     profile.avatar_initials || profile.avatar || null,
-      avatarUrl:  profile.avatar_url || profile.avatarUrl || null,
-      birthdate:  profile.birthdate || profile.birth_date || null,
-      joinDate:   profile.join_date || profile.joinDate || null,
-      workMode:   workMode,
-      firstLogin: profile.first_login ?? profile.firstLogin,
-      policyAccepted: profile.policy_accepted ?? profile.policyAccepted,
-    }
-  }
 
   async function loadProfile(authUser) {
     const { data, error } = await supabase

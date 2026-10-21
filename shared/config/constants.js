@@ -47,6 +47,20 @@ export const ENTITY_NAV_MAP_ADMIN = {
   hour_compensation: 'admin',
 };
 
+/**
+ * Web path a notification opens. Chat messages open the conversation
+ * (RequestsPage reads ?chat=<entity_type>-<entity_id>).
+ * Keep in sync with public/push-sw.js and supabase/functions/send-push.
+ */
+export function notificationWebPath(notif, isAdmin = false) {
+  const type = notif?.entity_type;
+  const id = notif?.entity_id;
+  if (notif?.type === 'message' && id && (type === 'request' || type === 'personal_day')) {
+    return `/requests?chat=${type}-${encodeURIComponent(id)}`;
+  }
+  return '/' + ((isAdmin ? ENTITY_NAV_MAP_ADMIN : ENTITY_NAV_MAP)[type] || 'dashboard');
+}
+
 // ── Idle timeouts (ms) ──────────────────────────────────────────────
 export const IDLE_TIMEOUT_WEB = 60 * 1000;        // 1 min
 export const IDLE_TIMEOUT_MOBILE = 30 * 60 * 1000; // 30 min

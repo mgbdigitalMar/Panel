@@ -30,6 +30,9 @@ export function mapProfile(profile) {
     workMode:       workMode,
     firstLogin:     profile.first_login ?? profile.firstLogin,
     policyAccepted: profile.policy_accepted ?? profile.policyAccepted,
+    emailNotifications: profile.email_notifications ?? profile.emailNotifications ?? true,
+    teleworkDays:   profile.telework_days || profile.teleworkDays || [],
+    teleworkAppliedOn: profile.telework_applied_on ?? profile.teleworkAppliedOn ?? null,
   };
 }
 
@@ -63,6 +66,7 @@ export async function updateProfile(supabase, userId, updates) {
   if (updates.firstLogin === false) dbUpdates.first_login = false;
   if (updates.workMode) dbUpdates.work_mode = updates.workMode;
   if (updates.policyAccepted === true) dbUpdates.policy_accepted = true;
+  if (typeof updates.emailNotifications === 'boolean') dbUpdates.email_notifications = updates.emailNotifications;
 
   if (Object.keys(dbUpdates).length > 0) {
     const { error } = await supabase

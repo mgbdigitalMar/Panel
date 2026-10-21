@@ -156,14 +156,19 @@ export function DataProvider({ children }) {
   const syncingMode = useRef(null);
   useEffect(() => {
     if (!user?.id || loadingData) return;
-    const target = svc.workModeFromRequests(requests, user);
-    if (!target || syncingMode.current === target) return;
-    syncingMode.current = target;
-    supabase.from('profiles').update({ work_mode: target }).eq('id', user.id).then(({ error }) => {
+    const update = svc.workModeSyncUpdate(requests, user);
+    const key = update && JSON.stringify(update);
+    if (!update || syncingMode.current === key) return;
+    syncingMode.current = key;
+    supabase.from('profiles').update(update).eq('id', user.id).then(({ error }) => {
       if (error) logError('syncWorkMode', error);
       // The profiles realtime event refreshes `user`; refresh anyway in case it is missed
       refreshEmployees();
-      setUser((prev) => (prev && !error ? { ...prev, workMode: target } : prev));
+      setUser((prev) => (prev && !error ? {
+        ...prev,
+        ...(update.work_mode && { workMode: update.work_mode }),
+        ...(update.telework_applied_on && { teleworkAppliedOn: update.telework_applied_on }),
+      } : prev));
       syncingMode.current = null;
     });
   }, [user, requests, loadingData, refreshEmployees, setUser]);
@@ -310,9 +315,23 @@ export function DataProvider({ children }) {
         birthdate: form.birthdate || null,
         avatar_initials: initials(form.name),
       };
+      // Telework schedule (same rule as the web AdminPage): only sent when it
+      // changes, so the form keeps working before the telework migration is run.
+      const days = [...(form.teleworkDays || [])].sort();
+      const daysChanged = days.join() !== [...(existing?.teleworkDays || [])].sort().join();
       let error;
       if (existing) {
         const update = { ...base, work_mode: form.workMode || 'Office' };
+        if (daysChanged) {
+          update.telework_days = days;
+          if (update.work_mode === (existing.workMode || 'Office')) {
+            // Apply the new schedule to today right away
+            Object.assign(update, svc.teleworkScheduleUpdate(requestsRef.current, { ...existing, teleworkDays: days, teleworkAppliedOn: null }));
+          } else {
+            // The admin also picked today's mode by hand: keep it for today
+            update.telework_applied_on = svc.localISODate();
+          }
+        }
         if (form.password) {
           update.password_hash = await hashPassword(form.password);
           update.first_login = true;
@@ -320,7 +339,10 @@ export function DataProvider({ children }) {
         ({ error } = await supabase.from('profiles').update(update).eq('id', existing.id));
       } else {
         const hash = await hashPassword(form.password);
-        ({ error } = await supabase.from('profiles').insert([{ ...base, password_hash: hash, first_login: true }]));
+        const schedule = days.length
+          ? { telework_days: days, ...svc.teleworkScheduleUpdate([], { id: 'new', teleworkDays: days, workMode: 'Office' }) }
+          : {};
+        ({ error } = await supabase.from('profiles').insert([{ ...base, ...schedule, password_hash: hash, first_login: true }]));
       }
       await refreshEmployees();
       return { error };
