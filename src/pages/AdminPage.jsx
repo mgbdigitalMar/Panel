@@ -5,8 +5,8 @@ import { Avatar, Badge, Modal, Input, Select, Button, Card, ConfirmModal, Sectio
 import { Search, Plus, Edit2, Trash2, Eye, EyeOff, Building, Car, FileText, Send, Clock, CheckCircle, Check, PenTool, Upload, X, Timer, Download } from 'lucide-react';
 import styles from './AdminPage.module.scss';
 import clsx from 'clsx';
-// bcrypt imported dynamically on demand
 import { supabase } from '../utils/supabase';
+import { createEmployeeAccount, setEmployeePassword } from '../../shared/services/auth.js';
 import { mapProfile } from '../../shared/services/profiles.js';
 import { TELEWORK_WEEKDAYS, teleworkScheduleUpdate, formatTeleworkDays, localISODate } from '../../shared/services/workMode.js';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -161,7 +161,7 @@ export default function AdminPage() {
     if (editEmp) {
       const updateData = {
         name: form.name,
-        email: form.email,
+        email: form.email.trim().toLowerCase(),
         role: form.role,
         department: form.dept,
         position: form.position,
@@ -185,11 +185,10 @@ export default function AdminPage() {
         }
       }
       if (form.password) {
-        // Hash en frontend — import dinámico
-        const bcryptModule = await import('bcryptjs');
-        const bcrypt = bcryptModule.default || bcryptModule;
-        updateData.password_hash = await bcrypt.hash(form.password, 10);
-        updateData.first_login = true; // Fuerza re-login con nueva contraseña
+        // Temporary password, stored by Supabase Auth; forces a change on next login
+        const { error: passErr } = await setEmployeePassword(supabase, editEmp.id, form.password);
+        if (passErr) return alert(`No se pudo cambiar la contraseña: ${passErr}`);
+        updateData.first_login = true;
       }
       const { data, error } = await supabase.from('profiles').update(updateData).eq('id', editEmp.id).select().single();
       
@@ -203,14 +202,13 @@ export default function AdminPage() {
         return;
       }
     } else {
-      // Hash en frontend antes de insertar — import dinámico
-      const bcryptModule = await import('bcryptjs');
-      const bcrypt = bcryptModule.default || bcryptModule;
-      const hashedPwd = await bcrypt.hash(form.password, 10);
+      // The login is created first (Supabase Auth); the profile takes its id
+      const account = await createEmployeeAccount(supabase, form.email, form.password);
+      if (account.error) return alert(`No se pudo crear el empleado: ${account.error}`);
       const { data, error } = await supabase.from('profiles').insert([{
+        id: account.id,
         name: form.name,
-        email: form.email,
-        password_hash: hashedPwd,
+        email: form.email.trim().toLowerCase(),
         role: form.role,
         department: form.dept,
         position: form.position,

@@ -2,7 +2,6 @@ import { createContext, useContext, useState, useEffect, useMemo } from 'react'
 import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
-import bcrypt from 'bcryptjs'
 import {
   showSystemNotification, playNotificationSound, notificationsEnabled,
   enablePush, disablePush, getRegistration, listenForNotificationClicks,
@@ -11,7 +10,8 @@ import {
   workModeSyncUpdate, changeWorkMode as changeWorkModeSvc, REQUEST_WORK_MODE, localISODate,
 } from '../../shared/services/workMode.js'
 import { mapProfile } from '../../shared/services/profiles.js'
-import { verifyPassword, isFirstAccess, FIRST_ACCESS_PASSWORD } from '../../shared/services/auth.js'
+import { signIn, isFirstAccess } from '../../shared/services/auth.js'
+import { fetchReservations as fetchReservationsSvc } from '../../shared/services/reservations.js'
 
 // ─── THEME CONTEXT ────────────────────────────────────────────
 export const ThemeCtx = createContext()
@@ -220,24 +220,10 @@ const [readIds, setReadIds] = useState(() => {
     })))
   }
 
+  // Same query as the app: the reservations_full view has no employee_id, so
+  // "Mis reservas", its counter and the delete / calendar buttons found nothing
   async function fetchReservations() {
-    const { data, error } = await supabase
-      .from('reservations_full')
-      .select('*')
-      .order('date', { ascending: false })
-    if (error) { console.error('reservations:', error); return }
-    setReservationsState(data.map(r => ({
-      id: r.id,
-      type: r.type,
-      resourceName: r.resource_name,
-      employeeId: r.employee_id,
-      employeeName: r.employee_name,
-      date: r.date,
-      timeStart: r.time_start?.slice(0, 5),
-      timeEnd:   r.time_end?.slice(0, 5),
-      purpose: r.purpose,
-      status: r.status,
-    })))
+    setReservationsState(await fetchReservationsSvc(supabase))
   }
 
   async function fetchRooms() {
@@ -1073,14 +1059,23 @@ export function AuthProvider({ children }) {
   const IDLE_TIMEOUT = 60 * 1000 // 1 min
   const [lastActivity, setLastActivity] = useState(Date.now())
 
-  async function loadProfile(authUser) {
+  async function loadProfile(id) {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', authUser.id)
-      .single()
+      .eq('id', id)
+      .maybeSingle()
     if (error || !data) return null
     return mapProfile(data)
+  }
+
+  // Signed in: show the app (or the first-access password page)
+  async function startSession(profile) {
+    setUser(profile)
+    const tabId = sessionStorage.getItem('margube_tabId') || 'tab_main'
+    localStorage.setItem('margube_session', JSON.stringify({ id: profile.id, tabId, lastActivity: Date.now() }))
+    await loadAllEmployees()
+    navigate(isFirstAccess(profile) ? '/changePassword' : '/dashboard')
   }
 
   async function loadAllEmployees() {
@@ -1101,30 +1096,23 @@ export function AuthProvider({ children }) {
     // Broadcast channel for cross-tab communication
     const bc = new BroadcastChannel('margube_sessions')
     
-    // Session restore
+    // Session restore: the identity comes from the Supabase Auth session, the
+    // stored marker only says when this browser was last active.
     const restoreSession = async () => {
       try {
-        const stored = localStorage.getItem('margube_session')
-        if (stored) {
-          const sessionData = JSON.parse(stored)
-          if (Date.now() - sessionData.lastActivity > IDLE_TIMEOUT) {
-            console.log('Session stale - forcing logout')
-            clearSession()
-            return
-          }
-          const profileId = sessionData.id
-          const { data, error } = await supabase.from('profiles').select('*').eq('id', profileId).single()
-          if (!error && data) {
-            const mapped = mapProfile(data)
-            setUser(mapped)
-
-            await loadAllEmployees()
-            if (mapped.firstLogin === true || mapped.firstLogin === 'true') navigate('/changePassword')
-            else navigate('/dashboard')
-          } else {
-            clearSession()
-          }
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) {
+          localStorage.removeItem('margube_session')
+          return
         }
+        const stored = JSON.parse(localStorage.getItem('margube_session') || 'null')
+        if (!stored || Date.now() - stored.lastActivity > IDLE_TIMEOUT) {
+          clearSession()
+          return
+        }
+        const profile = await loadProfile(session.user.id)
+        if (profile) await startSession(profile)
+        else clearSession()
       } catch (e) {
         console.error('Error restoring session:', e)
         clearSession()
@@ -1132,16 +1120,26 @@ export function AuthProvider({ children }) {
         setAuthLoading(false)
       }
     }
-    
+
     const clearSession = () => {
+      supabase.auth.signOut({ scope: 'local' })
       localStorage.removeItem('margube_session')
       sessionStorage.removeItem('margube_tabId')
       bc.postMessage({ type: 'logout' })
       setUser(null)
       navigate('/login')
     }
-    
+
     restoreSession()
+
+    // Session ended elsewhere (another tab, or it could not be refreshed)
+    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        localStorage.removeItem('margube_session')
+        setUser(null)
+        navigate('/login')
+      }
+    })
     
     // Listen for other tabs explicit logout
     const handleBCMessage = (ev) => {
@@ -1158,6 +1156,7 @@ export function AuthProvider({ children }) {
     return () => {
       bc.removeEventListener('message', handleBCMessage)
       bc.close()
+      authSub.unsubscribe()
     }
   }, [])
 
@@ -1218,10 +1217,7 @@ export function AuthProvider({ children }) {
         // mouse or key events to this page: don't count it as inactivity
         if (user.policyAccepted !== true || document.activeElement?.tagName === 'IFRAME') return;
         const inactive = Date.now() - lastActivity > IDLE_TIMEOUT;
-        if (inactive) {
-          console.log('Idle timeout - logging out');
-          logout();
-        }
+        if (inactive) logout();
       };
       interval = setInterval(checkIdle, 5000);
     }
@@ -1257,52 +1253,29 @@ export function AuthProvider({ children }) {
   useEffect(() => listenForNotificationClicks(path => navigate(path)), [])
 
   // ── Login ─────────────────────────────────────────────────
+  // The password is checked by Supabase Auth on the server; the browser never
+  // sees a hash. A person whose account has no password yet gets the same
+  // "incorrect" message: RRHH gives them a temporary one.
   const login = async (email, pass) => {
-    // Buscamos el perfil por correo
-    const { data: profileRow, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('email', email)
-      .single()
-    
-    if (error || !profileRow) {
-      console.error('Auth error info:', error, 'row:', profileRow)
-      return { ok: false, msg: `No se pudo obtener el perfil: ${error?.message || 'Perfil no encontrado'}` }
+    const res = await signIn(supabase, email, pass)
+    if (!res.ok) return res
+
+    const profile = await loadProfile(res.userId)
+    if (!profile) {
+      await supabase.auth.signOut({ scope: 'local' })
+      return { ok: false, msg: 'Tu cuenta no tiene ficha de empleado. Contacta con RRHH.' }
     }
-
-    // Same rule as the app (mobile/src/context/AuthContext.js): the shared
-    // temporary password only opens accounts on their first access, and the
-    // person is then sent to /changePassword to set their own.
-    const isValid = (isFirstAccess(profileRow) && pass === FIRST_ACCESS_PASSWORD)
-      || verifyPassword(pass, profileRow.password_hash, bcrypt)
-
-    if (!isValid) {
-      if (!profileRow.password_hash && !isFirstAccess(profileRow)) {
-        return { ok: false, msg: 'Tu cuenta aún no tiene contraseña. Pide a RRHH una contraseña temporal.' }
-      }
-      localStorage.removeItem('margube_session');
-      return { ok: false, msg: 'Email o contraseña incorrectos. Verifica mayúsculas/números especiales.' }
-    }
-
-    const mapped = mapProfile(profileRow)
-    setUser(mapped)
-
-    // Guardamos evidencia de conexión activa localmente + tab ID
-    const tabId = sessionStorage.getItem('margube_tabId') || 'tab_main'
-    localStorage.setItem('margube_session', JSON.stringify({ id: mapped.id, tabId, lastActivity: Date.now() }))
-    
-    await loadAllEmployees()
-    if (mapped.firstLogin === true || mapped.firstLogin === 'true') navigate('/changePassword')
-    else navigate('/dashboard')
-    
     setLastActivity(Date.now())
+    await startSession(profile)
     return { ok: true }
   }
 
   // ── Logout ────────────────────────────────────────────────
   const logout = async () => {
     // This browser stops receiving pushes for the person signing out
-    disablePush({ keepBrowserSubscription: true })
+    // (before signing out: the call needs the session)
+    await disablePush({ keepBrowserSubscription: true }).catch(() => {})
+    supabase.auth.signOut({ scope: 'local' })
     localStorage.removeItem('margube_session')
     localStorage.removeItem('margube_tabId')
     sessionStorage.removeItem('margube_tabId')

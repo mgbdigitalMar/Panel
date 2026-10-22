@@ -2,13 +2,10 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { KeyRound, Check } from 'lucide-react-native';
-import { verifyPasswordAsync } from '@shared/services/auth.js';
 import { toUserMessage } from '@shared/utils/errors.js';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth, FIRST_ACCESS_PASSWORD } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { supabase } from '../lib/supabase';
-import bcrypt from '../lib/bcrypt';
 import { Screen } from '../components/common/Screen';
 import { GlassCard } from '../components/common/GlassCard';
 import { GlassInput } from '../components/common/GlassInput';
@@ -79,11 +76,7 @@ export default function ChangePasswordScreen() {
     if (pass === FIRST_ACCESS_PASSWORD) return setErr('Elige una contraseña distinta de la temporal.');
     setLoading(true);
     try {
-      const { data } = await supabase.from('profiles').select('password_hash').eq('id', user.id).single();
-      if (data?.password_hash && await verifyPasswordAsync(pass, data.password_hash, bcrypt)) {
-        setLoading(false);
-        return setErr('Elige una contraseña distinta de la temporal.');
-      }
+      // The server refuses the current (temporary) password as the new one
       const { error } = await setNewPassword(pass);
       setLoading(false);
       if (error) return setErr(toUserMessage(error));

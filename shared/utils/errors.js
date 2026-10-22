@@ -32,6 +32,9 @@ export function classifyError(err) {
   if (err.userFacing) return 'user';
   const msg = String(err.message || err);
   const code = String(err.code || '');
+  // `raise exception` in our own database checks (e.g. a date in the past):
+  // those messages are written in Spanish for the person
+  if (code === 'P0001') return 'user';
   const status = Number(err.status || 0);
 
   if (NETWORK_PATTERNS.some((re) => re.test(msg))) return 'network';

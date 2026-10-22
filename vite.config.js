@@ -64,9 +64,6 @@ export default defineConfig({
             if (id.includes('lucide-react')) {
               return 'vendor-icons';
             }
-            if (id.includes('bcryptjs')) {
-              return 'vendor-bcrypt';
-            }
             return 'vendor';
           }
         }

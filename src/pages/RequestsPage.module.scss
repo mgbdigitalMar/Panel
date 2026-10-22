@@ -246,6 +246,17 @@
   }
 }
 
+// Same inline error as the booking form (ReservationsPage)
+.errorAlert {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
 .modalActions {
   display: flex;
   gap: 10px;

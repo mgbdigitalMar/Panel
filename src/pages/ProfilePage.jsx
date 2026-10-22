@@ -21,7 +21,7 @@ import {
 import styles from "./ProfilePage.module.scss";
 import clsx from "clsx";
 import { supabase } from "../utils/supabase";
-// bcrypt is dynamically imported on demand to save bundle size
+import { changeOwnPassword } from "../../shared/services/auth.js";
 import { useAutoDismiss } from "../hooks/useAutoDismiss";
 
 
@@ -118,29 +118,17 @@ export default function ProfilePage() {
     }
     setLoading(true);
     try {
-      const bcryptModule = await import("bcryptjs");
-      const bcrypt = bcryptModule.default || bcryptModule;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("password_hash")
-        .eq("id", user.id)
-        .single();
-      const isCurrentValid = bcrypt.compareSync(
-        form.currentPassword,
-        profile.password_hash,
-      );
-      if (!isCurrentValid) {
-        setMessage("Contraseña actual incorrecta.");
+      // Checked and stored by Supabase Auth on the server
+      const { error } = await changeOwnPassword(supabase, {
+        email: user.email,
+        currentPassword: form.currentPassword,
+        newPassword: form.newPassword,
+      });
+      if (error) {
+        setMessage(error);
         setLoading(false);
         return;
       }
-      const hashedPassword = await bcrypt.hash(form.newPassword, 10);
-      const { error } = await supabase
-        .from("profiles")
-        .update({ password_hash: hashedPassword })
-        .eq("id", user.id);
-      if (error) throw error;
       setMessage(
         "Contraseña actualizada correctamente. Usa la nueva en próximo login.",
       );

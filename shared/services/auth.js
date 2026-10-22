@@ -1,105 +1,85 @@
 /**
  * Auth service — platform-agnostic.
- * Handles login validation against the profiles table using bcrypt.
- * 
- * Note: This intentionally receives `bcryptModule` as a parameter
- * so both web (bcryptjs) and mobile (expo-crypto) can provide their
- * own implementation.
+ * Passwords live in Supabase Auth (auth.users, same email and bcrypt hash the
+ * profiles table used to hold) and are only ever checked by the server. See
+ * supabase/migrations/20261022120000_secure_auth.sql.
  */
-import { mapProfile } from './profiles.js';
 
 /**
- * Shared temporary password. It only opens accounts that are still on their
- * first access (`first_login = true`); the person must then set their own.
+ * Shared temporary password RRHH gives to new accounts. It is a normal
+ * password on the server; the client only uses it to refuse it as the
+ * person's own password on their first access.
  */
 export const FIRST_ACCESS_PASSWORD = 'margube2026';
 
-const isBcryptHash = (value) => /^\$2[aby]\$\d{2}\$/.test(value);
-
-/** Whether `profile` may sign in with FIRST_ACCESS_PASSWORD */
+/** Whether `profile` still has to replace its temporary password */
 export function isFirstAccess(profile) {
   return profile?.first_login === true || profile?.first_login === 'true'
     || profile?.firstLogin === true || profile?.firstLogin === 'true';
 }
 
-/**
- * Verify password against stored hash.
- * @param {string} password - Plain text password
- * @param {string|null} passwordHash - Stored bcrypt hash
- * @param {object} bcryptModule - bcrypt-compatible module with compareSync()
- * @returns {boolean}
- */
-export function verifyPassword(password, passwordHash, bcryptModule) {
-  if (!passwordHash) return false;
-
-  // Plaintext comparison only for values that are not a bcrypt hash (set by
-  // hand in the DB). Comparing against a real hash would let anyone who can
-  // read the hash sign in by typing the hash itself.
-  if (!isBcryptHash(passwordHash)) return password === passwordHash;
-
-  try {
-    return bcryptModule.compareSync(password, passwordHash);
-  } catch (e) {
-    return false;
+/** Spanish message for a Supabase Auth error */
+export function authErrorMessage(error) {
+  const code = error?.code || '';
+  const msg = error?.message || '';
+  if (code === 'invalid_credentials' || /invalid login credentials/i.test(msg)) {
+    return 'Email o contraseña incorrectos.';
   }
+  if (code === 'over_request_rate_limit' || /rate limit|too many/i.test(msg)) {
+    return 'Demasiados intentos. Espera unos minutos y vuelve a probar.';
+  }
+  if (code === 'weak_password' || /password should be/i.test(msg)) {
+    return 'La contraseña es demasiado débil. Usa al menos 8 caracteres.';
+  }
+  if (code === 'same_password') return 'La nueva contraseña debe ser distinta de la actual.';
+  if (code === 'reauthentication_needed') return 'Por seguridad, vuelve a iniciar sesión y repite el cambio.';
+  if (/failed to fetch|network/i.test(msg)) return 'Sin conexión con el servidor. Revisa tu red.';
+  return msg || 'No se pudo completar la operación.';
 }
 
 /**
- * Async variant of verifyPassword. bcrypt at cost 10 takes ~1 s in pure JS,
- * so React Native uses this to keep the UI thread responsive.
- * @param {object} bcryptModule - bcrypt-compatible module with compare()
- * @returns {Promise<boolean>}
+ * Sign in with email and password.
+ * @returns {Promise<{ ok: boolean, userId?: string, msg?: string }>}
  */
-export async function verifyPasswordAsync(password, passwordHash, bcryptModule) {
-  if (!passwordHash) return false;
-
-  // See verifyPassword: never compare a bcrypt hash as plaintext
-  if (!isBcryptHash(passwordHash)) return password === passwordHash;
-
-  try {
-    return await bcryptModule.compare(password, passwordHash);
-  } catch (e) {
-    return false;
-  }
+export async function signIn(supabase, email, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: String(email || '').trim().toLowerCase(),
+    password,
+  });
+  if (error) return { ok: false, msg: authErrorMessage(error) };
+  return { ok: true, userId: data.user.id };
 }
 
 /**
- * Login flow — query profiles by email + verify password.
- * @param {object} supabase - Supabase client
- * @param {string} email
- * @param {string} password
- * @param {object} bcryptModule - bcrypt-compatible module
- * @returns {{ ok: boolean, user?: object, msg?: string }}
+ * Change the signed-in person's password. With `currentPassword` it is
+ * checked first (profile page); without it, it is the first-access flow.
+ * @returns {Promise<{ error: string|null }>}
  */
-export async function loginWithCredentials(supabase, email, password, bcryptModule) {
-  const { data: profileRow, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('email', email)
-    .single();
-
-  if (error || !profileRow) {
-    return {
-      ok: false,
-      msg: `No se pudo obtener el perfil: ${error?.message || 'Perfil no encontrado'}`,
-    };
-  }
-
-  const isValid = verifyPassword(password, profileRow.password_hash, bcryptModule);
-
-  if (!isValid) {
-    if (!profileRow.password_hash) {
-      return {
-        ok: false,
-        msg: 'Primera vez: Configura tu contraseña en "Cambiar contraseña". (password_hash null)',
-      };
+export async function changeOwnPassword(supabase, { email, currentPassword, newPassword }) {
+  if (currentPassword != null) {
+    const { error } = await supabase.auth.signInWithPassword({ email: String(email || '').trim().toLowerCase(), password: currentPassword });
+    if (error) {
+      return { error: error.code === 'invalid_credentials' || /invalid login/i.test(error.message || '')
+        ? 'Contraseña actual incorrecta.'
+        : authErrorMessage(error) };
     }
-    return {
-      ok: false,
-      msg: 'Email o contraseña incorrectos. Verifica mayúsculas/números especiales.',
-    };
   }
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  return { error: error ? authErrorMessage(error) : null };
+}
 
-  const user = mapProfile(profileRow);
-  return { ok: true, user };
+/**
+ * RRHH: create the login for a new employee. Returns the id the new
+ * profiles row must use.
+ * @returns {Promise<{ id?: string, error?: string }>}
+ */
+export async function createEmployeeAccount(supabase, email, password) {
+  const { data, error } = await supabase.rpc('admin_create_account', { p_email: email, p_password: password });
+  return error ? { error: error.message } : { id: data };
+}
+
+/** RRHH: give an employee a temporary password (forces a change on next login) */
+export async function setEmployeePassword(supabase, userId, password) {
+  const { error } = await supabase.rpc('admin_set_password', { p_user_id: userId, p_password: password });
+  return { error: error ? error.message : null };
 }

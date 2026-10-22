@@ -7,11 +7,13 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 export const supabaseConfigured = Boolean(supabaseUrl && supabaseKey);
 
 export const supabase = createClient(supabaseUrl || 'https://not-configured.supabase.co', supabaseKey || 'not-configured', {
+  // Supabase Auth session, shared by the tabs of this browser (AuthProvider
+  // still logs it out after a minute without activity)
   auth: {
-    storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true,
+    detectSessionInUrl: false,
   },
   realtime: {
     // Heartbeats run in a Web Worker: browsers throttle timers in hidden tabs,

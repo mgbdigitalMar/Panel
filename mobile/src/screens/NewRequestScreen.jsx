@@ -175,7 +175,7 @@ export default function NewRequestScreen() {
       } else if (type === 'purchase') {
         res = await createRequest({ type: 'purchase', item: form.item.trim(), amount, reason: form.reason.trim() });
       } else {
-        res = await createRequest({ type, start_date: form.startDate, end_date: form.endDate, days: rangeDays, reason: form.reason.trim() });
+        res = await createRequest({ type, start_date: form.startDate, end_date: form.endDate, reason: form.reason.trim() });
       }
       if (res?.error) throw res.error;
       toast.success('Solicitud enviada', 'Te avisaremos cuando se revise.');

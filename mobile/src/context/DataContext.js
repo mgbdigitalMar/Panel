@@ -7,7 +7,6 @@ import * as svc from '@shared/services/index.js';
 import { REALTIME_CHANNELS } from '@shared/config/constants.js';
 import { logError } from '@shared/utils/errors.js';
 import { supabase } from '../lib/supabase';
-import { hashPassword } from '../lib/bcrypt';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { setBadgeCount } from '../services/pushNotifications';
@@ -319,7 +318,7 @@ export function DataProvider({ children }) {
     saveEmployee: async (existing, form) => {
       const base = {
         name: form.name.trim(),
-        email: form.email.trim(),
+        email: form.email.trim().toLowerCase(),
         role: form.role,
         department: form.dept,
         position: form.position || null,
@@ -346,25 +345,28 @@ export function DataProvider({ children }) {
           }
         }
         if (form.password) {
-          update.password_hash = await hashPassword(form.password);
+          // Temporary password, stored by Supabase Auth on the server
+          const res = await svc.setEmployeePassword(supabase, existing.id, form.password);
+          if (res.error) return { error: { userFacing: true, message: res.error } };
           update.first_login = true;
         }
         ({ error } = await supabase.from('profiles').update(update).eq('id', existing.id));
       } else {
-        const hash = await hashPassword(form.password);
+        // The login is created first; the profile takes its id
+        const account = await svc.createEmployeeAccount(supabase, base.email, form.password);
+        if (account.error) return { error: { userFacing: true, message: account.error } };
         const schedule = days.length
           ? { telework_days: days, ...svc.teleworkScheduleUpdate([], { id: 'new', teleworkDays: days, workMode: 'Office' }) }
           : {};
-        ({ error } = await supabase.from('profiles').insert([{ ...base, ...schedule, password_hash: hash, first_login: true }]));
+        ({ error } = await supabase.from('profiles').insert([{ ...base, ...schedule, id: account.id, first_login: true }]));
       }
       await refreshEmployees();
       return { error };
     },
     resetEmployeePassword: async (employeeId, tempPassword) => {
-      const hash = await hashPassword(tempPassword);
-      const { error } = await supabase.from('profiles').update({ password_hash: hash, first_login: true }).eq('id', employeeId);
+      const res = await svc.setEmployeePassword(supabase, employeeId, tempPassword);
       await refreshEmployees();
-      return { error };
+      return { error: res.error ? { userFacing: true, message: res.error } : null };
     },
     deleteEmployee: async (employeeId) => {
       // Same cleanup as the web: remove the employee's stored files first.

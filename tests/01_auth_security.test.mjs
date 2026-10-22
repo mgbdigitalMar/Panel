@@ -1,5 +1,4 @@
-import bcrypt from 'bcryptjs';
-import { verifyPassword, verifyPasswordAsync, isFirstAccess, FIRST_ACCESS_PASSWORD } from '../shared/services/auth.js';
+import { signIn, changeOwnPassword, authErrorMessage, isFirstAccess, FIRST_ACCESS_PASSWORD } from '../shared/services/auth.js';
 
 export async function runAuthSecurityTests() {
   console.log('\n🔵 [SUITE 1: Autenticación, Seguridad y Sesión]');
@@ -16,30 +15,33 @@ export async function runAuthSecurityTests() {
     }
   }
 
-  // 1. Verificación de hash bcrypt
-  const plainPassword = 'MargubeSegura2026!';
-  const hash = bcrypt.hashSync(plainPassword, 10);
-  assert('bcrypt genera un hash válido de 60 caracteres', hash.length === 60);
-  assert('bcrypt valida correctamente la contraseña original', bcrypt.compareSync(plainPassword, hash));
-  assert('bcrypt rechaza una contraseña incorrecta', !bcrypt.compareSync('PasswordIncorrecta', hash));
+  // 1. Login (shared/services/auth.js, lo usan la web y la app): la contraseña
+  //    la comprueba Supabase Auth en el servidor, el cliente nunca ve un hash
+  const calls = [];
+  const fakeSupabase = (result) => ({
+    auth: {
+      signInWithPassword: async (args) => { calls.push(['signIn', args]); return result; },
+      updateUser: async (args) => { calls.push(['update', args]); return { error: null }; },
+    },
+  });
+  const ok = await signIn(fakeSupabase({ data: { user: { id: 'u1' } }, error: null }), '  Ana@Margube.com ', 'secreta');
+  assert('Login correcto devuelve el id de la cuenta', ok.ok && ok.userId === 'u1');
+  assert('El email se envía sin espacios y en minúsculas', calls[0][1].email === 'ana@margube.com');
+  const bad = await signIn(fakeSupabase({ data: {}, error: { code: 'invalid_credentials', message: 'Invalid login credentials' } }), 'a@b.com', 'x');
+  assert('Credenciales malas: mensaje genérico, sin decir si el email existe', !bad.ok && bad.msg === 'Email o contraseña incorrectos.');
+  assert('Límite de intentos con mensaje propio', authErrorMessage({ code: 'over_request_rate_limit' }).startsWith('Demasiados intentos'));
 
-  // 2. Regla real de login (shared/services/auth.js, la usan la web y la app)
-  const isValidLogin = (row, pass) =>
-    (isFirstAccess(row) && pass === FIRST_ACCESS_PASSWORD) || verifyPassword(pass, row.password_hash, bcrypt);
-  const activeRow = { first_login: false, password_hash: hash };
-  const firstRow = { first_login: true, password_hash: null };
-  assert('Login acepta la contraseña propia', isValidLogin(activeRow, plainPassword));
-  assert('Pegar el hash como contraseña NO da acceso', !isValidLogin(activeRow, hash));
-  for (const master of ['margube2026', 'test123', 'test1234']) {
-    assert(`'${master}' NO abre una cuenta que ya tiene contraseña propia`, !isValidLogin(activeRow, master));
-  }
-  assert(`'${FIRST_ACCESS_PASSWORD}' abre una cuenta en su primer acceso`, isValidLogin(firstRow, FIRST_ACCESS_PASSWORD));
-  assert("'test123' NO abre una cuenta en su primer acceso", !isValidLogin(firstRow, 'test123'));
-  assert('Una cuenta sin contraseña y sin primer acceso no entra', !isValidLogin({ first_login: false, password_hash: null }, FIRST_ACCESS_PASSWORD));
+  // 2. Cambio de contraseña: con la actual (perfil) se comprueba primero
+  calls.length = 0;
+  const wrong = await changeOwnPassword(fakeSupabase({ error: { code: 'invalid_credentials', message: 'Invalid login credentials' } }), { email: 'a@b.com', currentPassword: 'mal', newPassword: 'nueva1234' });
+  assert('Contraseña actual incorrecta no cambia nada', wrong.error === 'Contraseña actual incorrecta.' && !calls.some(c => c[0] === 'update'));
+  calls.length = 0;
+  const first = await changeOwnPassword(fakeSupabase({ error: null }), { newPassword: 'nueva1234' });
+  assert('Primer acceso: guarda la nueva sin pedir la actual', first.error === null && calls.length === 1 && calls[0][0] === 'update');
 
-  // 3. Texto plano solo para valores que no son un hash bcrypt (puestos a mano en la BD)
-  assert('Contraseña en texto plano guardada a mano sigue funcionando', verifyPassword('temporal123', 'temporal123', bcrypt));
-  assert('verifyPasswordAsync también rechaza el hash como contraseña', !(await verifyPasswordAsync(hash, hash, bcrypt)));
+  // 3. Primer acceso
+  assert('isFirstAccess reconoce first_login', isFirstAccess({ first_login: true }) && !isFirstAccess({ first_login: false }));
+  assert('La contraseña temporal está definida', typeof FIRST_ACCESS_PASSWORD === 'string' && FIRST_ACCESS_PASSWORD.length >= 8);
 
   // 4. Mapeo de perfil (mapProfile)
   function mapProfile(row) {

@@ -7,8 +7,7 @@ import { Button, AnimatedBackdrop } from '../components/ui';
 import { Eye, EyeOff, ShieldCheck, AlertCircle, CheckCircle2, Save } from 'lucide-react';
 import styles from './ChangePasswordPage.module.scss';
 import { supabase } from '../utils/supabase';
-import { FIRST_ACCESS_PASSWORD } from '../../shared/services/auth.js';
-// bcrypt imported dynamically on demand
+import { FIRST_ACCESS_PASSWORD, changeOwnPassword } from '../../shared/services/auth.js';
 
 export default function ChangePasswordPage() {
   const { user, setCurrentUser, setNeedsOnboarding, setLastActivity } = useAuth();
@@ -66,41 +65,21 @@ export default function ChangePasswordPage() {
     }
     setLoading(true);
 
-    // Hasheamos la contraseña en el frontend con bcrypt (el trigger de Postgres fue eliminado).
-    // saltRounds=10 → hash $2a$10$... compatible con bcrypt.compareSync en login.
-    console.log('Hasheando contraseña con bcrypt (frontend)...');
-    const bcryptModule = await import('bcryptjs');
-    const bcrypt = bcryptModule.default || bcryptModule;
-    const hashedPassword = await bcrypt.hash(newPass, 10);
+    // Supabase Auth stores the new password (hashed on the server)
+    const { error: passErr } = await changeOwnPassword(supabase, { newPassword: newPass });
+    if (passErr) {
+      setErr(passErr);
+      setLoading(false);
+      return;
+    }
 
-    // Update DB con el hash bcrypt
-    const { error } = await supabase
-      .from('profiles')
-      .update({ password_hash: hashedPassword, first_login: false })
-      .eq('id', user.id);
-  
-  if (error) { 
-    console.error('DB update error:', error);
-    setErr('Error al guardar: ' + error.message); 
-    setLoading(false); 
-    return; 
-  }
-
-  // Verify update persisted
-  const { data: updated } = await supabase
-    .from('profiles')
-    .select('password_hash, first_login')
-    .eq('id', user.id)
-    .single();
-  
-  if (!updated || !updated.password_hash || updated.first_login !== false) {
-    console.error('Verify failed:', updated);
-    setErr('Error: Actualización no se guardó correctamente en DB.');
-    setLoading(false);
-    return;
-  }
-
-  console.log('✅ Password updated & verified');
+    const { error } = await supabase.from('profiles').update({ first_login: false }).eq('id', user.id);
+    if (error) {
+      console.error('first_login update:', error);
+      setErr('La contraseña se ha guardado, pero no se pudo completar el primer acceso. Vuelve a entrar con tu nueva contraseña.');
+      setLoading(false);
+      return;
+    }
 
   // Update local state and navigate directly
   await setCurrentUser({ ...user, firstLogin: false });

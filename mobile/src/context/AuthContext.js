@@ -1,19 +1,18 @@
 // Authentication, session and idle lock for the app.
-// Login uses the same model as the web AuthProvider: look up `profiles` by email
-// and verify the bcrypt hash. Differences, on purpose:
-//   * the web's master password (FIRST_ACCESS_PASSWORD) is only accepted while the
-//     account still has first_login = true; the other testing passwords never are;
-//   * the employees list is loaded without the password_hash column;
+// Login uses the same model as the web AuthProvider: Supabase Auth checks the
+// email and password on the server and the session is kept in the keychain
+// (lib/supabase.js). Differences, on purpose:
 //   * inactivity pauses the session (IDLE_TIMEOUT_MOBILE, 30 min) instead of
-//     logging out, and it can be resumed with biometrics or the password.
+//     logging out, and it can be resumed with biometrics or the password;
+//   * with biometrics on, logging out keeps the Supabase session on the device
+//     so the fingerprint / face can open it again without the password.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { mapProfile } from '@shared/services/profiles.js';
-import { verifyPasswordAsync, FIRST_ACCESS_PASSWORD } from '@shared/services/auth.js';
+import { signIn, changeOwnPassword, FIRST_ACCESS_PASSWORD } from '@shared/services/auth.js';
 import { IDLE_TIMEOUT_MOBILE } from '@shared/config/constants.js';
 import { toUserMessage, logError } from '@shared/utils/errors.js';
 import { supabase } from '../lib/supabase';
-import bcrypt, { hashPassword } from '../lib/bcrypt';
 import { getItem, setItem, removeItem, KEYS } from '../services/storage';
 import { authenticate } from '../services/biometrics';
 import { registerForPushNotificationsAsync, unregisterPushNotificationsAsync, setBadgeCount } from '../services/pushNotifications';
@@ -99,7 +98,8 @@ export function AuthProvider({ children }) {
         ]);
         setBiometric(bio || { enabled: false });
         setLastEmail(email || '');
-        if (session?.id) {
+        const { data: { session: auth } } = await supabase.auth.getSession();
+        if (session?.id && auth?.user?.id === session.id) {
           const profile = await fetchProfile(session.id);
           if (profile) {
             lastActivity.current = session.lastActivity || Date.now();
@@ -129,6 +129,8 @@ export function AuthProvider({ children }) {
       }
     }, 15000);
     const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') supabase.auth.startAutoRefresh();
+      else supabase.auth.stopAutoRefresh();
       if (state === 'active') {
         if (Date.now() - lastActivity.current > IDLE_TIMEOUT_MOBILE) setLocked(true);
         // Permission may have been granted from system settings meanwhile,
@@ -154,6 +156,7 @@ export function AuthProvider({ children }) {
         const me = userRef.current;
         if (!me) return;
         if (payload.eventType === 'DELETE' && payload.old?.id === me.id) {
+          supabase.auth.signOut({ scope: 'local' });
           clearSession();
         } else if (payload.new?.id === me.id) {
           setUser((prev) => (prev ? { ...prev, ...mapProfile(payload.new) } : prev));
@@ -168,37 +171,33 @@ export function AuthProvider({ children }) {
     const email = String(emailInput || '').trim();
     if (!email || !pass) return { ok: false, msg: 'Introduce tu correo y tu contraseña.' };
     try {
-      let { data: row, error } = await supabase.from('profiles').select('*').eq('email', email).maybeSingle();
-      if (!row && !error && email !== email.toLowerCase()) {
-        ({ data: row, error } = await supabase.from('profiles').select('*').eq('email', email.toLowerCase()).maybeSingle());
+      // First access with the temporary password: the navigator then forces
+      // the user to set a personal one (first_login).
+      const res = await signIn(supabase, email, pass);
+      if (!res.ok) return res;
+      const profile = await fetchProfile(res.userId);
+      if (!profile) {
+        await supabase.auth.signOut({ scope: 'local' });
+        return { ok: false, msg: 'Tu cuenta no tiene ficha de empleado. Contacta con RRHH.' };
       }
-      if (error) return { ok: false, msg: toUserMessage(error) };
-      if (!row) return { ok: false, msg: 'No hay ninguna cuenta con ese correo.' };
-      // First access: the shared temporary password is accepted, and the
-      // navigator then forces the user to set a personal one.
-      const firstAccess = row.first_login === true || row.first_login === 'true';
-      if (firstAccess && pass === FIRST_ACCESS_PASSWORD) {
-        await startSession(mapProfile(row));
-        return { ok: true };
-      }
-      if (!row.password_hash) {
-        return { ok: false, msg: 'Tu cuenta aún no tiene contraseña. Pide a RRHH una contraseña temporal.' };
-      }
-      const valid = await verifyPasswordAsync(pass, row.password_hash, bcrypt);
-      if (!valid) return { ok: false, msg: 'Correo o contraseña incorrectos.' };
-      await startSession(mapProfile(row));
+      await startSession(profile);
       return { ok: true };
     } catch (e) {
       logError('login', e);
       return { ok: false, msg: toUserMessage(e) };
     }
-  }, [startSession]);
+  }, [fetchProfile, startSession]);
 
   const loginWithBiometrics = useCallback(async () => {
     if (!biometric.enabled || !biometric.userId) return { ok: false };
     const ok = await authenticate('Entrar en Margube');
     if (!ok) return { ok: false };
     try {
+      // Reopens the session kept on the device at logout
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id !== biometric.userId) {
+        return { ok: false, msg: 'Tu sesión ha caducado. Entra con tu contraseña.' };
+      }
       const profile = await fetchProfile(biometric.userId);
       if (!profile) return { ok: false, msg: 'Tu cuenta ya no está disponible. Entra con tu contraseña.' };
       await startSession(profile);
@@ -222,10 +221,8 @@ export function AuthProvider({ children }) {
     const me = userRef.current;
     if (!me) return { ok: false };
     try {
-      const { data, error } = await supabase.from('profiles').select('password_hash').eq('id', me.id).single();
-      if (error) return { ok: false, msg: toUserMessage(error) };
-      const valid = await verifyPasswordAsync(pass, data.password_hash, bcrypt);
-      if (!valid) return { ok: false, msg: 'Contraseña incorrecta.' };
+      const res = await signIn(supabase, me.email, pass);
+      if (!res.ok) return { ok: false, msg: res.msg === 'Email o contraseña incorrectos.' ? 'Contraseña incorrecta.' : res.msg };
       lastActivity.current = Date.now();
       setLocked(false);
       persistSession(me.id, true);
@@ -238,8 +235,10 @@ export function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     await unregisterPushNotificationsAsync();
     await setBadgeCount(0);
+    // Biometrics on: keep the session so the fingerprint / face can reopen it
+    if (!biometric.enabled) await supabase.auth.signOut({ scope: 'local' });
     await clearSession();
-  }, [clearSession]);
+  }, [clearSession, biometric.enabled]);
 
   /** Same contract as the web setCurrentUser: persists firstLogin / workMode / policyAccepted. */
   const setCurrentUser = useCallback(async (updates) => {
@@ -261,8 +260,9 @@ export function AuthProvider({ children }) {
   /** First-access flow (ChangePasswordPage on the web). */
   const setNewPassword = useCallback(async (newPass) => {
     const me = userRef.current;
-    const hash = await hashPassword(newPass);
-    const { error } = await supabase.from('profiles').update({ password_hash: hash, first_login: false }).eq('id', me.id);
+    const { error: passErr } = await changeOwnPassword(supabase, { newPassword: newPass });
+    if (passErr) return { error: { userFacing: true, message: passErr } };
+    const { error } = await supabase.from('profiles').update({ first_login: false }).eq('id', me.id);
     if (error) return { error };
     const { data: check } = await supabase.from('profiles').select('first_login').eq('id', me.id).single();
     if (!check || check.first_login !== false) {
@@ -276,13 +276,8 @@ export function AuthProvider({ children }) {
   /** Profile flow: verify the current password, then store the new hash. */
   const changePassword = useCallback(async (current, next) => {
     const me = userRef.current;
-    const { data, error } = await supabase.from('profiles').select('password_hash').eq('id', me.id).single();
-    if (error) return { error };
-    const valid = await verifyPasswordAsync(current, data.password_hash, bcrypt);
-    if (!valid) return { error: { userFacing: true, message: 'Contraseña actual incorrecta.' } };
-    const hash = await hashPassword(next);
-    const { error: upErr } = await supabase.from('profiles').update({ password_hash: hash }).eq('id', me.id);
-    return { error: upErr || null };
+    const { error } = await changeOwnPassword(supabase, { email: me.email, currentPassword: current, newPassword: next });
+    return { error: error ? { userFacing: true, message: error } : null };
   }, []);
 
   const setBiometricEnabled = useCallback(async (enabled) => {

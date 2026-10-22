@@ -48,6 +48,8 @@ export default function ReservationsCalendar() {
 
   const year = base.getFullYear();
   const month = base.getMonth();
+  const now = new Date();
+  const today = dateString(now.getFullYear(), now.getMonth(), now.getDate());
 
   const prev = () => {
     const d = new Date(base);
@@ -110,9 +112,10 @@ export default function ReservationsCalendar() {
               if (!day) return <div key={`e-${i}`} className={styles.emptyCell} />;
               const ds = dateString(year, month, day);
               const dayRes = resByDay[ds] || [];
+              const isToday = ds === today;
               return (
-                <div key={ds} className={clsx(styles.dayCell, { [styles.dayCellHasRes]: dayRes.length > 0 })}>
-                  <span className={styles.dayNum}>{day}</span>
+                <div key={ds} className={clsx(styles.dayCell, { [styles.dayCellHasRes]: dayRes.length > 0, [styles.dayCellToday]: isToday })}>
+                  <span className={styles.dayNum} aria-current={isToday ? 'date' : undefined}>{day}</span>
                   <div className={styles.dayChips}>
                     {dayRes.slice(0, 3).map(r => (
                       <div
@@ -122,10 +125,10 @@ export default function ReservationsCalendar() {
                           background: r.type === 'room' ? 'var(--accent-bg)' : 'var(--warning-bg)',
                           color: r.type === 'room' ? 'var(--accent)' : 'var(--warning)',
                         }}
-                        title={`${r.resourceName} — ${r.timeStart}–${r.timeEnd}`}
+                        title={`${r.resourceName || 'Recurso'} — ${r.timeStart}–${r.timeEnd} — ${r.employeeName || 'Alguien'}`}
                       >
                         {r.type === 'room' ? <Building size={10} /> : <Car size={10} />}
-                        <span>{r.resourceName ? (r.resourceName.split(' ')[1] || r.resourceName) : 'Recurso'} - {r.employeeName || 'Alguien'}</span>
+                        <span>{r.resourceName || 'Recurso'} · {r.employeeName || 'Alguien'}</span>
                       </div>
                     ))}
                     {dayRes.length > 3 && (
@@ -147,12 +150,15 @@ export default function ReservationsCalendar() {
           <div className={styles.weekGrid}>
             {/* Column headers */}
             <div className={styles.hourAxisEmpty} />
-            {weekDays.map((d, i) => (
-              <div key={i} className={styles.weekDayHeader}>
-                <span className={styles.weekDayName}>{DAYS_ES[i]}</span>
-                <span className={styles.weekDayNum}>{d.getDate()}</span>
-              </div>
-            ))}
+            {weekDays.map((d, i) => {
+              const isToday = dateString(d.getFullYear(), d.getMonth(), d.getDate()) === today;
+              return (
+                <div key={i} className={clsx(styles.weekDayHeader, { [styles.weekDayHeaderToday]: isToday })}>
+                  <span className={styles.weekDayName}>{DAYS_ES[i]}</span>
+                  <span className={styles.weekDayNum} aria-current={isToday ? 'date' : undefined}>{d.getDate()}</span>
+                </div>
+              );
+            })}
 
             {/* Hour rows */}
             {HOURS.map(hour => (

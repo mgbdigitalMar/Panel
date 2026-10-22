@@ -6,7 +6,11 @@ import { Plus, Check, X, FileText, ExternalLink, Download, Trash2, Home, Briefca
 import styles from './RequestsPage.module.scss';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fmtDate, fmtRange, fmtMoney, plural } from '../utils/format';
+import { fmtDate, fmtRange, fmtMoney, plural, todayKey } from '../utils/format';
+
+/** Calendar days from start to end, both included (28 → 29 is 2 days) */
+const daysInclusive = (start, end) =>
+  Math.round((new Date(`${end}T00:00:00`) - new Date(`${start}T00:00:00`)) / 86400000) + 1;
 
 /** What was asked for: the day(s) for absences, the item and cost for purchases. */
 function requestDetail(r) {
@@ -34,6 +38,7 @@ export default function RequestsPage() {
   const [form, setForm]           = useState({ startDate: '', endDate: '', date: '', reason: '', item: '', amount: '', acceptedTerms: false });
   const [file, setFile]           = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [formError, setFormError] = useState('');
 
   // ?nueva=1 (search, shortcuts) opens the request form straight away
   const [searchParams, setSearchParams] = useSearchParams();
@@ -50,6 +55,7 @@ export default function RequestsPage() {
   useEffect(() => {
     // The declaration / conditions accepted for one type don't carry over to another
     setForm(f => (f.acceptedTerms ? { ...f, acceptedTerms: false } : f));
+    setFormError('');
     if (showModal && (reqType === 'external' || reqType === 'remoto')) {
       setConditionsRead(false);
       
@@ -117,6 +123,7 @@ export default function RequestsPage() {
   const formProblem = () => {
     if (reqType === 'asuntos_propios') {
       if (!form.date) return 'Indica el día que solicitas.';
+      if (form.date < todayKey()) return 'No puedes pedir asuntos propios para un día que ya ha pasado.';
       if (!form.reason.trim()) return 'Indica el motivo de la solicitud.';
     } else if (reqType === 'remoto' || reqType === 'external') {
       if (!form.startDate || !form.endDate) return 'Indica la fecha de inicio y la de fin.';
@@ -130,14 +137,15 @@ export default function RequestsPage() {
 
   const handleCreate = async () => {
     const problem = formProblem();
-    if (problem) { alert(problem); return; }
+    if (problem) { setFormError(problem); return; }
+    setFormError('');
     setLoading(true);
     let created;
     if (reqType === 'asuntos_propios') {
       let fileUrl = null;
       if (file) {
         if (file.size > 15 * 1024 * 1024) {
-          alert('El archivo supera el tamaño máximo permitido (15 MB).');
+          setFormError('El archivo supera el tamaño máximo permitido (15 MB).');
           setLoading(false);
           return;
         }
@@ -145,7 +153,7 @@ export default function RequestsPage() {
         if (uploadRes && !uploadRes.error) {
           fileUrl = uploadRes.url;
         } else if (uploadRes?.error) {
-          alert(`Error al subir el archivo: ${uploadRes.error}`);
+          setFormError(`Error al subir el archivo: ${uploadRes.error}`);
           setLoading(false);
           return;
         }
@@ -165,12 +173,13 @@ export default function RequestsPage() {
     setLoading(false);
     if (!created) {
       // Keep the form so nothing typed is lost
-      alert('No se pudo enviar la solicitud. Revisa tu conexión e inténtalo de nuevo.');
+      setFormError('No se pudo enviar la solicitud. Revisa tu conexión e inténtalo de nuevo.');
       return;
     }
     setShowModal(false);
     setForm({ startDate: '', endDate: '', date: '', reason: '', item: '', amount: '', acceptedTerms: false });
     setFile(null);
+    setFormError('');
   };
 
   const changeStatus = async (id, status, employeeId, type) => {
@@ -385,9 +394,13 @@ export default function RequestsPage() {
             </div>
             <div className={styles.modalGrid}>
               <Input label="Fecha inicio" value={form.startDate} onChange={v => setForm({ ...form, startDate: v })} type="date" required />
-              <Input label="Fecha fin"    value={form.endDate}   onChange={v => setForm({ ...form, endDate: v })}   type="date" required />
+              <Input label="Fecha fin"    value={form.endDate}   onChange={v => setForm({ ...form, endDate: v })}   type="date" min={form.startDate || undefined} required />
             </div>
-            <Textarea label="Motivo" value={form.reason} onChange={v => setForm({ ...form, reason: v })} placeholder="Explica el lugar y motivo del trabajo externo..." />
+            {form.startDate && form.endDate && form.endDate >= form.startDate && (
+              <p className={styles.modalWarningSubtitle}>{plural(daysInclusive(form.startDate, form.endDate), 'día', 'días')}</p>
+            )}
+            <Textarea label="Motivo" value={form.reason} onChange={v => setForm({ ...form, reason: v })}
+              placeholder={reqType === 'remoto' ? 'Explica el motivo del trabajo en remoto...' : 'Explica el lugar y motivo del trabajo externo...'} />
           </>
         ) : reqType === 'asuntos_propios' ? (
           <>
@@ -397,7 +410,7 @@ export default function RequestsPage() {
                 Rellena la fecha y el motivo. Puedes adjuntar documentación justificativa si procede.
               </p>
             </div>
-            <Input label="Día solicitado" value={form.date} onChange={v => setForm({ ...form, date: v })} type="date" required />
+            <Input label="Día solicitado" value={form.date} onChange={v => setForm({ ...form, date: v })} type="date" min={todayKey()} required />
             <Textarea label="Motivo de la solicitud" value={form.reason} onChange={v => setForm({ ...form, reason: v })} placeholder="Describir brevemente el motivo..." required />
             
             <div className={styles.uploadGroup}>
@@ -445,10 +458,12 @@ export default function RequestsPage() {
         ) : (
           <>
             <Input label="Artículo / servicio" value={form.item} onChange={v => setForm({ ...form, item: v })} placeholder="Ej: Licencia software, material de oficina..." required />
-            <Input label="Importe estimado (€)" value={form.amount} onChange={v => setForm({ ...form, amount: v })} type="number" required />
+            <Input label="Importe estimado (€)" value={form.amount} onChange={v => setForm({ ...form, amount: v })} type="number" min="0.01" step="0.01" required />
             <Textarea label="Justificación" value={form.reason} onChange={v => setForm({ ...form, reason: v })} placeholder="Explica para qué se necesita y su impacto..." />
           </>
         )}
+
+        {formError && <div className={styles.errorAlert} role="alert">{formError}</div>}
 
         <div className={styles.modalActions}>
           <Button variant="ghost" onClick={() => setShowModal(false)} disabled={loading}>Cancelar</Button>

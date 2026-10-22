@@ -97,6 +97,10 @@ export default function ReservationsPage() {
       setErrorMsg('La hora de fin debe ser posterior a la hora de inicio');
       return;
     }
+    if (new Date(`${form.date}T${form.timeStart}`) < new Date()) {
+      setErrorMsg('No se puede reservar en una fecha u hora que ya ha pasado');
+      return;
+    }
     setLoading(true);
     setErrorMsg('');
     const payload = {
@@ -340,7 +344,7 @@ export default function ReservationsPage() {
               : vehicles.map(v => ({ value: v.id, label: `${v.model} - ${v.plate}` }))),
           ]} 
         />
-        <Input label="Fecha" value={form.date} onChange={v => setForm({ ...form, date: v })} type="date" required />
+        <Input label="Fecha" value={form.date} onChange={v => setForm({ ...form, date: v })} type="date" min={todayKey()} required />
         <div className={styles.modalGrid}>
           <Input label="Hora inicio" value={form.timeStart} onChange={v => setForm({ ...form, timeStart: v })} type="time" required />
           <Input label="Hora fin"    value={form.timeEnd}   onChange={v => setForm({ ...form, timeEnd: v })}   type="time" required />

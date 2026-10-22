@@ -5,6 +5,7 @@ import { Clock, Inbox, CheckCircle, XCircle, Download, Timer, PenTool, TrendingD
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import styles from './HorasPage.module.scss';
+import { todayKey } from '../utils/format';
 
 // ── Excel/CSV export ──────────────────────────────────────────
 function exportToCSV(rows, filename) {
@@ -97,6 +98,7 @@ export default function HorasPage() {
   const [form, setForm] = useState({ date: '', reason: '', hours: '' });
   const [loading, setLoading]   = useState(false);
   const [success, setSuccess]   = useState('');
+  const [saveError, setSaveError] = useState('');
 
   // Filters for "Mi Bolsa"
   const [filterFrom, setFilterFrom] = useState('');
@@ -180,9 +182,18 @@ export default function HorasPage() {
 
   const allRows = [...myCredit, ...myDebt].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
+  // Shown next to the field instead of silently disabling the button
+  const today = todayKey();
+  const numHours = parseFloat(form.hours);
+  const hoursError = form.hours === '' ? ''
+    : isNaN(numHours) || numHours <= 0 ? 'Indica un número de horas mayor que 0.'
+    : numHours > 24 ? 'No puedes registrar más de 24 h en un día.'
+    : '';
+  const dateError = mode === 'debe' && form.date > today ? 'Las horas que debes no pueden ser de un día futuro.' : '';
+
   const handleSubmit = async () => {
-    const numHours = parseFloat(form.hours);
-    if (!form.date || !form.reason || isNaN(numHours) || numHours <= 0 || numHours > 24) return;
+    if (!form.date || !form.reason.trim() || !form.hours || hoursError || dateError) return;
+    setSaveError('');
     setLoading(true);
     const result = await createHourCompensation({
       employeeId: user?.id,
@@ -196,6 +207,8 @@ export default function HorasPage() {
       setSuccess(MODE_CONFIG[mode].successMsg);
       setForm({ date: '', reason: '', hours: '' });
       setTimeout(() => setSuccess(''), 5000);
+    } else {
+      setSaveError('No se pudieron registrar las horas. Revisa los datos e inténtalo de nuevo.');
     }
   };
 
@@ -301,6 +314,9 @@ export default function HorasPage() {
                   type="date"
                   value={form.date}
                   onChange={v => setForm({ ...form, date: v })}
+                  max={mode === 'debe' ? today : undefined}
+                  error={dateError}
+                  id="hours-date"
                   required
                 />
                 <Input
@@ -309,6 +325,11 @@ export default function HorasPage() {
                   value={form.hours}
                   onChange={v => setForm({ ...form, hours: v })}
                   placeholder="Ej: 1.5"
+                  min="0.25"
+                  max="24"
+                  step="0.25"
+                  error={hoursError}
+                  id="hours-amount"
                   required
                 />
                 <div className={styles.fullWidth}>
@@ -331,7 +352,7 @@ export default function HorasPage() {
                   icon={cfg.btnIcon}
                   onClick={handleSubmit}
                   loading={loading}
-                  disabled={!form.date || !form.reason || !form.hours || isNaN(parseFloat(form.hours)) || parseFloat(form.hours) <= 0 || parseFloat(form.hours) > 24 || loading}
+                  disabled={!form.date || !form.reason.trim() || !form.hours || !!hoursError || !!dateError || loading}
                   variant={mode === 'debe' ? 'danger' : mode === 'ya' ? 'success' : 'primary'}
                 >
                   {cfg.btnLabel}
@@ -351,6 +372,7 @@ export default function HorasPage() {
                     </motion.div>
                   )}
                 </AnimatePresence>
+                {saveError && <p className={styles.saveError} role="alert">{saveError}</p>}
               </div>
             </Card>
             </Section>
