@@ -1,9 +1,10 @@
-import { Suspense, lazy } from 'react'
+import { Suspense } from 'react'
 import { ThemeProvider, AuthProvider, AuthCtx, AppCtx, DataProvider } from './context'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AnimatePresence, MotionConfig } from 'framer-motion'
 import Layout from './components/Layout'
 import { BootLoader } from './components/ui'
+import { lazyWithReload as lazy } from './utils/chunkReload'
 
 const LoginPage          = lazy(() => import('./pages/LoginPage'))
 const ChangePasswordPage = lazy(() => import('./pages/ChangePasswordPage'))

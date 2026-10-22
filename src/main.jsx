@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.tsx'
 import { supabaseConfigured } from './utils/supabase'
 import { LeafMark } from './components/ui'
+import { AppErrorBoundary } from './components/AppErrorBoundary'
+import { reloadForNewVersion } from './utils/chunkReload'
 import './styles/global.scss'
 
 const queryClient = new QueryClient()
@@ -45,6 +47,12 @@ if (import.meta.env.DEV && 'serviceWorker' in navigator) {
   })().catch(() => {})
 }
 
+// A code file from the previous deploy is gone (any dynamic import, CSS
+// included): reload into the new version instead of failing.
+window.addEventListener('vite:preloadError', (event) => {
+  if (reloadForNewVersion()) event.preventDefault()
+})
+
 document.documentElement.setAttribute(
   'data-theme',
   (() => {
@@ -57,10 +65,12 @@ document.documentElement.setAttribute(
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {supabaseConfigured ? (
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
-    ) : <SetupRequired />}
+    <AppErrorBoundary>
+      {supabaseConfigured ? (
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      ) : <SetupRequired />}
+    </AppErrorBoundary>
   </React.StrictMode>
 )
