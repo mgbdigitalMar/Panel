@@ -1,7 +1,3 @@
-/**
- * Shared Services — Barrel export.
- * Import everything from here for convenience.
- */
 export * from './auth.js';
 export * from './profiles.js';
 export * from './requests.js';

@@ -19,8 +19,7 @@
 }
 
 /* Interactive card — lift on hover with spring physics feel */
-.card.interactive,
-.card--interactive {
+.card.interactive {
   cursor: pointer;
   transition:
     box-shadow 200ms var(--ease-apple-fluid),
@@ -36,27 +35,6 @@
   &:active {
     /* Scale feedback via Framer Motion */
   }
-}
-
-/* Accent-highlighted card */
-.card--accent {
-  border-color: rgba(var(--accent-rgb), 0.20);
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--gradient-cta);
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  }
-}
-
-/* Elevated card — extra depth */
-.card--elevated {
-  box-shadow: var(--shadow-lg), var(--glass-highlight);
 }
 
 .header {
@@ -83,11 +61,3 @@
   flex: 1;
 }
 
-.footer {
-  padding: clamp(14px, 1.8vw, 18px) clamp(20px, 2.5vw, 28px);
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}

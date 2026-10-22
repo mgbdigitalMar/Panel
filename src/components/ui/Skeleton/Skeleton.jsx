@@ -1,10 +1,6 @@
 import clsx from 'clsx';
 import styles from './Skeleton.module.scss';
 
-/**
- * Skeleton component for loading states
- * Shows shimmer animation while content loads
- */
 export function Skeleton({
   width = '100%',
   height = '20px',
@@ -30,9 +26,6 @@ export function Skeleton({
   );
 }
 
-/**
- * SkeletonCard - Quick skeleton for card loading states
- */
 export function SkeletonCard({ count = 1 }) {
   return (
     <>
@@ -49,9 +42,6 @@ export function SkeletonCard({ count = 1 }) {
   );
 }
 
-/**
- * SkeletonTable - Quick skeleton for table loading states
- */
 export function SkeletonTable({ rows = 5, columns = 4 }) {
   return (
     <div className={styles.skeletonTable}>
@@ -68,9 +58,6 @@ export function SkeletonTable({ rows = 5, columns = 4 }) {
   );
 }
 
-/**
- * SkeletonText - Quick skeleton for text loading states
- */
 export function SkeletonText({ lines = 3, lastLineWidth = '75%' }) {
   return (
     <div className={styles.skeletonText}>

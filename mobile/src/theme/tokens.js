@@ -16,8 +16,6 @@ export const FONTS = {
   monoBold: 'GeistMono_600SemiBold',
 };
 
-export const RADII = { sm: 12, md: 16, lg: 22, xl: 26, pill: 999 };
-
 // The login's brand panel: navy in both themes, used for one highlight per screen.
 export const BRAND = {
   navy: '#11141B',

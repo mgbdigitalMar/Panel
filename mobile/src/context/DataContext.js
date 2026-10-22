@@ -1,5 +1,4 @@
-// All intranet data for the app, kept in sync like the web DataProvider:
-// same tables, same realtime channels, same write rules (via ../shared/services),
+// Same tables, realtime channels and write rules as the web DataProvider (../shared/services),
 // plus a full refetch whenever the app returns to the foreground.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
@@ -15,7 +14,6 @@ import { todayISO, initials } from '../utils/format';
 const DataCtx = createContext(null);
 
 export const ONBOARDING_DOC_TITLE = '__ONBOARDING_DOC__';
-
 
 export function DataProvider({ children }) {
   const { user, employees, refreshEmployees, setUser } = useAuth();
@@ -39,9 +37,7 @@ export function DataProvider({ children }) {
   useEffect(() => { userRef.current = user; employeesRef.current = employees; }, [user, employees]);
   useEffect(() => { requestsRef.current = requests; }, [requests]);
 
-  // ── fetchers ────────────────────────────────────────────────────
-  // Employees only load their own requests and personal days (with their
-  // supporting documents); admins load everyone's.
+  // Employees load only their own requests and personal days; admins load everyone's.
   const ownScope = () => {
     const me = userRef.current;
     return me?.role === 'admin' ? {} : { employeeId: me?.id };
@@ -73,7 +69,6 @@ export function DataProvider({ children }) {
     setLastSync(new Date());
   }, [loadRequests, loadReservations, loadRooms, loadVehicles, loadDocuments, loadHours, loadPersonalDays, loadNews, loadNotifications]);
 
-  // ── initial load + realtime (mirrors the web channels and toasts) ──
   useEffect(() => {
     if (!user?.id) return undefined;
     const loadingId = user.id;
@@ -143,7 +138,6 @@ export function DataProvider({ children }) {
         .subscribe(),
     ];
 
-    // Equivalent of the web's visibilitychange refetch.
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') refetchAll();
     });
@@ -157,13 +151,11 @@ export function DataProvider({ children }) {
 
   const loadingData = !!user?.id && loadedFor !== user.id;
 
-  // App icon badge = unread notifications.
-  // Only this user's rows (a previous session's list may linger until the refetch lands).
+  // App icon badge: only this user's rows (a previous session's list may linger until the refetch lands)
   const myNotifications = useMemo(() => notifications.filter((n) => n.user_id === user?.id), [notifications, user?.id]);
   const unreadCount = useMemo(() => myNotifications.filter((n) => !n.read).length, [myNotifications]);
   useEffect(() => { if (user?.id) setBadgeCount(unreadCount); }, [unreadCount, user?.id]);
 
-  // ── work mode sync (same rule as the web, see shared/services/workMode.js) ──
   const syncingMode = useRef(null);
   useEffect(() => {
     if (!user?.id || loadingData) return;
@@ -184,12 +176,10 @@ export function DataProvider({ children }) {
     });
   }, [user, requests, loadingData, refreshEmployees, setUser]);
 
-  // ── writes: employee features ─────────────────────────────────
   const emps = () => employeesRef.current;
   const uid = () => userRef.current?.id;
 
   const actions = useMemo(() => ({
-    // Notifications
     markNotifRead: async (id) => {
       setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
       await svc.markNotifRead(supabase, id);
@@ -199,7 +189,6 @@ export function DataProvider({ children }) {
       await svc.markAllNotifsRead(supabase, uid());
     },
 
-    // Requests + personal days
     createRequest: async (payload) => {
       const res = await svc.createRequest(supabase, emps(), uid(), payload);
       if (!res.error) await loadRequests();
@@ -225,7 +214,6 @@ export function DataProvider({ children }) {
       return res;
     },
 
-    // Reservations
     createReservation: async (payload) => {
       const res = await svc.createReservation(supabase, emps(), rooms, vehicles, uid(), payload);
       if (!res.error) await loadReservations();
@@ -242,7 +230,6 @@ export function DataProvider({ children }) {
       return res;
     },
 
-    // Hours
     createHourCompensation: async ({ date, reason, hours, type }) => {
       const res = await svc.createHourCompensation(supabase, emps(), { employeeId: uid(), date, reason, hours, type });
       if (!res.error) await loadHours();
@@ -259,7 +246,6 @@ export function DataProvider({ children }) {
       return res;
     },
 
-    // Documents
     updateDocumentStatus: async (id, status) => {
       const res = await svc.updateDocumentStatus(supabase, id, status);
       await loadDocuments();
@@ -288,7 +274,6 @@ export function DataProvider({ children }) {
       return { error };
     },
 
-    // News
     saveNews: async (id, form) => {
       const payload = { title: form.title, content: form.content, type: form.type, category: form.category, pinned: form.pinned };
       const res = id
@@ -303,8 +288,6 @@ export function DataProvider({ children }) {
       return res || { error: null };
     },
 
-    // Work mode of any employee (admin) or self — EmployeesPage / ProfilePage on the web.
-    // Going back to the office ends the active request early and notifies the admins.
     setWorkMode: async (employeeId, mode) => {
       const employee = emps().find((e) => e.id === employeeId)
         || (userRef.current?.id === employeeId ? userRef.current : { id: employeeId });
@@ -314,7 +297,6 @@ export function DataProvider({ children }) {
       return res;
     },
 
-    // ── admin: employees (AdminPage) ──
     saveEmployee: async (existing, form) => {
       const base = {
         name: form.name.trim(),
@@ -327,8 +309,7 @@ export function DataProvider({ children }) {
         avatar_initials: initials(form.name),
         policy_accepted: form.policyAccepted === true,
       };
-      // Telework schedule (same rule as the web AdminPage): only sent when it
-      // changes, so the form keeps working before the telework migration is run.
+      // Telework days are only sent when they change, so the form works before the telework migration
       const days = [...(form.teleworkDays || [])].sort();
       const daysChanged = days.join() !== [...(existing?.teleworkDays || [])].sort().join();
       let error;
@@ -369,7 +350,6 @@ export function DataProvider({ children }) {
       return { error: res.error ? { userFacing: true, message: res.error } : null };
     },
     deleteEmployee: async (employeeId) => {
-      // Same cleanup as the web: remove the employee's stored files first.
       for (const d of documents.filter((x) => String(x.senderId) === String(employeeId) || String(x.recipientId) === String(employeeId))) {
         await svc.removeStorageFile(supabase, d.fileUrl);
       }
@@ -381,7 +361,6 @@ export function DataProvider({ children }) {
       return { error };
     },
 
-    // ── admin: rooms & vehicles ──
     saveRoom: async (id, form) => {
       const payload = {
         name: form.name.trim(),

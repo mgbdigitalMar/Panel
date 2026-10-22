@@ -7,14 +7,13 @@
   animation: slide-in-up 0.28s var(--ease-out) both;
 }
 
-/* ── Vertical stack of cards ─────────────────────────────────────── */
+/* Vertical stack of cards */
 .stack {
   display: flex;
   flex-direction: column;
   gap: clamp(14px, 2vw, 20px);
 }
 
-/* ── Card ────────────────────────────────────────────────────────── */
 .card {
   padding: 0;
   overflow: hidden;
@@ -32,7 +31,6 @@
   }
 }
 
-/* ── Card header ─────────────────────────────────────────────────── */
 .cardHeader {
   display: flex;
   align-items: center;
@@ -55,7 +53,6 @@
 .iconAccent  { background: var(--accent-bg);  color: var(--accent);  border: 1px solid rgba(var(--accent-rgb), 0.18); }
 .iconSuccess { background: var(--success-bg); color: var(--success); border: 1px solid rgba(var(--success-rgb), 0.18); }
 .iconInfo    { background: var(--info-bg);    color: var(--info);    border: 1px solid rgba(var(--info-rgb), 0.18); }
-.iconWarning { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(var(--warning-rgb), 0.18); }
 .iconNeutral { background: var(--bg-3);       color: var(--text-sec);border: 1px solid var(--border); }
 
 .cardTitle {
@@ -72,14 +69,14 @@
   margin: 0;
 }
 
-/* ── Separator ───────────────────────────────────────────────────── */
+/* Separator */
 .sep {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border), transparent);
   margin: 0 24px;
 }
 
-/* ── Field block (for complex controls like theme cards) ─────────── */
+/* Field block (for complex controls like theme cards) */
 .field {
   padding: 20px 24px;
 }
@@ -93,14 +90,7 @@
   letter-spacing: -0.01em;
 }
 
-.fieldDesc {
-  font-size: 12.5px;
-  color: var(--text-mut);
-  margin: 0 0 14px;
-  line-height: 1.5;
-}
-
-/* ── Theme cards ─────────────────────────────────────────────────── */
+/* Theme cards */
 .themeGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -190,36 +180,7 @@
   justify-content: center;
 }
 
-/* ── Accent picker ───────────────────────────────────────────────── */
-.accentRow {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.accentDot {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: color 0.15s var(--ease-out), background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), opacity 0.15s var(--ease-out), transform 0.15s var(--ease-out);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  flex-shrink: 0;
-
-  &:hover { transform: scale(1.08); box-shadow: 0 3px 12px rgba(0,0,0,0.25); }
-
-  &.accentDotActive {
-    border-color: #fff;
-    box-shadow: 0 0 0 2px var(--text-sec), 0 3px 12px rgba(0,0,0,0.3);
-    transform: scale(1.04);
-  }
-}
-
-/* ── Toggle row (for simple on/off settings) ─────────────────────── */
+/* Toggle row (for simple on/off settings) */
 .row {
   display: flex;
   align-items: center;
@@ -265,7 +226,7 @@
   line-height: 1.4;
 }
 
-/* ── Toggle switch ───────────────────────────────────────────────── */
+/* Toggle switch */
 .toggle {
   position: relative;
   width: 46px;
@@ -305,7 +266,6 @@
   }
 }
 
-/* ── Account grid ────────────────────────────────────────────────── */
 .accountGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -384,7 +344,7 @@
   strong { color: var(--accent); font-weight: 600; }
 }
 
-/* ── Online/mode indicator ───────────────────────────────────────── */
+/* Online/mode indicator */
 .accountOnline {
   display: inline-flex !important;
   align-items: center;

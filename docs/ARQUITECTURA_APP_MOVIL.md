@@ -6,7 +6,7 @@ Fecha: 2026-10-06. Estado: Fase 1 (auditoría) y Fase 2 (arquitectura) completas
 
 | Capa | Tecnología | Notas |
 |---|---|---|
-| Web | React 18 + Vite 5, react-router 7, SCSS modules + Tailwind 4, framer-motion, recharts, PWA | Entrada real: `src/main.jsx` → `src/App.tsx` (`App.jsx` y `App.backup.jsx` no se usan) |
+| Web | React 18 + Vite 5, react-router 7, SCSS modules + Tailwind 4, framer-motion, recharts, PWA | Entrada: `src/main.jsx` → `src/App.tsx` |
 | Estado | React Context (`src/context/index.jsx`, ~1300 líneas) | Theme, Auth, Data dividido en 9 contextos. React Query instalado pero sin uso |
 | Backend | Supabase (PostgreSQL + Realtime + Storage) | No hay API propia: los clientes consultan tablas directamente con la clave publicable |
 | Tiempo real | Supabase Realtime `postgres_changes` en 10 tablas + refetch al volver a la pestaña | Reutilizable tal cual en la app |
@@ -69,7 +69,6 @@ La app **no está todavía en paridad**. Faltan sobre todo asuntos propios, docu
 **Creado en esta fase:**
 - `supabase/migrations/20261006120000_push_notifications.sql`: tabla `push_tokens`, funciones RPC `register_push_token` / `unregister_push_token`, trigger en `notifications`.
 - `supabase/functions/send-push`: Edge Function que envía el push genérico vía Expo.
-- `shared/config/features.js`: registro de capacidades `FEATURE_WEB` / `FEATURE_MOBILE` / `FEATURE_BOTH`.
 - App: servicio push reescrito, deep links desde push, navegación desde notificaciones corregida, bundle de Metro reparado.
 
 **La web no se ha modificado.**
@@ -78,14 +77,14 @@ La app **no está todavía en paridad**. Faltan sobre todo asuntos propios, docu
 
 ```
 WEB (Vite/React) ─┐                         ┌─ APP (Expo/React Native)
-                  ├─ shared/ (constantes, servicios, validación, features) ─┤
+                  ├─ shared/ (constantes, servicios, validación) ─┤
                   └──────────── Supabase (PostgreSQL + RLS + Realtime + Storage + Edge Functions) ──────────┘
 ```
 
 - La lógica de negocio sensible (notificar a admins, cambios de estado, permisos) debe migrar progresivamente de los clientes a la base de datos: triggers, funciones RPC y políticas RLS. Así web y app la comparten sin duplicarla.
 - `shared/services` recibe el cliente Supabase como parámetro y no depende de DOM ni de React Native.
 - La UI es específica por plataforma; las reglas no.
-- Nuevas funciones: añadir la entrada en `shared/config/features.js`, la regla en backend, y la UI en el cliente que corresponda.
+- Nuevas funciones: la regla en backend y la UI en el cliente que corresponda.
 
 ## 6. Estrategia de notificaciones push
 

@@ -11,7 +11,6 @@
   margin-bottom: 4px;
 }
 
-/* ── Page Controls ─── */
 .pageControls {
   display: flex;
   justify-content: space-between;
@@ -26,8 +25,7 @@
   }
 }
 
-.controlsRight,
-.headerRight {
+.controlsRight {
   display: flex;
   gap: 10px;
   align-items: center;
@@ -39,8 +37,8 @@
   }
 }
 
-/* ── Section label ── */
-/* ── Resource Cards Grid ── */
+/* Section label */
+/* Resource Cards Grid */
 .resourceGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -151,7 +149,6 @@
   }
 }
 
-/* ── Table ── */
 .tableWrapper {
   overflow-x: auto;
   animation: fade-blur-in 0.6s var(--ease-out) backwards;
@@ -185,7 +182,7 @@
     color: var(--text-sec);
   }
 
-  /* ── Mobile Card Layout ── */
+  /* Mobile Card Layout */
   @media (max-width: 767px) {
     min-width: 100%;
 
@@ -252,9 +249,6 @@
   align-items: center;
 }
 
-
-
-/* ── Modal ── */
 .modalGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -272,12 +266,6 @@
   margin-top: 28px;
   padding-top: 20px;
   border-top: 1px solid var(--border);
-}
-
-.headerRight {
-  display: flex;
-  gap: 12px;
-  align-items: center;
 }
 
 .noMargin {
@@ -343,7 +331,6 @@
   font-size: 14px;
 }
 
-/* ── Tabs: shared pattern (src/styles/_patterns.scss) ─────────────── */
 .tabsRow { @include p.tabs-row; }
 .tabBtn { @include p.tab-btn; }
 .tabBtnActive {

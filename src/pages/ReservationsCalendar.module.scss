@@ -13,7 +13,6 @@
   width: 100%;
 }
 
-/* ── Header ────────────────────────────────────────────── */
 .calHeader {
   display: flex;
   align-items: center;
@@ -117,7 +116,6 @@
   }
 }
 
-/* ── Month grid ────────────────────────────────────────── */
 .monthGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -238,7 +236,6 @@
   }
 }
 
-/* ── Week grid ──────────────────────────────────────────── */
 .weekGrid {
   display: grid;
   grid-template-columns: 54px repeat(7, minmax(80px, 1fr));

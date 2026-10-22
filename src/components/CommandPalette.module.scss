@@ -1,6 +1,4 @@
-/* ═══════════════════════════════════════════════════════════════════
-   GLOBAL SEARCH — pages, quick actions and people (Ctrl/⌘ K)
-═══════════════════════════════════════════════════════════════════ */
+/* Global search: pages, quick actions and people (Ctrl/⌘ K) */
 
 .overlay {
   position: fixed;
@@ -25,7 +23,6 @@
   }
 }
 
-/* ── Panel ────────────────────────────────────────────────────── */
 .panel {
   position: relative;
   width: min(580px, calc(100vw - 32px));
@@ -49,7 +46,6 @@
   }
 }
 
-/* ── Search Row ───────────────────────────────────────────────── */
 .searchRow {
   display: flex;
   align-items: center;
@@ -98,7 +94,7 @@
   }
 }
 
-/* ── Results Area ─────────────────────────────────────────────── */
+/* Results Area */
 .results {
   flex: 1;
   overflow-y: auto;
@@ -109,7 +105,6 @@
   &::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 4px; }
 }
 
-/* ── Section Label ────────────────────────────────────────────── */
 .sectionLabel {
   font-size: 12px;
   font-weight: 600;
@@ -119,7 +114,6 @@
   margin: 0;
 }
 
-/* ── Item ─────────────────────────────────────────────────────── */
 .item {
   display: flex;
   align-items: center;
@@ -214,7 +208,7 @@
   transition: opacity 0.15s, color 0.15s;
 }
 
-/* ── Empty State ──────────────────────────────────────────────── */
+/* Empty State */
 .empty {
   display: flex;
   flex-direction: column;
@@ -237,7 +231,6 @@
   span { font-size: 12.5px; color: var(--text-mut); }
 }
 
-/* ── Footer ───────────────────────────────────────────────────── */
 .footer {
   border-top: 1px solid rgba(var(--border-rgb), 0.35);
   padding: 10px 16px;

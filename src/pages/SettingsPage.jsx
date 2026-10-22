@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme, useAuth } from '../context';
 import { Card, Avatar } from '../components/ui';
 import {
-  Sun, Moon, Monitor, Layers, BellRing, BellOff, Volume2, VolumeX,
+  Sun, Moon, Monitor, BellRing, BellOff, Volume2, VolumeX,
   Palette, Check, User, Building, Wifi,
 } from 'lucide-react';
 import styles from './SettingsPage.module.scss';
@@ -22,7 +22,6 @@ const item = {
   show:   { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
 };
 
-// ── localStorage helpers ──────────────────────────────────────────────
 function getLS(key, fallback) {
   try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : fallback; }
   catch { return fallback; }
@@ -31,7 +30,6 @@ function setLS(key, val) {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
 }
 
-// ── Toggle ────────────────────────────────────────────────────────────
 function Toggle({ checked, onChange, id }) {
   return (
     <button
@@ -46,12 +44,10 @@ function Toggle({ checked, onChange, id }) {
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────
 export default function SettingsPage() {
   const { mode, setMode } = useTheme();
   const { user } = useAuth();
 
-  // ── Browser notifications ─────────────────────────────────────────
   const [browserNotifs, setBrowserNotifs] = useState(() => getLS('margube-browser-notifs', false));
   const [notifPerm, setNotifPerm] = useState('default');
   useEffect(() => {
@@ -94,7 +90,6 @@ export default function SettingsPage() {
     }
   };
 
-  // ── Sounds ────────────────────────────────────────────────────────
   const [soundsOn, setSoundsOn] = useState(() => getLS('margube-sounds', true));
   const handleSounds = (val) => {
     setSoundsOn(val);
@@ -122,7 +117,7 @@ export default function SettingsPage() {
     <div className={styles.page}>
       <motion.div className={styles.stack} variants={container} initial="hidden" animate="show">
 
-        {/* ── APARIENCIA ── */}
+        {/* Apariencia */}
         <motion.div variants={item}>
         <Card className={styles.card}>
           <div className={styles.cardHeader}>
@@ -162,7 +157,7 @@ export default function SettingsPage() {
         </Card>
         </motion.div>
 
-        {/* ── NOTIFICACIONES ── */}
+        {/* Notificaciones */}
         <motion.div variants={item}>
         <Card className={styles.card}>
           <div className={styles.cardHeader}>
@@ -202,7 +197,6 @@ export default function SettingsPage() {
             />
           </div>
 
-
           <div className={styles.sep} />
 
           <div className={styles.row}>
@@ -220,7 +214,7 @@ export default function SettingsPage() {
         </Card>
         </motion.div>
 
-        {/* ── CUENTA ── */}
+        {/* Cuenta */}
         <motion.div variants={item}>
         <Card className={styles.card}>
           <div className={styles.cardHeader}>
@@ -231,7 +225,6 @@ export default function SettingsPage() {
               <h2 className={styles.cardTitle}>Tu cuenta</h2>
               <p className={styles.cardSub}>Información de tu perfil en la plataforma</p>
             </div>
-            {/* Avatar in header */}
             <Avatar
               initials={user?.avatar || user?.name?.slice(0, 2)}
               size={38}

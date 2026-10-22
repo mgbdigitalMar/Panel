@@ -62,11 +62,9 @@ function AppShell() {
                 <DataProvider>
                   <Suspense fallback={<BootLoader label="Cargando…" />}>
                     <Routes>
-                      {/* Rutas Públicas */}
                       <Route path="/login" element={<LoginPage />} />
                       <Route path="/changePassword" element={<ChangePasswordPage />} />
                       
-                      {/* Rutas Protegidas */}
                       <Route path="/" element={<Navigate to="/dashboard" replace />} />
                       
                       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
@@ -78,10 +76,8 @@ function AppShell() {
                       <Route path="/employees" element={<ProtectedRoute><EmployeesPage /></ProtectedRoute>} />
                       <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
                       
-                      {/* Ruta Admin */}
                       <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPage /></AdminRoute></ProtectedRoute>} />
                       
-                      {/* Fallback */}
                       <Route path="*" element={<Navigate to="/dashboard" replace />} />
                     </Routes>
                   </Suspense>

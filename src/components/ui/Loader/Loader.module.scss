@@ -1,7 +1,4 @@
-/* ═══════════════════════════════════════════════════════════════════
-   LOADERS — built from the Margube leaf mark
-   One timeline (2.4s): outline draws → leaf fills → glass sheen → release
-═══════════════════════════════════════════════════════════════════ */
+/* One 2.4s timeline: outline draws → leaf fills → glass sheen → release */
 
 .srOnly {
   position: absolute;
@@ -12,7 +9,7 @@
   white-space: nowrap;
 }
 
-/* ── Leaf mark ──────────────────────────────────────────────────────── */
+/* Leaf mark */
 .mark {
   --mark-tile: #2F5BEA;
   --mark-cycle: 2.4s;
@@ -101,7 +98,7 @@
   78%, 100% { transform: translateX(120%); }
 }
 
-/* ── Boot screen ───────────────────────────────────────────────────── */
+/* Boot screen */
 .boot {
   position: fixed;
   inset: 0;
@@ -147,7 +144,6 @@
   to   { transform: translateX(290%); }
 }
 
-/* ── Spinner ───────────────────────────────────────────────────────── */
 .spinner {
   display: inline-flex;
   flex-shrink: 0;
@@ -182,7 +178,7 @@
   100% { stroke-dasharray: 2 100;  stroke-dashoffset: -98; }
 }
 
-/* ── Top progress hairline ─────────────────────────────────────────── */
+/* Top progress hairline */
 .topProgress {
   position: absolute;
   left: 18px;
@@ -210,7 +206,7 @@
   .topProgressActive & { animation-play-state: running; }
 }
 
-/* ── In-shell page placeholder ─────────────────────────────────────── */
+/* In-shell page placeholder */
 .page {
   display: flex;
   flex-direction: column;
@@ -285,7 +281,7 @@
   to { transform: translateX(100%); }
 }
 
-/* ── Reduced motion: keep state legible, drop the travel ──────────── */
+/* Reduced motion: keep state legible, drop the travel */
 @media (prefers-reduced-motion: reduce) {
   .markAnimate {
     .leafStroke, .vein { animation: none; stroke-dashoffset: 0; }

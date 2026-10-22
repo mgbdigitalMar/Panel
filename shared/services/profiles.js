@@ -1,9 +1,4 @@
-/**
- * Profiles / Employees service — platform-agnostic.
- * All functions receive the Supabase client as first argument.
- */
 
-/** Map a Supabase profile row → app user shape */
 export function mapProfile(profile) {
   if (!profile) return null;
   const rawDept = (profile.department || profile.dept || '').trim();
@@ -35,7 +30,6 @@ export function mapProfile(profile) {
   };
 }
 
-/** Load a single profile by auth user ID */
 export async function loadProfile(supabase, userId) {
   const { data, error } = await supabase
     .from('profiles')
@@ -46,7 +40,6 @@ export async function loadProfile(supabase, userId) {
   return mapProfile(data);
 }
 
-/** Load all employees (profiles) */
 export async function loadAllEmployees(supabase) {
   const { data, error } = await supabase
     .from('profiles')
@@ -57,21 +50,4 @@ export async function loadAllEmployees(supabase) {
     return [];
   }
   return data.map(mapProfile);
-}
-
-/** Update profile fields */
-export async function updateProfile(supabase, userId, updates) {
-  const dbUpdates = {};
-  if (updates.firstLogin === false) dbUpdates.first_login = false;
-  if (updates.workMode) dbUpdates.work_mode = updates.workMode;
-  if (updates.policyAccepted === true) dbUpdates.policy_accepted = true;
-
-  if (Object.keys(dbUpdates).length > 0) {
-    const { error } = await supabase
-      .from('profiles')
-      .update(dbUpdates)
-      .eq('id', userId);
-    if (error) console.error('updateProfile:', error);
-    return { error };
-  }
 }

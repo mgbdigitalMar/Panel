@@ -10,12 +10,8 @@ import { motion, useMotionValue, useTransform, animate, useReducedMotion } from 
 // Explicit map: `import * as Icons` pulled the whole icon set into the bundle
 const ICONS = { Building, Calendar, Car, CheckCircle, Clock, Home, Inbox, MapPin, Newspaper, TrendingDown, TrendingUp, Users, XCircle };
 
-/**
- * StatCard — compact KPI tile.
- * `icon` takes a lucide component or one of the names above.
- * Pass `onClick` to make the whole tile a button that opens the related page.
- * `trend` is optional and should only ever carry a computed value.
- */
+/** `icon` takes a lucide component or one of the names above; `onClick` makes the tile a button.
+ * `trend` must only ever carry a computed value. */
 export function StatCard({ label, value, icon, color = 'var(--accent)', sub, trend, trendUp, loading, onClick, actionLabel, className }) {
   const IconComponent = typeof icon === 'string' ? (ICONS[icon] || HelpCircle) : (icon || HelpCircle);
   const reduce = useReducedMotion();

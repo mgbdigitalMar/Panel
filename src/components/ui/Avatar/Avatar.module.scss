@@ -24,20 +24,6 @@
   }
 }
 
-/* Online presence indicator dot */
-.avatar--online::after {
-  content: '';
-  position: absolute;
-  bottom: 1px;
-  right: 1px;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--success);
-  border: 2px solid var(--card);
-}
-
-
 .image {
   width: 100%;
   height: 100%;

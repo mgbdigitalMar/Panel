@@ -19,20 +19,15 @@ import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
 import { fmtDate, fmtDayShort, fmtRange, todayKey } from '../utils/format';
 import { workdayProgress, greetingFor } from '../utils/workday';
 
-
-// ── Chart data helpers ────────────────────────────────────
 const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
-/**
- * Groups requests by month for a given year.
- * Returns all 12 months (shows 0 for months with no data).
- */
+/** Requests per month of `year`, with all 12 months (0 when empty). */
 function buildRequestsByMonth(requests, year) {
   const map = {};
   MONTHS.forEach((m, i) => { map[i] = { mes: m, aprobadas: 0, pendientes: 0, rechazadas: 0 }; });
   requests.forEach(r => {
     const d = new Date(r.createdAt);
-    if (d.getFullYear() !== year) return;   // only this year
+    if (d.getFullYear() !== year) return;
     const m = d.getMonth();
     if (r.status === 'approved')  map[m].aprobadas++;
     if (r.status === 'pending')   map[m].pendientes++;
@@ -41,12 +36,7 @@ function buildRequestsByMonth(requests, year) {
   return Object.values(map);
 }
 
-/**
- * Splits reservations of a given year/month into their calendar weeks.
- * @param {Array}  reservations  - full reservations array
- * @param {number} year
- * @param {number} month         - 0-indexed
- */
+/** Reservations of a month (0-indexed) split into its calendar weeks. */
 function buildReservationsByWeek(reservations, year, month) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const weeks = [];
@@ -55,7 +45,7 @@ function buildReservationsByWeek(reservations, year, month) {
 
   while (d <= daysInMonth) {
     const startDate = new Date(year, month, d);
-    const dayOfWeek = startDate.getDay(); // 0 Sun, 1 Mon...
+    const dayOfWeek = startDate.getDay();
     const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
     const endDay = Math.min(d + daysUntilSunday, daysInMonth);
 
@@ -90,7 +80,6 @@ const REQUEST_LABELS = {
 
 const STATUS_LABELS = { pending: 'Pendiente', approved: 'Aprobada', rejected: 'Rechazada' };
 
-// ── Custom tooltip ────────────────────────────────────
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   return (
@@ -153,10 +142,9 @@ export default function DashboardPage() {
   const currentYear = today.getFullYear();
   const todayStr = todayKey(today);
 
-  // Month navigator — starts on the current real month
   const [chartMonth, setChartMonth] = useState(() => ({
     year:  currentYear,
-    month: today.getMonth(), // 0-indexed
+    month: today.getMonth(),
   }));
 
   const prevMonth = useCallback(() => {
@@ -175,7 +163,6 @@ export default function DashboardPage() {
     });
   }, []);
 
-  // Year navigator for requests chart — starts on current year
   const [requestsYear, setRequestsYear] = useState(currentYear);
   const prevYear = useCallback(() => setRequestsYear(y => y - 1), []);
   const nextYear = useCallback(() => setRequestsYear(y => Math.min(y + 1, currentYear)), [currentYear]);
@@ -232,7 +219,6 @@ export default function DashboardPage() {
     padding: '8px 12px',
   };
 
-  // ── Greeting ─────────────────────────────────────────
   const hour = today.getHours();
   const greeting = greetingFor(today);
   const dateLine = today.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -245,14 +231,13 @@ export default function DashboardPage() {
     : ['El día fue productivo', '¡Buen trabajo hoy!', 'Descansa y recarga'];
   const motivation = motivations[today.getDate() % motivations.length];
 
-  // ── KPI figures (StatCard animates the count itself) ─
+  // KPI figures (StatCard animates the count itself)
   const todayResCount = reservations.filter(r => r.date === todayStr).length;
   const newsThisMonth = news.filter(n => {
     const d = new Date(n.date || n.createdAt);
     return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth();
   }).length;
 
-  // ── Personal modules ─────────────────────────────────
   const myUpcoming = useMemo(() =>
     reservations
       .filter(r => r.employeeId === user?.id && r.date >= todayStr && r.status !== 'rejected' && r.status !== 'cancelled')
@@ -274,7 +259,6 @@ export default function DashboardPage() {
     return { balance: credit - debt, pending };
   }, [hourCompensations, user?.id]);
 
-  // ── News ─────────────────────────────────────────────
   const sortedNews = useMemo(() =>
     [...news].sort((a, b) => (b.pinned === true) - (a.pinned === true) || new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt)),
   [news]);
@@ -283,7 +267,6 @@ export default function DashboardPage() {
 
   return (
     <div className={styles.page}>
-      {/* ── Greeting ──────────────────────────── */}
       <header className={styles.hero}>
         <div className={styles.heroText}>
           <p className={styles.heroDate}>{dateLine}</p>
@@ -322,7 +305,6 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* ── KPI Cards ───────────────────────────────── */}
       <div className={styles.gridCards}>
         <StatCard
           label="Empleados activos"
@@ -362,7 +344,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* ── News + today ──────────────────────── */}
+      {/* News + today */}
       <div className={styles.mainGrid}>
         <div className={styles.mainCol}>
           <section aria-labelledby="news-title">
@@ -434,7 +416,6 @@ export default function DashboardPage() {
             )}
           </section>
 
-          {/* ── Personal modules ─────────────── */}
           <section aria-labelledby="modules-title">
             <SectionHead id="modules-title" title="Mis módulos" />
             <div className={styles.modules}>
@@ -524,7 +505,7 @@ export default function DashboardPage() {
           </section>
         </div>
 
-        {/* ── Right column ─────────────────── */}
+        {/* Right column */}
         <aside className={styles.sideCol} aria-label="Hoy en Margube">
           <SectionHead title="Hoy en Margube" />
           <TodayPanel />
@@ -546,7 +527,6 @@ export default function DashboardPage() {
         </aside>
       </div>
 
-      {/* ── Activity charts ───────────────────── */}
       <section aria-labelledby="activity-title">
         <SectionHead id="activity-title" title="Actividad" />
         <div className={styles.chartsRow}>
@@ -640,7 +620,6 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* ── Recent reservations table ─────────── */}
       <section aria-labelledby="recent-title">
         <SectionHead id="recent-title" title="Reservas recientes" action="Ver todas" onAction={() => navigate('/reservations')} />
         <Card>

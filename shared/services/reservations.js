@@ -1,15 +1,7 @@
-/**
- * Reservations service — platform-agnostic.
- * CRUD for `reservations`, `rooms`, `vehicles` tables.
- */
 import { notifyAdmins } from './notifications.js';
 
-/**
- * Fetch all reservations.
- * Reads the base table with joins instead of the `reservations_full` view:
- * the view only exposes names, and clients need employee_id / room_id /
- * vehicle_id to know who owns a reservation and to detect overlaps.
- */
+/** The base table, not the `reservations_full` view: clients need employee_id, room_id and
+ * vehicle_id to know who owns a reservation and to detect overlaps. */
 export async function fetchReservations(supabase) {
   const { data, error } = await supabase
     .from('reservations')
@@ -48,7 +40,6 @@ export async function fetchReservations(supabase) {
   }));
 }
 
-/** Fetch all rooms */
 export async function fetchRooms(supabase) {
   const { data, error } = await supabase.from('rooms').select('*').order('id');
   if (error) { console.error('fetchRooms:', error); return []; }
@@ -58,7 +49,6 @@ export async function fetchRooms(supabase) {
   }));
 }
 
-/** Fetch all vehicles */
 export async function fetchVehicles(supabase) {
   const { data, error } = await supabase.from('vehicles').select('*').order('id');
   if (error) { console.error('fetchVehicles:', error); return []; }
@@ -68,7 +58,6 @@ export async function fetchVehicles(supabase) {
   }));
 }
 
-/** Create a reservation */
 export async function createReservation(supabase, employees, rooms, vehicles, employeeId, payload) {
   let rName = payload.resourceName;
   if (!rName) {
@@ -112,7 +101,6 @@ export async function createReservation(supabase, employees, rooms, vehicles, em
   return { data };
 }
 
-/** Update reservation status */
 export async function updateReservationStatus(supabase, id, status, reviewedBy) {
   const { error } = await supabase.from('reservations').update({
     status,
@@ -123,7 +111,6 @@ export async function updateReservationStatus(supabase, id, status, reviewedBy) 
   return { error };
 }
 
-/** Delete a reservation */
 export async function deleteReservation(supabase, id) {
   const { error } = await supabase.from('reservations').delete().eq('id', id);
   if (error) console.error('deleteReservation:', error);

@@ -67,7 +67,6 @@
   cursor: progress;
 }
 
-/* ── Variants ────────────────────────────────────────────────── */
 .variant-primary {
   background: var(--gradient-cta);
   color: #FFFFFF;
@@ -283,7 +282,7 @@
   }
 }
 
-/* ── Modifiers ─────────────────────────────────────────────── */
+/* Modifiers */
 .iconOnly {
   padding: 0 !important;
   width: 36px;
@@ -295,7 +294,6 @@
   border-radius: 50%;
 }
 
-/* ── Sizes ─────────────────────────────────────────────────── */
 .size-xs {
   padding: 3px 10px;
   font-size: 10.5px;

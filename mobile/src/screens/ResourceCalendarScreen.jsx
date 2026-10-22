@@ -92,7 +92,6 @@ export default function ResourceCalendarScreen() {
     setSheet(true);
   };
 
-  // ── sheet (design 10) ──
   const sheetItems = form.date ? reservationsFor(reservations, { type, resourceId: resource.id, date: form.date }) : [];
   const invalidRange = form.start && form.end && timeToMin(form.end) <= timeToMin(form.start);
   const conflicts = form.start && form.end && !invalidRange ? findConflicts(sheetItems, form.start, form.end) : [];

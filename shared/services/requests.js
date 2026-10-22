@@ -1,19 +1,11 @@
-/**
- * Requests service — platform-agnostic.
- * CRUD operations for the `requests` table.
- */
 import { createNotification, notifyAdmins } from './notifications.js';
 import { REQUEST_WORK_MODE, localISODate } from './workMode.js';
 
-/**
- * Fetch requests with employee join.
- * Pass `employeeId` for an employee: they only get their own (admins get all).
- */
+/** Pass `employeeId` for an employee: they only get their own (admins get all). */
 export async function fetchRequests(supabase, { employeeId } = {}) {
   let query = supabase
     .from('requests')
-    // `*` instead of a column list so the query keeps working before the
-    // returned_at migration has been run
+    // `*` so the query keeps working before the returned_at migration has been run
     .select(`
       *,
       employee:profiles!requests_employee_id_fkey(id, name, department, avatar_initials),
@@ -47,7 +39,6 @@ export async function fetchRequests(supabase, { employeeId } = {}) {
   }));
 }
 
-/** Create a new request */
 export async function createRequest(supabase, employees, employeeId, payload) {
   const { data, error } = await supabase
     .from('requests')
@@ -74,7 +65,6 @@ export async function createRequest(supabase, employees, employeeId, payload) {
   return { data };
 }
 
-/** Update request status (approve/reject) */
 export async function updateRequestStatus(supabase, employees, id, status, reviewedBy, employeeId) {
   const { data: reqData } = await supabase
     .from('requests')
@@ -121,7 +111,6 @@ export async function updateRequestStatus(supabase, employees, id, status, revie
   return { error: null };
 }
 
-/** Delete a request */
 export async function deleteRequest(supabase, id) {
   const { error } = await supabase.from('requests').delete().eq('id', id);
   if (error) console.error('deleteRequest:', error);

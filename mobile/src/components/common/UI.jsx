@@ -140,7 +140,7 @@ export function Avatar({ name, initials, src, size = 42, color, ring, style }) {
   );
 }
 
-/** Round icon tinted by tone; `solid` fills it with the tone (the active item, like the reference). Tone ('accent' | 'teal' | 'amber' | 'green' | 'rose' | 'purple'). */
+/** Round icon tinted by tone ('accent' | 'teal' | 'amber' | 'green' | 'rose' | 'purple'); `solid` fills it. */
 export function IconTile({ icon: Icon, tone = 'accent', size = 40, radius, solid }) {
   const { colors } = useTheme();
   const [bg, fg] = toneOf(colors, tone);
@@ -199,7 +199,7 @@ function ActionTile({ icon, tone = 'accent', label, sub, badge, onPress, width }
   );
 }
 
-/** Text tabs with superscript counts (reference: All Courses¹² Completed⁷). options: [{ value, label, count }] */
+/** Text tabs with superscript counts. options: [{ value, label, count }] */
 export function CountTabs({ options, value, onChange, style }) {
   const { colors } = useTheme();
   return (
@@ -231,7 +231,7 @@ export function CountTabs({ options, value, onChange, style }) {
   );
 }
 
-/** Progress ring (reference: the day rings). `value` 0–100; children sit in the middle. */
+/** `value` 0–100; children sit in the middle. */
 export function Ring({ value = 0, size = 44, stroke = 3.5, color, track, children, accessibilityLabel }) {
   const { colors } = useTheme();
   const r = (size - stroke) / 2;
@@ -255,10 +255,7 @@ export function Ring({ value = 0, size = 44, stroke = 3.5, color, track, childre
   );
 }
 
-/**
- * Glass card with the brand blue washing in from the top-left (reference: the highlighted schedule card).
- * Use for the one item that is "now" in a list; the rest stay plain glass.
- */
+/** Brand blue washing in from the top-left: only for the one item that is "now" in a list. */
 export function WashCard({ children, onPress, radius = 24, padding = 16, style, accessibilityLabel }) {
   const { colors } = useTheme();
   const body = (
@@ -273,7 +270,7 @@ export function WashCard({ children, onPress, radius = 24, padding = 16, style, 
   return <View style={s}>{body}</View>;
 }
 
-/** Small time/status pill used at the bottom of agenda cards (reference: 11:30 AM). */
+/** Time or status pill at the bottom of agenda cards. */
 export function Pill({ label, mono, tone }) {
   const { colors } = useTheme();
   const [bg, fg] = tone ? toneOf(colors, tone) : [colors.segOn, colors.text];
@@ -381,7 +378,6 @@ export function Loading({ label = 'Cargando…' }) {
   );
 }
 
-/** Info / warning / danger banner. */
 export function Banner({ tone = 'accent', title, children, icon }) {
   const { colors } = useTheme();
   const [bg, fg] = toneOf(colors, tone);
@@ -504,7 +500,6 @@ export function Divider({ inset = 0 }) {
   return <View style={{ height: 1, marginLeft: inset, backgroundColor: colors.divider }} />;
 }
 
-/** Key/value line used in detail screens. */
 export function InfoLine({ label, value, mono, last }) {
   const { colors } = useTheme();
   return (

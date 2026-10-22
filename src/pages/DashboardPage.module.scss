@@ -1,12 +1,5 @@
 @use '../styles/patterns' as p;
 
-/* ═══════════════════════════════════════════════════════════════════
-   DASHBOARD — "Inicio"
-   Greeting · quick access · KPIs · news + today · personal modules ·
-   activity charts · recent bookings. Section headings sit on the panel;
-   content sits in cards below them.
-═══════════════════════════════════════════════════════════════════ */
-
 .page {
   display: flex;
   flex-direction: column;
@@ -23,7 +16,7 @@
 
 .sectionTitle { @include p.section-title; }
 
-/* ── Greeting ────────────────────────────────────────────────────── */
+/* Greeting */
 .hero {
   display: flex;
   align-items: flex-end;
@@ -105,12 +98,12 @@
   flex-wrap: wrap;
 }
 
-/* ── KPI row ─────────────────────────────────────────────────────── */
+/* KPI row */
 .gridCards {
   @include p.stat-grid(4, 2);
 }
 
-/* ── Main grid: news + modules | today ──────────────────────────── */
+/* Main grid: news + modules | today */
 .mainGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -141,7 +134,7 @@
   }
 }
 
-/* ── Featured news: the login's brand panel in miniature ─────────── */
+/* Featured news: the login's brand panel in miniature */
 .featured {
   @include p.brand-panel;
   position: relative;
@@ -256,7 +249,7 @@
   p { margin: 0; font-size: 14px; }
 }
 
-/* ── More news ───────────────────────────────────────────────────── */
+/* More news */
 .newsList {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -358,7 +351,7 @@
   transition: color 0.15s, transform 0.2s var(--ease-out);
 }
 
-/* ── Personal modules ────────────────────────────────────────────── */
+/* Personal modules */
 .modules {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -549,7 +542,6 @@
   color: var(--danger);
 }
 
-/* ── Help card ───────────────────────────────────────────────────── */
 .helpCard {
   gap: 10px;
   padding: 20px;
@@ -614,7 +606,7 @@
   }
 }
 
-/* ── Activity charts ─────────────────────────────────────────────── */
+/* Activity charts */
 .chartsRow {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
@@ -767,7 +759,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Recent bookings table ───────────────────────────────────────── */
+/* Recent bookings table */
 .tableWrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;

@@ -1,6 +1,5 @@
-// Push notifications. The backend (supabase/migrations/…_push_notifications.sql +
-// functions/send-push) sends a generic push whenever a row lands in `notifications`;
-// this module registers the device token and turns taps into navigation.
+// The backend (functions/send-push) pushes every new row of `notifications`; this module
+// registers the device token and turns taps into navigation.
 import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
@@ -14,10 +13,8 @@ export const ANDROID_CHANNEL_ID = 'default';
 export const isExpoGo = isRunningInExpoGo();
 export const isAndroidExpoGo = Platform.OS === 'android' && isExpoGo;
 
-// Expo SDK 53+ removed remote push notifications from Expo Go on Android.
-// Trying to load expo-notifications in Expo Go on Android throws a fatal error
-// at module evaluation time. We guard the require so Expo Go doesn't crash,
-// while development builds and standalone builds keep full push functionality.
+// Loading expo-notifications in Expo Go on Android (SDK 53+) throws at module evaluation,
+// so the require is guarded; development and store builds keep full push.
 let NativeNotifications = null;
 if (!isAndroidExpoGo) {
   try {
@@ -109,12 +106,8 @@ async function ensureChannel() {
   });
 }
 
-/**
- * Ask for permission, get the Expo push token and store it in Supabase.
- * Never throws: push is optional and the rest of the app must keep working
- * (no EAS project id yet, migration not deployed, emulator, permission denied…).
- * @returns {Promise<{ ok: boolean, reason?: string }>}
- */
+/** Never throws: push is optional (no EAS project id, emulator, permission denied…).
+ * @returns {Promise<{ ok: boolean, reason?: string }>} */
 export async function registerForPushNotificationsAsync(userId) {
   lastPushRegistration = await registerDevice(userId);
   if (!lastPushRegistration.ok && __DEV__) console.warn('[pushNotifications] not registered:', lastPushRegistration.reason);

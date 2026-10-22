@@ -32,7 +32,6 @@
   border-radius: 50%;
 }
 
-/* Card skeleton */
 .skeletonCard {
   display: flex;
   flex-direction: column;
@@ -49,7 +48,6 @@
   }
 }
 
-/* Table skeleton */
 .skeletonTable {
   display: flex;
   flex-direction: column;
@@ -70,7 +68,6 @@
   overflow: hidden;
 }
 
-/* Text skeleton */
 .skeletonText {
   display: flex;
   flex-direction: column;
@@ -81,12 +78,10 @@
   width: 100%;
 }
 
-/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .skeleton::after { display: none; }
 }
 
-/* Responsive */
 @media (max-width: 479px) {
   .skeletonTableRow {
     grid-template-columns: repeat(2, 1fr);

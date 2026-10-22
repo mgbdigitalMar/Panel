@@ -64,7 +64,6 @@ export default function ReservationsCalendar() {
     setBase(d);
   };
 
-  // ── Monthly ──────────────────────────────────────────────
   const monthMatrix = useMemo(() => getMonthMatrix(year, month), [year, month]);
 
   const resByDay = useMemo(() => {
@@ -76,7 +75,6 @@ export default function ReservationsCalendar() {
     return map;
   }, [reservations]);
 
-  // ── Weekly ───────────────────────────────────────────────
   const weekDays = useMemo(() => getWeekDays(base), [base]);
 
   const weekLabel = `${weekDays[0].getDate()} – ${weekDays[6].getDate()} ${MONTHS_ES[weekDays[6].getMonth()]} ${weekDays[6].getFullYear()}`;
@@ -88,7 +86,6 @@ export default function ReservationsCalendar() {
 
   return (
     <div className={styles.calendar}>
-      {/* Header */}
       <div className={styles.calHeader}>
         <div className={styles.viewToggle}>
           <button onClick={() => setViewMode('month')} className={clsx(styles.viewBtn, { [styles.viewBtnActive]: viewMode === 'month' })}>Mes</button>
@@ -103,7 +100,6 @@ export default function ReservationsCalendar() {
         </div>
       </div>
 
-      {/* Month view */}
       {viewMode === 'month' && (
         <div className={styles.overflowWrapper}>
           <div className={styles.monthGrid}>
@@ -144,11 +140,9 @@ export default function ReservationsCalendar() {
         </div>
       )}
 
-      {/* Week view */}
       {viewMode === 'week' && (
         <div className={styles.overflowWrapper}>
           <div className={styles.weekGrid}>
-            {/* Column headers */}
             <div className={styles.hourAxisEmpty} />
             {weekDays.map((d, i) => {
               const isToday = dateString(d.getFullYear(), d.getMonth(), d.getDate()) === today;
@@ -160,7 +154,6 @@ export default function ReservationsCalendar() {
               );
             })}
 
-            {/* Hour rows */}
             {HOURS.map(hour => (
               <React.Fragment key={`h-${hour}`}>
                 <div className={styles.hourLabel}>{hour}</div>

@@ -25,12 +25,6 @@
   margin-left: 3px;
 }
 
-.inputWrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
 .input {
   width: 100%;
   padding: 10px 18px;
@@ -76,26 +70,6 @@
   &.hasTrailingIcon { padding-right: 38px; }
 }
 
-.leadingIcon,
-.trailingIcon {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-mut);
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.18s var(--ease-out);
-
-  .container:focus-within & {
-    color: var(--accent);
-  }
-}
-
-.leadingIcon  { left: 16px; }
-.trailingIcon { right: 16px; }
-
 /* Multi-line fields keep a soft corner — a pill only suits one line */
 textarea.input {
   border-radius: var(--radius-lg);
@@ -133,7 +107,6 @@ textarea.input {
   font-weight: 500;
 }
 
-/* ── Validation icons ─────────────────────────────────────────── */
 .validationIcon {
   display: flex;
   align-items: center;
@@ -154,7 +127,7 @@ textarea.input {
   color: var(--success);
 }
 
-/* ── leftElement support ──────────────────────────────────────────── */
+/* leftElement support */
 .leftElement {
   position: absolute;
   left: 16px;
@@ -176,7 +149,7 @@ textarea.input {
   padding-left: 46px;
 }
 
-/* ── rightElement support ────────────────────────────────────────── */
+/* rightElement support */
 .inputWrap {
   position: relative;
   display: flex;

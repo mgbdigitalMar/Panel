@@ -29,7 +29,7 @@ const TABS = [
   { name: 'Settings', label: 'Más', icon: LayoutGrid, component: SettingsScreen },
 ];
 
-/** One tab, icon only: the active one gets a filled accent circle that springs in (reference nav). */
+/** Icon only; the active tab gets a filled accent circle that springs in. */
 function TabItem({ tab, focused, badge, onPress, onLongPress }) {
   const { colors } = useTheme();
   const reduce = useReduceMotion();
@@ -76,7 +76,7 @@ function TabItem({ tab, focused, badge, onPress, onLongPress }) {
   );
 }
 
-/** Floating glass nav pill + a separate round "new request" button beside it (reference nav + search circle). */
+/** Floating glass nav pill with a round "new request" button beside it. */
 function TabBar({ state, navigation, badges }) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();

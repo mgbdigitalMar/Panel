@@ -10,7 +10,7 @@ import { supabase } from '../utils/supabase';
 import { FIRST_ACCESS_PASSWORD, changeOwnPassword } from '../../shared/services/auth.js';
 
 export default function ChangePasswordPage() {
-  const { user, setCurrentUser, setNeedsOnboarding, setLastActivity } = useAuth();
+  const { user, setCurrentUser, setLastActivity } = useAuth();
   const navigate = useNavigate();
   const { theme } = useTheme();
 
@@ -22,10 +22,9 @@ export default function ChangePasswordPage() {
   const [success, setSuccess]   = useState('');
   const [loading, setLoading]   = useState(false);
 
-  // Reset idle timer on activity (prevents logout during password change)
+  // Typing a password counts as activity for the idle logout
   const resetIdle = () => setLastActivity(Date.now());
 
-  // Require user session — redirect to login if accessed directly without session
   useEffect(() => {
     if (!user) {
       navigate('/login', { replace: true });
@@ -65,7 +64,6 @@ export default function ChangePasswordPage() {
     }
     setLoading(true);
 
-    // Supabase Auth stores the new password (hashed on the server)
     const { error: passErr } = await changeOwnPassword(supabase, { newPassword: newPass });
     if (passErr) {
       setErr(passErr);
@@ -81,7 +79,6 @@ export default function ChangePasswordPage() {
       return;
     }
 
-  // Update local state and navigate directly
   await setCurrentUser({ ...user, firstLogin: false });
   setSuccess('¡Contraseña guardada exitosamente! Iniciando sesión...');
   setTimeout(() => {
@@ -119,7 +116,6 @@ export default function ChangePasswordPage() {
 
   return (
     <div className={styles.page}>
-      {/* Same animated backdrop as the login and the app */}
       <AnimatedBackdrop />
 
       <main className={styles.card}>

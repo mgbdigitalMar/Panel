@@ -1,4 +1,3 @@
-// ================================================================
 // EDGE FUNCTION: send-push
 // Envía una notificación push cuando se inserta una fila en `notifications`:
 //   • a la app móvil (Expo)            → tabla push_tokens
@@ -11,7 +10,6 @@
 // Despliegue:  supabase functions deploy send-push --no-verify-jwt
 // Secretos Web Push:  supabase secrets set --env-file supabase/.env.push
 //   (VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT)
-// ================================================================
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import webpush from 'npm:web-push@3.6.7'
 

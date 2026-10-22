@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { Avatar } from './ui';
 import styles from './CommandPalette.module.scss';
 
-/* ── Pages (mirrors Layout.jsx) — `keys` is the G-shortcut letter ── */
+/* Pages (mirrors Layout.jsx) — `keys` is the G-shortcut letter */
 const PAGES = [
   { id: 'dashboard',    label: 'Dashboard',          icon: LayoutDashboard, desc: 'Vista general de la empresa',        keys: 'D' },
   { id: 'reservations', label: 'Reservas',           icon: Calendar,        desc: 'Salas y vehículos',                  keys: 'R' },
@@ -25,7 +25,6 @@ const PAGES = [
 
 const normalize = (s = '') => s.toLocaleLowerCase('es').normalize('NFD').replace(/[̀-ͯ]/g, '');
 
-/* ── CommandPalette ─────────────────────────────────────────── */
 export default function CommandPalette({ open, onClose, onShowShortcuts }) {
   const navigate = useNavigate();
   const { user, employees = [], logout } = useAuth();

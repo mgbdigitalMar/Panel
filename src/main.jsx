@@ -28,9 +28,8 @@ function SetupRequired() {
   )
 }
 
-// Dev only: a PWA service worker left by an old build on this origin keeps
-// serving the cached app, so code changes never show. Remove it (and its
-// caches) once; the notifications worker under /push/ is left alone.
+// Dev only: a PWA worker left by an old build keeps serving the cached app. Remove it and
+// its caches once; the notifications worker under /push/ stays.
 if (import.meta.env.DEV && 'serviceWorker' in navigator) {
   (async () => {
     const regs = await navigator.serviceWorker.getRegistrations()

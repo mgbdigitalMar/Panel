@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import styles from './Loader.module.scss';
 
-/* ── Leaf geometry — traced from the Margube mark (48×48 box) ───────── */
+/* Leaf geometry — traced from the Margube mark (48×48 box) */
 export const LEAF_PATH = 'M9.5 39.5C9.5 22 14.5 10 25 9.2L39.5 8.8V24C39.5 34 33 39.5 24 39.5Z';
 export const VEIN_PATH = 'M10.5 38.5C12.5 31 16.5 26.8 22 24';
 
@@ -28,9 +28,7 @@ export function LeafMark({ size = 56, animate = true, className }) {
   );
 }
 
-/**
- * BootLoader — full-screen loader while the session is restored.
- */
+/** Full-screen loader while the session is restored. */
 export function BootLoader({ label = 'Cargando sesión…' }) {
   return (
     <motion.div
@@ -72,9 +70,7 @@ export function Spinner({ size = 16, className, label }) {
   );
 }
 
-/**
- * TopProgress — indeterminate hairline pinned to the top of its container.
- */
+/** Indeterminate hairline pinned to the top of its container. */
 export function TopProgress({ active, className }) {
   return (
     <div

@@ -1,10 +1,6 @@
 @use '../../../styles/patterns' as p;
 
-/* ═══════════════════════════════════════════════════════════════════
-   STATCARD — compact KPI tile
-   Label + tinted icon on top, figure below. Only tiles that navigate
-   react to hover/press; static tiles stay still.
-═══════════════════════════════════════════════════════════════════ */
+/* Only tiles that navigate react to hover and press. */
 
 .statCard {
   container-type: inline-size;
@@ -85,7 +81,7 @@
 .trendUp   { color: var(--success); }
 .trendDown { color: var(--warning); }
 
-/* ── Navigating tile ─────────────────────────────────────────────── */
+/* Navigating tile */
 .interactive {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;

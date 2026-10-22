@@ -54,7 +54,7 @@ export default function EmployeesPage() {
   const handleWorkModeChange = async (empId, mode) => {
     const previous = employees.find(e => e.id === empId)?.workMode;
     if (mode === previous) return;
-    // Optimistic local update
+    // Optimistic
     setEmployees(prev => prev.map(e => e.id === empId ? { ...e, workMode: mode } : e));
     const { error } = await changeWorkMode(empId, mode);
     if (error) {
@@ -70,7 +70,6 @@ export default function EmployeesPage() {
 
   return (
     <div className={styles.container}>
-      {/* Stats */}
       <div className={styles.statsGrid}>
         <StatCard
           label="En oficina"
@@ -150,7 +149,6 @@ export default function EmployeesPage() {
         </p>
       )}
 
-      {/* Grid view */}
       {view === 'grid' && (
         <div className={styles.grid}>
           {filtered.map(emp => {
@@ -196,7 +194,6 @@ export default function EmployeesPage() {
         </div>
       )}
 
-      {/* List view */}
       {view === 'list' && (
         <Card>
           <div className={styles.tableWrap}>

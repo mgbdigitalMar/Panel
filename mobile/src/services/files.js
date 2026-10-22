@@ -93,8 +93,6 @@ export async function uploadPickedFile(picked) {
   return res.url;
 }
 
-// ── Viewing / sharing ───────────────────────────────────────────────
-
 /** URL a WebView can render, or null when the file must be downloaded instead. */
 export function viewerUrl(url) {
   if (!url) return null;

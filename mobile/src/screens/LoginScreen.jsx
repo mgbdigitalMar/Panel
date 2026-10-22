@@ -91,7 +91,6 @@ export default function LoginScreen() {
       contentStyle={{ flexGrow: 1, justifyContent: 'space-between', gap: 20, maxWidth: 440, width: '100%', alignSelf: 'center' }}
     >
       <View>
-        {/* Top bar */}
         <Animated.View style={[{ flexDirection: 'row', justifyContent: 'space-between' }, aTop]}>
           <IconButton
             icon={isDark ? Sun : Moon}
@@ -101,7 +100,6 @@ export default function LoginScreen() {
           <IconButton icon={Info} onPress={help} accessibilityLabel="Ayuda para acceder" />
         </Animated.View>
 
-        {/* Orb + heading */}
         {/* Pulled up under the top bar: must not swallow taps meant for its buttons */}
         <Animated.View pointerEvents="none" style={[{ alignItems: 'center', marginTop: -24 }, aOrb]}>
           <BrandOrb size={100} />
@@ -116,8 +114,7 @@ export default function LoginScreen() {
           </T>
         </Animated.View>
 
-        {/* Form */}
-        {/* Form on a glass panel over the animated backdrop (plain glass: the entrance fade would stop native glass) */}
+        {/* Plain glass: the entrance fade would stop native glass */}
         <Animated.View style={[{ gap: 16, marginTop: 28, padding: 18, borderRadius: 28, ...glassSurface(colors) }, aForm]}>
           {!isSupabaseConfigured ? (
             <Banner tone="danger" title="Configuración incompleta">Falta la conexión con el servidor (EXPO_PUBLIC_SUPABASE_URL / KEY).</Banner>
@@ -169,7 +166,6 @@ export default function LoginScreen() {
         </Animated.View>
       </View>
 
-      {/* Footer */}
       <Animated.View style={[{ alignItems: 'center', paddingBottom: 4 }, aFoot]}>
         <Pressable onPress={help} accessibilityRole="button" hitSlop={8} style={{ flexDirection: 'row', alignItems: 'center' }}>
           <T size={14} color={colors.text3}>¿Primer acceso? </T>

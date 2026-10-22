@@ -71,8 +71,3 @@ export function downloadReservationIcs(r) {
   a.click();
   URL.revokeObjectURL(url);
 }
-
-/** Local calendar date as 'YYYY-MM-DD' (toISOString would shift to UTC). */
-export function localDateKey(d = new Date()) {
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}

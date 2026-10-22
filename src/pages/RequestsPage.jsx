@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth, useRequests, usePersonalDays, useDocuments } from '../context';
 import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard, ConfirmModal, Section } from '../components/ui';
-import { Plus, Check, X, FileText, ExternalLink, Download, Trash2, Home, Briefcase, ShoppingCart, Calendar } from 'lucide-react';
+import { Plus, Check, X, FileText, Download, Trash2, Home, Briefcase, ShoppingCart, Calendar } from 'lucide-react';
 import styles from './RequestsPage.module.scss';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -212,7 +212,6 @@ export default function RequestsPage() {
 
   return (
     <div className={styles.container}>
-      {/* Controls */}
       <div className={styles.pageControls}>
         <div className={styles.tabsRow}>
           {tabBtn('all', 'Todas')}
@@ -233,14 +232,12 @@ export default function RequestsPage() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className={styles.statsGrid}>
         <StatCard label="Pendientes" value={allItems.filter(r => r.status === 'pending').length}  color="var(--warning)" icon="Clock" sub="Esperando revisión" />
         <StatCard label="Aprobadas"  value={allItems.filter(r => r.status === 'approved').length} color="var(--success)" icon="CheckCircle" sub="En total" />
         <StatCard label="Rechazadas" value={allItems.filter(r => r.status === 'rejected').length} color="var(--danger)"  icon="XCircle" sub="En total" />
       </div>
 
-      {/* Table */}
       <Section title="Historial de solicitudes" description={`${filtered.length} ${filtered.length === 1 ? 'solicitud' : 'solicitudes'}`}>
       <Card>
         {filtered.length === 0 ? (
@@ -316,7 +313,6 @@ export default function RequestsPage() {
       </Card>
       </Section>
 
-      {/* New request modal */}
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Nueva solicitud">
         <div className={styles.typeButtons}>
           {[

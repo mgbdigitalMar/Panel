@@ -1,14 +1,7 @@
-/**
- * Personal days service — platform-agnostic.
- * CRUD for the `personal_days` table.
- */
 import { createNotification, notifyAdmins } from './notifications.js';
 import { removeStorageFile } from './documents.js';
 
-/**
- * Fetch personal days (with their supporting documents).
- * Pass `employeeId` for an employee: they only get their own (admins get all).
- */
+/** Pass `employeeId` for an employee: they only get their own (admins get all). */
 export async function fetchPersonalDays(supabase, { employeeId } = {}) {
   let query = supabase
     .from('personal_days')
@@ -40,7 +33,6 @@ export async function fetchPersonalDays(supabase, { employeeId } = {}) {
   }));
 }
 
-/** Create a personal day request */
 export async function createPersonalDay(supabase, employees, { employeeId, date, reason, fileUrl }) {
   const { data, error } = await supabase.from('personal_days').insert([{
     employee_id: employeeId,
@@ -66,7 +58,6 @@ export async function createPersonalDay(supabase, employees, { employeeId, date,
   return { data };
 }
 
-/** Update personal day status */
 export async function updatePersonalDayStatus(supabase, id, status, reviewedBy, employeeId) {
   const { error } = await supabase.from('personal_days').update({
     status,
@@ -93,7 +84,7 @@ export async function updatePersonalDayStatus(supabase, id, status, reviewedBy, 
   return { error: null };
 }
 
-/** Delete a personal day request and its attached file (same as web). */
+/** Also removes the attached file. */
 export async function deletePersonalDay(supabase, id, fileUrl) {
   await removeStorageFile(supabase, fileUrl);
   const { error } = await supabase.from('personal_days').delete().eq('id', id);

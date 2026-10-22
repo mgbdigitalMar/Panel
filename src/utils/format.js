@@ -1,9 +1,4 @@
-/**
- * Display formatting shared by every page (es-ES).
- * Accepts Date objects, ISO timestamps from Supabase ("2026-10-14T09:00:00+00:00")
- * and plain date columns ("2026-10-14"). Plain dates are read as local days so
- * they never shift by a day across time zones.
- */
+/** Plain date columns ("2026-10-14") are read as local days so they never shift across time zones. */
 
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -35,14 +30,6 @@ export function fmtDayShort(value) {
   if (!d) return '—';
   return d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', ...(!sameYear(d) && { year: 'numeric' }) })
     .replace(/\./g, '');
-}
-
-/** "14 oct, 09:00" */
-export function fmtDateTime(value) {
-  const d = toDate(value);
-  if (!d) return '—';
-  const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-  return `${fmtDate(d)}, ${time}`;
 }
 
 /** "14 oct" for one day, "14 – 16 oct" or "30 oct – 2 nov" for a span. */

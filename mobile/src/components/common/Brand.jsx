@@ -146,7 +146,7 @@ export function BrandTag({ label, icon: Icon }) {
   );
 }
 
-/** White chip on a hero card (reference: "Active"). */
+/** White chip on a hero card. */
 export function HeroChip({ label, icon: Icon }) {
   return (
     <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5, height: 28, paddingHorizontal: 12, borderRadius: 14, backgroundColor: '#FFFFFF' }}>
@@ -156,7 +156,7 @@ export function HeroChip({ label, icon: Icon }) {
   );
 }
 
-/** The big leaf behind a hero card, standing in for the reference's photo silhouette. */
+/** The big leaf behind a hero card. */
 const HeroArt = memo(function HeroArt({ width, height }) {
   const size = Math.min(height * 1.05, width * 0.78);
   const s = size / 48;
@@ -179,11 +179,8 @@ const HeroArt = memo(function HeroArt({ width, height }) {
   );
 });
 
-/**
- * Hero card (reference: "AI for Creators"): brand blue running into navy, a large leaf
- * where the reference has a photo, and a dark fade at the bottom so white text stays legible.
- * Same colours in both themes, like the brand panel.
- */
+/** Brand blue running into navy with a dark fade at the bottom so white text stays legible.
+ * Same colours in both themes, like the brand panel. */
 export function HeroCard({ children, style, padding = 20, radius = 30, minHeight = 230 }) {
   const [size, setSize] = useState(null);
   return (

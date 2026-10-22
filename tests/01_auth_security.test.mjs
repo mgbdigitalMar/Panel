@@ -18,8 +18,9 @@ export async function runAuthSecurityTests() {
   // 1. Login (shared/services/auth.js, lo usan la web y la app): la contraseña
   //    la comprueba Supabase Auth en el servidor, el cliente nunca ve un hash
   const calls = [];
-  const fakeSupabase = (result) => ({
+  const fakeSupabase = (result, sessionEmail = null) => ({
     auth: {
+      getSession: async () => ({ data: { session: sessionEmail ? { user: { email: sessionEmail } } : null } }),
       signInWithPassword: async (args) => { calls.push(['signIn', args]); return result; },
       updateUser: async (args) => { calls.push(['update', args]); return { error: null }; },
     },
@@ -35,6 +36,9 @@ export async function runAuthSecurityTests() {
   calls.length = 0;
   const wrong = await changeOwnPassword(fakeSupabase({ error: { code: 'invalid_credentials', message: 'Invalid login credentials' } }), { email: 'a@b.com', currentPassword: 'mal', newPassword: 'nueva1234' });
   assert('Contraseña actual incorrecta no cambia nada', wrong.error === 'Contraseña actual incorrecta.' && !calls.some(c => c[0] === 'update'));
+  calls.length = 0;
+  const ok2 = await changeOwnPassword(fakeSupabase({ error: null }, 'login@margube.com'), { email: 'Ficha@Margube.com', currentPassword: 'actual', newPassword: 'nueva1234' });
+  assert('La contraseña actual se comprueba con el email de la sesión', ok2.error === null && calls[0][1].email === 'login@margube.com' && calls[1][0] === 'update');
   calls.length = 0;
   const first = await changeOwnPassword(fakeSupabase({ error: null }), { newPassword: 'nueva1234' });
   assert('Primer acceso: guarda la nueva sin pedir la actual', first.error === null && calls.length === 1 && calls[0][0] === 'update');

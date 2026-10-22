@@ -1,10 +1,5 @@
-/**
- * Hours compensation service — platform-agnostic.
- * CRUD for the `hour_compensations` table.
- */
 import { createNotification, notifyAdmins } from './notifications.js';
 
-/** Fetch all hour compensations */
 export async function fetchHourCompensations(supabase) {
   const { data, error } = await supabase
     .from('hour_compensations')
@@ -35,7 +30,6 @@ export async function fetchHourCompensations(supabase) {
   }));
 }
 
-/** Create a new hour compensation entry */
 export async function createHourCompensation(supabase, employees, { employeeId, date, reason, hours, type }) {
   const status = type === 'bolsa' ? 'pending' : 'approved';
   const { data, error } = await supabase.from('hour_compensations').insert([{
@@ -66,7 +60,6 @@ export async function createHourCompensation(supabase, employees, { employeeId, 
   return { data };
 }
 
-/** Update hour compensation status */
 export async function updateHourCompensationStatus(supabase, id, status, reviewedBy, employeeId) {
   const { error } = await supabase.from('hour_compensations').update({
     status,
@@ -93,7 +86,6 @@ export async function updateHourCompensationStatus(supabase, id, status, reviewe
   return { error: null };
 }
 
-/** Delete hour compensation entry */
 export async function deleteHourCompensation(supabase, id) {
   const { error } = await supabase.from('hour_compensations').delete().eq('id', id);
   if (error) console.error('deleteHourCompensation:', error);

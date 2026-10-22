@@ -158,7 +158,7 @@ export function daysBetween(start, end) {
   return Math.round((b - a) / 86400000) + 1;
 }
 
-// ── time-of-day helpers (HH:MM strings) ────────────────────────────
+// HH:MM strings
 export function timeToMin(t) {
   if (!t) return 0;
   const [h, m] = String(t).split(':').map(Number);

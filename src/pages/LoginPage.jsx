@@ -14,7 +14,6 @@ import { AnimatedBackdrop } from '../components/ui';
 const EASE = [0.22, 1, 0.36, 1];
 const DRAW_EASE = [0.65, 0, 0.35, 1];
 
-/* ── Phone mock data (decorative) ─────────────────────────────────── */
 const WEEK = [
   { d: 'L', v: 0.62 },
   { d: 'M', v: 0.48 },
@@ -25,7 +24,6 @@ const WEEK = [
   { d: 'D', v: 0.12 },
 ];
 
-/* ── Animation variants ───────────────────────────────────────────── */
 const stagger = {
   hidden: {},
   show:   { transition: { staggerChildren: 0.07, delayChildren: 0.25 } },
@@ -85,7 +83,7 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [err,      setErr]      = useState('');
   const [loading,  setLoading]  = useState(false);
-  const [errKey,   setErrKey]   = useState(0); // increment to retrigger shake
+  const [errKey,   setErrKey]   = useState(0);
 
   const handleLogin = useCallback(async (e) => {
     e?.preventDefault();
@@ -109,7 +107,6 @@ export default function LoginPage() {
   const narrow = useNarrow();
   const [help, setHelp] = useState(false);
 
-  /* ── Phones: the same login as the app ──────────────────────────── */
   if (narrow) {
     return (
       <MotionConfig reducedMotion="user">
@@ -255,7 +252,7 @@ export default function LoginPage() {
   return (
     <MotionConfig reducedMotion="user">
       <div className={styles.page}>
-        {/* The same animated backdrop as the app shell: drifting glows + dot grid */}
+        {/* Same backdrop as the app shell */}
         <AnimatedBackdrop />
         <div className={styles.loginGlow} aria-hidden="true" />
 
@@ -265,7 +262,6 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, ease: EASE }}
         >
-          {/* ── Left: brand panel (desktop only) ──────────────────────── */}
           <div className={styles.brandPanel} aria-hidden="true">
             <motion.p
               className={styles.brandTagline}
@@ -369,7 +365,6 @@ export default function LoginPage() {
             <span className={styles.brandBadge}><LeafGlyph size={14} /></span>
           </div>
 
-          {/* ── Right: form panel ─────────────────────────────────────── */}
           <motion.main
             className={styles.formPanel}
             initial={{ opacity: 0, x: 24 }}

@@ -1,9 +1,5 @@
-/**
- * Shared constants — used by both WEB and APP.
- * Platform-agnostic: no DOM, no localStorage, no React Native imports.
- */
+// Shared by the web and the app: no DOM, localStorage or React Native imports.
 
-// ── Departments ──────────────────────────────────────────────────────
 export const DEPARTMENTS = [
   { value: 'Administración - RRHH', label: 'Administración - RRHH' },
   { value: 'Comercial - HEF', label: 'Comercial - HEF' },
@@ -16,7 +12,6 @@ export const DEPARTMENTS = [
   { value: 'Sin asignar', label: 'Sin asignar' },
 ];
 
-// ── Request types ────────────────────────────────────────────────────
 export const REQUEST_TYPES = {
   asuntos_propios: 'Asuntos Propios',
   remoto: 'Trabajo Remoto',
@@ -24,7 +19,6 @@ export const REQUEST_TYPES = {
   purchase: 'Compra',
 };
 
-// ── Status labels ────────────────────────────────────────────────────
 export const STATUS_LABELS = {
   pending: 'Pendiente',
   approved: 'Aprobada',
@@ -33,7 +27,6 @@ export const STATUS_LABELS = {
   cancelled: 'Cancelada',
 };
 
-// ── Notification → navigation mapping ────────────────────────────────
 export const ENTITY_NAV_MAP = {
   request: 'requests',
   document: 'profile',
@@ -55,39 +48,13 @@ export function notificationWebPath(notif, isAdmin = false) {
   return '/' + ((isAdmin ? ENTITY_NAV_MAP_ADMIN : ENTITY_NAV_MAP)[notif?.entity_type] || 'dashboard');
 }
 
-// ── Idle timeouts (ms) ──────────────────────────────────────────────
-export const IDLE_TIMEOUT_WEB = 60 * 1000;        // 1 min
 export const IDLE_TIMEOUT_MOBILE = 30 * 60 * 1000; // 30 min
 
-// ── Asuntos propios ─────────────────────────────────────────────────
-// Días de asuntos propios por año natural (los que muestra la app en "Tu resumen").
+// Días de asuntos propios por año natural (los que muestra la app en "Tu resumen")
 export const PERSONAL_DAYS_PER_YEAR = 6;
 
-// ── File upload limits ──────────────────────────────────────────────
 export const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024; // 15 MB
 
-// ── Navigation items (shared structure) ─────────────────────────────
-export const NAV_ITEMS = [
-  { id: 'dashboard',    label: 'Dashboard',         iconName: 'LayoutDashboard' },
-  { id: 'reservations', label: 'Reservas',           iconName: 'Calendar',    badgeKey: 'reservations' },
-  { id: 'requests',     label: 'Solicitudes',        iconName: 'Inbox',       badgeKey: 'requests' },
-  { id: 'horas',        label: 'Tiempo a compensar', iconName: 'Timer' },
-  { id: 'news',         label: 'Noticias y Eventos', iconName: 'Newspaper' },
-  { id: 'employees',    label: 'Equipo',             iconName: 'UsersRound' },
-];
-
-export const ADMIN_NAV_ITEMS = [
-  { id: 'admin', label: 'Administración', iconName: 'Settings', badgeKey: 'admin' },
-];
-
-// ── Feature capability flags ────────────────────────────────────────
-export const FEATURE_TARGET = {
-  WEB: 'web',
-  MOBILE: 'mobile',
-  BOTH: 'both',
-};
-
-// ── Realtime channel names ──────────────────────────────────────────
 export const REALTIME_CHANNELS = {
   requests: 'realtime-requests',
   reservations: 'realtime-reservations',
@@ -101,8 +68,7 @@ export const REALTIME_CHANNELS = {
   profiles: 'realtime-profiles',
 };
 
-// ── Hour compensation types (same semantics as web HorasPage) ────────
-// 'ya' and 'debe' are auto-approved; 'bolsa' requires admin approval.
+// 'ya' and 'debe' are auto-approved; 'bolsa' needs an admin
 export const HOUR_TYPES = {
   ya: {
     label: 'Ya',

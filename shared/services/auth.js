@@ -1,15 +1,7 @@
-/**
- * Auth service — platform-agnostic.
- * Passwords live in Supabase Auth (auth.users, same email and bcrypt hash the
- * profiles table used to hold) and are only ever checked by the server. See
- * supabase/migrations/20261022120000_secure_auth.sql.
- */
+// Passwords live in Supabase Auth and are only checked by the server
+// (supabase/migrations/20261022120000_secure_auth.sql).
 
-/**
- * Shared temporary password RRHH gives to new accounts. It is a normal
- * password on the server; the client only uses it to refuse it as the
- * person's own password on their first access.
- */
+/** RRHH's temporary password; the client only uses it to refuse it as the person's own. */
 export const FIRST_ACCESS_PASSWORD = 'margube2026';
 
 /** Whether `profile` still has to replace its temporary password */
@@ -37,10 +29,7 @@ export function authErrorMessage(error) {
   return msg || 'No se pudo completar la operación.';
 }
 
-/**
- * Sign in with email and password.
- * @returns {Promise<{ ok: boolean, userId?: string, msg?: string }>}
- */
+/** @returns {Promise<{ ok: boolean, userId?: string, msg?: string }>} */
 export async function signIn(supabase, email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email: String(email || '').trim().toLowerCase(),
@@ -50,29 +39,26 @@ export async function signIn(supabase, email, password) {
   return { ok: true, userId: data.user.id };
 }
 
-/**
- * Change the signed-in person's password. With `currentPassword` it is
- * checked first (profile page); without it, it is the first-access flow.
- * @returns {Promise<{ error: string|null }>}
- */
+/** With `currentPassword` it is checked first (profile page); without it, first access. */
 export async function changeOwnPassword(supabase, { email, currentPassword, newPassword }) {
   if (currentPassword != null) {
-    const { error } = await supabase.auth.signInWithPassword({ email: String(email || '').trim().toLowerCase(), password: currentPassword });
+    // The login email is the session's; the profile's may differ in older accounts
+    const { data: { session } } = await supabase.auth.getSession();
+    const loginEmail = session?.user?.email || String(email || '').trim().toLowerCase();
+    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: currentPassword });
     if (error) {
+      console.warn('[changeOwnPassword] check', error.code || '', error.message);
       return { error: error.code === 'invalid_credentials' || /invalid login/i.test(error.message || '')
         ? 'Contraseña actual incorrecta.'
         : authErrorMessage(error) };
     }
   }
   const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) console.warn('[changeOwnPassword] update', error.code || '', error.message);
   return { error: error ? authErrorMessage(error) : null };
 }
 
-/**
- * RRHH: create the login for a new employee. Returns the id the new
- * profiles row must use.
- * @returns {Promise<{ id?: string, error?: string }>}
- */
+/** Creates the login first; the new profiles row must use the returned id. */
 export async function createEmployeeAccount(supabase, email, password) {
   const { data, error } = await supabase.rpc('admin_create_account', { p_email: email, p_password: password });
   return error ? { error: error.message } : { id: data };

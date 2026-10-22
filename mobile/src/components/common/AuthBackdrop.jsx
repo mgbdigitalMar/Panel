@@ -4,15 +4,8 @@ import Svg, { Circle, Defs, LinearGradient, Path, Pattern, RadialGradient, Rect,
 import { useTheme } from '../../context/ThemeContext';
 import { LEAF_PATH, VEIN_PATH } from './Brand';
 
-/*
- * Animated backdrop for the auth screens.
- *
- * Performance: every SVG here is static and drawn once. All motion is
- * transform/opacity on wrapping Animated.Views, run with the native driver
- * (Animated.loop on the UI thread, zero JS work per frame), and the moving
- * layers are cached as GPU textures. Reduce Motion turns every loop off.
- */
-
+// Every SVG here is drawn once; all motion is transform/opacity on the native driver (no JS work
+// per frame), and the moving layers are cached as GPU textures. Reduce Motion stops every loop.
 
 const sine = Easing.inOut(Easing.sin);
 

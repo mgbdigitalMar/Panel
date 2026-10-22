@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth, useReservations } from '../context';
 import { Badge, Modal, Select, Input, Textarea, Button, Card, ConfirmModal, StatCard, Section } from '../components/ui';
-import { Building, Car, Check, X, Plus, Download, Trash2, Calendar, CalendarPlus, CalendarDays, Users, ArrowRight } from 'lucide-react';
+import { Building, Car, Check, X, Plus, Download, Trash2, CalendarPlus, CalendarDays, Users, ArrowRight } from 'lucide-react';
 import { downloadReservationIcs } from '../utils/ics';
 import { fmtDayShort, todayKey } from '../utils/format';
 import styles from './ReservationsPage.module.scss';
@@ -141,7 +141,6 @@ export default function ReservationsPage() {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
       <div className={styles.pageControls}>
         <div className={styles.tabsRow}>
           {tabBtn('all', 'Todas', reservations.length)}
@@ -159,7 +158,6 @@ export default function ReservationsPage() {
         </div>
       </div>
 
-      {/* Stats */}
       {tab !== 'calendar' && (
         <div className={styles.statsGrid}>
           <StatCard
@@ -186,10 +184,8 @@ export default function ReservationsPage() {
         </div>
       )}
 
-      {/* Calendar view */}
       {tab === 'calendar' && <ReservationsCalendar />}
 
-      {/* Room cards */}
       {tab !== 'vehicle' && tab !== 'calendar' && (
         <Section title="Salas de reuniones" description="Pulsa una sala para reservarla.">
           <div className={styles.resourceGrid}>
@@ -227,7 +223,6 @@ export default function ReservationsPage() {
         </Section>
       )}
 
-      {/* Vehicle cards */}
       {tab !== 'room' && tab !== 'calendar' && (
         <Section title="Vehículos de empresa" description="Reserva un coche o furgoneta para visitas y obras.">
           <div className={styles.resourceGrid}>
@@ -260,7 +255,6 @@ export default function ReservationsPage() {
         </Section>
       )}
 
-      {/* Reservations table */}
       {tab !== 'calendar' && (
         <Section title="Historial de reservas" description={`${filtered.length} ${filtered.length === 1 ? 'reserva' : 'reservas'}`}>
         <Card>
@@ -330,7 +324,6 @@ export default function ReservationsPage() {
         </Section>
       )}
 
-      {/* Create modal */}
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Nueva reserva">
         <Select label="Tipo de recurso" value={form.type}
           onChange={v => setForm({ ...form, type: v, resourceId: '' })}

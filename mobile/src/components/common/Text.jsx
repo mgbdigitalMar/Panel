@@ -28,7 +28,7 @@ export function T({ size = 15, weight = 'regular', color, mono, heading, trackin
   const { colors } = useTheme();
   const bigFigure = mono && size >= 22;
   const isHeading = heading ?? (bigFigure || (!mono && size >= 17 && (weight === 'semibold' || weight === 'bold')));
-  // Display sizes read lighter, like the reference's large titles: semibold drops to medium from 24 up.
+  // Display sizes read lighter: semibold drops to medium from 24 up.
   const headingWeight = size >= 24 && weight === 'semibold' && !bigFigure ? 'medium' : weight;
   const fontFamily = isHeading
     ? HEADING[headingWeight] || FONTS.heading

@@ -1,12 +1,8 @@
+/* Headings in Poppins (the wordmark's face), body in Inter */
 
-/* ═══════════════════════════════════════════════════════════════════
-   DESIGN TOKENS — Margube Brand System v2
-   Refined Glass — headings in Poppins (the wordmark's face), body in Inter
-═══════════════════════════════════════════════════════════════════ */
-
-/* ─── Light Theme ────────────────────────────────────────────────── */
+/* Light Theme */
 :root {
-  /* ── Backgrounds — Margube Brand System ────────────────────────── */
+  /* Backgrounds — Margube Brand System */
   --bg:         #F2F4F8;
   --bg-2:       #FFFFFF;
   --bg-3:       #E7EAF0;
@@ -15,12 +11,12 @@
   --border:     #E3E6EC;
   --border-2:   #C9CED7;
 
-  /* ── Text ─────────────────────────────────────────────────────── */
+  /* Text */
   --text:       #11141B;
   --text-sec:   #4A5263;
   --text-mut:   #8D95A3;
 
-  /* ── Accent — Margube Royal Blue ───────────────────────────────── */
+  /* Accent — Margube Royal Blue */
   --accent:         #2F5BEA;
   --accent-hover:   #1E40AF;
   --accent-light:   #5B7CFF;
@@ -30,12 +26,12 @@
   --accent-glow:    0 0 0 3px rgba(47, 91, 234, 0.22);
   --accent-rgb:     47, 91, 234;
 
-  /* ── Luminous glow system ──────────────────────────────────────── */
+  /* Luminous glow system */
   --luminous:       #5B7CFF;
   --luminous-glow:  rgba(47, 91, 234, 0.35);
   --luminous-soft:  rgba(47, 91, 234, 0.12);
 
-  /* ── Gradients ────────────────────────────────────────────────── */
+  /* Gradients */
   --gradient-accent:   linear-gradient(135deg, #2F5BEA 0%, #5B7CFF 60%, #7AA2FF 100%);
   --gradient-warm:     linear-gradient(135deg, #F5B544 0%, #FB7185 100%);
   --gradient-surface:  linear-gradient(180deg, #FFFFFF 0%, #F2F4F8 100%);
@@ -50,7 +46,7 @@
   --shadow-cta:        0 12px 28px -10px rgba(47, 91, 234, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.22);
   --shadow-cta-hover:  0 16px 32px -10px rgba(47, 91, 234, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 
-  /* ── Semantic Colors ──────────────────────────────────────────── */
+  /* Semantic Colors */
   --success:      #059669;
   --success-bg:   #ECFDF5;
   --success-rgb:  5, 150, 105;
@@ -64,18 +60,18 @@
   --info-bg:      #F0F9FF;
   --info-rgb:     2, 132, 199;
 
-  /* ── Inputs ───────────────────────────────────────────────────── */
+  /* Inputs */
   --input:          #FFFFFF;
   --input-border:   #DDE1F0;
   --input-focus:    #2251ff;
   --input-bg-hover: #F5F7FF;
 
-  /* ── Nav active state ─────────────────────────────────────────── */
+  /* Nav active state */
   --nav:      #06112B;
   --nav-bg:   rgba(34, 81, 255, 0.08);
   --nav-glow: 0 0 20px rgba(34, 81, 255, 0.10);
 
-  /* ── Shadows — Multi-layer Premium Architecture ────────────────── */
+  /* Shadows — Multi-layer Premium Architecture */
   --shadow-xs:     0 1px 2px rgba(6, 17, 43, 0.05);
   --shadow-sm:     0 1px 3px rgba(6, 17, 43, 0.06), 0 2px 6px rgba(6, 17, 43, 0.04);
   --shadow:        0 4px 10px -2px rgba(6, 17, 43, 0.06), 0 2px 4px -2px rgba(6, 17, 43, 0.04);
@@ -87,7 +83,7 @@
   --shadow-card:   0 1px 2px rgba(6, 17, 43, 0.04), 0 12px 32px -16px rgba(6, 17, 43, 0.14), 0 0 0 1px rgba(6, 17, 43, 0.035);
   --shadow-glow:   0 0 40px rgba(34, 81, 255, 0.18);
 
-  /* ── Radius — Smooth Ultra-Modern Curves ──────────────────────── */
+  /* Radius — Smooth Ultra-Modern Curves */
   --radius-xs:   4px;
   --radius-sm:   6px;
   --radius:      8px;
@@ -102,15 +98,15 @@
      Used for every person's avatar so people read as "part of Margube". */
   --shape-leaf:  60% 12% 60% 12%;
 
-  /* ── Typography — Brand Font System ──────────────────────────── */
+  /* Typography */
   --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-heading: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono:    'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
 
-  /* ── Font feature settings ────────────────────────────────────── */
+  /* Font feature settings */
   --font-features: 'cv02', 'cv03', 'cv04', 'cv11';
 
-  /* ── Timing Functions ─────────────────────────────────────────── */
+  /* Timing Functions */
   --ease-spring:    cubic-bezier(0.22, 1.04, 0.36, 1);
   --ease-out:       cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out:    cubic-bezier(0.4, 0, 0.2, 1);
@@ -118,14 +114,13 @@
   --ease-smooth:    cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --ease-cinematic: cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* ── Apple-Inspired Spring Animations ──────────────────────────── */
-  /* These are CSS easing approximations of spring physics */
-  /* Use with Framer Motion for true spring behavior */
+  /* Apple-Inspired Spring Animations */
+  /* CSS approximations of springs; Framer Motion does the real ones */
   --ease-apple-default:    cubic-bezier(0.23, 1, 0.32, 1);    /* snappy default */
   --ease-apple-responsive: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* responsive feedback */
   --ease-apple-fluid:      cubic-bezier(0.22, 1, 0.36, 1);    /* fluid transitions */
 
-  /* ── Spacing Tokens ───────────────────────────────────────────── */
+  /* Spacing Tokens */
   --space-1:   4px;
   --space-2:   8px;
   --space-3:   12px;
@@ -138,25 +133,24 @@
   --space-16:  64px;
   --space-20:  80px;
 
-  /* ── Transitions ─────────────────────────────────────────────── */
   --transition-fast:    all 0.12s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-smooth:  all 0.20s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-medium:  all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-slow:    all 0.40s cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* ── Border RGB ────────────────────────────────────────────────── */
+  /* Border RGB */
   --border-rgb:         221, 225, 240;
 
-  /* ── Text RGB ──────────────────────────────────────────────────── */
+  /* Text RGB */
   --text-rgb:           6, 17, 43;
 
-  /* ── Table row hover ───────────────────────────────────────────── */
+  /* Table row hover */
   --table-row-hover:    rgba(var(--accent-rgb), 0.04);
 
-  /* ── Input sizing token ────────────────────────────────────────── */
+  /* Input sizing token */
   --input-height:       46px;
 
-  /* ── Shimmer ───────────────────────────────────────────────────── */
+  /* Shimmer */
   --shimmer-bg:         linear-gradient(
     90deg,
     var(--border) 0%,
@@ -165,22 +159,22 @@
     var(--border) 100%
   );
 
-  /* ── Ripple effect ─────────────────────────────────────────────── */
+  /* Ripple effect */
   --ripple-duration:    600ms;
   --ripple-easing:      cubic-bezier(0, 0, 0.2, 1);
 
-  /* ── Interactive glow ──────────────────────────────────────────── */
+  /* Interactive glow */
   --glow-accent-sm:  0 0 16px rgba(var(--accent-rgb), 0.22);
   --glow-accent-md:  0 0 32px rgba(var(--accent-rgb), 0.28);
   --glow-success-sm: 0 0 16px rgba(var(--success-rgb), 0.22);
   --glow-danger-sm:  0 0 16px rgba(var(--danger-rgb), 0.22);
 
-  /* ── Depth scale ───────────────────────────────────────────────── */
+  /* Depth scale */
   --scale-press:  0.965;
   --scale-lift:   1.02;
   --scale-subtle: 1.008;
 
-  /* ── Z-index Layers ───────────────────────────────────────────── */
+  /* Z-index Layers */
   --z-base:     1;
   --z-elevated: 10;
   --z-dropdown: 50;
@@ -190,43 +184,41 @@
   --z-overlay:  300;
   --z-toast:    9999;
 
-  /* ── Layout ───────────────────────────────────────────────────── */
+  /* Layout */
   --sidebar-w:           270px;
   --sidebar-w-collapsed: 68px;
   --header-h:            64px;
   --header-h-mobile:     56px;
   --content-max-w:       1600px;
 
-  /* ── Command Palette ──────────────────────────────────────────── */
+  /* Command Palette */
   --cmd-bg:       rgba(255, 255, 255, 0.92);
   --cmd-border:   rgba(221, 225, 240, 0.80);
   --cmd-item-hover: rgba(34, 81, 255, 0.06);
 
-  /* ── Sidebar collapse ─────────────────────────────────────────── */
+  /* Sidebar collapse */
   --sidebar-transition: width 0.26s cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* ── Surfaces — Light ─────────────────────────────────────────────
-     Near-opaque, like the login's form panel: the animated backdrop moves
+  /* Light surfaces. Near-opaque, like the login's form panel: the animated backdrop moves
      behind them, and see-through blurred glass would re-blur every frame. */
   --glass-bg:          rgba(255, 255, 255, 0.94);
   --glass-border:      rgba(227, 230, 236, 0.95);
   --glass-blur:        blur(24px) saturate(180%);
   --glass-blur-sm:     blur(12px) saturate(140%);
 
-  /* ── Glass depth layers ────────────────────────────────────────── */
+  /* Glass depth layers */
   --glass-surface:     rgba(255, 255, 255, 0.72);
   --glass-card:        rgba(255, 255, 255, 0.94);
   --glass-card-hover:  #FFFFFF;
   --glass-input:       #FFFFFF;
 
-  /* ── Glass decorative ─────────────────────────────────────────── */
+  /* Glass decorative */
   --glass-shimmer:      linear-gradient(135deg, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0.10) 60%, transparent 100%);
   --glass-highlight:    inset 0 1px 0 rgba(255, 255, 255, 0.80), inset 0 0 0 1px rgba(255,255,255,0.25);
   --glass-highlight-sm: inset 0 1px 0 rgba(255, 255, 255, 0.60);
   --card-hover-shimmer: linear-gradient(115deg, transparent 0%, transparent 40%, rgba(255, 255, 255, 0.60) 50%, transparent 60%, transparent 100%);
 
-
-  /* ── Liquid glass — same values as the app (mobile/src/theme/tokens.js) ──
+  /* Liquid glass, same values as the app (mobile/src/theme/tokens.js).
      Tinted glass for cards: translucent fill, hairline edge, bright top rim, a sheen, no shadow.
      Chrome glass (header, drawer, modals, popovers) adds a real backdrop blur. */
   --lg-fill:        rgba(255, 255, 255, 0.66);
@@ -240,16 +232,16 @@
   --lg-wash-a:      rgba(47, 91, 234, 0.13);
   --lg-wash-b:      rgba(14, 159, 154, 0.08);
 
-  /* ── RGB for rgba() ────────────────────────────────────────────── */
+  /* RGB for rgba() */
   --bg-rgb:         242, 244, 248;
   --sidebar-rgb:    255, 255, 255;
   --sidebar-opacity:   0.55;
   --header-opacity:    0.78;
 }
 
-/* ─── Dark Theme — Margube Glass System ──────────────────────────── */
+/* Dark Theme — Margube Glass System */
 [data-theme='dark'] {
-  /* ── Backgrounds — Deep obsidian & translucent glass ─────────── */
+  /* Backgrounds — Deep obsidian & translucent glass */
   --bg:      #0A0C10;
   --bg-2:    #11141B;
   --bg-3:    #15181F;
@@ -258,12 +250,12 @@
   --border:  rgba(255, 255, 255, 0.13);
   --border-2: rgba(255, 255, 255, 0.18);
 
-  /* ── Text (high contrast, crisp) ─────────────────────────────── */
+  /* Text (high contrast, crisp) */
   --text:     #F5F6F8;
   --text-sec: #B8BEC9;
   --text-mut: #8D95A3;
 
-  /* ── Accent (Margube Electric Blue) ──────────────────────────── */
+  /* Accent (Margube Electric Blue) */
   --accent:       #7AA2FF;
   --accent-hover: #9DB4FF;
   --accent-light: #C3D1FF;
@@ -273,12 +265,12 @@
   --accent-glow:  0 0 0 3px rgba(122, 162, 255, 0.28);
   --accent-rgb:   122, 162, 255;
 
-  /* ── Luminous glow system (dark) ─────────────────────────────── */
+  /* Luminous glow system (dark) */
   --luminous:       #7AA2FF;
   --luminous-glow:  rgba(122, 162, 255, 0.45);
   --luminous-soft:  rgba(122, 162, 255, 0.15);
 
-  /* ── Gradients — Rich cinematic ──────────────────────────────── */
+  /* Gradients — Rich cinematic */
   --gradient-accent:   linear-gradient(135deg, #7AA2FF 0%, #9DB4FF 60%, #C3D1FF 100%);
   --gradient-surface:  linear-gradient(180deg, #11141B 0%, #15181F 100%);
   --gradient-banner:   linear-gradient(135deg, rgba(122,162,255,0.14) 0%, rgba(94,224,213,0.06) 100%);
@@ -288,7 +280,7 @@
   --gradient-dark:     linear-gradient(180deg, #0A0C10 0%, #11141B 100%);
   --gradient-text:     linear-gradient(135deg, #F5F6F8 0%, #7AA2FF 100%);
 
-  /* ── Semantic Colors (vibrant, accessible) ───────────────────── */
+  /* Semantic Colors (vibrant, accessible) */
   --success:    #34D399;
   --success-bg: rgba(52, 211, 153, 0.16);
   --warning:    #F5B544;
@@ -298,18 +290,18 @@
   --info:       #5EE0D5;
   --info-bg:    rgba(94, 224, 213, 0.14);
 
-  /* ── Inputs ───────────────────────────────────────────────────── */
+  /* Inputs */
   --input:          #11141B;
   --input-border:   rgba(255, 255, 255, 0.15);
   --input-focus:    #7AA2FF;
   --input-bg-hover: #15181F;
 
-  /* ── Nav ──────────────────────────────────────────────────────── */
+  /* Nav */
   --nav:     #F5F6F8;
   --nav-bg:  rgba(122, 162, 255, 0.14);
   --nav-glow: 0 0 24px rgba(122, 162, 255, 0.22);
 
-  /* ── Shadows — Cinematic deep dark ───────────────────────────── */
+  /* Shadows — Cinematic deep dark */
   --shadow-xs:     0 1px 2px rgba(0, 0, 0, 0.45);
   --shadow-sm:     0 1px 4px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.30);
   --shadow:        0 4px 10px -2px rgba(0, 0, 0, 0.65), 0 2px 4px -2px rgba(0, 0, 0, 0.40);
@@ -321,26 +313,25 @@
   --shadow-card:   0 4px 16px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.025);
   --shadow-glow:   0 0 60px rgba(62, 99, 221, 0.25);
 
-  /* ── Surfaces — Dark (near-opaque, like the login's form panel) ── */
+  /* Surfaces — Dark (near-opaque, like the login's form panel) */
   --glass-bg:          rgba(19, 22, 29, 0.94);
   --glass-border:      rgba(255, 255, 255, 0.07);
   --glass-blur:        blur(28px) saturate(180%);
   --glass-blur-sm:     blur(14px) saturate(140%);
 
-  /* ── Glass depth layers (dark) ────────────────────────────────── */
+  /* Glass depth layers (dark) */
   --glass-surface:     rgba(19, 22, 29, 0.6);
   --glass-card:        rgba(19, 22, 29, 0.94);
   --glass-card-hover:  rgba(24, 28, 36, 0.97);
   --glass-input:       #0A0C10;
 
-  /* ── Glass decorative (dark) ──────────────────────────────────── */
+  /* Glass decorative (dark) */
   --glass-shimmer:      linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 60%, transparent 100%);
   --glass-highlight:    inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255,255,255,0.05);
   --glass-highlight-sm: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --card-hover-shimmer: linear-gradient(115deg, transparent 0%, transparent 40%, rgba(255, 255, 255, 0.12) 50%, transparent 60%, transparent 100%);
 
-
-  /* ── Liquid glass (dark) ── */
+  /* Liquid glass (dark) */
   --lg-fill:        rgba(30, 34, 45, 0.55);
   --lg-fill-hover:  rgba(38, 43, 56, 0.7);
   --lg-edge:        rgba(255, 255, 255, 0.08);
@@ -352,24 +343,24 @@
   --lg-wash-a:      rgba(122, 162, 255, 0.2);
   --lg-wash-b:      rgba(14, 159, 154, 0.13);
 
-  /* ── RGB for rgba() ─────────────────────────────────────────── */
+  /* RGB for rgba() */
   --bg-rgb:           6, 11, 20;
   --sidebar-rgb:      7, 16, 28;
   --sidebar-opacity:  0.92;
   --header-opacity:   0.84;
 
-  /* ── Border RGB (dark) ────────────────────────────────────────── */
+  /* Border RGB (dark) */
   /* Used as rgba(var(--border-rgb), 0.3–0.6): needs to sit well above the
      card surface or every such border disappears in dark mode */
   --border-rgb:         70, 80, 102;
 
-  /* ── Text RGB (dark) ──────────────────────────────────────────── */
+  /* Text RGB (dark) */
   --text-rgb:           240, 244, 255;
 
-  /* ── Table row hover (dark) ────────────────────────────────────── */
+  /* Table row hover (dark) */
   --table-row-hover:    rgba(var(--accent-rgb), 0.07);
 
-  /* ── Shimmer (dark) ──────────────────────────────────────────── */
+  /* Shimmer (dark) */
   --shimmer-bg:         linear-gradient(
     90deg,
     var(--border) 0%,
@@ -378,7 +369,7 @@
     var(--border) 100%
   );
 
-  /* ── Command Palette (dark) ──────────────────────────────────── */
+  /* Command Palette (dark) */
   --cmd-bg:         rgba(7, 16, 28, 0.96);
   --cmd-border:     rgba(21, 32, 48, 0.90);
   --cmd-item-hover: rgba(62, 99, 221, 0.10);

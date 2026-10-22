@@ -1,13 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useAuth, useHours } from '../context';
 import { Card, Button, Input, Modal, Avatar, StatCard, Section } from '../components/ui';
-import { Clock, Inbox, CheckCircle, XCircle, Download, Timer, PenTool, TrendingDown, TrendingUp, Minus, Search, Zap, Info, AlertTriangle, CheckCheck } from 'lucide-react';
+import { Clock, Inbox, CheckCircle, XCircle, Download, PenTool, TrendingDown, Search, Zap, Info, AlertTriangle, CheckCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import styles from './HorasPage.module.scss';
 import { todayKey } from '../utils/format';
 
-// ── Excel/CSV export ──────────────────────────────────────────
 function exportToCSV(rows, filename) {
   const typeLabel = t => t === 'ya' ? 'Inmediata' : t === 'bolsa' ? 'Bolsa' : 'Debo';
   const headers = ['Fecha', 'Motivo', 'Horas', 'Tipo', 'Estado', 'Fecha solicitud'];
@@ -100,15 +99,12 @@ export default function HorasPage() {
   const [success, setSuccess]   = useState('');
   const [saveError, setSaveError] = useState('');
 
-  // Filters for "Mi Bolsa"
   const [filterFrom, setFilterFrom] = useState('');
   const [filterTo,   setFilterTo]   = useState('');
 
-  // Admin User History States
   const [selectedUser, setSelectedUser] = useState(null);
   const [userSearch, setUserSearch] = useState('');
 
-  // User Stats Calculation for Admin
   const userStats = useMemo(() => {
     if (!employees || employees.length === 0) return [];
     return employees.map(emp => {
@@ -159,7 +155,6 @@ export default function HorasPage() {
     [hourCompensations, user]
   );
 
-  // Separate by type group
   const myCredit = useMemo(() =>
     myAll
       .filter(h => h.type === 'bolsa' || h.type === 'ya')
@@ -174,7 +169,6 @@ export default function HorasPage() {
     [myAll, filterFrom, filterTo]
   );
 
-  // Stats
   const creditHours  = myCredit.filter(h => h.status === 'approved').reduce((s, h) => s + h.hours, 0);
   const pendingHours = myCredit.filter(h => h.status === 'pending').reduce((s, h) => s + h.hours, 0);
   const debtHours    = myDebt.reduce((s, h) => s + h.hours, 0);
@@ -240,8 +234,6 @@ export default function HorasPage() {
   return (
     <div className={styles.container}>
 
-
-      {/* Tabs */}
       <div className={styles.pageControls}>
         <div className={styles.tabsRow}>
           {tabBtn('nueva', 'Nueva solicitud', 0)}
@@ -262,7 +254,7 @@ export default function HorasPage() {
       </div>
 
       <AnimatePresence mode="wait">
-        {/* ── NUEVA SOLICITUD ── */}
+        {/* Nueva solicitud */}
         {tab === 'nueva' && (
           <motion.div
             key="nueva"
@@ -274,7 +266,6 @@ export default function HorasPage() {
           >
             <Section title="Registrar horas" description="Elige si las compensas ya, las acumulas en tu bolsa o las debes a la empresa.">
             <Card className={styles.formCard}>
-              {/* Mode toggle — 3 options */}
               <div className={styles.modeToggle}>
                 {Object.entries(MODE_CONFIG).map(([key, c]) => {
                   const Icon = c.icon;
@@ -301,13 +292,11 @@ export default function HorasPage() {
                 })}
               </div>
 
-              {/* Info banner */}
               <div className={clsx(styles.infoBanner, styles[cfg.colorClass])}>
                 <cfg.bannerIcon size={16} aria-hidden="true" className={styles.infoBannerIcon} />
                 <span>{cfg.banner}</span>
               </div>
 
-              {/* Form */}
               <div className={styles.formGrid}>
                 <Input
                   label={cfg.dateLabel}
@@ -379,7 +368,7 @@ export default function HorasPage() {
           </motion.div>
         )}
 
-        {/* ── MI REGISTRO ── */}
+        {/* Mi registro */}
         {tab === 'bolsa' && (
           <motion.div
             key="bolsa"
@@ -389,7 +378,6 @@ export default function HorasPage() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.2 }}
           >
-            {/* Balance stats */}
             <div className={styles.statsGrid}>
               <StatCard
                 label="A mi favor"
@@ -422,7 +410,6 @@ export default function HorasPage() {
             </div>
 
             <Section title="Mi registro" description="Tus horas a favor y las que debes, por fecha.">
-            {/* Filters */}
             <Card className={styles.filterCard}>
               <div className={styles.filterRow}>
                 <div className={styles.filterGroup}>
@@ -442,7 +429,6 @@ export default function HorasPage() {
               </div>
             </Card>
 
-            {/* Table */}
             {allRows.length === 0 ? (
               <Card className={styles.emptyCard}>
                 <div className={styles.emptyStateIcon}>
@@ -493,7 +479,7 @@ export default function HorasPage() {
           </motion.div>
         )}
 
-        {/* ── HISTORIAL DE USUARIOS (ADMIN) ── */}
+        {/* Historial de usuarios (admin) */}
         {tab === 'usuarios' && user?.role === 'admin' && (
           <motion.div
             key="usuarios"
@@ -504,7 +490,6 @@ export default function HorasPage() {
             transition={{ duration: 0.2 }}
           >
             <Section title="Saldo por persona" description="Horas a favor, pendientes y en deuda de cada empleado.">
-            {/* Search */}
             <div className={styles.adminSearchHeader}>
               <div className={clsx(styles.userSearchWrapper, styles.userSearchWrapperFlex)}>
                 <Search size={16} />
@@ -522,7 +507,6 @@ export default function HorasPage() {
               )}
             </div>
 
-            {/* Table of user stats */}
             {filteredUserStats.length === 0 ? (
               <Card className={styles.emptyCard}>
                 <Inbox size={44} strokeWidth={1} />
@@ -606,7 +590,6 @@ export default function HorasPage() {
         )}
       </AnimatePresence>
 
-      {/* Detail Modal */}
       {selectedUser && (
         <Modal
           open={!!selectedUser}
@@ -614,7 +597,6 @@ export default function HorasPage() {
           title={`Historial de ${selectedUser.employee.name}`}
           className={styles.historyModal}
         >
-          {/* Quick stats in modal */}
           <div className={styles.modalStatsGrid}>
             <div className={clsx(styles.modalStatCard, styles.statApproved)}>
               <strong>{selectedUser.bolsa.toFixed(1)}h</strong>
@@ -638,7 +620,6 @@ export default function HorasPage() {
             </div>
           </div>
 
-          {/* Table history */}
           {selectedUser.history.length === 0 ? (
             <div className={styles.modalEmpty}>
               <Inbox size={36} strokeWidth={1} />

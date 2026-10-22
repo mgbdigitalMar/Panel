@@ -1,9 +1,4 @@
-/**
- * User-facing error handling — shared by WEB and APP.
- *
- * Technical details (Postgres codes, "Network request failed", stack traces)
- * are logged for debugging but never shown to end users.
- */
+// Technical details (Postgres codes, "Network request failed") are logged, never shown.
 
 /** An error whose message was written for end users and can be shown as is. */
 export class UserFacingError extends Error {

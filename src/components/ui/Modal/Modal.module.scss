@@ -41,16 +41,6 @@
   }
 }
 
-/* Wide variant — for forms with multiple columns */
-.modal--wide {
-  max-width: 720px;
-}
-
-/* Extra-wide — for data-heavy modals */
-.modal--xl {
-  max-width: 960px;
-}
-
 .header {
   display: flex;
   justify-content: space-between;
@@ -118,20 +108,3 @@
   }
 }
 
-/* Footer with actions — optional */
-.modalFooter {
-  padding: 16px 24px;
-  border-top: 1px solid rgba(var(--border-rgb), 0.40);
-  background: rgba(var(--bg-rgb), 0.28);
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-
-  @media (max-width: 479px) {
-    flex-direction: column;
-    > * { width: 100%; }
-  }
-}

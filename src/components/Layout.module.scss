@@ -1,20 +1,11 @@
 @use '../styles/patterns' as p;
 
-/* ═══════════════════════════════════════════════════════════════════
-   LAYOUT — Margube workspace shell
-   An open canvas (the login's animated backdrop) holds the sidebar and
-   the top bar; the page sits in one large rounded panel, the way the
-   login's form card sits on its backdrop.
-
-   canvas  → var(--bg-2)   white / #11141B
-   panel   → var(--bg)     #F2F4F8 / #0A0C10
-   cards   → var(--card)   white / #13161D
-═══════════════════════════════════════════════════════════════════ */
+/* The sidebar and top bar sit on the canvas (--bg-2); the page sits in one rounded panel (--bg). */
 
 $header-h: 76px;
 $header-h-mobile: 64px;
 
-/* ── Root grid ───────────────────────────────────────────────────── */
+/* Root grid */
 .layout {
   --sb: 280px;
   position: relative;
@@ -35,9 +26,6 @@ $header-h-mobile: 64px;
 
 .layoutCollapsed { --sb: 88px; }
 
-/* ═══════════════════════════════════════════════════════════════════
-   SIDEBAR
-═══════════════════════════════════════════════════════════════════ */
 .sidebar {
   position: sticky;
   top: 0;
@@ -62,7 +50,6 @@ $header-h-mobile: 64px;
   min-height: 100%;
 }
 
-/* ── Logo ─────────────────────────────────────────────────────────── */
 .logoArea {
   display: flex;
   align-items: center;
@@ -88,7 +75,7 @@ $header-h-mobile: 64px;
   object-fit: contain;
 }
 
-/* ── Profile block ───────────────────────────────────────────────── */
+/* Profile block */
 .profile {
   display: flex;
   flex-direction: column;
@@ -224,7 +211,7 @@ $header-h-mobile: 64px;
   }
 }
 
-/* ── Navigation ──────────────────────────────────────────────────── */
+/* Navigation */
 .navGroup {
   flex: 1 0 auto;
   display: flex;
@@ -397,7 +384,7 @@ $header-h-mobile: 64px;
   .navLabel { display: none; }
 }
 
-/* ── Footer (settings + sign out) ───────────────────────────────── */
+/* Footer (settings + sign out) */
 .sidebarFooter {
   display: flex;
   flex-direction: column;
@@ -406,7 +393,7 @@ $header-h-mobile: 64px;
   border-top: 1px solid var(--border);
 }
 
-/* ── Collapse handle ─────────────────────────────────────────────── */
+/* Collapse handle */
 .collapseBtn {
   position: fixed;
   top: 27px;
@@ -429,7 +416,7 @@ $header-h-mobile: 64px;
   @media (max-width: 1023px) { display: none; }
 }
 
-/* ── Mobile drawer ───────────────────────────────────────────────── */
+/* Mobile drawer */
 .mobileOverlay {
   position: fixed;
   inset: 0;
@@ -455,9 +442,7 @@ $header-h-mobile: 64px;
   box-shadow: var(--shadow-2xl);
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   MAIN COLUMN
-═══════════════════════════════════════════════════════════════════ */
+/* Main column */
 .main {
   position: relative;
   z-index: 1;
@@ -466,7 +451,7 @@ $header-h-mobile: 64px;
   min-width: 0;
 }
 
-/* ── Top bar ─────────────────────────────────────────────────────── */
+/* Top bar */
 .header {
   position: sticky;
   top: 0;
@@ -546,7 +531,7 @@ $header-h-mobile: 64px;
   @media (max-width: 479px) { gap: 6px; }
 }
 
-/* ── Search pill ─────────────────────────────────────────────────── */
+/* Search pill */
 .searchTrigger {
   display: flex;
   align-items: center;
@@ -612,7 +597,7 @@ $header-h-mobile: 64px;
   @media (max-width: 767px) { display: none; }
 }
 
-/* ── Clock + icon buttons ────────────────────────────────────────── */
+/* Clock + icon buttons */
 .liveClock {
   display: inline-flex;
   align-items: center;
@@ -686,7 +671,7 @@ $header-h-mobile: 64px;
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Content panel ───────────────────────────────────────────────── */
+/* Content panel */
 /* Desktop: a fixed window onto the page (only the panel scrolls).
    Phones: normal page scrolling under a solid top bar. */
 @media (min-width: 1024px) {

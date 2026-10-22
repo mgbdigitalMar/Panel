@@ -1,14 +1,7 @@
 /**
- * Web notifications for the intranet.
- *
- * Two layers, both delivered by public/push-sw.js:
- *  1. Tab open (even hidden/minimised): the page shows a system notification
- *     through the service worker registration — works on desktop and Android,
- *     and a click brings the intranet back to the right page.
- *  2. Tab closed: Web Push. The browser subscription is stored in Supabase
- *     (web_push_subscriptions) and the `send-push` Edge Function delivers it.
- *
- * Preferences live in localStorage, shared with the Ajustes page.
+ * Both layers go through public/push-sw.js: with a tab open the page shows the notification
+ * through the worker registration; with every tab closed the `send-push` Edge Function delivers
+ * a Web Push to the subscription stored in web_push_subscriptions.
  */
 import { supabase } from '../utils/supabase';
 import { notificationWebPath } from '../../shared/config/constants.js';

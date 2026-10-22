@@ -161,7 +161,6 @@ export default function NewsPage() {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
       <div className={styles.pageControls}>
         <div className={styles.tabsRow}>
           {tabBtn('all', 'Todo')}
@@ -177,7 +176,6 @@ export default function NewsPage() {
         )}
       </div>
 
-      {/* Pinned */}
       {pinned.length > 0 && (
         <Section title="Destacado">
           <div className={styles.newsList}>
@@ -188,7 +186,6 @@ export default function NewsPage() {
         </Section>
       )}
 
-      {/* Regular */}
       {regular.length > 0 && (
         <Section title={pinned.length > 0 ? 'Recientes' : 'Publicaciones'}>
           <div className={styles.newsList}>
@@ -199,7 +196,6 @@ export default function NewsPage() {
         </Section>
       )}
 
-      {/* Empty state */}
       {filtered.length === 0 && (
         <Card>
           <div className={styles.emptyState}>
@@ -221,7 +217,6 @@ export default function NewsPage() {
         </Card>
       )}
 
-      {/* Publish / Edit modal */}
       <Modal open={showModal} onClose={() => { setShowModal(false); setEditItem(null); }} title={editItem ? 'Editar publicación' : 'Nueva publicación'}>
         <div className={styles.typeButtons}>
           {[{ id: 'news', label: 'Noticia' }, { id: 'event', label: 'Evento' }].map(rt => (

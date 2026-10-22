@@ -1,15 +1,6 @@
-/* ═══════════════════════════════════════════════════════════════════
-   Margube — notification service worker
-   Registered by src/services/webPush.js with scope /push/ so it never
-   competes with the PWA service worker for page/caching control.
-
-   Shows notifications:
-   • pushed by the server (Web Push), even with every tab closed
-   • shown by an open page through this registration while the tab is
-     hidden (src/services/webPush.js → showSystemNotification)
-   Both use the tag `margube-<id>`, so the same notification never
-   appears twice.
-═══════════════════════════════════════════════════════════════════ */
+/* Notification service worker. Registered by src/services/webPush.js with scope /push/ so it
+   never competes with the PWA worker. Server pushes and notifications shown by an open page share
+   the tag `margube-<id>`, so none appears twice. */
 
 const params = new URL(self.location.href).searchParams;
 const SUPABASE_URL = params.get('u');
@@ -66,7 +57,6 @@ function show({ id, title, body, entityType, unread }) {
   }).catch(() => {});
 }
 
-/* ── Server push (tab closed or open) ─────────────────────────────── */
 self.addEventListener('push', (event) => {
   let payload = {};
   try { payload = event.data ? event.data.json() : {}; } catch { /* generic */ }
@@ -86,7 +76,7 @@ self.addEventListener('push', (event) => {
   })());
 });
 
-/* ── Click: focus an open intranet tab or open a new one ─────────── */
+/* Click: focus an open intranet tab or open a new one */
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const url = event.notification.data?.url || '/dashboard';

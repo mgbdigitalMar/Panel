@@ -1,11 +1,6 @@
-// Authentication, session and idle lock for the app.
-// Login uses the same model as the web AuthProvider: Supabase Auth checks the
-// email and password on the server and the session is kept in the keychain
-// (lib/supabase.js). Differences, on purpose:
-//   * inactivity pauses the session (IDLE_TIMEOUT_MOBILE, 30 min) instead of
-//     logging out, and it can be resumed with biometrics or the password;
-//   * with biometrics on, logging out keeps the Supabase session on the device
-//     so the fingerprint / face can open it again without the password.
+// Same login as the web (Supabase Auth, session in the keychain). Unlike the web, inactivity
+// locks the session instead of logging out, and with biometrics on, logout keeps the session
+// so the fingerprint or face can reopen it.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { mapProfile } from '@shared/services/profiles.js';
@@ -21,7 +16,6 @@ const AuthCtx = createContext(null);
 
 export const PROFILE_COLUMNS = 'id,name,email,role,department,phone,position,avatar_initials,avatar_url,birthdate,join_date,work_mode,first_login,policy_accepted,telework_days,telework_applied_on';
 
-/** Temporary password valid for any account until its first password change. */
 export { FIRST_ACCESS_PASSWORD };
 
 const isFirstLogin = (u) => u?.firstLogin === true || u?.firstLogin === 'true';
@@ -39,7 +33,6 @@ export function AuthProvider({ children }) {
   const userRef = useRef(null);
   useEffect(() => { userRef.current = user; }, [user]);
 
-  // ── helpers ─────────────────────────────────────────────────────
   const persistSession = useCallback(async (id, force = false) => {
     const now = Date.now();
     if (!force && now - lastPersisted.current < 30000) return;
@@ -87,7 +80,6 @@ export function AuthProvider({ children }) {
     setLocked(false);
   }, []);
 
-  // ── restore on launch ──────────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
@@ -120,7 +112,6 @@ export function AuthProvider({ children }) {
     })();
   }, [fetchProfile, loadEmployees]);
 
-  // ── idle lock ──────────────────────────────────────────────────
   useEffect(() => {
     if (!user || locked) return undefined;
     const interval = setInterval(() => {
@@ -146,7 +137,6 @@ export function AuthProvider({ children }) {
     };
   }, [user, locked, persistSession]);
 
-  // ── profiles realtime (same channel as the web) ────────────────
   useEffect(() => {
     if (!user?.id) return undefined;
     const channel = supabase
@@ -166,7 +156,6 @@ export function AuthProvider({ children }) {
     return () => { supabase.removeChannel(channel); };
   }, [user?.id, loadEmployees, clearSession]);
 
-  // ── actions ────────────────────────────────────────────────────
   const login = useCallback(async (emailInput, pass) => {
     const email = String(emailInput || '').trim();
     if (!email || !pass) return { ok: false, msg: 'Introduce tu correo y tu contraseña.' };
@@ -273,7 +262,7 @@ export function AuthProvider({ children }) {
     return { error: null };
   }, [loadEmployees]);
 
-  /** Profile flow: verify the current password, then store the new hash. */
+  /** Profile flow: the current password is checked first. */
   const changePassword = useCallback(async (current, next) => {
     const me = userRef.current;
     const { error } = await changeOwnPassword(supabase, { email: me.email, currentPassword: current, newPassword: next });

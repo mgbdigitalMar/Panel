@@ -1,5 +1,4 @@
-// Inicio — laid out like the reference: top bar, hero card for the day, the week as progress
-// rings, quick access, today's agenda as cards, then news and birthdays.
+// Inicio: hero card for the day, the week as progress rings, quick access, agenda, news and birthdays.
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -33,7 +32,6 @@ function useNow(interval = 60000) {
   return now;
 }
 
-/** Icon + figure on the hero card (reference: 18h 9m · ★ 4.7 · 16). */
 function HeroMeta({ icon: Icon, value, label, color, onPress }) {
   return (
     <PressScale onPress={onPress} accessibilityRole="button" accessibilityLabel={`${label}: ${value}`} scaleTo={0.94}
@@ -44,7 +42,7 @@ function HeroMeta({ icon: Icon, value, label, color, onPress }) {
   );
 }
 
-/** Mon–Fri as progress rings (reference: the week strip). Past days full, today partial, future empty. */
+/** Mon–Fri as rings: past days full, today partial, future empty. */
 function WeekRings({ now, busyDays }) {
   const { colors } = useTheme();
   const today = toISODate(now);
@@ -73,7 +71,7 @@ function WeekRings({ now, busyDays }) {
   );
 }
 
-/** Agenda card (reference: schedule card) — the first one is washed in brand blue. */
+/** The first agenda card is washed in brand blue. */
 function AgendaCard({ item, highlight }) {
   const { colors } = useTheme();
   const body = (
@@ -99,7 +97,6 @@ function AgendaCard({ item, highlight }) {
   return <GlassCard onPress={item.onPress} radius={24} accessibilityLabel={`${item.title}, ${item.time}, ${item.when}`}>{body}</GlassCard>;
 }
 
-/** News row with a round date badge. */
 function NewsRow({ n, onPress, first, last }) {
   const { colors } = useTheme();
   const d = parseDate(n.date || n.createdAt);
@@ -217,7 +214,6 @@ export default function DashboardScreen() {
 
   return (
     <Screen tabBarSpace onRefresh={onRefresh} refreshing={refreshing}>
-      {/* Top bar — avatar and bell in round glass, like the reference */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 52 }}>
         <Pressable onPress={() => navigation.navigate('Profile')} accessibilityRole="button" accessibilityLabel="Mi perfil" hitSlop={4}>
           <Avatar name={user?.name} initials={user?.avatar} src={user?.avatarUrl} size={50} />
@@ -233,7 +229,6 @@ export default function DashboardScreen() {
         </T>
       </View>
 
-      {/* Hero — the day */}
       <HeroCard>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <HeroChip label={status} />
@@ -261,7 +256,6 @@ export default function DashboardScreen() {
         </View>
       </HeroCard>
 
-      {/* The week — progress rings */}
       <GlassCard radius={26} padding={16} style={{ gap: 14 }}>
         <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
           <T size={15} weight="semibold">Esta semana</T>
@@ -283,7 +277,6 @@ export default function DashboardScreen() {
         </WashCard>
       ) : null}
 
-      {/* Quick access */}
       <View style={{ gap: 10 }}>
         <SectionHead title="Accesos rápidos" />
         <ActionGrid
@@ -296,7 +289,6 @@ export default function DashboardScreen() {
         />
       </View>
 
-      {/* Agenda — reference: "Schedule · Today" */}
       <View style={{ gap: 10 }}>
         <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', gap: 8 }}>
           <T size={15} weight="semibold" accessibilityRole="header">Agenda</T>
@@ -313,7 +305,6 @@ export default function DashboardScreen() {
         ) : agenda.map((a, i) => <AgendaCard key={a.key} item={a} highlight={i === 0} />)}
       </View>
 
-      {/* News */}
       {latestNews.length > 0 ? (
         <View style={{ gap: 10 }}>
           <SectionHead title="Comunicados" action="Ver todos" onAction={() => navigation.navigate('News')} />
@@ -331,7 +322,6 @@ export default function DashboardScreen() {
         </GlassCard>
       )}
 
-      {/* Birthdays */}
       {upcomingBirthdays.length > 0 ? (
         <View style={{ gap: 10 }}>
           <SectionHead title="Cumpleaños" icon={Gift} />

@@ -13,10 +13,8 @@ import { mapProfile } from '../../shared/services/profiles.js'
 import { signIn, isFirstAccess } from '../../shared/services/auth.js'
 import { fetchReservations as fetchReservationsSvc } from '../../shared/services/reservations.js'
 
-// ─── THEME CONTEXT ────────────────────────────────────────────
 export const ThemeCtx = createContext()
 
-// Resolves the actual applied theme ('dark'|'light') from mode
 function resolveTheme(mode) {
   if (mode === 'system') {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -39,10 +37,8 @@ export function ThemeProvider({ children }) {
     try { localStorage.setItem('app-theme-mode', m); } catch {}
   }
 
-  // Apply on mount
   useEffect(() => { applyMode(mode); }, []);
 
-  // Re-apply whenever mode changes
   useEffect(() => { applyMode(mode); }, [mode]);
 
   // Listen to OS preference changes when mode === 'system'
@@ -84,16 +80,12 @@ export function ThemeProvider({ children }) {
     if (resolveTheme(m) === resolveTheme(mode)) { setModeState(m); return; }
     withThemeTransition(() => { setModeState(m); applyMode(m); });
   };
-  // Legacy toggle kept for any remaining usages
-  const toggle = () => setMode(mode === 'dark' ? 'light' : 'dark');
-  // theme = resolved applied value (for icon logic, etc.)
   const theme = resolveTheme(mode);
 
-  return <ThemeCtx.Provider value={{ theme, mode, setMode, toggle }}>{children}</ThemeCtx.Provider>
+  return <ThemeCtx.Provider value={{ theme, mode, setMode }}>{children}</ThemeCtx.Provider>
 }
 export function useTheme() { return useContext(ThemeCtx) }
 
-// ─── DATA CONTEXT (Requests + Reservations via Supabase) ──────
 export const DataCtx = createContext()
 export const RequestsCtx = createContext()
 export const ReservationsCtx = createContext()
@@ -112,7 +104,7 @@ export function DataProvider({ children }) {
   const [documents, setDocuments]            = useState([])
   const [hourCompensations, setHourCompensations] = useState([])
   const [news, setNews]                      = useState([])
-  const [personalDays, setPersonalDays]      = useState([]) // New personal days state
+  const [personalDays, setPersonalDays]      = useState([])
   const [notifications, setNotifications]    = useState([]) // Persistent DB notifications
   const [loadingData, setLoadingData]        = useState(true)
 const [readIds, setReadIds] = useState(() => {
@@ -124,8 +116,7 @@ const [readIds, setReadIds] = useState(() => {
 })
   const [liveNotifs, setLiveNotifs]        = useState([])  // Real-time toasts
 
-  // ── Storage cleanup helper ─────────────────────────────────
-  // Extracts the file path from a Supabase Storage URL and removes it from the bucket
+  // Removes the file behind a public Storage URL from the documents bucket
   const removeStorageFile = async (fileUrl) => {
     if (!fileUrl || !fileUrl.includes('/storage/v1/object/public/documents/')) return
     try {
@@ -145,7 +136,6 @@ const [readIds, setReadIds] = useState(() => {
     }
   }
 
-  // ── Persistent Notifications (DB) ────────────────────────
   const fetchNotifications = async (userId) => {
     if (!userId) return
     const { data, error } = await supabase
@@ -184,9 +174,7 @@ const [readIds, setReadIds] = useState(() => {
     }
   }
 
-  // ── Fetch helpers ─────────────────────────────────────────
-  // Employees only load their own requests and personal days (with their
-  // supporting documents); admins load everyone's.
+  // Employees load only their own requests and personal days; admins load everyone's.
   const ownRowsOnly = (query) => (user?.role === 'admin' ? query : query.eq('employee_id', user?.id))
 
   async function fetchRequests() {
@@ -208,11 +196,9 @@ const [readIds, setReadIds] = useState(() => {
       createdAt: r.created_at,
       employeeId: r.employee?.id,
       employeeName: r.employee?.name,
-      // vacation
       startDate: r.start_date,
       endDate: r.end_date,
       days: r.days,
-      // purchase
       item: r.item,
       amount: r.amount,
       // went back to the office early (undefined = column not created yet)
@@ -220,8 +206,7 @@ const [readIds, setReadIds] = useState(() => {
     })))
   }
 
-  // Same query as the app: the reservations_full view has no employee_id, so
-  // "Mis reservas", its counter and the delete / calendar buttons found nothing
+  // Same query as the app: the reservations_full view has no employee_id
   async function fetchReservations() {
     setReservationsState(await fetchReservationsSvc(supabase))
   }
@@ -359,7 +344,6 @@ const [readIds, setReadIds] = useState(() => {
     const adminIds = admins.map(e => e.id)
     if (adminIds.length === 0) return
     
-    // Create notifications for each admin
     const notifs = adminIds.map(adminId => ({
       user_id: adminId,
       title,
@@ -392,16 +376,12 @@ const [readIds, setReadIds] = useState(() => {
   useEffect(() => {
     refetchAll().finally(() => setLoadingData(false))
 
-    // ── Supabase Realtime subscriptions ─────────────────────
-
-
     // One table change often produces two events (e.g. the request UPDATE and
     // its row in `notifications`): the blip plays once per burst.
     let lastSoundAt = 0
     const pushNotif = (icon, msg) => {
       const id = Date.now() + Math.random()
       setLiveNotifs(prev => [{ id, icon, msg }, ...prev.slice(0, 4)])
-      // Auto-dismiss after 6 s
       setTimeout(() => setLiveNotifs(prev => prev.filter(n => n.id !== id)), 6000)
 
       if (Date.now() - lastSoundAt > 1500) {
@@ -418,7 +398,6 @@ const [readIds, setReadIds] = useState(() => {
       showSystemNotification({ id: row.id, title: row.title, body: row.body, entityType: row.entity_type, entityId: row.entity_id, type: row.type })
     }
 
-    // Requests — all events
     const requestChannel = supabase
       .channel('realtime-requests')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'requests' }, (payload) => {
@@ -436,7 +415,6 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
-    // Reservations — all events
     const reservationChannel = supabase
       .channel('realtime-reservations')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations' }, (payload) => {
@@ -454,7 +432,6 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
-    // Rooms — all events
     const roomChannel = supabase
       .channel('realtime-rooms')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, (payload) => {
@@ -465,7 +442,6 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
-    // Vehicles — all events
     const vehicleChannel = supabase
       .channel('realtime-vehicles')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'vehicles' }, (payload) => {
@@ -476,7 +452,6 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
-    // Documents — all events
     const documentChannel = supabase
       .channel('realtime-documents')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, (payload) => {
@@ -492,7 +467,6 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
-    // Hour compensations — all events
     const hoursChannel = supabase
       .channel('realtime-hours')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'hour_compensations' }, (payload) => {
@@ -507,7 +481,6 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
-    // Personal days — all events (was missing entirely)
     const personalDaysChannel = supabase
       .channel('realtime-personal-days')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'personal_days' }, (payload) => {
@@ -525,7 +498,6 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
-    // News — all events
     const newsChannel = supabase
       .channel('realtime-news')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'news' }, () => {
@@ -533,7 +505,6 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
-    // Notifications — INSERT + UPDATE (for current user)
     const notifChannel = supabase
       .channel('realtime-notifications')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
@@ -551,9 +522,7 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
-    // ── Visibility-based re-fetch ────────────────────────────
-    // When the tab comes back to the foreground, re-fetch all data
-    // to catch any events that may have been missed while in background
+    // Back in the foreground: refetch what the socket may have missed
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
         refetchAll()
@@ -611,7 +580,6 @@ const [readIds, setReadIds] = useState(() => {
     return res
   }
 
-  // ── Write helpers ─────────────────────────────────────────
   const createRequest = async (employeeId, payload) => {
     const { data, error } = await supabase.from('requests').insert([{
       employee_id: employeeId,
@@ -772,7 +740,6 @@ const [readIds, setReadIds] = useState(() => {
     }
     await fetchReservations()
     
-    // Notify admins
     const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado'
     await notifyAdmins({
       title: `📅 Nueva reserva: ${rName}`,
@@ -836,7 +803,6 @@ const [readIds, setReadIds] = useState(() => {
       return { error: 'El archivo supera el tamaño máximo permitido (15 MB).' }
     }
 
-    // ── Strategy 1: Supabase Storage ──────────────────────────
     try {
       const ext  = file.name.split('.').pop()
       const path = `docs/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
@@ -851,7 +817,6 @@ const [readIds, setReadIds] = useState(() => {
       
       console.warn('Supabase Storage no disponible:', upErr.message)
       
-      // If the file is > 15MB, don't fallback to base64
       if (file.size > 15 * 1024 * 1024) {
         return { error: `Error en Storage: ${upErr.message}. Crea el bucket 'documents' como público en Supabase.` }
       }
@@ -862,10 +827,10 @@ const [readIds, setReadIds] = useState(() => {
       }
     }
 
-    // ── Strategy 2: Base64 data URL (works without bucket) ────
+    // Fallback without a bucket: a base64 data URL
     return new Promise((resolve) => {
       const reader = new FileReader()
-      reader.onload = (e) => resolve({ url: e.target.result }) // data:application/pdf;base64,...
+      reader.onload = (e) => resolve({ url: e.target.result })
       reader.onerror = () => resolve({ error: 'Error leyendo archivo localmente' })
       reader.readAsDataURL(file)
     })
@@ -888,7 +853,6 @@ const [readIds, setReadIds] = useState(() => {
     await fetchDocuments()
   }
 
-  // ── Hour Compensation helpers ──────────────────────────────
   const createHourCompensation = async ({ employeeId, date, reason, hours, type }) => {
     // 'ya' and 'debe' are auto-approved; 'bolsa' waits for admin
     const status = type === 'bolsa' ? 'pending' : 'approved'
@@ -904,7 +868,6 @@ const [readIds, setReadIds] = useState(() => {
     if (error) { console.error('createHourCompensation:', error); return null }
     await fetchHourCompensations()
 
-    // Notify admins if it's a request for the 'bolsa'
     if (type === 'bolsa') {
       const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado'
       await notifyAdmins({
@@ -945,7 +908,6 @@ const [readIds, setReadIds] = useState(() => {
     else await fetchHourCompensations();
   }
 
-  // ── News helpers ──────────────────────────────
   const createNews = async (payload) => {
     const { error } = await supabase.from('news').insert([payload])
     if (error) { console.error('createNews:', error); return }
@@ -973,8 +935,6 @@ const [readIds, setReadIds] = useState(() => {
     }
   }
 
-
-// ── Notification read state ───────────────────────────────
   const markRead = (id) => setReadIds(prev => {
     const next = new Set([...prev, id]);
     localStorage.setItem('margube_readNotifs', JSON.stringify(Array.from(next)));
@@ -987,20 +947,14 @@ const [readIds, setReadIds] = useState(() => {
     return next;
   });
 
-  // Persist changes
   useEffect(() => {
     localStorage.setItem('margube_readNotifs', JSON.stringify(Array.from(readIds)));
   }, [readIds]);
 
-  // Legacy setters kept for compatibility
-  const setRequests     = (fn) => setRequestsState(fn)
-  const setReservations = (fn) => setReservationsState(fn)
-
-  // The actions read `employees`, `user` and other lists from this render
-  // (e.g. notifyAdmins needs the admin list): they must be in the deps, or a
-  // value memoized before the employees loaded keeps notifying nobody.
-  const requestValue = useMemo(() => ({ requests, setRequests, createRequest, updateRequestStatus, deleteRequest, changeWorkMode }), [requests, personalDays, employees, user]);
-  const resValue = useMemo(() => ({ reservations, setReservations, rooms, vehicles, createReservation, updateReservationStatus, deleteReservation }), [reservations, rooms, vehicles, employees]);
+  // The actions read `employees` and `user` from this render: without them in the deps,
+  // a value memoized before the employees loaded would notify no admin.
+  const requestValue = useMemo(() => ({ requests, createRequest, updateRequestStatus, deleteRequest, changeWorkMode }), [requests, personalDays, employees, user]);
+  const resValue = useMemo(() => ({ reservations, rooms, vehicles, createReservation, updateReservationStatus, deleteReservation }), [reservations, rooms, vehicles, employees]);
   const docValue = useMemo(() => ({ documents, sendDocument, updateDocumentStatus, uploadDocumentFile, deleteDocument, onboardingDocUrl: documents?.find(d => d.title === '__ONBOARDING_DOC__')?.fileUrl || null, deleteEmployeeData }), [documents, personalDays]);
   const hourValue = useMemo(() => ({ hourCompensations, createHourCompensation, updateHourCompensationStatus, deleteHourCompensation }), [hourCompensations, employees]);
   const pdValue = useMemo(() => ({ personalDays, createPersonalDay, updatePersonalDayStatus }), [personalDays, employees]);
@@ -1044,8 +998,6 @@ export function useNews() { return useContext(NewsCtx) }
 export function useNotifs() { return useContext(NotifsCtx) }
 export function useDataSync() { return useContext(DataSyncCtx) }
 
-
-// ─── AUTH CONTEXT (Supabase Auth + profiles table) ────────────
 export const AuthCtx = createContext()
 
 export function AuthProvider({ children }) {
@@ -1055,8 +1007,7 @@ export function AuthProvider({ children }) {
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
   const [authLoading, setAuthLoading]       = useState(true)
 
-  // Idle timeout
-  const IDLE_TIMEOUT = 60 * 1000 // 1 min
+  const IDLE_TIMEOUT = 60 * 1000
   const [lastActivity, setLastActivity] = useState(Date.now())
 
   async function loadProfile(id) {
@@ -1084,16 +1035,14 @@ export function AuthProvider({ children }) {
     setEmployeesState(data.map(mapProfile))
   }
 
-  // ── Per-tab session + synchronized logout across tabs ─────
+  // Per-tab session + synchronized logout across tabs
   useEffect(() => {
-    // Generate unique tab ID for this browser tab in sessionStorage
     let tabId = sessionStorage.getItem('margube_tabId')
     if (!tabId) {
       tabId = 'tab_' + Math.random().toString(36).substr(2, 9)
       sessionStorage.setItem('margube_tabId', tabId)
     }
     
-    // Broadcast channel for cross-tab communication
     const bc = new BroadcastChannel('margube_sessions')
     
     // Session restore: the identity comes from the Supabase Auth session, the
@@ -1141,7 +1090,6 @@ export function AuthProvider({ children }) {
       }
     })
     
-    // Listen for other tabs explicit logout
     const handleBCMessage = (ev) => {
       if (ev.data.type === 'logout') {
         localStorage.removeItem('margube_session')
@@ -1160,7 +1108,6 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // ── Profiles realtime subscription ────────────────────────
   useEffect(() => {
     const profilesChannel = supabase
       .channel('realtime-profiles')
@@ -1196,7 +1143,7 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // ── Idle timeout logic with visibility pause ───────────────
+  // Idle logout, paused while the tab is hidden
   useEffect(() => {
     let interval;
     let isVisible = true;
@@ -1204,7 +1151,7 @@ export function AuthProvider({ children }) {
     const visibilityHandler = () => {
       isVisible = document.visibilityState === 'visible';
       if (isVisible) {
-        setLastActivity(Date.now()); // Reset on return
+        setLastActivity(Date.now());
       }
     };
 
@@ -1212,7 +1159,7 @@ export function AuthProvider({ children }) {
 
     if (user) {
       const checkIdle = () => {
-        if (!isVisible) return; // Pause when hidden
+        if (!isVisible) return;
         // Reading inside an iframe (e.g. the mandatory policy PDF) sends no
         // mouse or key events to this page: don't count it as inactivity
         if (user.policyAccepted !== true || document.activeElement?.tagName === 'IFRAME') return;
@@ -1228,9 +1175,8 @@ export function AuthProvider({ children }) {
     };
   }, [user, lastActivity])
 
-  // Keep the stored session's last activity current: restoreSession treats a
-  // stored time older than IDLE_TIMEOUT as stale, so without this a reload or
-  // a new tab opened a minute after signing in logs every tab out.
+  // restoreSession treats a marker older than IDLE_TIMEOUT as stale: without this,
+  // a reload a minute after signing in would log every tab out.
   useEffect(() => {
     if (!user?.id) return
     try {
@@ -1241,7 +1187,6 @@ export function AuthProvider({ children }) {
     } catch { /* corrupt or blocked storage */ }
   }, [user?.id, lastActivity])
 
-  // ── Background notifications ──────────────────────────────
   // Signed in + "Alertas de escritorio" on → link this browser's Web Push
   // subscription to the current person (idempotent, safe on every load).
   useEffect(() => {
@@ -1252,10 +1197,7 @@ export function AuthProvider({ children }) {
   // Clicking a system notification focuses this tab on the right page
   useEffect(() => listenForNotificationClicks(path => navigate(path)), [])
 
-  // ── Login ─────────────────────────────────────────────────
-  // The password is checked by Supabase Auth on the server; the browser never
-  // sees a hash. A person whose account has no password yet gets the same
-  // "incorrect" message: RRHH gives them a temporary one.
+  // Supabase Auth checks the password on the server; the browser never sees a hash.
   const login = async (email, pass) => {
     const res = await signIn(supabase, email, pass)
     if (!res.ok) return res
@@ -1270,16 +1212,14 @@ export function AuthProvider({ children }) {
     return { ok: true }
   }
 
-  // ── Logout ────────────────────────────────────────────────
   const logout = async () => {
-    // This browser stops receiving pushes for the person signing out
-    // (before signing out: the call needs the session)
+    // Unregister this browser's pushes first: the call needs the session
     await disablePush({ keepBrowserSubscription: true }).catch(() => {})
     supabase.auth.signOut({ scope: 'local' })
     localStorage.removeItem('margube_session')
     localStorage.removeItem('margube_tabId')
     sessionStorage.removeItem('margube_tabId')
-    localStorage.removeItem('margube_readNotifs') // Clear read notifications
+    localStorage.removeItem('margube_readNotifs')
     const bc = new BroadcastChannel('margube_sessions')
     bc.postMessage({ type: 'logout' })
     bc.close()
@@ -1289,9 +1229,7 @@ export function AuthProvider({ children }) {
     navigate('/login')
   }
 
-  // ── Update own profile ────────────────────────────────────
   const setCurrentUser = async (updates) => {
-    // Persist first_login = false when changing password
     if (updates.firstLogin === false) {
       await supabase.from('profiles').update({ first_login: false }).eq('id', updates.id)
     }
@@ -1333,7 +1271,4 @@ export function AuthProvider({ children }) {
 }
 export function useAuth() { return useContext(AuthCtx) }
 
-
-// ─── APP / NAVIGATION CONTEXT ─────────────────────────────────
 export const AppCtx = createContext()
-export function useApp() { return useContext(AppCtx) }

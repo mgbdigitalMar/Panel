@@ -87,7 +87,6 @@
   }
 }
 
-/* Size variants */
 .size-sm {
   min-height: 240px;
   padding: clamp(24px, 4vw, 40px) clamp(16px, 3vw, 32px);
@@ -131,7 +130,6 @@
   }
 }
 
-/* Responsive */
 @media (max-width: 479px) {
   .errorState {
     min-height: 280px;
@@ -147,7 +145,6 @@
   }
 }
 
-/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .icon {
     animation: none;

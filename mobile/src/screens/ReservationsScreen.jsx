@@ -32,7 +32,6 @@ export default function ReservationsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [, setTick] = useState(0);
 
-  // Quick booking sheet state
   const [sheet, setSheet] = useState(false);
   const [bookType, setBookType] = useState('room');
   const [selectedId, setSelectedId] = useState(null);
@@ -68,7 +67,6 @@ export default function ReservationsScreen() {
     setRefreshing(false);
   };
 
-  // Open booking sheet helper
   const openBookingSheet = (type = tab, resourceId = null) => {
     const nextType = type === 'vehicle' ? 'vehicle' : 'room';
     const pool = nextType === 'room' ? visibleRooms : visibleVehicles;
@@ -95,7 +93,6 @@ export default function ReservationsScreen() {
   const activeResources = bookType === 'room' ? visibleRooms : visibleVehicles;
   const currentResource = activeResources.find((r) => String(r.id) === String(selectedId)) || activeResources[0];
 
-  // Conflict validation for the booking sheet
   const resourceReservations = (currentResource && form.date)
     ? reservationsFor(reservations, { type: bookType, resourceId: currentResource.id, date: form.date })
     : [];
@@ -267,10 +264,8 @@ export default function ReservationsScreen() {
         })}
       </View>
 
-      {/* Quick Booking Sheet Modal */}
       <Sheet visible={sheet} onClose={() => setSheet(false)} title="Nueva reserva">
         <View style={{ gap: 16, paddingBottom: 24 }}>
-          {/* Segmented type selector */}
           <Segmented
             value={bookType}
             onChange={(val) => {
@@ -284,7 +279,6 @@ export default function ReservationsScreen() {
             ]}
           />
 
-          {/* Resource selector pills */}
           <View style={{ gap: 6 }}>
             <T size={13} weight="medium" color={colors.text2}>
               {bookType === 'room' ? 'Selecciona la sala:' : 'Selecciona el vehículo:'}
@@ -314,7 +308,6 @@ export default function ReservationsScreen() {
             </ScrollView>
           </View>
 
-          {/* Date Picker */}
           <DateField
             label="Fecha de la reserva"
             value={form.date}
@@ -322,7 +315,6 @@ export default function ReservationsScreen() {
             minimumDate={new Date()}
           />
 
-          {/* Time Pickers */}
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <View style={{ flex: 1 }}>
               <TimeField
@@ -340,7 +332,6 @@ export default function ReservationsScreen() {
             </View>
           </View>
 
-          {/* Purpose Input */}
           <GlassInput
             label="Motivo o propósito (opcional)"
             value={form.purpose}
@@ -348,7 +339,6 @@ export default function ReservationsScreen() {
             placeholder={bookType === 'room' ? 'p. ej. Reunión con cliente, formación...' : 'p. ej. Visita a obra, viaje comercial...'}
           />
 
-          {/* Conflict status indicator */}
           {invalidRange ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: 12, backgroundColor: colors.dangerSoft }}>
               <AlertTriangle size={18} color={colors.dangerFg} />
@@ -376,7 +366,6 @@ export default function ReservationsScreen() {
             </View>
           ) : null}
 
-          {/* Submit Button */}
           <GlassButton
             title={sending ? 'Enviando reserva...' : 'Confirmar reserva'}
             icon={Plus}

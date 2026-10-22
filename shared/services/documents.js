@@ -1,11 +1,6 @@
-/**
- * Documents service — platform-agnostic.
- * CRUD for the `documents` table + Storage helpers.
- */
 import { createNotification } from './notifications.js';
 import { MAX_FILE_SIZE_BYTES } from '../config/constants.js';
 
-/** Fetch all documents */
 export async function fetchDocuments(supabase) {
   const { data, error } = await supabase
     .from('documents')
@@ -35,7 +30,6 @@ export async function fetchDocuments(supabase) {
   }));
 }
 
-/** Send a document */
 export async function sendDocument(supabase, { title, description, fileUrl, senderId, recipientId }) {
   const { data, error } = await supabase.from('documents').insert([{
     title,
@@ -64,7 +58,6 @@ export async function sendDocument(supabase, { title, description, fileUrl, send
   return { data };
 }
 
-/** Update document status */
 export async function updateDocumentStatus(supabase, id, status) {
   const { error } = await supabase.from('documents').update({
     status,
@@ -74,7 +67,6 @@ export async function updateDocumentStatus(supabase, id, status) {
   return { error };
 }
 
-/** Delete a document (also cleans up storage file) */
 export async function deleteDocument(supabase, id, fileUrl) {
   await removeStorageFile(supabase, fileUrl);
   const { error } = await supabase.from('documents').delete().eq('id', id);
@@ -82,7 +74,6 @@ export async function deleteDocument(supabase, id, fileUrl) {
   return { error };
 }
 
-/** Remove a file from Supabase Storage */
 export async function removeStorageFile(supabase, fileUrl) {
   if (!fileUrl || !fileUrl.includes('/storage/v1/object/public/documents/')) return;
   try {

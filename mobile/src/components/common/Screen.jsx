@@ -9,10 +9,7 @@ import { TAB_BAR_HEIGHT } from '../../navigation/tabBarMetrics';
 export const CONTENT_MAX = 640;
 export const GUTTER = 20;
 
-/**
- * Backdrop: the brand blue washing in from the top and teal from the right edge — the same hues
- * as the web, laid out like the reference's colour bleed. Radial gradients, drawn once.
- */
+/** Brand blue washing in from the top and teal from the right edge; radial gradients drawn once. */
 export const Glow = memo(function Glow({ variant = 'default' }) {
   const { colors } = useTheme();
   const { width } = useWindowDimensions();

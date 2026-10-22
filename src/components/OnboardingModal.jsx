@@ -53,7 +53,6 @@ export default function OnboardingModal() {
         exit={{ opacity: 0, scale: 0.94, y: 24 }}
         className={styles.modalContent}
       >
-        {/* Progress bar */}
         <div className={styles.progressBar}>
           <motion.div
             className={styles.progressFill}

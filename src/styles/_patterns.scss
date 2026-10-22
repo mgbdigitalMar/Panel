@@ -1,7 +1,4 @@
-/* ═══════════════════════════════════════════════════════════════════
-   SHARED PATTERNS — one definition for controls every page repeats.
-   Use from a page module:  @use '../styles/patterns' as p;
-═══════════════════════════════════════════════════════════════════ */
+/* Controls every page repeats. Use from a page module: @use '../styles/patterns' as p; */
 
 /* Segmented tabs: a white pill track; the active tab is a solid accent pill */
 @mixin tabs-row {

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Home, Briefcase, Sun } from 'lucide-react';
 import { useAuth, useRequests, usePersonalDays } from '../context';
 import { Avatar, Card } from './ui';
-import { localDateKey } from '../utils/ics';
+import { todayKey } from '../utils/format';
 import styles from './TodayPanel.module.scss';
 
 const AWAY_KINDS = {
@@ -16,7 +16,7 @@ export function TodayPanel() {
   const { employees = [] } = useAuth();
   const { requests = [] } = useRequests() || {};
   const { personalDays = [] } = usePersonalDays() || {};
-  const today = localDateKey();
+  const today = todayKey();
 
   const avatarFor = (id, name) =>
     employees.find(e => e.id === id)?.avatar ||

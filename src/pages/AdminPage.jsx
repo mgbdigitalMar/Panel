@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth, useReservations, useDocuments, useHours, useDataSync, useRequests } from '../context';
-import { MOCK_ROOMS, MOCK_VEHICLES } from '../data/mockData';
 import { Avatar, Badge, Modal, Input, Select, Button, Card, ConfirmModal, Section } from '../components/ui';
-import { Search, Plus, Edit2, Trash2, Eye, EyeOff, Building, Car, FileText, Send, Clock, CheckCircle, Check, PenTool, Upload, X, Timer, Download } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, Building, Car, FileText, Send, Clock, CheckCircle, Check, PenTool, Upload, X, Timer, Download } from 'lucide-react';
 import styles from './AdminPage.module.scss';
 import clsx from 'clsx';
 import { supabase } from '../utils/supabase';
@@ -31,7 +30,6 @@ export default function AdminPage() {
   const { refresh } = useDataSync();
   const { requests } = useRequests();
 
-  // Admin Bolsa Horas filters
   const [hoursFilterFrom, setHoursFilterFrom] = useState('');
   const [hoursFilterTo,   setHoursFilterTo]   = useState('');
   const [hoursFilterEmp,  setHoursFilterEmp]  = useState('');
@@ -73,22 +71,20 @@ export default function AdminPage() {
   const [showModal, setShowModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [editEmp, setEditEmp]     = useState(null);
-  const [showPassFor, setShowPassFor] = useState(null);
   const [search, setSearch]       = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(t);
   }, [search]);
-  const [roleFilter, setRoleFilter] = useState('all');
   const [deptFilter, setDeptFilter] = useState('all');
   const [showResModal, setShowResModal] = useState(false);
   const [resType, setResType]     = useState('room');
   const [showDocModal, setShowDocModal] = useState(false);
   const [docSending, setDocSending]   = useState(false);
   const [docForm, setDocForm] = useState({ title: '', description: '', recipientId: '' });
-  const [docFile, setDocFile] = useState(null);   // the actual File object
-  const [docDrag, setDocDrag] = useState(false);  // drag-over state
+  const [docFile, setDocFile] = useState(null);
+  const [docDrag, setDocDrag] = useState(false);
   const fileInputRef = useRef(null);
   
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
@@ -111,7 +107,6 @@ export default function AdminPage() {
       return;
     }
     
-    // Guardar en la tabla documents
     const { error: dbError } = await supabase.from('documents').insert([{
       title: '__ONBOARDING_DOC__',
       description: 'Documento de inicio dinámico',
@@ -135,22 +130,18 @@ export default function AdminPage() {
     setOnboardingUploading(false);
   };
 
-
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [], policyAccepted: false });
   const [resForm, setResForm] = useState({ id: null, name: '', capacity: '', floor: '', equipment: '', model: '', plate: '', year: '', type: 'Turismo' });
   const [editingRes, setEditingRes] = useState(false);
-
-
 
   const depts = useMemo(() => [...new Set(employees.map(e => e.dept))], [employees]);
   const filtered = useMemo(() => employees.filter(e => {
     const matchesSearch = e.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
                           e.email.toLowerCase().includes(debouncedSearch.toLowerCase());
-    const matchesRole = roleFilter === 'all' || e.role === roleFilter;
     const matchesDept = deptFilter === 'all' ||
       (deptFilter === 'Otros' ? !depts.slice(0, 5).includes(e.dept) : e.dept === deptFilter);
-    return matchesSearch && matchesRole && matchesDept;
-  }), [employees, debouncedSearch, roleFilter, deptFilter, depts]);
+    return matchesSearch && matchesDept;
+  }), [employees, debouncedSearch, deptFilter, depts]);
 
   const handleSaveEmployee = async () => {
     if (!form.name || !form.email) return;
@@ -299,7 +290,7 @@ export default function AdminPage() {
     </button>
   );
 
-  const [docUploadStatus, setDocUploadStatus] = useState(''); // upload feedback
+  const [docUploadStatus, setDocUploadStatus] = useState('');
 
   const handleSendDoc = async () => {
     if (!docForm.title || !docForm.recipientId) return;
@@ -347,7 +338,6 @@ export default function AdminPage() {
 
   return (
     <div className={styles.container}>
-      {/* Page Controls */}
       <div className={styles.pageControls}>
         <div className={styles.tabsRow}>
           {tabBtn('employees', 'Empleados', employees.length)}
@@ -391,7 +381,7 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* ── EMPLOYEES ── */}
+      {/* Employees */}
       <AnimatePresence mode="wait">
       {tab === 'employees' && (
         <motion.div 
@@ -556,7 +546,7 @@ export default function AdminPage() {
         </motion.div>
       )}
 
-      {/* ── ROOMS ── */}
+      {/* Rooms */}
       {tab === 'rooms' && (
         <motion.div 
           key="rooms"
@@ -612,7 +602,7 @@ export default function AdminPage() {
         </motion.div>
       )}
 
-      {/* ── VEHICLES ── */}
+      {/* Vehicles */}
       {tab === 'vehicles' && (
         <motion.div 
           key="vehicles"
@@ -667,7 +657,7 @@ export default function AdminPage() {
       )}
       </AnimatePresence>
 
-      {/* ── DOCUMENTS ── */}
+      {/* Documents */}
       <AnimatePresence mode="wait">
       {tab === 'documents' && (
         <motion.div
@@ -782,7 +772,7 @@ export default function AdminPage() {
       )}
       </AnimatePresence>
 
-      {/* ── BOLSA HORAS ── */}
+      {/* Bolsa horas */}
       <AnimatePresence mode="wait">
       {tab === 'bolsahoras' && (
         <motion.div
@@ -794,7 +784,6 @@ export default function AdminPage() {
         >
           <Section title="Bolsa de horas" description="Aprueba o rechaza las horas que acumula el equipo." />
           <Card className={styles.tableCard}>
-            {/* Filters */}
             <div className={styles.filtersHeader}>
               <div className={styles.filterField}>
                 <label className={styles.filterLabel}>Empleado</label>
@@ -929,7 +918,6 @@ export default function AdminPage() {
       )}
       </AnimatePresence>
 
-      {/* Employee modal */}
       <Modal open={showModal} onClose={() => { setShowModal(false); setEditEmp(null); }} title={editEmp ? 'Editar empleado' : 'Nuevo empleado'}>
         <div className={styles.modalGrid}>
           <div className={styles.fullWidth}>
@@ -1037,7 +1025,6 @@ export default function AdminPage() {
         message={deleteConfirm?.message || ''}
       />
 
-      {/* Resources modal */}
       <Modal open={showResModal} onClose={() => { setShowResModal(false); setEditingRes(false); }} title={editingRes ? 'Editar' : 'Nuevo ' + (resType === 'room' ? 'sala' : 'vehículo')}>
         {resType === 'room' ? (
           <>
@@ -1074,7 +1061,6 @@ export default function AdminPage() {
             let err = null;
             if (resType === 'room') {
               if (editingRes && resForm.id) {
-                // Update room
                 const { error } = await supabase.from('rooms').update({ 
                   name: resForm.name, 
                   capacity: parseInt(resForm.capacity), 
@@ -1083,8 +1069,7 @@ export default function AdminPage() {
                 }).eq('id', resForm.id);
                 err = error;
               } else {
-                // Create room
-                const { data, error } = await supabase.from('rooms').insert([{ 
+                const { error } = await supabase.from('rooms').insert([{ 
                   name: resForm.name, 
                   capacity: parseInt(resForm.capacity), 
                   floor: parseInt(resForm.floor), 
@@ -1095,7 +1080,6 @@ export default function AdminPage() {
               if (!err) refresh();
             } else {
               if (editingRes && resForm.id) {
-                // Update vehicle
                 const { error } = await supabase.from('vehicles').update({ 
                   model: resForm.model, 
                   plate: resForm.plate, 
@@ -1104,8 +1088,7 @@ export default function AdminPage() {
                 }).eq('id', resForm.id);
                 err = error;
               } else {
-                // Create vehicle
-                const { data, error } = await supabase.from('vehicles').insert([{ 
+                const { error } = await supabase.from('vehicles').insert([{ 
                   model: resForm.model, 
                   plate: resForm.plate, 
                   year: parseInt(resForm.year), 
@@ -1123,7 +1106,6 @@ export default function AdminPage() {
         </div>
       </Modal>
 
-      {/* Send Document modal */}
       <Modal
         open={showDocModal}
         onClose={() => { setShowDocModal(false); setDocForm({ title: '', description: '', recipientId: '' }); setDocFile(null); }}
@@ -1142,7 +1124,6 @@ export default function AdminPage() {
             onChange={v => setDocForm({ ...docForm, description: v })}
           />
 
-          {/* ── File Upload Zone ── */}
           <div>
             <label className={styles.uploadLabel}>
               Archivo adjunto
@@ -1224,7 +1205,6 @@ export default function AdminPage() {
         )}
       </Modal>
 
-      {/* Onboarding Modal */}
       <Modal open={showOnboardingModal} onClose={() => { setShowOnboardingModal(false); setOnboardingFile(null); setOnboardingUploadStatus(''); }} title="Actualizar Documento de Inicio">
         <div className={styles.onboardingContainer}>
           <p className={styles.onboardingInfo}>

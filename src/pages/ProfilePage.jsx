@@ -24,7 +24,6 @@ import { supabase } from "../utils/supabase";
 import { changeOwnPassword } from "../../shared/services/auth.js";
 import { useAutoDismiss } from "../hooks/useAutoDismiss";
 
-
 const WORK_MODES = {
   Office: { label: "Oficina" },
   remoto: { label: "Remoto" },
@@ -32,10 +31,9 @@ const WORK_MODES = {
 };
 const DEFAULT_WORK_MODE = "Office";
 
-// Check if file is viewable and return its viewer URL
 function getViewerUrl(url) {
   if (!url) return null;
-  if (url.startsWith("data:")) return url; // Base64 data URL
+  if (url.startsWith("data:")) return url;
   const clean = url.split("?")[0].toLowerCase();
   if (clean.match(/\.(pdf|png|jpe?g|gif|webp|svg)$/i)) {
     return url + "#toolbar=1&navpanes=0";
@@ -58,8 +56,7 @@ export default function ProfilePage() {
 
   const [updatingDoc, setUpdatingDoc] = useState(null);
 
-  // Viewer modal state
-  const [viewerDoc, setViewerDoc] = useState(null); // doc object
+  const [viewerDoc, setViewerDoc] = useState(null);
 
   // Viewer covers the whole app (sidebar included); Escape closes it
   useInertApp(!!viewerDoc);
@@ -83,9 +80,7 @@ export default function ProfilePage() {
   const [workModeLoading, setWorkModeLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Auto-dismiss success/error messages after 4 seconds
   useAutoDismiss(message, setMessage, 4000);
-
 
   const handleWorkModeChange = async (mode) => {
     if (mode === workMode) return;
@@ -103,43 +98,42 @@ export default function ProfilePage() {
     setWorkModeLoading(false);
   };
 
+  // Shown inside the password card: the page-wide message sits below the documents
+  const [passStatus, setPassStatus] = useState(null);
+  useEffect(() => {
+    if (passStatus?.type !== "success") return undefined;
+    const t = setTimeout(() => setPassStatus(null), 6000);
+    return () => clearTimeout(t);
+  }, [passStatus]);
+  const editPassForm = (patch) => {
+    setForm((f) => ({ ...f, ...patch }));
+    if (passStatus?.type === "error") setPassStatus(null);
+  };
+
   const handlePasswordChange = async () => {
-    if (form.newPassword !== form.confirmPassword) {
-      setMessage("Las contraseñas no coinciden.");
-      return;
-    }
-    if (form.newPassword.length < 6) {
-      setMessage("La nueva contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
-    if (!form.currentPassword) {
-      setMessage("Introduce la contraseña actual.");
-      return;
-    }
+    const fail = (text) => setPassStatus({ type: "error", text });
+    if (!form.currentPassword) return fail("Introduce la contraseña actual.");
+    if (form.newPassword.length < 6) return fail("La nueva contraseña debe tener al menos 6 caracteres.");
+    if (form.newPassword !== form.confirmPassword) return fail("Las contraseñas no coinciden.");
+    if (form.newPassword === form.currentPassword) return fail("La nueva contraseña debe ser distinta de la actual.");
+
     setLoading(true);
+    setPassStatus(null);
     try {
-      // Checked and stored by Supabase Auth on the server
       const { error } = await changeOwnPassword(supabase, {
         email: user.email,
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
       });
       if (error) {
-        setMessage(error);
-        setLoading(false);
-        return;
+        fail(error);
+      } else {
+        setPassStatus({ type: "success", text: "Contraseña actualizada correctamente. Úsala la próxima vez que entres." });
+        setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
       }
-      setMessage(
-        "Contraseña actualizada correctamente. Usa la nueva en próximo login.",
-      );
-      setForm({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
     } catch (error) {
       console.error("Password change error:", error);
-      setMessage("Error al actualizar contraseña. Verifica datos.");
+      fail("No se pudo actualizar la contraseña. Revisa tu conexión e inténtalo de nuevo.");
     }
     setLoading(false);
   };
@@ -246,32 +240,44 @@ export default function ProfilePage() {
               label="Contraseña actual"
               type="password"
               value={form.currentPassword}
-              onChange={(v) => setForm({ ...form, currentPassword: v })}
+              onChange={(v) => editPassForm({ currentPassword: v })}
               placeholder="••••••••"
+              autoComplete="current-password"
             />
             <Input
               label="Nueva contraseña"
               type="password"
               value={form.newPassword}
-              onChange={(v) => setForm({ ...form, newPassword: v })}
+              onChange={(v) => editPassForm({ newPassword: v })}
               placeholder="Mínimo 6 caracteres"
+              autoComplete="new-password"
             />
             <Input
               label="Confirmar nueva contraseña"
               type="password"
               value={form.confirmPassword}
-              onChange={(v) => setForm({ ...form, confirmPassword: v })}
+              onChange={(v) => editPassForm({ confirmPassword: v })}
               placeholder="Repite la nueva contraseña"
+              autoComplete="new-password"
             />
             <Button
               icon={Save}
               onClick={handlePasswordChange}
               loading={loading}
-              disabled={!form.newPassword || form.newPassword.length < 6}
+              disabled={loading || !form.currentPassword || !form.newPassword || !form.confirmPassword}
               className={styles.saveBtn}
             >
-              Actualizar contraseña
+              {loading ? "Actualizando…" : "Actualizar contraseña"}
             </Button>
+            {passStatus && (
+              <div
+                className={clsx(styles.message, passStatus.type === "success" ? styles.success : styles.error)}
+                role={passStatus.type === "success" ? "status" : "alert"}
+              >
+                {passStatus.type === "success" ? <CheckCircle size={16} aria-hidden="true" /> : null}
+                {passStatus.text}
+              </div>
+            )}
           </div>
         </Card>
         </div>
@@ -366,7 +372,6 @@ export default function ProfilePage() {
                     </div>
 
                     <div className={styles.docActions}>
-                      {/* View file button */}
                       {hasFile &&
                         (getViewerUrl(doc.fileUrl) ? (
                           <Button
@@ -396,7 +401,6 @@ export default function ProfilePage() {
                             Abrir
                           </Button>
                         ))}
-                      {/* Download button */}
                       {hasFile && (
                         <Button
                           href={doc.fileUrl}
@@ -408,7 +412,6 @@ export default function ProfilePage() {
                           title="Descargar"
                         />
                       )}
-                      {/* Status actions */}
                       {isPending && (
                         <>
                           <Button
@@ -464,7 +467,6 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* ── Document Viewer Modal ── */}
       {viewerDoc && (
         <Portal>
         <div

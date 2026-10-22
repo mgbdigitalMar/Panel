@@ -1,9 +1,4 @@
-/**
- * News service — platform-agnostic.
- * CRUD for the `news` table.
- */
 
-/** Fetch all news items */
 export async function fetchNews(supabase) {
   const { data, error } = await supabase
     .from('news')
@@ -29,21 +24,18 @@ export async function fetchNews(supabase) {
   }));
 }
 
-/** Create a news item */
 export async function createNews(supabase, payload) {
   const { error } = await supabase.from('news').insert([payload]);
   if (error) console.error('createNews:', error);
   return { error };
 }
 
-/** Update a news item */
 export async function updateNews(supabase, id, payload) {
   const { error } = await supabase.from('news').update(payload).eq('id', id);
   if (error) console.error('updateNews:', error);
   return { error };
 }
 
-/** Delete a news item */
 export async function deleteNews(supabase, id) {
   const { error } = await supabase.from('news').delete().eq('id', id);
   if (error) console.error('deleteNews:', error);

@@ -3,7 +3,6 @@
 import { PERSONAL_DAYS_PER_YEAR, REQUEST_TYPES } from '@shared/config/constants.js';
 import { daysBetween, fmtDate, fmtDayShort, fmtMoney, timeToMin, minToTime } from './format';
 
-// ── Requests ─────────────────────────────────────────────────────────
 export const REQUEST_TONE = {
   asuntos_propios: 'accent',
   remoto: 'teal',
@@ -56,7 +55,6 @@ export function personalDaysSummary(personalDays = [], userId, year = new Date()
   return { used, total: PERSONAL_DAYS_PER_YEAR, left: Math.max(0, PERSONAL_DAYS_PER_YEAR - used) };
 }
 
-// ── Hours (Tiempo a compensar) ──────────────────────────────────────
 /** Same formulas as the web HorasPage. */
 export function hourStats(entries = []) {
   const sum = (list) => list.reduce((s, h) => s + (Number(h.hours) || 0), 0);
@@ -71,13 +69,8 @@ export function hourStats(entries = []) {
 export const HOUR_TONE = { ya: 'green', bolsa: 'accent', debe: 'rose' };
 export const HOUR_LABEL = { ya: 'Ya', bolsa: 'Bolsa', debe: 'Debo' };
 
-// ── Reservations ────────────────────────────────────────────────────
 export const DAY_START = 8 * 60;
 export const DAY_END = 20 * 60;
-
-export function resourceKey(r) {
-  return r.type === 'vehicle' ? `vehicle:${r.vehicleId}` : `room:${r.roomId}`;
-}
 
 /** Active (non-cancelled) reservations for a resource on a date. */
 export function reservationsFor(reservations, { type, resourceId, date }) {

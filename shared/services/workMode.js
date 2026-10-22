@@ -1,23 +1,11 @@
 /**
- * Work mode service — platform-agnostic.
+ * `profiles.work_mode` follows the approved remote / external requests: approving one that covers
+ * today applies it at once, a later one is applied by the employee's own session that day, and
+ * going back early sets `requests.returned_at` so it is not applied again.
  *
- * `profiles.work_mode` follows the approved remote / external requests:
- *   • the admin approves a request that covers today → the mode changes at once;
- *   • a request starting later → the employee's own session applies it that day;
- *   • the request ends → back to the office;
- *   • the employee goes back to the office early → `requests.returned_at` is set,
- *     so the request is not applied again, and the admins are notified.
- *
- * Weekly telework schedule (`profiles.telework_days`, set by an admin): at the
- * start of each day the employee goes to remote on those weekdays and to the
- * office on the rest. It is applied once a day (`profiles.telework_applied_on`)
- * by a database job and, as a fallback, by the employee's own session, so a
- * manual change later that day sticks. An approved request covering the day
- * takes priority. See supabase/migrations/20261021130000_telework_schedule.sql.
- *
- * `returned_at` comes from supabase/migrations/20261020120000_work_mode_return.sql.
- * Until it exists, rows carry `returnedAt: undefined` and only the approval
- * applies the mode (an automatic re-apply would undo the early return).
+ * The weekly telework schedule (`profiles.telework_days`) is applied once a day
+ * (`telework_applied_on`), so a manual change later that day sticks; an approved request wins.
+ * Until the returned_at migration runs, rows carry `returnedAt: undefined` and only approval applies.
  */
 import { notifyAdmins } from './notifications.js';
 
@@ -30,7 +18,7 @@ export const WORK_MODE_LABELS = { Office: 'Oficina', remoto: 'Remoto', externo: 
 
 const isRemoteMode = (mode) => mode === 'remoto' || mode === 'externo';
 
-/** Local calendar date (YYYY-MM-DD). toISOString() would give yesterday's date after midnight in Spain. */
+/** toISOString() would give yesterday's date after midnight in Spain. */
 export function localISODate(d = new Date()) {
   const pad = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -51,7 +39,6 @@ export function isoWeekday(isoDate) {
   return new Date(y, m - 1, d).getDay() || 7;
 }
 
-/** Whether `today` is one of the employee's scheduled telework days */
 export function isTeleworkDay(employee, today = localISODate()) {
   return (employee?.teleworkDays || []).includes(isoWeekday(today));
 }
@@ -82,12 +69,8 @@ export function allowedWorkModes(requests, employeeId, today = localISODate(), e
   return modes;
 }
 
-/**
- * Today's telework schedule as a `profiles` update, or null when there is
- * nothing to do (no schedule, or already applied today). With an approved
- * request covering today the request decides the mode; the day is only marked.
- * Mirrors public.apply_telework_schedules() in the database.
- */
+/** Today's schedule as a `profiles` update, or null if already applied. With an approved request
+ * covering today the request decides; the day is only marked. Mirrors apply_telework_schedules(). */
 export function teleworkScheduleUpdate(requests, employee, today = localISODate()) {
   if (!employee?.id || !employee.teleworkDays?.length || employee.teleworkAppliedOn === today) return null;
   const update = { telework_applied_on: today };
@@ -108,10 +91,7 @@ export function workModeSyncUpdate(requests, user, today = localISODate()) {
   return target ? { work_mode: target } : null;
 }
 
-/**
- * The mode `user` should be in according to their requests, or null to leave it as it is.
- * Called by the employee's own session whenever requests or the profile change.
- */
+/** The mode `user` should be in according to their requests, or null to leave it. */
 export function workModeFromRequests(requests, user, today = localISODate()) {
   if (!user?.id) return null;
   const current = user.workMode || OFFICE_MODE;
@@ -139,12 +119,7 @@ export function workModeFromRequests(requests, user, today = localISODate()) {
   return granted ? OFFICE_MODE : null;
 }
 
-/**
- * Changes the work mode of `employee` (themselves or, for an admin, anyone).
- * Going back to the office during a request ends it early and, when the
- * employee does it themselves, notifies the admins.
- * @returns {Promise<{ error: object|null }>}
- */
+/** Going back to the office during a request ends it early; done by the employee, it notifies the admins. */
 export async function changeWorkMode(supabase, employees, { employee, mode, requests, actorId }) {
   const previous = employee.workMode || OFFICE_MODE;
   const { error } = await supabase.from('profiles').update({ work_mode: mode }).eq('id', employee.id);

@@ -26,7 +26,6 @@ import { todayKey } from '../utils/format';
 import { workdayProgress } from '../utils/workday';
 import styles from './Layout.module.scss';
 
-/* ── Navigation items ─────────────────────────────────────────────── */
 const navItems = [
   { id: 'dashboard',    label: 'Inicio',             icon: LayoutDashboard },
   { id: 'reservations', label: 'Reservas',           icon: Calendar,    badgeKey: 'reservations' },
@@ -39,7 +38,6 @@ const adminItems = [
   { id: 'admin', label: 'Administración', icon: Settings, badgeKey: 'admin' },
 ];
 const settingsItem = { id: 'settings', label: 'Ajustes', icon: SlidersHorizontal };
-const allItems = [...navItems, ...adminItems, settingsItem];
 
 /* Heading shown at the top of the content panel. The dashboard draws its own. */
 const PAGE_META = {
@@ -53,7 +51,6 @@ const PAGE_META = {
   admin:        { title: 'Administración',     desc: 'Empleados, salas, vehículos, documentos y bolsa de horas.' },
 };
 
-/* ── Live clock hook ───────────────────────────────────────────────── */
 function useClock() {
   const [time, setTime] = useState(() => new Date());
   useEffect(() => {
@@ -63,8 +60,8 @@ function useClock() {
   return time;
 }
 
-/* ═ Profile ring — the workday traced around the avatar ═══════════════
-   Same leaf outline as the avatars (--shape-leaf: 60% 12% 60% 12%). */
+/* Profile ring: the workday traced around the avatar, on the same leaf outline
+   as the avatars (--shape-leaf: 60% 12% 60% 12%). */
 function leafOutline(size, inset) {
   const x = inset, y = inset, w = size - inset * 2, h = w;
   const big = w * 0.6, small = w * 0.12;
@@ -108,7 +105,6 @@ function ProfileRing({ progress, size, children }) {
   );
 }
 
-/* ═ Single Nav Link ═════════════════════════════════════════════════════ */
 function NavLink({ item, onNavigate, collapsed, badge, active, pillId }) {
   const Icon = item.icon;
   const [showTip, setShowTip] = useState(false);
@@ -176,9 +172,6 @@ function NavLink({ item, onNavigate, collapsed, badge, active, pillId }) {
   );
 }
 
-/* ════════════════════════════════════════════════════════════════════
-   LAYOUT COMPONENT
-════════════════════════════════════════════════════════════════════ */
 export default function Layout({ children }) {
   const { user, logout, needsOnboarding, setLastActivity, setCurrentUser } = useAuth();
   const { theme, setMode } = useTheme();
@@ -198,8 +191,7 @@ export default function Layout({ children }) {
   const today = todayKey(now);
   const isDark = theme === 'dark';
 
-  /* ── Pending counts for nav badges ─────────────────────────────────── */
-  // Requests and personal days; like reservations, an employee only counts their own
+  // Nav badges: like reservations, an employee only counts their own requests and personal days
   const pendingRequestsCount = [...requests, ...personalDays]
     .filter(r => r.status === 'pending' && (user?.role === 'admin' || r.employeeId === user?.id)).length;
   const pendingReservationsCount = user?.role === 'admin'
@@ -213,7 +205,7 @@ export default function Layout({ children }) {
     admin: pendingAdminCount
   };
 
-  /* ── The signed-in person's own numbers (profile block) ────────────── */
+  /* The signed-in person's own numbers (profile block) */
   const myUpcoming = useMemo(() =>
     reservations
       .filter(r => r.employeeId === user?.id && r.date >= today && r.status !== 'rejected' && r.status !== 'cancelled')
@@ -225,7 +217,6 @@ export default function Layout({ children }) {
     + personalDays.filter(p => p.employeeId === user?.id && p.status === 'pending').length,
   [requests, personalDays, user?.id]);
 
-  /* ── UI state ────────────────────────────────────────────── */
   const [sideOpen, setSideOpen] = useState(false);
   const [notiMenu, setNotiMenu] = useState(false);
 
@@ -267,7 +258,6 @@ export default function Layout({ children }) {
 
   const notiMenuRef = useRef(null);
 
-  /* ── Idle timer reset ──────────────────────────────────────────── */
   const resetIdle = useCallback(() => setLastActivity(Date.now()), [setLastActivity]);
 
   useEffect(() => {
@@ -276,7 +266,6 @@ export default function Layout({ children }) {
     return () => events.forEach(e => document.removeEventListener(e, resetIdle));
   }, [resetIdle]);
 
-  /* ── Click-outside for dropdowns ────────────────────────────── */
   useEffect(() => {
     function handler(e) {
       if (notiMenuRef.current && !notiMenuRef.current.contains(e.target))
@@ -286,13 +275,11 @@ export default function Layout({ children }) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  /* ── Navigation handler ─────────────────────────────────────────── */
   const handleNavigate = useCallback((id) => {
     navigate('/' + id);
     setSideOpen(false);
   }, [navigate]);
 
-  /* ── Global search + keyboard shortcuts ─────────────────────────── */
   const [cmdOpen, setCmdOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const closeCmd = useCallback(() => setCmdOpen(false), []);
@@ -336,7 +323,6 @@ export default function Layout({ children }) {
     return () => { window.removeEventListener('keydown', onKey); clearTimeout(gTimer); };
   }, [handleNavigate, user?.role]);
 
-  /* ── Derived data ──────────────────────────────────────────────── */
   const unreadCount = notifications.filter(n => !n.read).length;
   const handleMarkAllRead = () => markAllNotifsRead?.(user?.id);
   const meta = PAGE_META[page];
@@ -353,14 +339,13 @@ export default function Layout({ children }) {
     window.scrollTo(0, 0);
   }, [page]);
 
-  /* ── Sidebar content (shared between desktop + mobile drawer) ──── */
+  // Shared by the desktop sidebar and the mobile drawer
   const getSidebarContent = (isMobile = false) => {
     const isCollapsed = !isMobile && collapsed;
     const pillId = isMobile ? 'nav-pill-drawer' : 'nav-pill-rail';
     const progress = workdayProgress(now);
     return (
       <div className={styles.sidebarInner}>
-        {/* Logo */}
         <div className={clsx(styles.logoArea, { [styles.logoAreaCollapsed]: isCollapsed })}>
           <img
             src={isCollapsed ? logoIcon : (isDark ? logoWhite : logoColor)}
@@ -405,7 +390,6 @@ export default function Layout({ children }) {
           )}
         </div>
 
-        {/* Navigation */}
         <nav className={styles.navGroup} aria-label="Navegación principal">
           {navItems.map(i => (
             <NavLink
@@ -438,7 +422,6 @@ export default function Layout({ children }) {
           )}
         </nav>
 
-        {/* Footer */}
         <div className={styles.sidebarFooter}>
           <NavLink
             item={settingsItem}
@@ -465,10 +448,9 @@ export default function Layout({ children }) {
 
   return (
     <div className={clsx(styles.layout, 'app-shell', { [styles.layoutCollapsed]: collapsed })}>
-      {/* Same animated backdrop as the login: drifting glows + dot grid */}
+      {/* Same backdrop as the login */}
       <AnimatedBackdrop />
 
-      {/* ── Desktop sidebar ──────────────────────────────────────────── */}
       <aside className={clsx(styles.sidebar, 'hide-tablet')} aria-label="Barra lateral">
         {getSidebarContent(false)}
         <button
@@ -481,7 +463,7 @@ export default function Layout({ children }) {
         </button>
       </aside>
 
-      {/* ── Mobile drawer ────────────────────────────────────────── */}
+      {/* Mobile drawer */}
       <AnimatePresence>
         {sideOpen && (
           <div className={styles.mobileOverlay} role="dialog" aria-modal="true" aria-label="Menú de navegación">
@@ -507,10 +489,9 @@ export default function Layout({ children }) {
         )}
       </AnimatePresence>
 
-      {/* ── Main column ─────────────────────────────────────────────────── */}
       <div className={styles.main}>
 
-        {/* ── Top bar ────────────────────────────────────────────── */}
+        {/* Top bar */}
         <header className={styles.header} role="banner">
           <div className={styles.headerLeft}>
             <Button
@@ -524,7 +505,6 @@ export default function Layout({ children }) {
             <img src={logoIcon} alt="" className={clsx(styles.headerMark, 'show-tablet')} aria-hidden="true" />
           </div>
 
-          {/* Global search trigger (opens the command palette) */}
           <button
             type="button"
             className={styles.searchTrigger}
@@ -564,7 +544,6 @@ export default function Layout({ children }) {
               </AnimatePresence>
             </button>
 
-            {/* Notifications */}
             <div className={styles.bellWrap} ref={notiMenuRef}>
               <button
                 type="button"
@@ -605,7 +584,6 @@ export default function Layout({ children }) {
           <TopProgress active={loadingData} />
         </header>
 
-        {/* ── Content panel ──────────────────────────────────────── */}
         <main ref={panelRef} className={styles.panel} id="main-content" role="main" aria-busy={loadingData}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -633,20 +611,17 @@ export default function Layout({ children }) {
         </main>
       </div>
 
-      {/* ── Live Toast Notifications ────────────────────────────── */}
       <LiveToastContainer liveNotifs={liveNotifs} />
 
-      {/* ── Global search, shortcuts sheet, network status ─────── */}
       <CommandPalette open={cmdOpen} onClose={closeCmd} onShowShortcuts={openShortcuts} />
       <ShortcutsSheet open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} isAdmin={user?.role === 'admin'} />
       <ConnectionStatus />
 
-      {/* ── Onboarding Modal ────────────────────────────────────── */}
       <AnimatePresence>
         {needsOnboarding && <OnboardingModal />}
       </AnimatePresence>
 
-      {/* ── Policy Modal (Blocking) ──────────────────────────────── */}
+      {/* Blocks the app until the internal rules are accepted */}
       <PolicyModal
         user={user}
         policyAccepted={user?.policyAccepted}
