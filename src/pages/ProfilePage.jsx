@@ -271,7 +271,7 @@ export default function ProfilePage() {
             </Button>
             {passStatus && (
               <div
-                className={clsx(styles.message, passStatus.type === "success" ? styles.success : styles.error)}
+                className={clsx(styles.message, passStatus.type === "success" ? styles.success : styles.error, "appear")}
                 role={passStatus.type === "success" ? "status" : "alert"}
               >
                 {passStatus.type === "success" ? <CheckCircle size={16} aria-hidden="true" /> : null}

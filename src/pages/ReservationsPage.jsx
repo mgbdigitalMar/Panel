@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useAuth, useReservations } from '../context';
+import { useAuth, useReservations, useNotifs } from '../context';
 import { Badge, Modal, Select, Input, Textarea, Button, Card, ConfirmModal, StatCard, Section } from '../components/ui';
 import { Building, Car, Check, X, Plus, Download, Trash2, CalendarPlus, CalendarDays, Users, ArrowRight } from 'lucide-react';
 import { downloadReservationIcs } from '../utils/ics';
@@ -43,6 +43,7 @@ const pressable = (onActivate, label) => ({
 export default function ReservationsPage() {
   const { user } = useAuth();
   const { reservations, rooms, vehicles, createReservation, updateReservationStatus, deleteReservation } = useReservations();
+  const { announce } = useNotifs();
   const busyUntil = useBusyUntil(reservations);
 
   const [tab, setTab]           = useState('all');
@@ -119,6 +120,7 @@ export default function ReservationsPage() {
     } else {
       setShowModal(false);
       setForm({ type: 'room', resourceId: '', date: '', timeStart: '', timeEnd: '', purpose: '' });
+      announce('✅', 'Reserva creada. Te avisaremos cuando se revise.');
     }
   };
 
@@ -188,7 +190,7 @@ export default function ReservationsPage() {
 
       {tab !== 'vehicle' && tab !== 'calendar' && (
         <Section title="Salas de reuniones" description="Pulsa una sala para reservarla.">
-          <div className={styles.resourceGrid}>
+          <div className={clsx(styles.resourceGrid, 'stagger-quick')}>
             {rooms.map(room => (
               <Card
                 key={room.id}
@@ -225,7 +227,7 @@ export default function ReservationsPage() {
 
       {tab !== 'room' && tab !== 'calendar' && (
         <Section title="Vehículos de empresa" description="Reserva un coche o furgoneta para visitas y obras.">
-          <div className={styles.resourceGrid}>
+          <div className={clsx(styles.resourceGrid, 'stagger-quick')}>
             {vehicles.map(v => (
               <Card
                 key={v.id}
@@ -276,7 +278,7 @@ export default function ReservationsPage() {
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="stagger-quick">
                   {filtered.map(r => (
                     <tr key={r.id}>
                       <td data-label="Recurso" className={styles.resourceNameCell}>{r.resourceName}</td>
@@ -343,7 +345,7 @@ export default function ReservationsPage() {
           <Input label="Hora fin"    value={form.timeEnd}   onChange={v => setForm({ ...form, timeEnd: v })}   type="time" required />
         </div>
         {errorMsg && (
-          <div className={styles.errorAlert}>
+          <div className={clsx(styles.errorAlert, 'appear')} role="alert">
             {errorMsg}
           </div>
         )}

@@ -448,7 +448,7 @@ export default function AdminPage() {
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="stagger-quick">
                   {filtered.map(emp => (
                     <tr key={emp.id}>
                       <td data-label="Usuario">
@@ -557,7 +557,7 @@ export default function AdminPage() {
         >
           <Section title="Salas" description="Espacios que el equipo puede reservar." />
 
-          <div className={styles.grid}>
+          <div className={clsx(styles.grid, 'stagger-quick')}>
             {rooms.map(room => (
               <Card key={room.id} className={styles.resourceCard}>
                 <div className={styles.resourceHeader}>
@@ -613,7 +613,7 @@ export default function AdminPage() {
         >
           <Section title="Vehículos" description="Flota de empresa disponible para reservas." />
 
-          <div className={styles.grid}>
+          <div className={clsx(styles.grid, 'stagger-quick')}>
             {vehicles.map(v => (
               <Card key={v.id} className={styles.resourceCard}>
                 <div className={styles.resourceHeader}>
@@ -692,7 +692,7 @@ export default function AdminPage() {
                       ))}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="stagger-quick">
                     {(documents || []).filter(d => d.title !== '__ONBOARDING_DOC__').map(doc => {
                       const recipient = employees.find(e => String(e.id) === String(doc.recipientId));
                       const recipName   = recipient?.name   || doc.recipientName || '—';
@@ -833,7 +833,7 @@ export default function AdminPage() {
                       {['Empleado', 'Fecha', 'Motivo', 'Horas', 'Estado', 'Acciones'].map(h => <th key={h}>{h}</th>)}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="stagger-quick">
                     {filteredHours.map(h => {
                       const emp = employees.find(e => String(e.id) === String(h.employeeId));
                       const empName = emp?.name || h.employeeName || 'Empleado';

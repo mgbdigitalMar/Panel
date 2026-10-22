@@ -2,7 +2,7 @@
   "expo": {
     "name": "Margube",
     "slug": "margube-intranet",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "margube",
@@ -17,7 +17,7 @@
     },
     "android": {
       "package": "com.margube.intranet",
-      "versionCode": 1,
+      "versionCode": 2,
       "adaptiveIcon": {
         "backgroundColor": "#2954FB",
         "foregroundImage": "./assets/android-icon-foreground.png",

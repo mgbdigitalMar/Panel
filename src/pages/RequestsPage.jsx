@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useAuth, useRequests, usePersonalDays, useDocuments } from '../context';
+import { useAuth, useRequests, usePersonalDays, useDocuments, useNotifs } from '../context';
 import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard, ConfirmModal, Section } from '../components/ui';
 import { Plus, Check, X, FileText, Download, Trash2, Home, Briefcase, ShoppingCart, Calendar } from 'lucide-react';
 import styles from './RequestsPage.module.scss';
@@ -30,6 +30,7 @@ export default function RequestsPage() {
   const { requests, createRequest, updateRequestStatus, deleteRequest } = useRequests();
   const { personalDays, createPersonalDay, updatePersonalDayStatus } = usePersonalDays();
   const { uploadDocumentFile } = useDocuments();
+  const { announce } = useNotifs();
   
   const [tab, setTab]             = useState('all');
   const [showModal, setShowModal] = useState(false);
@@ -180,6 +181,7 @@ export default function RequestsPage() {
     setForm({ startDate: '', endDate: '', date: '', reason: '', item: '', amount: '', acceptedTerms: false });
     setFile(null);
     setFormError('');
+    announce('✅', 'Solicitud enviada. Te avisaremos cuando se revise.');
   };
 
   const changeStatus = async (id, status, employeeId, type) => {
@@ -459,7 +461,7 @@ export default function RequestsPage() {
           </>
         )}
 
-        {formError && <div className={styles.errorAlert} role="alert">{formError}</div>}
+        {formError && <div className={clsx(styles.errorAlert, 'appear')} role="alert">{formError}</div>}
 
         <div className={styles.modalActions}>
           <Button variant="ghost" onClick={() => setShowModal(false)} disabled={loading}>Cancelar</Button>

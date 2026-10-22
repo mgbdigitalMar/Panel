@@ -305,7 +305,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className={styles.gridCards}>
+      <div className={clsx(styles.gridCards, 'stagger-quick')}>
         <StatCard
           label="Empleados activos"
           value={employees.length}
@@ -418,7 +418,7 @@ export default function DashboardPage() {
 
           <section aria-labelledby="modules-title">
             <SectionHead id="modules-title" title="Mis módulos" />
-            <div className={styles.modules}>
+            <div className={clsx(styles.modules, 'stagger-quick')}>
               <ModuleCard title="Mis reservas" icon={Calendar} tone="var(--accent)" onOpen={() => navigate('/reservations')} openLabel="Ver mis reservas">
                 {myUpcoming.length === 0 ? (
                   <div className={styles.moduleEmpty}>
@@ -632,7 +632,7 @@ export default function DashboardPage() {
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="stagger-quick">
                 {reservations.slice(0, 6).map(r => {
                   const isToday = r.date === todayStr;
                   return (

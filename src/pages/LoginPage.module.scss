@@ -64,6 +64,7 @@ $bp-split: 960px;
 
 .brandPanel {
   position: relative;
+  isolation: isolate;                // the panel's leaves sit behind its content
   margin-right: -$overlap;           // tucks under the form panel's rounded edge
   padding-right: $overlap;
   border-radius: $frame-radius;

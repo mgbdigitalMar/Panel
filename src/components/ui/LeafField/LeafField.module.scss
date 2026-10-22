@@ -1,0 +1,120 @@
+.field {
+  --leaf-stroke: rgba(var(--accent-rgb), 0.62);
+  --leaf-a: rgba(var(--accent-rgb), 0.34);
+  --leaf-b: rgba(14, 159, 154, 0.26);
+
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+
+  [data-theme='light'] & {
+    --leaf-stroke: rgba(var(--accent-rgb), 0.85);
+    --leaf-a: rgba(var(--accent-rgb), 0.42);
+    --leaf-b: rgba(14, 159, 154, 0.38);
+  }
+
+  /* Same as AnimatedBackdrop: on phones a fixed layer makes iOS 26 Safari paint solid strips
+     under its toolbars, so the field scrolls with the page and fades out at both edges */
+  @media (max-width: 1023px) {
+    position: absolute;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 120px, #000 calc(100% - 160px), transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 120px, #000 calc(100% - 160px), transparent 100%);
+  }
+}
+
+/* Inside a navy brand panel (both themes): light leaves behind the panel's content */
+.panel,
+[data-theme='light'] .panel {
+  --leaf-stroke: rgba(176, 194, 255, 0.6);
+  --leaf-a: rgba(91, 124, 255, 0.8);
+  --leaf-b: rgba(47, 91, 234, 0.2);
+
+  position: absolute;
+  z-index: -1;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.defs {
+  position: absolute;
+}
+
+.stopA { stop-color: var(--leaf-a); }
+.stopB { stop-color: var(--leaf-b); }
+
+.leaf {
+  position: absolute;
+  top: 0;
+  will-change: transform;
+  animation-name: leaf-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+
+  &.driftB { animation-name: leaf-fall-b; }
+}
+
+.optional {
+  @media (max-width: 719px) { display: none; }
+}
+
+/* easeInOutSine on both: a pendulum and a turning leaf slow at each end */
+.sway,
+.flip {
+  display: block;
+  will-change: transform;
+  animation-timing-function: cubic-bezier(0.37, 0, 0.63, 1);
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.sway { animation-name: leaf-sway; }
+.flip { animation-name: leaf-flip; }
+
+.mark {
+  display: block;
+  overflow: visible;
+
+  path {
+    stroke: var(--leaf-stroke);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.vein {
+  stroke-width: 1.8;
+}
+
+@keyframes leaf-fall {
+  from { transform: translate3d(0, -12vh, 0); }
+  to   { transform: translate3d(8vw, 112vh, 0); }
+}
+
+@keyframes leaf-fall-b {
+  from { transform: translate3d(0, -12vh, 0); }
+  to   { transform: translate3d(-7vw, 112vh, 0); }
+}
+
+@keyframes leaf-sway {
+  from { transform: translate3d(-26px, 0, 0) rotate(-22deg); }
+  to   { transform: translate3d(26px, 0, 0) rotate(22deg); }
+}
+
+@keyframes leaf-flip {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0.45); }
+}
+
+/* Still, each leaf where it would be mid-fall. !important beats the global reduced-motion rule,
+   which would otherwise end every fall at once and line the leaves up along the top. */
+@media (prefers-reduced-motion: reduce) {
+  .leaf { top: var(--rest-y); }
+
+  .leaf,
+  .sway,
+  .flip { animation: none !important; }
+}

@@ -68,6 +68,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
@@ -1052,6 +1053,21 @@ html { -webkit-tap-highlight-color: transparent; }
     &:nth-child(#{$i}) { animation-delay: #{($i - 1) * 40}ms; }
   }
   &:nth-child(n + 11) { animation-delay: 400ms; }
+}
+
+/* Grids and table rows on pages opened many times a day: short, tight cascade */
+.stagger-quick > * {
+  animation: list-item-in 0.28s var(--ease-out) backwards;
+
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) { animation-delay: #{($i - 1) * 25}ms; }
+  }
+  &:nth-child(n + 9) { animation-delay: 200ms; }
+}
+
+/* Inline errors and confirmations fade up into place instead of popping in */
+.appear {
+  animation: list-item-in 0.2s var(--ease-out) backwards;
 }
 
 .theme-switching *,

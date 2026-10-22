@@ -935,6 +935,13 @@ const [readIds, setReadIds] = useState(() => {
     }
   }
 
+  // Confirms the person's own action (no sound: they just did it)
+  const announce = (icon, msg) => {
+    const id = Date.now() + Math.random()
+    setLiveNotifs(prev => [{ id, icon, msg }, ...prev.slice(0, 4)])
+    setTimeout(() => setLiveNotifs(prev => prev.filter(n => n.id !== id)), 4000)
+  }
+
   const markRead = (id) => setReadIds(prev => {
     const next = new Set([...prev, id]);
     localStorage.setItem('margube_readNotifs', JSON.stringify(Array.from(next)));
@@ -959,7 +966,7 @@ const [readIds, setReadIds] = useState(() => {
   const hourValue = useMemo(() => ({ hourCompensations, createHourCompensation, updateHourCompensationStatus, deleteHourCompensation }), [hourCompensations, employees]);
   const pdValue = useMemo(() => ({ personalDays, createPersonalDay, updatePersonalDayStatus }), [personalDays, employees]);
   const newsValue = useMemo(() => ({ news, createNews, updateNews, deleteNews }), [news]);
-  const notifValue = useMemo(() => ({ notifications, markNotifRead, markAllNotifsRead, readIds, markRead, markAllRead, liveNotifs }), [notifications, readIds, liveNotifs]);
+  const notifValue = useMemo(() => ({ notifications, markNotifRead, markAllNotifsRead, readIds, markRead, markAllRead, liveNotifs, announce }), [notifications, readIds, liveNotifs]);
   const syncValue = useMemo(() => ({ loadingData, refresh: refetchAll }), [loadingData]);
 
   const contextValue = useMemo(() => ({

@@ -361,7 +361,7 @@ export default function HorasPage() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                {saveError && <p className={styles.saveError} role="alert">{saveError}</p>}
+                {saveError && <p className={clsx(styles.saveError, 'appear')} role="alert">{saveError}</p>}
               </div>
             </Card>
             </Section>
@@ -448,7 +448,7 @@ export default function HorasPage() {
                         ))}
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="stagger-quick">
                       {allRows.map(h => (
                         <tr key={h.id} className={h.type === 'debe' ? styles.rowDebe : ''}>
                           <td className={styles.dateCell} data-label="Fecha">
@@ -527,7 +527,7 @@ export default function HorasPage() {
                         <th style={{ textAlign: 'right' }}>Acciones</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="stagger-quick">
                       {filteredUserStats.map(stat => {
                         const empName = stat.employee.name;
                         const empAvatar = stat.employee.avatar || empName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
@@ -647,7 +647,7 @@ export default function HorasPage() {
                       <th>Estado</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="stagger-quick">
                     {selectedUser.history.map(h => (
                       <tr key={h.id} className={h.type === 'debe' ? styles.rowDebe : ''}>
                         <td data-label="Fecha" className={styles.dateCell}>

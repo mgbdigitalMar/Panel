@@ -13,5 +13,6 @@ export { ErrorState } from './ErrorState/ErrorState';
 export { Skeleton, SkeletonCard, SkeletonTable, SkeletonText } from './Skeleton/Skeleton';
 export { LeafMark, BootLoader, Spinner, TopProgress, PageLoader } from './Loader/Loader';
 export { AnimatedBackdrop } from './AnimatedBackdrop/AnimatedBackdrop';
+export { LeafField } from './LeafField/LeafField';
 export { Section } from './Section/Section';
 export { Portal, useInertApp } from './Portal/Portal';

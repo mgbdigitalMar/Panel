@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useReservations } from '../context';
+import { motion } from 'framer-motion';
 import { Building, Car, ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './ReservationsCalendar.module.scss';
 import clsx from 'clsx';
@@ -44,6 +45,8 @@ function dateString(y, m, d) {
 export default function ReservationsCalendar() {
   const { reservations } = useReservations();
   const [viewMode, setViewMode] = useState('month');
+  // Where the next period enters from: -1 left (previous), 1 right (next), 0 in place (view switch)
+  const [enterFrom, setEnterFrom] = useState(null);
   const [base, setBase] = useState(new Date());
 
   const year = base.getFullYear();
@@ -52,12 +55,14 @@ export default function ReservationsCalendar() {
   const today = dateString(now.getFullYear(), now.getMonth(), now.getDate());
 
   const prev = () => {
+    setEnterFrom(-1);
     const d = new Date(base);
     if (viewMode === 'month') d.setMonth(month - 1);
     else d.setDate(base.getDate() - 7);
     setBase(d);
   };
   const next = () => {
+    setEnterFrom(1);
     const d = new Date(base);
     if (viewMode === 'month') d.setMonth(month + 1);
     else d.setDate(base.getDate() + 7);
@@ -84,12 +89,18 @@ export default function ReservationsCalendar() {
     return (resByDay[ds] || []);
   }
 
+  const periodMotion = {
+    initial: enterFrom === null ? false : { opacity: 0, transform: `translateX(${enterFrom * 24}px)` },
+    animate: { opacity: 1, transform: 'translateX(0px)', transitionEnd: { transform: 'none' } },
+    transition: { duration: 0.24, ease: [0.23, 1, 0.32, 1] },
+  };
+
   return (
     <div className={styles.calendar}>
       <div className={styles.calHeader}>
         <div className={styles.viewToggle}>
-          <button onClick={() => setViewMode('month')} className={clsx(styles.viewBtn, { [styles.viewBtnActive]: viewMode === 'month' })}>Mes</button>
-          <button onClick={() => setViewMode('week')} className={clsx(styles.viewBtn, { [styles.viewBtnActive]: viewMode === 'week' })}>Semana</button>
+          <button onClick={() => { setEnterFrom(0); setViewMode('month'); }} className={clsx(styles.viewBtn, { [styles.viewBtnActive]: viewMode === 'month' })}>Mes</button>
+          <button onClick={() => { setEnterFrom(0); setViewMode('week'); }} className={clsx(styles.viewBtn, { [styles.viewBtnActive]: viewMode === 'week' })}>Semana</button>
         </div>
         <div className={styles.navRow}>
           <button className={styles.navBtn} onClick={prev}><ChevronLeft size={16} /></button>
@@ -101,7 +112,7 @@ export default function ReservationsCalendar() {
       </div>
 
       {viewMode === 'month' && (
-        <div className={styles.overflowWrapper}>
+        <motion.div key={`m-${year}-${month}`} className={styles.overflowWrapper} {...periodMotion}>
           <div className={styles.monthGrid}>
             {DAYS_ES.map(d => <div key={d} className={styles.dayHeader}>{d}</div>)}
             {monthMatrix.map((day, i) => {
@@ -137,11 +148,11 @@ export default function ReservationsCalendar() {
               );
             })}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {viewMode === 'week' && (
-        <div className={styles.overflowWrapper}>
+        <motion.div key={`w-${weekDays[0].toDateString()}`} className={styles.overflowWrapper} {...periodMotion}>
           <div className={styles.weekGrid}>
             <div className={styles.hourAxisEmpty} />
             {weekDays.map((d, i) => {
@@ -189,7 +200,7 @@ export default function ReservationsCalendar() {
               </React.Fragment>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

@@ -150,7 +150,7 @@ export default function EmployeesPage() {
       )}
 
       {view === 'grid' && (
-        <div className={styles.grid}>
+        <div className={clsx(styles.grid, 'stagger-quick')}>
           {filtered.map(emp => {
             const canEdit = user.role === 'admin' || user.id === emp.id;
             return (
@@ -203,7 +203,7 @@ export default function EmployeesPage() {
                 {['Empleado', 'Departamento', 'Cargo', 'Modo trabajo', 'Rol', 'DNI'].map(h => <th key={h}>{h}</th>)}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="stagger-quick">
                 {filtered.map(emp => {
                   const canEdit = user.role === 'admin' || user.id === emp.id;
                   return (

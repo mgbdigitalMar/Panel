@@ -9,7 +9,7 @@ import {
 import styles from './LoginPage.module.scss';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
-import { AnimatedBackdrop } from '../components/ui';
+import { AnimatedBackdrop, LeafField } from '../components/ui';
 
 const EASE = [0.22, 1, 0.36, 1];
 const DRAW_EASE = [0.65, 0, 0.35, 1];
@@ -112,6 +112,7 @@ export default function LoginPage() {
       <MotionConfig reducedMotion="user">
         <div className={styles.mPage}>
           <AnimatedBackdrop />
+          <LeafField />
           <motion.div className={styles.mColumn} variants={stagger} initial="hidden" animate="show">
             <motion.div variants={fadeUp} className={styles.mTop}>
                 <button
@@ -254,6 +255,7 @@ export default function LoginPage() {
       <div className={styles.page}>
         {/* Same backdrop as the app shell */}
         <AnimatedBackdrop />
+        <LeafField />
         <div className={styles.loginGlow} aria-hidden="true" />
 
         <motion.div
@@ -263,6 +265,7 @@ export default function LoginPage() {
           transition={{ duration: 0.6, ease: EASE }}
         >
           <div className={styles.brandPanel} aria-hidden="true">
+            <LeafField variant="panel" />
             <motion.p
               className={styles.brandTagline}
               initial={{ opacity: 0 }}
