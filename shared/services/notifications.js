@@ -9,7 +9,8 @@ export async function fetchNotifications(supabase, userId) {
     .limit(50);
   if (error) {
     console.warn('fetchNotifications:', error.message);
-    return [];
+    // null (not []) on failure: the caller keeps what it already shows
+    return null;
   }
   return data || [];
 }

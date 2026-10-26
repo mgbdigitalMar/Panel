@@ -16,7 +16,8 @@ export async function fetchRequests(supabase, { employeeId } = {}) {
   const { data, error } = await query;
   if (error) {
     console.error('fetchRequests:', error);
-    return [];
+    // null (not []) on failure: the caller keeps what it already shows
+    return null;
   }
   return data.map(r => ({
     id: r.id,

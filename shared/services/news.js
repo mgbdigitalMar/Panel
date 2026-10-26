@@ -6,7 +6,8 @@ export async function fetchNews(supabase) {
     .order('published_at', { ascending: false });
   if (error) {
     console.error('fetchNews:', error);
-    return [];
+    // null (not []) on failure: the caller keeps what it already shows
+    return null;
   }
   return data.map(n => ({
     id: n.id,

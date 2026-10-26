@@ -7,7 +7,7 @@ import { springConfig } from '../hooks/useSpringAnimation';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, Settings,
   LogOut, Menu, Bell, UsersRound, Timer, SlidersHorizontal, Clock,
-  ChevronLeft, ChevronRight, Search, Sun, Moon,
+  ChevronLeft, ChevronRight, Search, Sun, Moon, AlertTriangle,
 } from 'lucide-react';
 
 import logoColor from '../assets/logos/logo-color.png';
@@ -45,7 +45,7 @@ const PAGE_META = {
   requests:     { title: 'Solicitudes',        desc: 'Asuntos propios, trabajo en remoto o externo y compras.' },
   horas:        { title: 'Tiempo a compensar', desc: 'Registra tus horas y consulta tu saldo con la empresa.' },
   news:         { title: 'Noticias y Eventos', desc: 'Comunicados, novedades y próximos eventos de Margube.' },
-  employees:    { title: 'Equipo',             desc: 'Directorio del equipo y dónde trabaja cada persona hoy.' },
+  employees:    { title: 'Equipo',             desc: 'Directorio del equipo y dónde trabaja cada persona, hoy y durante la semana.' },
   profile:      { title: 'Mi perfil',          desc: 'Tus datos, modo de trabajo, contraseña y documentos.' },
   settings:     { title: 'Ajustes',            desc: 'Tema, notificaciones y preferencias de tu cuenta.' },
   admin:        { title: 'Administración',     desc: 'Empleados, salas, vehículos, documentos y bolsa de horas.' },
@@ -184,7 +184,9 @@ export default function Layout({ children }) {
   const { reservations = [] } = useReservations();
   const { hourCompensations = [] } = useHours();
   const { personalDays = [] } = usePersonalDays() || {};
-  const { loadingData = false } = useDataSync() || {};
+  const { loadingData = false, loadFailed = false, refresh } = useDataSync() || {};
+  const [retrying, setRetrying] = useState(false);
+  const retryLoad = async () => { setRetrying(true); try { await refresh?.(); } finally { setRetrying(false); } };
 
   const now = useClock();
   const clockStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
@@ -601,6 +603,15 @@ export default function Layout({ children }) {
                 </div>
               )}
               {/* First data sync shows the page skeleton instead of empty states */}
+              {loadFailed && !loadingData && (
+                <div className={styles.loadError} role="alert">
+                  <AlertTriangle size={16} aria-hidden="true" />
+                  <span>Algunos datos no se han podido cargar. Lo que ves puede estar incompleto.</span>
+                  <button type="button" onClick={retryLoad} disabled={retrying}>
+                    {retrying ? 'Reintentando…' : 'Reintentar'}
+                  </button>
+                </div>
+              )}
               {loadingData ? <PageLoader /> : (
                 <Suspense fallback={<PageLoader />}>
                   {children}

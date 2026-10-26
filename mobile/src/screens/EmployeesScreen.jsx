@@ -11,7 +11,8 @@ import { Header } from '../components/common/Header';
 import { GlassCard } from '../components/common/GlassCard';
 import { PressScale } from '../components/common/Pressable';
 import { T } from '../components/common/Text';
-import { Avatar, ChipRail, EmptyState } from '../components/common/UI';
+import { Avatar, ChipRail, EmptyState, Segmented } from '../components/common/UI';
+import { TeamWeek } from '../components/TeamWeek';
 import { FONTS } from '../theme/tokens';
 
 export const WORK_MODES = {
@@ -30,11 +31,13 @@ export const shortDept = (d) => {
 export default function EmployeesScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation();
-  const { employees, refreshEmployees } = useAuth();
+  const { user, employees, refreshEmployees } = useAuth();
   const { refresh } = useData();
   const [q, setQ] = useState('');
   const [dept, setDept] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
+  // 'list' = directory, 'week' = who works where each day
+  const [view, setView] = useState('list');
 
   const depts = useMemo(() => {
     const set = new Set();
@@ -56,10 +59,12 @@ export default function EmployeesScreen() {
       const matchDept = dept === 'all' || empDept === dept;
       if (!matchDept) return false;
       if (!needle) return true;
-      const haystack = `${e.name || ''} ${e.position || ''} ${e.email || ''} ${empDept} ${e.phone || ''} ${e.role === 'admin' ? 'admin administrador administración' : 'empleado'}`.toLowerCase();
+      // Only RRHH can search by DNI (personal data)
+      const dni = user?.role === 'admin' ? e.phone || '' : '';
+      const haystack = `${e.name || ''} ${e.position || ''} ${e.email || ''} ${empDept} ${dni} ${e.role === 'admin' ? 'admin administrador administración' : 'empleado'}`.toLowerCase();
       return haystack.includes(needle);
     });
-  }, [employees, q, dept]);
+  }, [employees, q, dept, user?.role]);
 
   const summary = Object.entries(WORK_MODES).map(([k, m]) => ({ key: k, ...m, count: employees.filter((e) => (e.workMode || 'Office') === k).length }));
 
@@ -90,6 +95,12 @@ export default function EmployeesScreen() {
       <ChipRail value={dept} onChange={setDept}
         options={[{ value: 'all', label: 'Todos' }, ...depts.map((d) => ({ value: d, label: shortDept(d), count: employees.filter((e) => (e.dept || 'Sin asignar').trim() === d).length }))]} />
 
+      <Segmented value={view} onChange={setView}
+        options={[{ value: 'list', label: 'Personas' }, { value: 'week', label: 'Semana' }]} />
+
+      {view === 'week' && list.length > 0 ? (
+        <TeamWeek employees={list} isAdmin={user?.role === 'admin'} shortDept={shortDept} />
+      ) : (
       <View style={{ gap: 8 }}>
         {list.length === 0 ? (
           <EmptyState icon={UsersRound} title="Sin resultados" message="Prueba con otro nombre o departamento." />
@@ -203,6 +214,7 @@ export default function EmployeesScreen() {
           })
         )}
       </View>
+      )}
     </Screen>
   );
 }

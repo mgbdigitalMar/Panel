@@ -1,5 +1,6 @@
 import { createNotification } from './notifications.js';
 import { MAX_FILE_SIZE_BYTES } from '../config/constants.js';
+import { safeFileUrl } from '../utils/urls.js';
 
 export async function fetchDocuments(supabase) {
   const { data, error } = await supabase
@@ -13,13 +14,14 @@ export async function fetchDocuments(supabase) {
     .order('created_at', { ascending: false });
   if (error || !data) {
     if (error) console.error('fetchDocuments:', error);
-    return [];
+    // null (not []) on failure: the caller keeps what it already shows
+    return error ? null : [];
   }
   return data.map(d => ({
     id: d.id,
     title: d.title,
     description: d.description,
-    fileUrl: d.file_url,
+    fileUrl: safeFileUrl(d.file_url),
     status: d.status,
     createdAt: d.created_at,
     updatedAt: d.updated_at,

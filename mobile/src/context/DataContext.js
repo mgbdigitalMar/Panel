@@ -30,6 +30,13 @@ export function DataProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [loadedFor, setLoadedFor] = useState(null); // user id whose data is loaded
   const [lastSync, setLastSync] = useState(null);
+  // The shared fetchers return null when a request fails (offline, server down): the
+  // list on screen is kept instead of being replaced by an empty one
+  const syncFailed = useRef(false);
+  const keep = (setter) => (data) => {
+    if (data) setter(data);
+    else syncFailed.current = true;
+  };
 
   const userRef = useRef(user);
   const employeesRef = useRef(employees);
@@ -44,36 +51,38 @@ export function DataProvider({ children }) {
   };
   const loadRequests = useCallback(async () => {
     if (!userRef.current?.id) return setRequests([]);
-    setRequests(await svc.fetchRequests(supabase, ownScope()));
+    keep(setRequests)(await svc.fetchRequests(supabase, ownScope()));
   }, []);
-  const loadReservations = useCallback(async () => setReservations(await svc.fetchReservations(supabase)), []);
-  const loadRooms = useCallback(async () => setRooms(await svc.fetchRooms(supabase)), []);
-  const loadVehicles = useCallback(async () => setVehicles(await svc.fetchVehicles(supabase)), []);
-  const loadDocuments = useCallback(async () => setDocuments(await svc.fetchDocuments(supabase)), []);
-  const loadHours = useCallback(async () => setHours(await svc.fetchHourCompensations(supabase)), []);
+  const loadReservations = useCallback(async () => keep(setReservations)(await svc.fetchReservations(supabase)), []);
+  const loadRooms = useCallback(async () => keep(setRooms)(await svc.fetchRooms(supabase)), []);
+  const loadVehicles = useCallback(async () => keep(setVehicles)(await svc.fetchVehicles(supabase)), []);
+  const loadDocuments = useCallback(async () => keep(setDocuments)(await svc.fetchDocuments(supabase)), []);
+  const loadHours = useCallback(async () => keep(setHours)(await svc.fetchHourCompensations(supabase)), []);
   const loadPersonalDays = useCallback(async () => {
     if (!userRef.current?.id) return setPersonalDays([]);
-    setPersonalDays(await svc.fetchPersonalDays(supabase, ownScope()));
+    keep(setPersonalDays)(await svc.fetchPersonalDays(supabase, ownScope()));
   }, []);
-  const loadNews = useCallback(async () => setNews(await svc.fetchNews(supabase)), []);
+  const loadNews = useCallback(async () => keep(setNews)(await svc.fetchNews(supabase)), []);
   const loadNotifications = useCallback(async () => {
     const id = userRef.current?.id;
-    setNotifications(id ? await svc.fetchNotifications(supabase, id) : []);
+    keep(setNotifications)(id ? await svc.fetchNotifications(supabase, id) : []);
   }, []);
 
+  /** true when every list loaded; lastSync only moves on a complete sync */
   const refetchAll = useCallback(async () => {
+    syncFailed.current = false;
     await Promise.all([
       loadRequests(), loadReservations(), loadRooms(), loadVehicles(), loadDocuments(),
       loadHours(), loadPersonalDays(), loadNews(), loadNotifications(),
     ]);
+    if (syncFailed.current) return false;
     setLastSync(new Date());
+    return true;
   }, [loadRequests, loadReservations, loadRooms, loadVehicles, loadDocuments, loadHours, loadPersonalDays, loadNews, loadNotifications]);
 
   useEffect(() => {
     if (!user?.id) return undefined;
     const loadingId = user.id;
-    // Every setState inside refetchAll runs after an await (async fetch), not synchronously.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     refetchAll().finally(() => setLoadedFor(loadingId));
 
     const me = () => userRef.current;
@@ -313,6 +322,7 @@ export function DataProvider({ children }) {
       const days = [...(form.teleworkDays || [])].sort();
       const daysChanged = days.join() !== [...(existing?.teleworkDays || [])].sort().join();
       let error;
+      let savedId = existing?.id;
       if (existing) {
         const update = { ...base, work_mode: form.workMode || 'Office' };
         if (daysChanged) {
@@ -340,7 +350,10 @@ export function DataProvider({ children }) {
           ? { telework_days: days, ...svc.teleworkScheduleUpdate([], { id: 'new', teleworkDays: days, workMode: 'Office' }) }
           : {};
         ({ error } = await supabase.from('profiles').insert([{ ...base, ...schedule, id: account.id, first_login: true }]));
+        savedId = account.id;
       }
+      // The DNI is stored apart (profile_private), readable only by RRHH and the person
+      if (!error) ({ error } = await svc.saveDni(supabase, savedId, form.phone));
       await refreshEmployees();
       return { error };
     },
@@ -350,13 +363,17 @@ export function DataProvider({ children }) {
       return { error: res.error ? { userFacing: true, message: res.error } : null };
     },
     deleteEmployee: async (employeeId) => {
-      for (const d of documents.filter((x) => String(x.senderId) === String(employeeId) || String(x.recipientId) === String(employeeId))) {
-        await svc.removeStorageFile(supabase, d.fileUrl);
-      }
-      for (const p of personalDays.filter((x) => String(x.employeeId) === String(employeeId))) {
-        await svc.removeStorageFile(supabase, p.fileUrl);
-      }
+      // Files go only once the profile is gone: a failed delete must not leave
+      // documents and justificantes pointing at removed files
       const { error } = await supabase.from('profiles').delete().eq('id', employeeId);
+      if (!error) {
+        for (const d of documents.filter((x) => String(x.senderId) === String(employeeId) || String(x.recipientId) === String(employeeId))) {
+          await svc.removeStorageFile(supabase, d.fileUrl);
+        }
+        for (const p of personalDays.filter((x) => String(x.employeeId) === String(employeeId))) {
+          await svc.removeStorageFile(supabase, p.fileUrl);
+        }
+      }
       await Promise.all([refreshEmployees(), refetchAll()]);
       return { error };
     },
@@ -404,13 +421,15 @@ export function DataProvider({ children }) {
   }), [rooms, vehicles, documents, personalDays, loadRequests, loadPersonalDays, loadReservations, loadHours,
     loadDocuments, loadNews, loadRooms, loadVehicles, refreshEmployees, refetchAll, setUser]);
 
+  // Pull to refresh: say so when it could not update instead of silently showing old data
   const refresh = useCallback(async () => {
     try {
-      await Promise.all([refetchAll(), refreshEmployees()]);
+      const [complete] = await Promise.all([refetchAll(), refreshEmployees()]);
+      if (!complete) toast.error('No se ha podido actualizar', 'Revisa tu conexión. Se muestran los últimos datos cargados.');
     } catch (e) {
       logError('refresh', e);
     }
-  }, [refetchAll, refreshEmployees]);
+  }, [refetchAll, refreshEmployees, toast]);
 
   const onboardingDocUrl = useMemo(
     () => documents.find((d) => d.title === ONBOARDING_DOC_TITLE)?.fileUrl || null,

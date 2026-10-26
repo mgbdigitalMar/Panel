@@ -4,7 +4,7 @@ export function LiveToastContainer({ liveNotifs }) {
   return (
     <div
       aria-live="polite"
-      aria-atomic="true"
+      aria-relevant="additions"
       style={{
         position: 'fixed',
         bottom: 'calc(24px + env(safe-area-inset-bottom))',

@@ -1,9 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useAuth, useRequests } from '../context';
+import { useAuth, useRequests, useNotifs } from '../context';
+import { toUserMessage } from '../../shared/utils/errors.js';
 import { allowedWorkModes } from '../../shared/services/workMode.js';
 import { Avatar, Badge, Card, StatCard, Section } from '../components/ui';
-import { Home, Building2, MapPin, LayoutGrid, List, Search } from 'lucide-react';
+import { Home, Building2, MapPin, LayoutGrid, List, Search, CalendarDays } from 'lucide-react';
+import { TeamWeek } from '../components/TeamWeek';
 import styles from './EmployeesPage.module.scss';
 import clsx from 'clsx';
 
@@ -28,10 +30,21 @@ function WorkModeBadge({ mode }) {
 export default function EmployeesPage() {
   const { user, employees, setEmployees } = useAuth();
   const { requests, changeWorkMode } = useRequests();
+  const { announce } = useNotifs();
   // Admins set any mode; an employee needs an approved request for remote / external
   const modeAllowed = (emp, mode) => user.role === 'admin' || allowedWorkModes(requests, emp.id, undefined, emp).has(mode);
+  const isAdmin = user.role === 'admin';
+  // The DNI is personal data: only RRHH and the person themselves see it
+  const canSeeDni = (emp) => isAdmin || user.id === emp.id;
   const [filter, setFilter] = useState('all');
-  const [view, setView] = useState('grid');
+  // Last view used in this browser (grid, table or week)
+  const [view, setViewState] = useState(() => {
+    try { return ['grid', 'list', 'week'].includes(localStorage.getItem('margube_team_view')) ? localStorage.getItem('margube_team_view') : 'grid'; } catch { return 'grid'; }
+  });
+  const setView = (v) => {
+    setViewState(v);
+    try { localStorage.setItem('margube_team_view', v); } catch { /* storage blocked */ }
+  };
 
   // Name search — also fed by the global search (?q=)
   const [searchParams] = useSearchParams();
@@ -60,7 +73,7 @@ export default function EmployeesPage() {
     if (error) {
       console.error('Failed to update work_mode:', error);
       setEmployees(prev => prev.map(e => e.id === empId ? { ...e, workMode: previous } : e));
-      alert(`Error: ${error.message}`);
+      announce('❌', `No se pudo cambiar el modo de trabajo: ${toUserMessage(error)}`, 7000);
     }
   };
 
@@ -124,6 +137,8 @@ export default function EmployeesPage() {
           </label>
           <div className={styles.viewToggle}>
             <button
+              type="button"
+              aria-pressed={view === 'grid'}
               onClick={() => setView('grid')}
               className={clsx(styles.viewBtn, { [styles.viewBtnActive]: view === 'grid' })}
               title="Vista cuadrícula"
@@ -132,12 +147,24 @@ export default function EmployeesPage() {
               <LayoutGrid size={15} />
             </button>
             <button
+              type="button"
+              aria-pressed={view === 'list'}
               onClick={() => setView('list')}
               className={clsx(styles.viewBtn, { [styles.viewBtnActive]: view === 'list' })}
               title="Vista tabla"
               aria-label="Vista tabla"
             >
               <List size={15} />
+            </button>
+            <button
+              type="button"
+              aria-pressed={view === 'week'}
+              onClick={() => setView('week')}
+              className={clsx(styles.viewBtn, { [styles.viewBtnActive]: view === 'week' })}
+              title="Vista semana: dónde trabaja cada persona cada día"
+              aria-label="Vista semana"
+            >
+              <CalendarDays size={15} />
             </button>
           </div>
         </div>
@@ -165,7 +192,7 @@ export default function EmployeesPage() {
                   <p className={styles.empDept}>{emp.dept}</p>
                 </div>
                 <div className={styles.empMeta}>
-                <span className={styles.metaItem}>{emp.phone || '---'}</span>
+                <span className={styles.metaItem}>{canSeeDni(emp) ? `DNI ${emp.phone || '—'}` : ''}</span>
                   <Badge status={emp.role} />
                 </div>
                 {canEdit && (
@@ -194,13 +221,17 @@ export default function EmployeesPage() {
         </div>
       )}
 
+      {view === 'week' && filtered.length > 0 && (
+        <TeamWeek employees={filtered} isAdmin={user.role === 'admin'} />
+      )}
+
       {view === 'list' && (
         <Card>
           <div className={styles.tableWrap}>
             <table className="table">
               <thead>
                 <tr>
-                {['Empleado', 'Departamento', 'Cargo', 'Modo trabajo', 'Rol', 'DNI'].map(h => <th key={h}>{h}</th>)}
+                {['Empleado', 'Departamento', 'Cargo', 'Modo trabajo', 'Rol', ...(isAdmin ? ['DNI'] : [])].map(h => <th key={h}>{h}</th>)}
                 </tr>
               </thead>
               <tbody className="stagger-quick">
@@ -232,7 +263,7 @@ export default function EmployeesPage() {
                         )}
                       </td>
                       <td data-label="Rol"><Badge status={emp.role} /></td>
-                      <td data-label="DNI" style={{ color: 'var(--text-mut)', fontSize: 13 }}>{emp.phone || '---'}</td>
+                      {isAdmin && <td data-label="DNI" style={{ color: 'var(--text-mut)', fontSize: 13 }}>{emp.phone || '---'}</td>}
                     </tr>
                   );
                 })}

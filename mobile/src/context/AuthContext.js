@@ -3,7 +3,7 @@
 // so the fingerprint or face can reopen it.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState } from 'react-native';
-import { mapProfile } from '@shared/services/profiles.js';
+import { mapProfile, fetchDnis, withDni } from '@shared/services/profiles.js';
 import { signIn, changeOwnPassword, FIRST_ACCESS_PASSWORD } from '@shared/services/auth.js';
 import { IDLE_TIMEOUT_MOBILE } from '@shared/config/constants.js';
 import { toUserMessage, logError } from '@shared/utils/errors.js';
@@ -46,12 +46,16 @@ export function AuthProvider({ children }) {
   }, [persistSession]);
 
   const loadEmployees = useCallback(async () => {
-    const { data, error } = await supabase.from('profiles').select(PROFILE_COLUMNS).order('name');
+    const [{ data, error }, dnis] = await Promise.all([
+      supabase.from('profiles').select(PROFILE_COLUMNS).order('name'),
+      fetchDnis(supabase),
+    ]);
     if (error) {
       logError('loadEmployees', error);
       return null;
     }
-    const list = data.map(mapProfile);
+    // The DNI is private (profile_private): admins get everyone's, employees their own
+    const list = withDni(data.map(mapProfile), dnis);
     setEmployees(list);
     return list;
   }, []);
@@ -59,7 +63,9 @@ export function AuthProvider({ children }) {
   const fetchProfile = useCallback(async (id) => {
     const { data, error } = await supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', id).maybeSingle();
     if (error) throw error;
-    return data ? mapProfile(data) : null;
+    if (!data) return null;
+    const [profile] = withDni([mapProfile(data)], await fetchDnis(supabase));
+    return profile;
   }, []);
 
   const startSession = useCallback(async (profile) => {
@@ -149,7 +155,8 @@ export function AuthProvider({ children }) {
           supabase.auth.signOut({ scope: 'local' });
           clearSession();
         } else if (payload.new?.id === me.id) {
-          setUser((prev) => (prev ? { ...prev, ...mapProfile(payload.new) } : prev));
+          // profiles.phone no longer carries the DNI: keep the one already loaded
+          setUser((prev) => (prev ? { ...prev, ...mapProfile(payload.new), phone: mapProfile(payload.new).phone || prev.phone } : prev));
         }
       })
       .subscribe();

@@ -4,6 +4,14 @@ import { runCrudLifecycleTests } from './03_crud_lifecycle.test.mjs';
 import { runBusinessLogicTests } from './04_business_logic.test.mjs';
 import { runFrontendIntegrityTests } from './05_frontend_integrity.test.mjs';
 import { runMobileAppTests } from './06_mobile_app.test.mjs';
+import { runSecurityHardeningTests } from './07_security_hardening.test.mjs';
+import { runTeamAvailabilityTests } from './08_team_availability.test.mjs';
+import { runUxStatesTests } from './09_ux_states.test.mjs';
+import { runPrivateDniTests } from './10_private_dni.test.mjs';
+
+// Suites 2 and 3 read and write the real Supabase project (suite 3 creates and
+// deletes rows): they only run when asked, e.g. against a staging project.
+const LIVE_DB = process.env.RUN_LIVE_DB_TESTS === '1';
 
 async function main() {
   const startGlobal = Date.now();
@@ -13,11 +21,15 @@ async function main() {
 
   const suites = [
     { name: 'Autenticación, Seguridad y Sesión', fn: runAuthSecurityTests },
-    { name: 'Esquema de BD y Relaciones Supabase', fn: runDatabaseSchemaTests },
-    { name: 'Ciclo de Vida CRUD y Persistencia', fn: runCrudLifecycleTests },
+    { name: 'Esquema de BD y Relaciones Supabase', fn: runDatabaseSchemaTests, live: true },
+    { name: 'Ciclo de Vida CRUD y Persistencia', fn: runCrudLifecycleTests, live: true },
     { name: 'Lógica de Negocio y Validaciones', fn: runBusinessLogicTests },
     { name: 'Integridad del Frontend y Assets', fn: runFrontendIntegrityTests },
     { name: 'App Móvil y Servicios Compartidos', fn: runMobileAppTests },
+    { name: 'Refuerzo de Seguridad', fn: runSecurityHardeningTests },
+    { name: 'Disponibilidad del Equipo', fn: runTeamAvailabilityTests },
+    { name: 'Estados de Carga y Error', fn: runUxStatesTests },
+    { name: 'DNI Privado', fn: runPrivateDniTests },
   ];
 
   let totalPassed = 0;
@@ -25,6 +37,10 @@ async function main() {
   const summary = [];
 
   for (const suite of suites) {
+    if (suite.live && !LIVE_DB) {
+      summary.push({ suite: suite.name, passed: 0, failed: 0, time: '-', status: '⏭️ OMITIDA (RUN_LIVE_DB_TESTS=1)' });
+      continue;
+    }
     const t0 = Date.now();
     try {
       const res = await suite.fn();

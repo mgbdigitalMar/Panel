@@ -94,7 +94,7 @@ export default function EmployeeDetailScreen() {
           { label: 'Rol', value: emp.role === 'admin' ? 'Administrador' : 'Empleado' },
           { label: 'Modo de trabajo', value: wm.label === 'Oficina' ? 'En la oficina' : wm.label },
           emp.teleworkDays?.length ? { label: 'Días de teletrabajo', value: formatTeleworkDays(emp.teleworkDays) } : null,
-          emp.phone ? { label: 'DNI / Contacto', value: emp.phone, mono: true } : null,
+          ((isAdmin || isMe) && emp.phone) ? { label: 'DNI', value: emp.phone, mono: true } : null,
           emp.joinDate ? { label: 'En Margube desde', value: fmtDate(emp.joinDate) } : null,
           ((isAdmin || isMe) && emp.birthdate) ? { label: 'Fecha de nacimiento', value: fmtDate(emp.birthdate) } : null,
         ].filter(Boolean).map((item, idx, arr) => (

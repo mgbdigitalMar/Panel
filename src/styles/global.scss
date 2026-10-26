@@ -1101,3 +1101,16 @@ html { -webkit-tap-highlight-color: transparent; }
   }
   &:nth-child(n + 6) { animation-delay: 175ms; }
 }
+
+// Text for screen readers only (table captions, extra context for icons)
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

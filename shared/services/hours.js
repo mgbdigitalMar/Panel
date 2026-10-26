@@ -12,7 +12,8 @@ export async function fetchHourCompensations(supabase) {
     .order('created_at', { ascending: false });
   if (error || !data) {
     if (error) console.error('fetchHourCompensations:', error);
-    return [];
+    // null (not []) on failure: the caller keeps what it already shows
+    return error ? null : [];
   }
   return data.map(h => ({
     id: h.id,

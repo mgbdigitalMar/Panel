@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useAuth, useReservations, useDocuments, useHours, useDataSync, useRequests } from '../context';
+import { useAuth, useReservations, useDocuments, useHours, useDataSync, useRequests, useNotifs } from '../context';
+import { toUserMessage } from '../../shared/utils/errors.js';
 import { Avatar, Badge, Modal, Input, Select, Button, Card, ConfirmModal, Section } from '../components/ui';
 import { Search, Plus, Edit2, Trash2, Building, Car, FileText, Send, Clock, CheckCircle, Check, PenTool, Upload, X, Timer, Download } from 'lucide-react';
 import styles from './AdminPage.module.scss';
 import clsx from 'clsx';
 import { supabase } from '../utils/supabase';
 import { createEmployeeAccount, setEmployeePassword } from '../../shared/services/auth.js';
-import { mapProfile } from '../../shared/services/profiles.js';
+import { mapProfile, saveDni } from '../../shared/services/profiles.js';
 import { TELEWORK_WEEKDAYS, teleworkScheduleUpdate, formatTeleworkDays, localISODate } from '../../shared/services/workMode.js';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -29,6 +30,9 @@ export default function AdminPage() {
   const { hourCompensations = [], updateHourCompensationStatus, deleteHourCompensation } = useHours();
   const { refresh } = useDataSync();
   const { requests } = useRequests();
+  // Errors go to the app's toasts instead of a blocking browser alert
+  const { announce } = useNotifs();
+  const fail = (msg) => announce('❌', msg, 7000);
 
   const [hoursFilterFrom, setHoursFilterFrom] = useState('');
   const [hoursFilterTo,   setHoursFilterTo]   = useState('');
@@ -117,7 +121,7 @@ export default function AdminPage() {
     }]);
     
     if (dbError) {
-      setOnboardingUploadStatus('❌ Error guardando configuración: ' + dbError.message);
+      setOnboardingUploadStatus(`❌ No se pudo guardar el documento de normas: ${toUserMessage(dbError)}`);
     } else {
       setOnboardingUploadStatus('✅ Documento actualizado correctamente');
       setTimeout(() => {
@@ -145,7 +149,7 @@ export default function AdminPage() {
 
   const handleSaveEmployee = async () => {
     if (!form.name || !form.email) return;
-    if (!form.password && !editEmp) return alert('Contraseña requerida para nuevos empleados');
+    if (!form.password && !editEmp) return announce('⚠️', 'Escribe una contraseña temporal para el nuevo empleado.');
     
     const avatar = form.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
@@ -178,24 +182,27 @@ export default function AdminPage() {
       if (form.password) {
         // Temporary password, stored by Supabase Auth; forces a change on next login
         const { error: passErr } = await setEmployeePassword(supabase, editEmp.id, form.password);
-        if (passErr) return alert(`No se pudo cambiar la contraseña: ${passErr}`);
+        if (passErr) return fail(`No se pudo cambiar la contraseña: ${passErr}`);
         updateData.first_login = true;
       }
       const { data, error } = await supabase.from('profiles').update(updateData).eq('id', editEmp.id).select().single();
       
       if (!error && data) {
-         setEmployees(employees.map(e => e.id === editEmp.id ? { ...e, ...mapProfile(data) } : e));
+         // The DNI is stored apart (profile_private); the profiles row comes back without it
+         const { error: dniErr } = await saveDni(supabase, editEmp.id, form.phone);
+         if (dniErr) fail(`El empleado se guardó, pero no su DNI: ${toUserMessage(dniErr)}`);
+         setEmployees(employees.map(e => e.id === editEmp.id ? { ...e, ...mapProfile(data), phone: form.phone } : e));
       } else {
         console.error("Error al actualizar", error);
-        alert(/telework_/.test(error?.message || '')
+        fail(/telework_/.test(error?.message || '')
           ? 'Los días de teletrabajo aún no están disponibles: falta ejecutar la migración supabase/migrations/20261021130000_telework_schedule.sql en Supabase.'
-          : `No se pudo guardar el empleado: ${error?.message || 'error desconocido'}`);
+          : `No se pudo guardar el empleado: ${toUserMessage(error)}`);
         return;
       }
     } else {
       // The login is created first (Supabase Auth); the profile takes its id
       const account = await createEmployeeAccount(supabase, form.email, form.password);
-      if (account.error) return alert(`No se pudo crear el empleado: ${account.error}`);
+      if (account.error) return fail(`No se pudo crear el empleado: ${account.error}`);
       const { data, error } = await supabase.from('profiles').insert([{
         id: account.id,
         name: form.name,
@@ -215,12 +222,14 @@ export default function AdminPage() {
       }]).select().single();
 
       if (!error && data) {
-         setEmployees([...employees, mapProfile(data)]);
+         const { error: dniErr } = await saveDni(supabase, account.id, form.phone);
+         if (dniErr) fail(`El empleado se creó, pero no su DNI: ${toUserMessage(dniErr)}`);
+         setEmployees([...employees, { ...mapProfile(data), phone: form.phone }]);
       } else {
         console.error("Error al crear empleado", error);
-        alert(/telework_/.test(error?.message || '')
+        fail(/telework_/.test(error?.message || '')
           ? 'Los días de teletrabajo aún no están disponibles: falta ejecutar la migración supabase/migrations/20261021130000_telework_schedule.sql en Supabase.'
-          : `No se pudo crear el empleado: ${error?.message || 'error desconocido'}`);
+          : `No se pudo crear el empleado: ${toUserMessage(error)}`);
         return;
       }
     }
@@ -238,7 +247,7 @@ export default function AdminPage() {
     const { error } = await supabase.from('profiles').update({ policy_accepted: accepted }).eq('id', emp.id);
     if (error) {
       setEmployees(prev => prev.map(e => e.id === emp.id ? { ...e, policyAccepted: !accepted } : e));
-      alert(`No se pudo actualizar: ${error.message}`);
+      fail(`No se pudo actualizar: ${toUserMessage(error)}`);
     }
     setPolicySaving(null);
   };
@@ -266,12 +275,14 @@ export default function AdminPage() {
       title: 'Eliminar empleado',
       message: '¿Estás seguro de que deseas eliminar este empleado y todos sus archivos asociados? Esta acción no se puede deshacer.',
       action: async () => {
-        await deleteEmployeeData(id);
+        // Files go only once the profile is gone: a failed delete must not leave
+        // documents and justificantes pointing at removed files
         const { error } = await supabase.from('profiles').delete().eq('id', id);
         if (!error) {
+          await deleteEmployeeData(id);
           setEmployees(employees.filter(e => e.id !== id));
         } else {
-          alert('Error al eliminar empleado: ' + error.message);
+          fail(`No se pudo eliminar el empleado: ${toUserMessage(error)}`);
         }
       }
     });
@@ -325,7 +336,7 @@ export default function AdminPage() {
 
     setDocSending(false);
     if (result && result.error) {
-      setDocUploadStatus(`❌ Error en base de datos: ${result.error.message || 'Error desconocido'}`);
+      setDocUploadStatus(`❌ No se pudo enviar el documento: ${toUserMessage(result.error)}`);
     } else if (result && result.data) {
       setShowDocModal(false);
       setDocForm({ title: '', description: '', recipientId: '' });
@@ -459,7 +470,7 @@ export default function AdminPage() {
                               <p className={styles.userName}>{emp.name}</p>
                               {emp.role === 'admin' && <Badge status="admin" />}
                             </div>
-                            <p className={styles.userPhone}>{emp.phone || 'Sin teléfono'}</p>
+                            <p className={styles.userPhone}>{emp.phone || 'Sin DNI'}</p>
                           </div>
                         </div>
                       </td>
@@ -584,7 +595,7 @@ export default function AdminPage() {
                         action: async () => {
                           await supabase.from('reservations').delete().eq('room_id', room.id);
                           const { error } = await supabase.from('rooms').delete().eq('id', room.id);
-                          if (error) alert('Error al eliminar sala: ' + error.message);
+                          if (error) fail(`No se pudo eliminar la sala: ${toUserMessage(error)}`);
                           refresh();
                         }
                       });
@@ -640,7 +651,7 @@ export default function AdminPage() {
                         action: async () => {
                           await supabase.from('reservations').delete().eq('vehicle_id', v.id);
                           const { error } = await supabase.from('vehicles').delete().eq('id', v.id);
-                          if (error) alert('Error al eliminar vehículo: ' + error.message);
+                          if (error) fail(`No se pudo eliminar el vehículo: ${toUserMessage(error)}`);
                           refresh();
                         }
                       });

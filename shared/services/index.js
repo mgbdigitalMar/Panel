@@ -8,3 +8,4 @@ export * from './personalDays.js';
 export * from './news.js';
 export * from './notifications.js';
 export * from './workMode.js';
+export * from './availability.js';

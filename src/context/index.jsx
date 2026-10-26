@@ -9,9 +9,11 @@ import {
 import {
   workModeSyncUpdate, changeWorkMode as changeWorkModeSvc, REQUEST_WORK_MODE, localISODate,
 } from '../../shared/services/workMode.js'
-import { mapProfile } from '../../shared/services/profiles.js'
+import { mapProfile, fetchDnis, withDni } from '../../shared/services/profiles.js'
 import { signIn, isFirstAccess } from '../../shared/services/auth.js'
 import { fetchReservations as fetchReservationsSvc } from '../../shared/services/reservations.js'
+import { safeFileUrl } from '../../shared/utils/urls.js'
+import { toUserMessage } from '../../shared/utils/errors.js'
 
 export const ThemeCtx = createContext()
 
@@ -107,6 +109,8 @@ export function DataProvider({ children }) {
   const [personalDays, setPersonalDays]      = useState([])
   const [notifications, setNotifications]    = useState([]) // Persistent DB notifications
   const [loadingData, setLoadingData]        = useState(true)
+  // A list could not be loaded: Layout offers to retry instead of showing it as empty
+  const [loadFailed, setLoadFailed]          = useState(false)
 const [readIds, setReadIds] = useState(() => {
   try {
     return new Set(JSON.parse(localStorage.getItem('margube_readNotifs') || '[]'));
@@ -187,7 +191,7 @@ const [readIds, setReadIds] = useState(() => {
         employee:profiles!requests_employee_id_fkey(id, name, department, avatar_initials)
       `)
       .order('created_at', { ascending: false }))
-    if (error) { console.error('requests:', error); return }
+    if (error) { console.error('requests:', error); setLoadFailed(true); return }
     setRequestsState(data.map(r => ({
       id: r.id,
       type: r.type,
@@ -208,18 +212,20 @@ const [readIds, setReadIds] = useState(() => {
 
   // Same query as the app: the reservations_full view has no employee_id
   async function fetchReservations() {
-    setReservationsState(await fetchReservationsSvc(supabase))
+    const data = await fetchReservationsSvc(supabase)
+    if (data) setReservationsState(data)
+    else setLoadFailed(true)
   }
 
   async function fetchRooms() {
     const { data, error } = await supabase.from('rooms').select('*').order('id')
-    if (error) { console.error('rooms:', error); return }
+    if (error) { console.error('rooms:', error); setLoadFailed(true); return }
     setRooms(data.map(r => ({ id: r.id, name: r.name, capacity: r.capacity, floor: r.floor, equipment: r.equipment })))
   }
 
   async function fetchVehicles() {
     const { data, error } = await supabase.from('vehicles').select('*').order('id')
-    if (error) { console.error('vehicles:', error); return }
+    if (error) { console.error('vehicles:', error); setLoadFailed(true); return }
     setVehicles(data.map(v => ({ id: v.id, plate: v.plate, model: v.model, year: v.year, type: v.type })))
   }
 
@@ -235,14 +241,14 @@ const [readIds, setReadIds] = useState(() => {
       .order('created_at', { ascending: false })
     // On error keep what is on screen: showing sample data would look real
     if (error || !data) {
-      if (error) console.error('documents:', error)
+      if (error) { console.error('documents:', error); setLoadFailed(true) }
       return
     }
     setDocuments(data.map(d => ({
       id: d.id,
       title: d.title,
       description: d.description,
-      fileUrl: d.file_url,
+      fileUrl: safeFileUrl(d.file_url),
       status: d.status,
       createdAt: d.created_at,
       updatedAt: d.updated_at,
@@ -264,7 +270,7 @@ const [readIds, setReadIds] = useState(() => {
       `)
       .order('created_at', { ascending: false })
     if (error || !data) {
-      if (error) console.error('hour_compensations:', error)
+      if (error) { console.error('hour_compensations:', error); setLoadFailed(true) }
       return
     }
     setHourCompensations(data.map(h => ({
@@ -295,7 +301,7 @@ const [readIds, setReadIds] = useState(() => {
       `)
       .order('created_at', { ascending: false }))
     if (error || !data) {
-      if (error) console.error('personal_days:', error)
+      if (error) { console.error('personal_days:', error); setLoadFailed(true) }
       return
     }
     setPersonalDays(data.map(p => ({
@@ -306,7 +312,7 @@ const [readIds, setReadIds] = useState(() => {
       reviewerName: p.reviewer?.name || null,
       date: p.date,
       reason: p.reason,
-      fileUrl: p.file_url,
+      fileUrl: safeFileUrl(p.file_url),
       status: p.status,
       reviewedAt: p.reviewed_at,
       createdAt: p.created_at,
@@ -318,7 +324,7 @@ const [readIds, setReadIds] = useState(() => {
       .from('news')
       .select('*, author:profiles!news_author_id_fkey(name, avatar_initials)')
       .order('published_at', { ascending: false })
-    if (error) { console.error('news:', error); return }
+    if (error) { console.error('news:', error); setLoadFailed(true); return }
     setNews(data.map(n => ({
       id: n.id,
       type: n.type,
@@ -368,10 +374,13 @@ const [readIds, setReadIds] = useState(() => {
     }
   }, [user?.id])
 
-  const refetchAll = () => Promise.all([
+  const refetchAll = () => {
+    setLoadFailed(false)
+    return Promise.all([
     fetchRequests(), fetchReservations(), fetchRooms(), fetchVehicles(),
     fetchDocuments(), fetchHourCompensations(), fetchPersonalDays(), fetchNews(),
-  ])
+    ])
+  }
 
   useEffect(() => {
     refetchAll().finally(() => setLoadingData(false))
@@ -607,7 +616,7 @@ const [readIds, setReadIds] = useState(() => {
     const { error } = await supabase.from('requests').update({
       status, reviewed_by: reviewedBy, reviewed_at: new Date().toISOString(),
     }).eq('id', id)
-    if (error) { console.error(error); return }
+    if (error) { console.error(error); return reportError(error) }
 
     // Approving a remote / external request that covers today changes the work mode at once
     if (status === 'approved' && REQUEST_WORK_MODE[reqData?.type] && employeeId) {
@@ -631,6 +640,7 @@ const [readIds, setReadIds] = useState(() => {
         entityType: 'request', entityId: id
       })
     }
+    return { error: null }
   }
 
   const deleteRequest = async (id, type) => {
@@ -638,13 +648,14 @@ const [readIds, setReadIds] = useState(() => {
       const p = personalDays.find(d => String(d.id) === String(id));
       await removeStorageFile(p?.fileUrl)
       const { error } = await supabase.from('personal_days').delete().eq('id', id);
-      if (error) console.error('deleteRequest (personal_day):', error);
-      else await fetchPersonalDays();
+      if (error) { console.error('deleteRequest (personal_day):', error); return reportError(error) }
+      await fetchPersonalDays();
     } else {
       const { error } = await supabase.from('requests').delete().eq('id', id);
-      if (error) console.error('deleteRequest:', error);
-      else await fetchRequests();
+      if (error) { console.error('deleteRequest:', error); return reportError(error) }
+      await fetchRequests();
     }
+    return { error: null }
   }
 
   const createPersonalDay = async ({ employeeId, date, reason, fileUrl }) => {
@@ -675,7 +686,7 @@ const [readIds, setReadIds] = useState(() => {
       reviewed_by: reviewedBy,
       reviewed_at: new Date().toISOString(),
     }).eq('id', id)
-    if (error) { console.error('updatePersonalDayStatus:', error); return }
+    if (error) { console.error('updatePersonalDayStatus:', error); return reportError(error) }
     await fetchPersonalDays()
 
     if (employeeId) {
@@ -687,6 +698,7 @@ const [readIds, setReadIds] = useState(() => {
         entityType: 'personal_day', entityId: id
       })
     }
+    return { error: null }
   }
 
   const createReservation = async (employeeId, payload) => {
@@ -736,7 +748,7 @@ const [readIds, setReadIds] = useState(() => {
     }]).select().single()
     if (error) { 
       console.error('createReservation error:', error); 
-      return { error: error.message || 'Error al crear la reserva' }
+      return { error: toUserMessage(error, 'Error al crear la reserva') }
     }
     await fetchReservations()
     
@@ -756,14 +768,16 @@ const [readIds, setReadIds] = useState(() => {
     const { error } = await supabase.from('reservations').update({
       status, reviewed_by: reviewedBy, reviewed_at: new Date().toISOString(),
     }).eq('id', id)
-    if (error) { console.error(error); return }
+    if (error) { console.error(error); return reportError(error) }
     await fetchReservations()
+    return { error: null }
   }
 
   const deleteReservation = async (id) => {
     const { error } = await supabase.from('reservations').delete().eq('id', id)
-    if (error) { console.error(error); return }
+    if (error) { console.error(error); return reportError(error) }
     await fetchReservations()
+    return { error: null }
   }
 
   const sendDocument = async ({ title, description, fileUrl, senderId, recipientId }) => {
@@ -841,16 +855,18 @@ const [readIds, setReadIds] = useState(() => {
       status,
       updated_at: new Date().toISOString(),
     }).eq('id', id)
-    if (error) { console.error('updateDocumentStatus:', error); return }
+    if (error) { console.error('updateDocumentStatus:', error); return reportError(error) }
     await fetchDocuments()
+    return { error: null }
   }
 
   const deleteDocument = async (id) => {
     const doc = documents.find(d => String(d.id) === String(id));
     await removeStorageFile(doc?.fileUrl)
     const { error } = await supabase.from('documents').delete().eq('id', id)
-    if (error) { console.error('deleteDocument:', error); return }
+    if (error) { console.error('deleteDocument:', error); return reportError(error) }
     await fetchDocuments()
+    return { error: null }
   }
 
   const createHourCompensation = async ({ employeeId, date, reason, hours, type }) => {
@@ -888,7 +904,7 @@ const [readIds, setReadIds] = useState(() => {
       reviewed_by: reviewedBy,
       reviewed_at: new Date().toISOString(),
     }).eq('id', id)
-    if (error) { console.error('updateHourCompensationStatus:', error); return }
+    if (error) { console.error('updateHourCompensationStatus:', error); return reportError(error) }
     await fetchHourCompensations()
 
     if (employeeId) {
@@ -900,28 +916,33 @@ const [readIds, setReadIds] = useState(() => {
         entityType: 'hour_compensation', entityId: id
       })
     }
+    return { error: null }
   }
 
   const deleteHourCompensation = async (id) => {
     const { error } = await supabase.from('hour_compensations').delete().eq('id', id);
-    if (error) console.error('deleteHourCompensation:', error);
-    else await fetchHourCompensations();
+    if (error) { console.error('deleteHourCompensation:', error); return reportError(error) }
+    await fetchHourCompensations();
+    return { error: null }
   }
 
   const createNews = async (payload) => {
     const { error } = await supabase.from('news').insert([payload])
-    if (error) { console.error('createNews:', error); return }
+    if (error) { console.error('createNews:', error); return reportError(error) }
     await fetchNews()
+    return { error: null }
   }
   const updateNews = async (id, payload) => {
     const { error } = await supabase.from('news').update(payload).eq('id', id)
-    if (error) { console.error('updateNews:', error); return }
+    if (error) { console.error('updateNews:', error); return reportError(error) }
     await fetchNews()
+    return { error: null }
   }
   const deleteNews = async (id) => {
     const { error } = await supabase.from('news').delete().eq('id', id)
-    if (error) { console.error('deleteNews:', error); return }
+    if (error) { console.error('deleteNews:', error); return reportError(error) }
     await fetchNews()
+    return { error: null }
   }
 
   const deleteEmployeeData = async (employeeId) => {
@@ -936,10 +957,19 @@ const [readIds, setReadIds] = useState(() => {
   }
 
   // Confirms the person's own action (no sound: they just did it)
-  const announce = (icon, msg) => {
+  const announce = (icon, msg, ms = 4000) => {
     const id = Date.now() + Math.random()
     setLiveNotifs(prev => [{ id, icon, msg }, ...prev.slice(0, 4)])
-    setTimeout(() => setLiveNotifs(prev => prev.filter(n => n.id !== id)), 4000)
+    setTimeout(() => setLiveNotifs(prev => prev.filter(n => n.id !== id)), ms)
+  }
+
+  // A write that failed (permissions, a database check, the network) is said on
+  // screen: the pages calling these actions used to show nothing at all
+  const reportError = (error) => {
+    const msg = toUserMessage(error)
+    // Longer than a confirmation: the person has to read what went wrong
+    announce('❌', msg, 7000)
+    return { error: msg }
   }
 
   const markRead = (id) => setReadIds(prev => {
@@ -967,7 +997,7 @@ const [readIds, setReadIds] = useState(() => {
   const pdValue = useMemo(() => ({ personalDays, createPersonalDay, updatePersonalDayStatus }), [personalDays, employees]);
   const newsValue = useMemo(() => ({ news, createNews, updateNews, deleteNews }), [news]);
   const notifValue = useMemo(() => ({ notifications, markNotifRead, markAllNotifsRead, readIds, markRead, markAllRead, liveNotifs, announce }), [notifications, readIds, liveNotifs]);
-  const syncValue = useMemo(() => ({ loadingData, refresh: refetchAll }), [loadingData]);
+  const syncValue = useMemo(() => ({ loadingData, loadFailed, refresh: refetchAll }), [loadingData, loadFailed]);
 
   const contextValue = useMemo(() => ({
     ...requestValue, ...resValue, ...docValue, ...hourValue, ...pdValue, ...newsValue, ...notifValue, ...syncValue
@@ -1024,7 +1054,9 @@ export function AuthProvider({ children }) {
       .eq('id', id)
       .maybeSingle()
     if (error || !data) return null
-    return mapProfile(data)
+    // The DNI is private (profile_private): the person sees their own
+    const [profile] = withDni([mapProfile(data)], await fetchDnis(supabase))
+    return profile
   }
 
   // Signed in: show the app (or the first-access password page)
@@ -1037,9 +1069,13 @@ export function AuthProvider({ children }) {
   }
 
   async function loadAllEmployees() {
-    const { data, error } = await supabase.from('profiles').select('*').order('name')
+    const [{ data, error }, dnis] = await Promise.all([
+      supabase.from('profiles').select('*').order('name'),
+      fetchDnis(supabase),
+    ])
     if (error) { console.error('employees:', error); return }
-    setEmployeesState(data.map(mapProfile))
+    // Admins get every DNI, employees only their own
+    setEmployeesState(withDni(data.map(mapProfile), dnis))
   }
 
   // Per-tab session + synchronized logout across tabs
@@ -1127,7 +1163,8 @@ export function AuthProvider({ children }) {
         (payload) => {
           loadAllEmployees()
           // Own row (e.g. work mode set by an approved request): refresh the session user
-          setUser(prev => (prev && payload.new?.id === prev.id ? { ...prev, ...mapProfile(payload.new) } : prev))
+          // profiles.phone no longer carries the DNI: keep the one already loaded
+          setUser(prev => (prev && payload.new?.id === prev.id ? { ...prev, ...mapProfile(payload.new), phone: mapProfile(payload.new).phone || prev.phone } : prev))
         }
       )
       .subscribe()
@@ -1140,7 +1177,7 @@ export function AuthProvider({ children }) {
       try { id = JSON.parse(localStorage.getItem('margube_session') || 'null')?.id } catch { /* corrupt entry */ }
       if (!id) return
       const { data } = await supabase.from('profiles').select('*').eq('id', id).single()
-      if (data) setUser(prev => (prev && prev.id === data.id ? { ...prev, ...mapProfile(data) } : prev))
+      if (data) setUser(prev => (prev && prev.id === data.id ? { ...prev, ...mapProfile(data), phone: mapProfile(data).phone || prev.phone } : prev))
     }
     document.addEventListener('visibilitychange', handleVisibility)
 

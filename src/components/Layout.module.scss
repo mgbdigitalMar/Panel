@@ -743,3 +743,37 @@ $header-h-mobile: 64px;
   line-height: 1.55;
   color: var(--text-sec);
 }
+
+// A list failed to load: say so instead of showing it as empty
+.loadError {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(var(--warning-rgb), 0.3);
+  background: var(--warning-bg);
+  color: var(--text);
+  font-size: 13.5px;
+
+  svg { color: var(--warning); flex-shrink: 0; }
+  span { flex: 1; min-width: 200px; }
+
+  button {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(var(--warning-rgb), 0.45);
+    background: transparent;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+
+    &:hover:not(:disabled) { background: rgba(var(--warning-rgb), 0.12); }
+    &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--warning-rgb), 0.35); }
+    &:disabled { opacity: 0.6; cursor: default; }
+  }
+}

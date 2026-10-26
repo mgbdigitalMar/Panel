@@ -118,13 +118,16 @@ export default function NewsPage() {
       category: form.category,
       pinned: form.pinned,
     };
+    let res;
     if (editItem) {
-      await updateNews(editItem.id, payload);
+      res = await updateNews(editItem.id, payload);
     } else {
       payload.author_id = user.id;
       payload.published_at = new Date().toISOString().split('T')[0];
-      await createNews(payload);
+      res = await createNews(payload);
     }
+    // Failed: keep the modal open so nothing typed is lost (the error is announced)
+    if (res?.error) return;
     setShowModal(false);
     setEditItem(null);
     setForm({ type: 'news', title: '', content: '', category: 'Empresa', pinned: false });

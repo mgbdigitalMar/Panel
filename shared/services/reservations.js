@@ -16,7 +16,8 @@ export async function fetchReservations(supabase) {
     .order('date', { ascending: false });
   if (error) {
     console.error('fetchReservations:', error);
-    return [];
+    // null (not []) on failure: the caller keeps what it already shows
+    return null;
   }
   return data.map(r => ({
     id: r.id,
@@ -42,7 +43,7 @@ export async function fetchReservations(supabase) {
 
 export async function fetchRooms(supabase) {
   const { data, error } = await supabase.from('rooms').select('*').order('id');
-  if (error) { console.error('fetchRooms:', error); return []; }
+  if (error) { console.error('fetchRooms:', error); return null; }
   return data.map(r => ({
     id: r.id, name: r.name, capacity: r.capacity, floor: r.floor, equipment: r.equipment,
     isActive: r.is_active !== false,
@@ -51,7 +52,7 @@ export async function fetchRooms(supabase) {
 
 export async function fetchVehicles(supabase) {
   const { data, error } = await supabase.from('vehicles').select('*').order('id');
-  if (error) { console.error('fetchVehicles:', error); return []; }
+  if (error) { console.error('fetchVehicles:', error); return null; }
   return data.map(v => ({
     id: v.id, plate: v.plate, model: v.model, year: v.year, type: v.type,
     isActive: v.is_active !== false,

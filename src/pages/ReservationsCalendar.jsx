@@ -99,15 +99,15 @@ export default function ReservationsCalendar() {
     <div className={styles.calendar}>
       <div className={styles.calHeader}>
         <div className={styles.viewToggle}>
-          <button onClick={() => { setEnterFrom(0); setViewMode('month'); }} className={clsx(styles.viewBtn, { [styles.viewBtnActive]: viewMode === 'month' })}>Mes</button>
-          <button onClick={() => { setEnterFrom(0); setViewMode('week'); }} className={clsx(styles.viewBtn, { [styles.viewBtnActive]: viewMode === 'week' })}>Semana</button>
+          <button type="button" aria-pressed={viewMode === 'month'} onClick={() => { setEnterFrom(0); setViewMode('month'); }} className={clsx(styles.viewBtn, { [styles.viewBtnActive]: viewMode === 'month' })}>Mes</button>
+          <button type="button" aria-pressed={viewMode === 'week'} onClick={() => { setEnterFrom(0); setViewMode('week'); }} className={clsx(styles.viewBtn, { [styles.viewBtnActive]: viewMode === 'week' })}>Semana</button>
         </div>
         <div className={styles.navRow}>
-          <button className={styles.navBtn} onClick={prev}><ChevronLeft size={16} /></button>
-          <span className={styles.periodLabel}>
+          <button type="button" className={styles.navBtn} onClick={prev} aria-label={viewMode === 'month' ? 'Mes anterior' : 'Semana anterior'}><ChevronLeft size={16} aria-hidden="true" /></button>
+          <span className={styles.periodLabel} aria-live="polite">
             {viewMode === 'month' ? `${MONTHS_ES[month]} ${year}` : weekLabel}
           </span>
-          <button className={styles.navBtn} onClick={next}><ChevronRight size={16} /></button>
+          <button type="button" className={styles.navBtn} onClick={next} aria-label={viewMode === 'month' ? 'Mes siguiente' : 'Semana siguiente'}><ChevronRight size={16} aria-hidden="true" /></button>
         </div>
       </div>
 

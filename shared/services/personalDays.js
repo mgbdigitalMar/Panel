@@ -1,5 +1,6 @@
 import { createNotification, notifyAdmins } from './notifications.js';
 import { removeStorageFile } from './documents.js';
+import { safeFileUrl } from '../utils/urls.js';
 
 /** Pass `employeeId` for an employee: they only get their own (admins get all). */
 export async function fetchPersonalDays(supabase, { employeeId } = {}) {
@@ -16,7 +17,8 @@ export async function fetchPersonalDays(supabase, { employeeId } = {}) {
   const { data, error } = await query;
   if (error || !data) {
     if (error) console.error('fetchPersonalDays:', error);
-    return [];
+    // null (not []) on failure: the caller keeps what it already shows
+    return error ? null : [];
   }
   return data.map(p => ({
     id: p.id,
@@ -26,7 +28,7 @@ export async function fetchPersonalDays(supabase, { employeeId } = {}) {
     reviewerName: p.reviewer?.name || null,
     date: p.date,
     reason: p.reason,
-    fileUrl: p.file_url,
+    fileUrl: safeFileUrl(p.file_url),
     status: p.status,
     reviewedAt: p.reviewed_at,
     createdAt: p.created_at,
