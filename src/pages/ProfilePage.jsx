@@ -23,6 +23,8 @@ import clsx from "clsx";
 import { supabase } from "../utils/supabase";
 import { changeOwnPassword } from "../../shared/services/auth.js";
 import { useAutoDismiss } from "../hooks/useAutoDismiss";
+import { SignatureView } from "../components/SignaturePad";
+import { fetchPolicySignatures, latestSignatureByUser, formatSignedAt } from "../../shared/services/policy.js";
 
 const WORK_MODES = {
   Office: { label: "Oficina" },
@@ -46,6 +48,12 @@ function getViewerUrl(url) {
 
 export default function ProfilePage() {
   const { user, employees } = useAuth();
+  // Own signature of the internal rules (RLS only returns this person's)
+  const [mySignature, setMySignature] = useState(undefined);
+  useEffect(() => {
+    if (!user?.id) return;
+    fetchPolicySignatures(supabase).then(list => setMySignature(list ? latestSignatureByUser(list)[user.id] || null : null));
+  }, [user?.id, user?.policyAccepted]);
   const { documents, updateDocumentStatus } = useDocuments();
   const { requests, changeWorkMode } = useRequests();
 
@@ -190,6 +198,21 @@ export default function ProfilePage() {
                   ? new Date(user.birthdate).toLocaleDateString("es-ES")
                   : "No especificada"}
               </span>
+            </div>
+            <div className={clsx(styles.infoItem, styles.infoItemWide)}>
+              <span className={styles.infoLabel}>Normas internas</span>
+              <span className={styles.infoValue}>
+                {mySignature
+                  ? `Firmadas el ${formatSignedAt(mySignature.signedAt)} como «${mySignature.signerName}»`
+                  : user?.policyAccepted === true
+                    ? "Aceptadas (registradas por RRHH)"
+                    : "Pendientes de firma"}
+              </span>
+              {mySignature && (
+                <div className={styles.mySignature}>
+                  <SignatureView strokes={mySignature.strokes} label="Tu firma de las normas internas" />
+                </div>
+              )}
             </div>
           </div>
         </Card>

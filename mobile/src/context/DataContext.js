@@ -357,6 +357,13 @@ export function DataProvider({ children }) {
       await refreshEmployees();
       return { error };
     },
+    // RRHH: rules accepted without a digital signature (e.g. on paper) or pending again,
+    // which asks the person to read and sign them at the next login (togglePolicyAccepted on the web)
+    setPolicyAccepted: async (employeeId, accepted) => {
+      const { error } = await supabase.from('profiles').update({ policy_accepted: accepted }).eq('id', employeeId);
+      await refreshEmployees();
+      return { error };
+    },
     resetEmployeePassword: async (employeeId, tempPassword) => {
       const res = await svc.setEmployeePassword(supabase, employeeId, tempPassword);
       await refreshEmployees();

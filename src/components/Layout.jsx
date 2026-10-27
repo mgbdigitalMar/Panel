@@ -173,7 +173,7 @@ function NavLink({ item, onNavigate, collapsed, badge, active, pillId }) {
 }
 
 export default function Layout({ children }) {
-  const { user, logout, needsOnboarding, setLastActivity, setCurrentUser } = useAuth();
+  const { user, logout, needsOnboarding, setLastActivity, patchUser, refreshEmployees } = useAuth();
   const { theme, setMode } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -632,7 +632,7 @@ export default function Layout({ children }) {
         {needsOnboarding && <OnboardingModal />}
       </AnimatePresence>
 
-      {/* Blocks the app until the internal rules are accepted */}
+      {/* Blocks the app until the internal rules are read and signed */}
       <PolicyModal
         user={user}
         policyAccepted={user?.policyAccepted}
@@ -640,7 +640,7 @@ export default function Layout({ children }) {
         policyRead={policyRead}
         setPolicyRead={setPolicyRead}
         onboardingDocUrl={onboardingDocUrl}
-        setCurrentUser={setCurrentUser}
+        onSigned={() => { patchUser({ policyAccepted: true }); refreshEmployees(); }}
       />
     </div>
   );

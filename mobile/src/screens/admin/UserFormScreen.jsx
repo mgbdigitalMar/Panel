@@ -1,9 +1,14 @@
 // Alta / edición de empleado (employee modal of the web AdminPage)
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { DEPARTMENTS } from '@shared/config/constants.js';
 import { toUserMessage } from '@shared/utils/errors.js';
 import { TELEWORK_WEEKDAYS, formatTeleworkDays } from '@shared/services/workMode.js';
+import { fetchPolicySignatures, latestSignatureByUser, policyStatus, formatSignedAt, PLATFORM_LABELS, POLICY_TITLE } from '@shared/services/policy.js';
+import { supabase } from '../../lib/supabase';
+import { SignatureView } from '../../components/SignaturePad';
+import { GlassCard } from '../../components/common/GlassCard';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { useToast } from '../../context/ToastContext';
@@ -13,7 +18,7 @@ import { ModalHeader } from '../../components/common/Header';
 import { GlassInput, DateField } from '../../components/common/GlassInput';
 import { GlassButton } from '../../components/common/GlassButton';
 import { T } from '../../components/common/Text';
-import { Banner, ChipRail, Segmented, SwitchRow, WeekdayPicker } from '../../components/common/UI';
+import { Banner, ChipRail, Segmented, SwitchRow, WeekdayPicker, InfoLine } from '../../components/common/UI';
 import { MIN_PASSWORD } from '../ChangePasswordScreen';
 import { tempPassword } from './AdminUsersScreen';
 
@@ -41,6 +46,12 @@ export default function UserFormScreen() {
     policyAccepted: existing?.policyAccepted === true,
   });
   const [saving, setSaving] = useState(false);
+  // Signature of the internal rules of the person being edited (undefined = loading, null = failed)
+  const [signature, setSignature] = useState(undefined);
+  useEffect(() => {
+    if (!existing?.id) return;
+    fetchPolicySignatures(supabase).then((list) => setSignature(list ? latestSignatureByUser(list)[existing.id] || false : null));
+  }, [existing?.id]);
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
 
   const emailTaken = employees.some((e) => e.id !== existing?.id && e.email?.toLowerCase() === form.email.trim().toLowerCase());
@@ -96,11 +107,46 @@ export default function UserFormScreen() {
           ? `Cada ${formatTeleworkDays(form.teleworkDays)} su modo pasará a Remoto automáticamente; el resto de días, a Oficina.`
           : 'Sin días fijos: el modo solo cambia con solicitudes aprobadas o a mano.'}
       </T>
+      {existing ? (() => {
+        const st = policyStatus(existing, signature || undefined);
+        const tone = st === 'signed' ? colors.successFg : st === 'manual' ? colors.text3 : colors.warningFg;
+        return (
+          <GlassCard padding={14} style={{ gap: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <T size={14} weight="semibold" style={{ flex: 1 }}>Firma de las normas internas</T>
+              <T size={12.5} weight="semibold" color={tone}>
+                {st === 'signed' ? 'Firmadas' : st === 'manual' ? 'Aceptadas sin firma' : 'Firma pendiente'}
+              </T>
+            </View>
+            {signature ? (
+              <>
+                <SignatureView strokes={signature.strokes} label={`Firma de ${signature.signerName}`} />
+                <View>
+                  <InfoLine label="Firmado por" value={signature.signerName} />
+                  <InfoLine label="Fecha y hora" value={formatSignedAt(signature.signedAt)} mono />
+                  <InfoLine label="Documento" value={signature.documentTitle || POLICY_TITLE} />
+                  <InfoLine label="Desde" value={PLATFORM_LABELS[signature.platform] || signature.platform || '—'} last />
+                </View>
+                {st === 'pending' ? (
+                  <T size={12.5} color={colors.text3}>Se le ha pedido firmar de nuevo: esta es su última firma.</T>
+                ) : null}
+              </>
+            ) : (
+              <T size={13} color={colors.text2}>
+                {signature === undefined ? 'Cargando firma…'
+                  : signature === null ? 'No se ha podido cargar la firma.'
+                    : st === 'manual' ? 'Normas aceptadas por RRHH sin firma digital.'
+                      : 'Todavía no ha firmado el documento. Se le pedirá al entrar.'}
+              </T>
+            )}
+          </GlassCard>
+        );
+      })() : null}
       <SwitchRow
-        title="Ya ha aceptado las normas internas"
+        title="Normas internas ya aceptadas"
         subtitle={form.policyAccepted
-          ? 'No se le pedirá leer el Procedimiento de Normas Internas 2026 al entrar.'
-          : 'Al entrar deberá leer y aceptar el Procedimiento de Normas Internas 2026.'}
+          ? 'No se le pedirá firmarlas al entrar. Actívalo solo si ya las ha firmado (por ejemplo, en papel).'
+          : 'Al entrar deberá leer y firmar el Procedimiento de Normas Internas 2026.'}
         value={form.policyAccepted}
         onValueChange={set('policyAccepted')}
       />

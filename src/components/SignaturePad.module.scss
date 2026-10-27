@@ -1,0 +1,80 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// White paper in both themes: the ink and the stored signature look the same everywhere
+.paper {
+  position: relative;
+  border-radius: var(--radius-md);
+  border: 1.5px dashed var(--border);
+  background: #FFFFFF;
+  overflow: hidden;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 5 / 2;
+  touch-action: none; // the finger draws instead of scrolling the page
+  cursor: crosshair;
+}
+
+.line {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 22%;
+  border-bottom: 1px solid #D5D9E2;
+  pointer-events: none;
+}
+
+.placeholder {
+  position: absolute;
+  left: 8%;
+  bottom: calc(22% + 8px);
+  font-size: 13px;
+  color: #8D95A3;
+  pointer-events: none;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.help {
+  font-size: 12.5px;
+  color: var(--text-mut);
+}
+
+.clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-sec);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { color: var(--danger); border-color: rgba(var(--danger-rgb), 0.4); }
+  &:focus-visible { outline: none; box-shadow: var(--accent-glow); }
+  &:disabled { opacity: 0.5; cursor: default; }
+}
+
+.view {
+  display: block;
+  width: 100%;
+  aspect-ratio: 5 / 2;
+  background: #FFFFFF;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}

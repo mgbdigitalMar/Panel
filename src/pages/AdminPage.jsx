@@ -2,7 +2,9 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth, useReservations, useDocuments, useHours, useDataSync, useRequests, useNotifs } from '../context';
 import { toUserMessage } from '../../shared/utils/errors.js';
 import { Avatar, Badge, Modal, Input, Select, Button, Card, ConfirmModal, Section } from '../components/ui';
-import { Search, Plus, Edit2, Trash2, Building, Car, FileText, Send, Clock, CheckCircle, Check, PenTool, Upload, X, Timer, Download } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, Building, Car, FileText, Send, Clock, CheckCircle, Check, PenTool, Upload, X, Timer, Download, PenLine, RotateCcw, ShieldCheck } from 'lucide-react';
+import { SignatureView } from '../components/SignaturePad';
+import { fetchPolicySignatures, latestSignatureByUser, policyStatus, formatSignedAt, PLATFORM_LABELS, POLICY_TITLE } from '../../shared/services/policy.js';
 import styles from './AdminPage.module.scss';
 import clsx from 'clsx';
 import { supabase } from '../utils/supabase';
@@ -238,10 +240,10 @@ export default function AdminPage() {
         setForm({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [], policyAccepted: false });
   };
 
-  // The admin marks who has already accepted the internal rules (they skip the mandatory reading)
+  // The admin marks the rules as accepted without a digital signature (e.g. signed on paper)
+  // or as pending, which asks the person to read and sign them again at the next login
   const [policySaving, setPolicySaving] = useState(null);
-  const togglePolicyAccepted = async (emp) => {
-    const accepted = emp.policyAccepted !== true;
+  const togglePolicyAccepted = async (emp, accepted = emp.policyAccepted !== true) => {
     setPolicySaving(emp.id);
     setEmployees(prev => prev.map(e => e.id === emp.id ? { ...e, policyAccepted: accepted } : e));
     const { error } = await supabase.from('profiles').update({ policy_accepted: accepted }).eq('id', emp.id);
@@ -252,8 +254,44 @@ export default function AdminPage() {
     setPolicySaving(null);
   };
 
-  const handleEdit = emp => { 
-    setEditEmp(emp); 
+  // Signatures of the internal rules (policy_signatures): who signed, when and from where
+  const [signatures, setSignatures] = useState(undefined); // undefined = loading, null = failed
+  const loadSignatures = async () => setSignatures(await fetchPolicySignatures(supabase));
+  useEffect(() => { loadSignatures(); }, []);
+  const lastSignature = useMemo(() => latestSignatureByUser(signatures), [signatures]);
+  const policyCounts = useMemo(() => {
+    const c = { signed: 0, manual: 0, pending: 0 };
+    employees.forEach(e => { c[policyStatus(e, lastSignature[e.id])]++; });
+    return c;
+  }, [employees, lastSignature]);
+  const [policyEmpId, setPolicyEmpId] = useState(null);
+  const policyEmp = employees.find(e => e.id === policyEmpId) || null;
+
+  const POLICY_LABEL = { signed: 'Firmadas', manual: 'Aceptadas sin firma', pending: 'Firma pendiente' };
+  const exportSignaturesCSV = () => {
+    const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const headers = ['Empleado', 'Email', 'Departamento', 'Estado', 'Nombre firmado', 'Fecha y hora de la firma', 'Documento', 'Dispositivo'];
+    const lines = [
+      headers.join(';'),
+      ...employees.map(e => {
+        const sig = lastSignature[e.id];
+        return [
+          q(e.name), q(e.email), q(e.dept), q(POLICY_LABEL[policyStatus(e, sig)]),
+          q(sig?.signerName || ''), q(sig ? formatSignedAt(sig.signedAt) : ''),
+          q(sig?.documentTitle || ''), q(sig ? (PLATFORM_LABELS[sig.platform] || sig.platform || '') : ''),
+        ].join(';');
+      }),
+    ];
+    const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = `firmas-normas-internas-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+  };
+
+  const handleEdit = emp => {
+    setEditEmp(emp);
+    loadSignatures(); // they may have signed since the page was opened
     setForm({ 
       name: emp.name, 
       email: emp.email, 
@@ -403,6 +441,18 @@ export default function AdminPage() {
           transition={{ duration: 0.2 }}
         >
           <Section title="Empleados" description="Altas, datos de contacto y modalidad de cada persona." />
+          <div className={styles.policySummary} aria-label="Firma de las normas internas">
+            <ShieldCheck size={18} aria-hidden="true" />
+            <span className={styles.policySummaryText}>
+              <strong>Normas internas:</strong> {policyCounts.signed} de {employees.length} firmadas
+              {policyCounts.manual > 0 && <> · {policyCounts.manual} aceptadas sin firma</>}
+              {policyCounts.pending > 0 && <> · {policyCounts.pending} pendientes</>}
+              {signatures === null && <> · <span className={styles.policySummaryWarn}>no se han podido cargar las firmas</span></>}
+            </span>
+            <Button size="sm" variant="ghost" icon={Download} onClick={exportSignaturesCSV} disabled={!signatures}>
+              Registro de firmas (CSV)
+            </Button>
+          </div>
           <Card className={styles.tableCard}>
             <div className={styles.tableHeaderSection}>
               <div className={styles.searchWrapper}>
@@ -487,19 +537,23 @@ export default function AdminPage() {
                             label={emp.firstLogin ? 'Primer acceso pendiente' : 'Activo'} 
                             className={emp.firstLogin ? 'variant-warning' : 'variant-success'}
                           />
-                          <button
-                            type="button"
-                            className={clsx(styles.policyToggle, emp.policyAccepted === true ? styles.policyAccepted : styles.policyPending)}
-                            onClick={() => togglePolicyAccepted(emp)}
-                            disabled={policySaving === emp.id}
-                            aria-pressed={emp.policyAccepted === true}
-                            title={emp.policyAccepted === true
-                              ? 'Marcar como pendiente: se le pedirá leer las normas al entrar'
-                              : 'Marcar como aceptadas: no se le pedirá leer las normas al entrar'}
-                          >
-                            {emp.policyAccepted === true ? <Check size={12} strokeWidth={3} aria-hidden="true" /> : <Clock size={12} aria-hidden="true" />}
-                            {emp.policyAccepted === true ? 'Normas aceptadas' : 'Normas pendientes'}
-                          </button>
+                          {(() => {
+                            const sig = lastSignature[emp.id];
+                            const st = policyStatus(emp, sig);
+                            return (
+                              <button
+                                type="button"
+                                className={clsx(styles.policyToggle, st === 'signed' ? styles.policyAccepted : st === 'manual' ? styles.policyManual : styles.policyPending)}
+                                onClick={() => setPolicyEmpId(emp.id)}
+                                disabled={policySaving === emp.id}
+                                aria-haspopup="dialog"
+                                title="Ver la firma de las normas internas"
+                              >
+                                {st === 'signed' ? <PenLine size={12} aria-hidden="true" /> : st === 'manual' ? <Check size={12} strokeWidth={3} aria-hidden="true" /> : <Clock size={12} aria-hidden="true" />}
+                                {st === 'signed' ? `Normas firmadas ${formatSignedAt(sig.signedAt).slice(0, 10)}` : st === 'manual' ? 'Normas aceptadas sin firma' : 'Firma de normas pendiente'}
+                              </button>
+                            );
+                          })()}
                           {(() => {
                             const mode = (emp.workMode || 'office').toLowerCase();
                             const isExterno = mode === 'externo' || mode === 'field';
@@ -994,6 +1048,45 @@ export default function AdminPage() {
               </p>
             </div>
           </div>
+          {editEmp && (() => {
+            // Signed internal rules of the person being edited (same data as the rules card)
+            const sig = lastSignature[editEmp.id];
+            const st = policyStatus(editEmp, sig);
+            return (
+              <div className={clsx(styles.fullWidth, styles.formSignature)}>
+                <div className={styles.formSignatureHead}>
+                  <span className={styles.policyCheckLabel}>Firma de las normas internas</span>
+                  <span className={clsx(styles.policyToggle, st === 'signed' ? styles.policyAccepted : st === 'manual' ? styles.policyManual : styles.policyPending)}>
+                    {st === 'signed' ? <PenLine size={12} aria-hidden="true" /> : st === 'manual' ? <Check size={12} strokeWidth={3} aria-hidden="true" /> : <Clock size={12} aria-hidden="true" />}
+                    {POLICY_LABEL[st]}
+                  </span>
+                </div>
+                {sig ? (
+                  <div className={styles.formSignatureBody}>
+                    <div className={styles.formSignatureImg}>
+                      <SignatureView strokes={sig.strokes} label={`Firma de ${sig.signerName}`} />
+                    </div>
+                    <dl className={styles.policyFacts}>
+                      <dt>Firmado por</dt><dd>{sig.signerName}</dd>
+                      <dt>Fecha y hora</dt><dd>{formatSignedAt(sig.signedAt)}</dd>
+                      <dt>Documento</dt><dd>{sig.documentTitle || POLICY_TITLE}</dd>
+                      <dt>Desde</dt><dd>{PLATFORM_LABELS[sig.platform] || sig.platform || '—'}</dd>
+                    </dl>
+                    {st === 'pending' && (
+                      <p className={styles.teleworkHint}>Se le ha pedido firmar de nuevo: esta es su última firma.</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className={styles.teleworkHint}>
+                    {signatures === undefined ? 'Cargando firma…'
+                      : signatures === null ? 'No se ha podido cargar la firma.'
+                      : st === 'manual' ? 'Normas aceptadas por RRHH sin firma digital.'
+                      : 'Todavía no ha firmado el documento. Se le pedirá al entrar.'}
+                  </p>
+                )}
+              </div>
+            );
+          })()}
           <div className={styles.fullWidth}>
             <label className={styles.policyCheck}>
               <input
@@ -1002,11 +1095,11 @@ export default function AdminPage() {
                 onChange={e => setForm({ ...form, policyAccepted: e.target.checked })}
               />
               <span>
-                <span className={styles.policyCheckLabel}>Ya ha aceptado las normas internas</span>
+                <span className={styles.policyCheckLabel}>Normas internas ya aceptadas</span>
                 <span className={styles.teleworkHint}>
                   {form.policyAccepted
-                    ? 'No se le pedirá leer el Procedimiento de Normas Internas 2026 al entrar.'
-                    : 'Al entrar deberá leer y aceptar el Procedimiento de Normas Internas 2026.'}
+                    ? 'No se le pedirá firmarlas al entrar. Márcalo solo si ya las ha firmado (por ejemplo, en papel).'
+                    : 'Al entrar deberá leer y firmar el Procedimiento de Normas Internas 2026.'}
                 </span>
               </span>
             </label>
@@ -1035,6 +1128,70 @@ export default function AdminPage() {
         title={deleteConfirm?.title || ''}
         message={deleteConfirm?.message || ''}
       />
+
+      <Modal open={!!policyEmp} onClose={() => setPolicyEmpId(null)} title="Normas internas">
+        {policyEmp && (() => {
+          const sig = lastSignature[policyEmp.id];
+          const st = policyStatus(policyEmp, sig);
+          const history = (signatures || []).filter(x => x.userId === policyEmp.id);
+          return (
+            <div className={styles.policyDetail}>
+              <div className={styles.policyDetailHead}>
+                <Avatar initials={policyEmp.avatar} size={40} />
+                <div>
+                  <p className={styles.userName}>{policyEmp.name}</p>
+                  <p className={styles.positionDept}>{policyEmp.dept}</p>
+                </div>
+                <span className={clsx(styles.policyToggle, st === 'signed' ? styles.policyAccepted : st === 'manual' ? styles.policyManual : styles.policyPending)}>
+                  {POLICY_LABEL[st]}
+                </span>
+              </div>
+
+              {sig ? (
+                <>
+                  <p className={styles.policyDetailLabel}>{st === 'pending' ? 'Última firma (se le ha pedido firmar de nuevo)' : 'Firma'}</p>
+                  <SignatureView strokes={sig.strokes} label={`Firma de ${sig.signerName}`} />
+                  <dl className={styles.policyFacts}>
+                    <dt>Nombre escrito</dt><dd>{sig.signerName}</dd>
+                    <dt>Fecha y hora</dt><dd>{formatSignedAt(sig.signedAt)}</dd>
+                    <dt>Documento</dt><dd>{sig.documentTitle || POLICY_TITLE}</dd>
+                    <dt>Desde</dt><dd>{PLATFORM_LABELS[sig.platform] || sig.platform || '—'}</dd>
+                    <dt>Acepta las normas</dt><dd>Sí, marcó «He leído y acepto» al firmar</dd>
+                  </dl>
+                </>
+              ) : (
+                <p className={styles.policyDetailNote}>
+                  {signatures === undefined ? 'Cargando firmas…'
+                    : signatures === null ? 'No se han podido cargar las firmas. Vuelve a abrir esta ficha en unos segundos.'
+                    : st === 'manual' ? 'RRHH marcó las normas como aceptadas sin firma digital (por ejemplo, firmadas en papel).'
+                    : 'Todavía no ha firmado. Tendrá que leer y firmar las normas la próxima vez que entre, en la web o en la app.'}
+                </p>
+              )}
+
+              {history.length > 1 && (
+                <p className={styles.policyDetailNote}>
+                  Firmas anteriores: {history.slice(1).map(x => formatSignedAt(x.signedAt)).join(' · ')}
+                </p>
+              )}
+
+              <div className={styles.policyDetailActions}>
+                {policyEmp.policyAccepted === true ? (
+                  <Button variant="ghost" icon={RotateCcw} loading={policySaving === policyEmp.id}
+                    onClick={() => togglePolicyAccepted(policyEmp, false)}>
+                    Pedir que vuelva a firmar
+                  </Button>
+                ) : (
+                  <Button variant="ghost" icon={Check} loading={policySaving === policyEmp.id}
+                    onClick={() => togglePolicyAccepted(policyEmp, true)}>
+                    Marcar como aceptadas sin firma
+                  </Button>
+                )}
+                <Button variant="primary" onClick={() => setPolicyEmpId(null)}>Cerrar</Button>
+              </div>
+            </div>
+          );
+        })()}
+      </Modal>
 
       <Modal open={showResModal} onClose={() => { setShowResModal(false); setEditingRes(false); }} title={editingRes ? 'Editar' : 'Nuevo ' + (resType === 'room' ? 'sala' : 'vehículo')}>
         {resType === 'room' ? (

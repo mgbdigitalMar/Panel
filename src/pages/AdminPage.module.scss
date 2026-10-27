@@ -1092,3 +1092,116 @@
   font-weight: 600;
   color: var(--text);
 }
+
+// Accepted by RRHH without a digital signature (e.g. signed on paper)
+.policyManual {
+  background: var(--info-bg);
+  color: var(--info);
+  border-color: rgba(var(--info-rgb), 0.22);
+}
+
+// Internal rules: how many have signed + CSV register
+.policySummary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--card);
+  font-size: 13.5px;
+  color: var(--text-sec);
+
+  > svg { color: var(--success); flex-shrink: 0; }
+
+  strong { color: var(--text); }
+}
+
+.policySummaryText { flex: 1; min-width: 220px; }
+
+.policySummaryWarn { color: var(--warning); font-weight: 600; }
+
+.policyDetail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.policyDetailHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  > div { flex: 1; min-width: 0; }
+
+  p { margin: 0; }
+}
+
+.policyDetailLabel {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-mut);
+}
+
+.policyFacts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  margin: 0;
+  font-size: 13.5px;
+
+  dt { color: var(--text-mut); }
+  dd { margin: 0; color: var(--text); font-weight: 500; overflow-wrap: anywhere; }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    dd { margin-bottom: 6px; }
+  }
+}
+
+.policyDetailNote {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-sec);
+}
+
+.policyDetailActions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+// Edit employee: their signature of the internal rules
+.formSignature {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.formSignatureHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.formSignatureBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formSignatureImg { max-width: 320px; }

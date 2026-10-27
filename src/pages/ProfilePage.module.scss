@@ -462,3 +462,11 @@
   border: none;
   background: var(--bg);
 }
+
+// Own signature of the internal rules
+.infoItemWide { grid-column: 1 / -1; }
+
+.mySignature {
+  max-width: 280px;
+  margin-top: 6px;
+}

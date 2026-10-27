@@ -142,7 +142,7 @@ export default function DocumentsScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <T size={15} weight="semibold">Procedimiento de normas internas 2026</T>
-            <T size={12.5} color={colors.text3}>{user?.policyAccepted ? 'Lectura confirmada' : 'Lectura obligatoria'}</T>
+            <T size={12.5} color={colors.text3}>{user?.policyAccepted ? 'Normas aceptadas' : 'Firma obligatoria'}</T>
           </View>
         </PressScale>
       </View>

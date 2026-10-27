@@ -1,0 +1,234 @@
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  padding: max(clamp(12px, 3vw, 24px), env(safe-area-inset-top)) clamp(12px, 3vw, 24px) max(clamp(12px, 3vw, 24px), env(safe-area-inset-bottom));
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(8px);
+}
+
+.sheet {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 900px;
+  min-height: 0;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: var(--bg);
+  box-shadow: var(--shadow-2xl);
+}
+
+.head {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+}
+
+.steps {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 8px;
+
+  span {
+    padding: 2px 10px;
+    border-radius: var(--radius-full);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-mut);
+    background: rgba(var(--text-rgb), 0.05);
+  }
+
+  span[data-on] { color: var(--accent); background: var(--accent-bg); }
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(16px, 2vw, 20px);
+  color: var(--text);
+  letter-spacing: -0.03em;
+}
+
+.desc {
+  margin: 6px 0 0;
+  color: var(--text-sec);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.docArea {
+  position: relative;
+  flex: 1;
+  background: #F5F5F5;
+}
+
+.iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.signArea {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.signInner {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 22px 24px 28px;
+}
+
+.docRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--accent-bg);
+  color: var(--text);
+  font-size: 13.5px;
+
+  svg { color: var(--accent); flex-shrink: 0; }
+  span { flex: 1; min-width: 180px; }
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 2px;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { text-decoration: underline; }
+  &:focus-visible { outline: none; box-shadow: var(--accent-glow); border-radius: var(--radius-sm); }
+}
+
+.field { display: flex; flex-direction: column; gap: 8px; }
+
+.fieldLabel {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+
+  span { color: var(--danger); }
+}
+
+.hint {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--warning);
+}
+
+.legal {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-mut);
+}
+
+.error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--card);
+}
+
+.footNote {
+  font-size: 13px;
+  color: var(--text-sec);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+
+  &[data-disabled] { cursor: not-allowed; opacity: 0.6; }
+}
+
+.box {
+  position: relative;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+
+  input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: inherit;
+  }
+
+  svg { opacity: 0; transform: scale(0.5); transition: opacity 0.2s, transform 0.2s; pointer-events: none; }
+
+  &[data-checked] {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.3);
+
+    svg { opacity: 1; transform: scale(1); }
+  }
+
+  &:focus-within { box-shadow: var(--accent-glow); }
+}
+
+.checkText {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .head { padding: 14px 16px; }
+  .signInner { padding: 16px; gap: 16px; }
+  .foot { padding: 14px 16px; }
+  .foot :global(button) { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .box, .box svg { transition: none; }
+}

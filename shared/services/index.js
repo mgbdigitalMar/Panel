@@ -9,3 +9,4 @@ export * from './news.js';
 export * from './notifications.js';
 export * from './workMode.js';
 export * from './availability.js';
+export * from './policy.js';
