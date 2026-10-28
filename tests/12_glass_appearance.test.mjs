@@ -106,6 +106,11 @@ export async function runGlassAppearanceTests() {
     /\.wallpaper \{[\s\S]*?top: -120px;[\s\S]*?bottom: -120px;/.test(read('src', 'components', 'Wallpaper.module.scss')));
   assert('Safari: tema y apariencia aplicados antes del primer pintado (sin destello)',
     indexHtml.includes("localStorage.getItem('app-theme-mode')") && indexHtml.includes("html[data-appearance='glass'][data-theme='dark'] { background: #0C1428; }"));
+  assert('Safari: bajo las barras se ve el degradado del fondo, no una franja gris plana',
+    globalCss.includes("html[data-appearance='glass'] {") && globalCss.includes('background-size: 100% 100lvh;')
+    && read('src', 'components', 'Wallpaper.module.scss').includes('background: transparent;'));
+  assert('Desde la pantalla de inicio se abre a pantalla completa (sin las barras de Safari)',
+    read('vite.config.js').includes("display: 'standalone'") && indexHtml.includes('apple-mobile-web-app-capable') && indexHtml.includes('black-translucent') && indexHtml.includes('viewport-fit=cover'));
   const loginPhone = read('src', 'pages', 'LoginPhone.jsx');
   assert('Login móvil web: diseño nuevo (monograma, hoja, recordarme) sin perder la ayuda ni el aviso de inactividad',
     loginPhone.includes('styles.monogram') && loginPhone.includes('Recordarme') && loginPhone.includes('¿Primer acceso o contraseña olvidada?')

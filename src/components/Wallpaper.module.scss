@@ -11,7 +11,8 @@
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background: #EEF2FB;
+  /* No solid colour here: the scene below is opaque, and Safari would tint its bars with it */
+  background: transparent;
 }
 
 /* Light theme: airy blue with the brand glows */
@@ -64,7 +65,6 @@
 
 /* Dark theme: Margube navy with blue and teal light */
 :global([data-theme='dark']) {
-  .wallpaper { background: #0A0D16; }
 
   .scene {
     background:

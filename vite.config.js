@@ -17,8 +17,13 @@ export default defineConfig({
         name: 'Margube Intranet',
         short_name: 'Margube',
         description: 'Intranet corporativa de Margube',
-        theme_color: '#0A0C10',
-        background_color: '#0A0C10',
+        // From the home screen it opens full screen, without Safari's bars (index.html adds
+        // apple-mobile-web-app-capable + a black-translucent status bar for iOS)
+        display: 'standalone',
+        start_url: '/',
+        scope: '/',
+        theme_color: '#0C1428',
+        background_color: '#0C1428',
         icons: [
           {
             src: '/pwa-192x192.png',

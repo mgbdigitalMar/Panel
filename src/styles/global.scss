@@ -59,6 +59,29 @@ html { background: var(--canvas, var(--bg)); }
 [data-appearance='glass'] { --canvas: #E4EBFB; }
 [data-appearance='glass'][data-theme='dark'] { --canvas: #0C1428; }
 
+/* Glass: the canvas carries the wallpaper's own gradient (Wallpaper.module.scss .scene), one
+   screen tall from the top, so the page reads edge to edge under Safari's bars instead of
+   showing a flat band. The fixed wallpaper paints the same on top while scrolling. */
+html[data-appearance='glass'] {
+  background-repeat: no-repeat;
+  background-size: 100% 100lvh;
+  background-image:
+    radial-gradient(46% 42% at 12% 10%, rgba(47, 91, 234, 0.42), transparent 70%),
+    radial-gradient(40% 38% at 92% 18%, rgba(91, 124, 255, 0.34), transparent 70%),
+    radial-gradient(44% 40% at 84% 92%, rgba(14, 159, 154, 0.26), transparent 72%),
+    radial-gradient(50% 44% at 18% 96%, rgba(122, 162, 255, 0.3), transparent 72%),
+    linear-gradient(160deg, #E4EBFB 0%, #F3F6FC 50%, #E2EEF3 100%);
+}
+
+html[data-appearance='glass'][data-theme='dark'] {
+  background-image:
+    radial-gradient(46% 42% at 12% 8%, rgba(47, 91, 234, 0.55), transparent 70%),
+    radial-gradient(38% 36% at 92% 20%, rgba(91, 124, 255, 0.28), transparent 70%),
+    radial-gradient(44% 40% at 86% 94%, rgba(14, 159, 154, 0.3), transparent 72%),
+    radial-gradient(50% 44% at 16% 98%, rgba(45, 75, 216, 0.32), transparent 72%),
+    linear-gradient(160deg, #0E1426 0%, #0A0D16 55%, #08131A 100%);
+}
+
 /* Glass: the body is see-through so the canvas and the wallpaper meet without a seam */
 [data-appearance='glass'] body { background: transparent; }
 
