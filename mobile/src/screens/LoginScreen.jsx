@@ -1,24 +1,23 @@
-// 01 · Iniciar sesión — dark hero with the Margube monogram, the form on a glass sheet
+// 01 · Iniciar sesión — the Margube monogram over the app's backdrop, the form on a floating liquid glass card
 import { forwardRef, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Easing, Image, Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import { ActivityIndicator, Alert, Animated, Easing, Image, Linking, Pressable, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Defs, Path, Pattern, RadialGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import { AlertCircle, Check, Eye, EyeOff, Fingerprint, Lock, Mail, ScanFace } from 'lucide-react-native';
 import { IDLE_TIMEOUT_MOBILE } from '@shared/config/constants.js';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Screen } from '../components/common/Screen';
-import { useReduceMotion } from '../components/common/AuthBackdrop';
+import { AuthBackdrop, useReduceMotion } from '../components/common/AuthBackdrop';
+import { GlassFill } from '../components/common/LiquidGlass';
 import { T } from '../components/common/Text';
 import { Banner } from '../components/common/UI';
 import { biometricSupport } from '../services/biometrics';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { firstName, greeting } from '../utils/format';
-import { BRAND, FONTS } from '../theme/tokens';
+import { FONTS } from '../theme/tokens';
 
 const LOGO = require('../../assets/logo.png');
-const HERO_BG = '#0B0F14';
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 // The "M" of Margube drawn in an 11 × 9 grid of tiles (two legs and a V)
@@ -67,6 +66,7 @@ function OnTile({ delay, color, reduce }) {
 }
 
 function Monogram({ color, reduce }) {
+  const { colors } = useTheme();
   const [scan] = useState(() => new Animated.Value(0));
   useLoop(() => Animated.sequence([
     Animated.delay(1400),
@@ -81,7 +81,7 @@ function Monogram({ color, reduce }) {
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: GAP }}>
         {TILES.map((t) => (t.on
           ? <OnTile key={t.key} delay={t.delay} color={color} reduce={reduce} />
-          : <View key={t.key} style={{ width: TILE, height: TILE, borderRadius: 5, backgroundColor: 'rgba(237,241,243,0.055)', borderWidth: 1, borderColor: 'rgba(237,241,243,0.06)' }} />))}
+          : <View key={t.key} style={{ width: TILE, height: TILE, borderRadius: 5, backgroundColor: colors.neutralSoft, borderWidth: 1, borderColor: colors.glassBorder }} />))}
       </View>
       {reduce ? null : (
         <Animated.View
@@ -94,44 +94,6 @@ function Monogram({ color, reduce }) {
           }}
         />
       )}
-    </View>
-  );
-}
-
-/** Dot grid + a slow breathing glow in the brand blue, behind the hero. */
-function HeroBackdrop({ color, reduce }) {
-  const [b] = useState(() => new Animated.Value(0));
-  useLoop(() => Animated.loop(Animated.sequence([
-    Animated.timing(b, { toValue: 1, duration: 3500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-    Animated.timing(b, { toValue: 0, duration: 3500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-  ])), [], reduce);
-  return (
-    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: HERO_BG }]}>
-      <Svg width="100%" height="100%">
-        <Defs>
-          <Pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse">
-            <Circle cx="9" cy="9" r="1" fill="rgba(237,241,243,0.075)" />
-          </Pattern>
-        </Defs>
-        <Rect width="100%" height="100%" fill="url(#dots)" />
-      </Svg>
-      <Animated.View style={{
-        position: 'absolute', top: 40, alignSelf: 'center', width: 380, height: 380,
-        opacity: b.interpolate({ inputRange: [0, 1], outputRange: [0.75, 1] }),
-        transform: [{ scale: b.interpolate({ inputRange: [0, 1], outputRange: [1, 1.2] }) }],
-      }}
-      >
-        <Svg width={380} height={380}>
-          <Defs>
-            <RadialGradient id="glow" cx="50%" cy="50%" r="50%">
-              <Stop offset="0" stopColor={color} stopOpacity={0.3} />
-              <Stop offset="0.55" stopColor={color} stopOpacity={0.1} />
-              <Stop offset="1" stopColor={color} stopOpacity={0} />
-            </RadialGradient>
-          </Defs>
-          <Circle cx={190} cy={190} r={190} fill="url(#glow)" />
-        </Svg>
-      </Animated.View>
     </View>
   );
 }
@@ -275,7 +237,7 @@ function Squiggle({ color, reduce }) {
 }
 
 export default function LoginScreen() {
-  const { colors, theme } = useTheme();
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { login, loginWithBiometrics, biometric, lastEmail } = useAuth();
   const [email, setEmail] = useState(lastEmail || '');
@@ -287,9 +249,6 @@ export default function LoginScreen() {
   const [bio, setBio] = useState({ available: false, label: 'biometría' });
   const passRef = useRef(null);
   const reduce = useReduceMotion();
-  const isDark = theme === 'dark';
-  // On the dark hero the light blue reads best in both themes
-  const heroAccent = isDark ? colors.accent : BRAND.blueLight;
 
   const [sheetIn] = useState(() => new Animated.Value(reduce ? 1 : 0));
   const [shake] = useState(() => new Animated.Value(0));
@@ -347,34 +306,31 @@ export default function LoginScreen() {
     <Screen
       padded={false}
       glow={false}
-      backdrop={<HeroBackdrop color={heroAccent} reduce={reduce} />}
+      backdrop={<AuthBackdrop />}
       contentStyle={{ flexGrow: 1, paddingTop: 0, paddingBottom: 0, gap: 0, maxWidth: '100%' }}
     >
-      <StatusBar style="light" />
-
       {/* Hero: the logo pill and the monogram */}
-      <View style={{ flex: 1, minHeight: 330, alignItems: 'center', justifyContent: 'center', gap: 28, paddingTop: insets.top + 18, paddingBottom: 46 }}>
-        <View style={{
-          flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6, paddingLeft: 6, paddingRight: 14, borderRadius: 999,
-          backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', borderTopColor: 'rgba(255,255,255,0.24)',
-        }}
-        >
+      <View style={{ flex: 1, minHeight: 300, alignItems: 'center', justifyContent: 'center', gap: 24, paddingTop: insets.top + 16, paddingBottom: 26 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6, paddingLeft: 6, paddingRight: 14, borderRadius: 21 }}>
+          <GlassFill radius={21} />
           <Image source={LOGO} style={{ width: 30, height: 30, borderRadius: 9 }} accessibilityLabel="Logotipo de Margube" />
-          <T size={17} heading weight="bold" color="#EDF1F3" tracking={-0.5}>Margube</T>
-          <T size={10} mono weight="semibold" color="#B8C2C9" tracking={1.4}>INTRANET</T>
+          <T size={17} heading weight="bold" tracking={-0.5}>Margube</T>
+          <T size={10} mono weight="semibold" color={colors.text3} tracking={1.4}>INTRANET</T>
         </View>
-        <Monogram color={heroAccent} reduce={reduce} />
+        <Monogram color={colors.accent} reduce={reduce} />
       </View>
 
-      {/* Glass sheet with the form */}
+      {/* The form on a floating liquid glass card, clear of the bottom edge (slides up, no fade:
+          a fade would stop the native glass) */}
+      <View style={{ paddingHorizontal: 12, marginBottom: Math.max(insets.bottom, 12) + 16, alignItems: 'center' }}>
       <Animated.View style={{
-        marginTop: -30, paddingTop: 10, paddingHorizontal: 22, paddingBottom: Math.max(insets.bottom, 12) + 18,
-        borderTopLeftRadius: 34, borderTopRightRadius: 34, backgroundColor: isDark ? 'rgba(19,22,29,0.97)' : 'rgba(250,251,252,0.98)',
-        borderTopWidth: 1, borderTopColor: isDark ? 'rgba(255,255,255,0.14)' : '#FFFFFF',
-        shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 30, shadowOffset: { width: 0, height: -12 }, elevation: 16,
-        transform: [{ translateY: sheetIn.interpolate({ inputRange: [0, 1], outputRange: [380, 0] }) }],
+        paddingTop: 10, paddingHorizontal: 20, paddingBottom: 22,
+        borderRadius: 34, maxWidth: 480, width: '100%',
+        shadowColor: colors.shadow, shadowOpacity: colors.shadowOpacity, shadowRadius: 24, shadowOffset: { width: 0, height: 12 },
+        transform: [{ translateY: sheetIn.interpolate({ inputRange: [0, 1], outputRange: [320, 0] }) }],
       }}
       >
+        <GlassFill radius={34} />
         <View style={{ width: 38, height: 5, borderRadius: 3, backgroundColor: colors.inputBorder, alignSelf: 'center', marginBottom: 18 }} />
 
         <Animated.View style={{ gap: 10, maxWidth: 440, width: '100%', alignSelf: 'center', transform: [{ translateX: shake }] }}>
@@ -468,6 +424,7 @@ export default function LoginScreen() {
           </T>
         </Animated.View>
       </Animated.View>
+      </View>
     </Screen>
   );
 }

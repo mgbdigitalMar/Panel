@@ -177,8 +177,9 @@
     &:hover { color: var(--text); }
   }
 
-  /* Tablets and mid widths: inactive sections show their icon only */
-  @media (max-width: 1279px) {
+  /* Tablets and up to 1440 px: inactive sections show their icon only (with every label the
+     pill needs ~1400 px and ran over the search button and the clock) */
+  @media (max-width: 1439px) {
     &:not(.navItemActive) {
       padding: 0 11px;
       .navLabel { display: none; }
@@ -225,7 +226,7 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 
-  @media (max-width: 1279px) {
+  @media (max-width: 1439px) {
     position: absolute !important;
     top: 1px;
     right: 1px;
@@ -290,6 +291,40 @@
 
   > strong { font-size: 15px; color: var(--text); }
   > span { font-size: 12.5px; color: var(--text-sec); }
+}
+
+/* Workday, own upcoming reservations and pending requests (the classic sidebar's profile) */
+.menuStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 0 4px 10px;
+
+  > * {
+    @include focus-ring;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(var(--text-rgb), 0.04);
+    color: var(--text-sec);
+    font: inherit;
+    font-size: 11.5px;
+    text-align: left;
+
+    svg { color: var(--accent); }
+    strong { font-size: 15px; color: var(--text); font-variant-numeric: tabular-nums; }
+  }
+
+  > button {
+    cursor: pointer;
+
+    &:hover { background: rgba(var(--text-rgb), 0.08); }
+  }
 }
 
 .menuLinks {

@@ -17,7 +17,8 @@ export async function runGlassAppearanceTests() {
   }
 
   const root = process.cwd();
-  const read = (...p) => fs.readFileSync(path.join(root, ...p), 'utf8');
+  // Normalised line endings: on Windows git checks the sources out with CRLF
+  const read = (...p) => fs.readFileSync(path.join(root, ...p), 'utf8').replace(/\r\n/g, '\n');
   const ctx = read('src', 'context', 'index.jsx');
   const layout = read('src', 'components', 'Layout.jsx');
   const chrome = read('src', 'components', 'GlassChrome.jsx');
@@ -96,10 +97,26 @@ export async function runGlassAppearanceTests() {
   assert('Móvil: perfil con modo de trabajo en segmentos y contraseña y documentos plegados',
     read('src', 'pages', 'ProfilePage.jsx').includes('<Segmented') && read('src', 'pages', 'ProfilePage.jsx').includes('aria-expanded={open}'));
 
+  // 4c. Safari en iOS: el lienzo bajo las barras sigue al fondo (no el casi negro de --bg)
+  const globalCss = read('src', 'styles', 'global.scss');
+  const indexHtml = read('index.html');
+  assert('Safari: el lienzo del documento usa el color del fondo Cristal en cada tema',
+    globalCss.includes("html { background: var(--canvas, var(--bg)); }") && globalCss.includes("[data-appearance='glass'][data-theme='dark'] { --canvas: #0C1428; }"));
+  assert('Safari: el fondo Cristal llega bajo la barra de estado y la barra inferior',
+    /\.wallpaper \{[\s\S]*?top: -120px;[\s\S]*?bottom: -120px;/.test(read('src', 'components', 'Wallpaper.module.scss')));
+  assert('Safari: tema y apariencia aplicados antes del primer pintado (sin destello)',
+    indexHtml.includes("localStorage.getItem('app-theme-mode')") && indexHtml.includes("html[data-appearance='glass'][data-theme='dark'] { background: #0C1428; }"));
+  const loginPhone = read('src', 'pages', 'LoginPhone.jsx');
+  assert('Login móvil web: diseño nuevo (monograma, hoja, recordarme) sin perder la ayuda ni el aviso de inactividad',
+    loginPhone.includes('styles.monogram') && loginPhone.includes('Recordarme') && loginPhone.includes('¿Primer acceso o contraseña olvidada?')
+    && read('src', 'pages', 'LoginPage.jsx').includes('<LoginPhone') && loginPhone.includes('glass ? <Wallpaper />'));
+
   // 5. Estilo
   assert('Paneles translúcidos en la intranet y el login (modales siguen sólidos)', vars.includes("[data-appearance='glass'] :is(.app-shell, .glass-scope) {"));
   const login = read('src', 'pages', 'LoginPage.jsx');
-  assert('Login: mismo fondo que la intranet en Cristal (escritorio y móvil)', (login.match(/glass \? <Wallpaper \/>/g) || []).length === 2 && login.includes("' glass-scope'"));
+  assert('Login: mismo fondo y cristal liquid que la intranet en Cristal (escritorio y móvil)',
+    (login.match(/glass \? <Wallpaper \/>/g) || []).length === 1 && login.includes("' glass-scope'")
+    && read('src', 'pages', 'LoginPhone.jsx').includes('glass ? <Wallpaper />') && /\.sheet \{\s*@include p\.liquid;/.test(read('src', 'pages', 'LoginPhone.module.scss')));
   const wp = read('src', 'components', 'Wallpaper.module.scss');
   assert('Fondo con los colores de Margube, no atardecer', wp.includes('rgba(47, 91, 234') && wp.includes('rgba(14, 159, 154') && !wp.includes('.windows'));
   assert('El desenfoque de tarjetas solo existe en Cristal', read('src', 'styles', '_patterns.scss').includes('backdrop-filter: var(--lg-card-blur, none);'));

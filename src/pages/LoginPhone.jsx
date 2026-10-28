@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, X } from 'lucide-react';
 import logoIcon from '../assets/logos/logo-icon.png';
+import { useTheme } from '../context';
+import { Wallpaper } from '../components/Wallpaper';
+import { AnimatedBackdrop, LeafField } from '../components/ui';
 import styles from './LoginPhone.module.scss';
 
 const HELP_MAIL = 'mailto:rrhh@margube.com?subject=Acceso%20a%20la%20intranet';
@@ -27,13 +30,15 @@ export const readRemembered = () => {
 };
 
 /**
- * Login on phones and small tablets: a dark hero with the Margube monogram and the form on a
- * glass sheet (the app's login). The parent owns the credentials and the sign-in.
+ * Login on phones and small tablets: the Margube monogram over the web's wallpaper and the form
+ * on a floating liquid glass card (the app's login). The parent owns the credentials and the sign-in.
  */
 export default function LoginPhone({ email, setEmail, pass, setPass, err, errKey, loading, onSubmit, idleText }) {
   const [show, setShow] = useState(false);
   const [help, setHelp] = useState(false);
   const [remember, setRemember] = useState(true);
+  const { appearance } = useTheme() || {};
+  const glass = appearance !== 'classic';
 
   const submit = (e) => {
     e?.preventDefault();
@@ -45,7 +50,9 @@ export default function LoginPhone({ email, setEmail, pass, setPass, err, errKey
   };
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page}${glass ? ' glass-scope' : ''}`}>
+      {/* The same backdrop as the rest of the web, so the liquid glass reads the same */}
+      {glass ? <Wallpaper /> : <><AnimatedBackdrop /><LeafField /></>}
       <div className={styles.hero}>
         <span className={styles.glow} aria-hidden="true" />
         <div className={`${styles.brand} ${styles.rise}`}>

@@ -50,96 +50,82 @@
   gap: clamp(18px, 2.5vw, 24px);
 }
 
+/* Ya / Bolsa / Debo: liquid glass cards, the chosen one in its colour. Phones: three compact
+   columns (the banner below explains the chosen mode, so the description steps aside). */
 .modeToggle {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(10px, 1.5vw, 14px);
-
-  @media (max-width: 640px) { grid-template-columns: 1fr; }
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(8px, 1.5vw, 14px);
 }
 
 .modeBtn {
+  --tone: var(--accent);
+  --tone-rgb: var(--accent-rgb);
+  @include p.liquid;
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  min-width: 0;
   padding: clamp(12px, 2vw, 16px) clamp(12px, 2vw, 18px);
-  border: 2px solid rgba(var(--border-rgb), 0.55);
-  border-radius: var(--radius);
-  background: var(--glass-surface);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  border-radius: 18px;
+  font: inherit;
   cursor: pointer;
   text-align: left;
-  transition:
-    border-color 0.18s var(--ease-out),
-    background 0.18s var(--ease-out),
-    box-shadow 0.18s var(--ease-out),
-    transform 0.18s var(--ease-out);
+  /* Small cards inside a form: the glass rim and a soft lift, not the floating-panel shadow */
+  box-shadow: inset 0 1px 0 var(--lg-rim), 0 4px 14px -8px rgba(0, 0, 0, 0.22);
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.18s var(--ease-out), box-shadow 0.18s var(--ease-out), transform 0.18s var(--ease-out);
 
-  svg { flex-shrink: 0; margin-top: 2px; color: var(--text-mut); transition: color 0.18s, filter 0.18s; }
-  div { display: flex; flex-direction: column; gap: 2px; }
-  strong { font-size: clamp(13px, 1vw, 14px); font-weight: 700; color: var(--text); transition: color 0.18s; }
+  svg {
+    box-sizing: content-box;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    padding: 8px;
+    border-radius: 50%;
+    background: rgba(var(--text-rgb), 0.07);
+    color: var(--text-sec);
+    transition: color 0.18s, background-color 0.18s;
+  }
+  div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  strong { font-size: 14px; font-weight: 600; color: var(--text); transition: color 0.18s; }
   span { font-size: 12px; color: var(--text-sec); line-height: 1.4; }
 
-  &:hover { transform: translateY(-1px); background: var(--glass-card); box-shadow: var(--glass-highlight-sm); }
-  &:active { transform: scale(0.98); }
+  &:active { transform: scale(0.97); }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--tone-rgb), 0.45); }
 
-  @media (prefers-reduced-motion: reduce) {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: var(--bg);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { border-color: rgba(var(--tone-rgb), 0.5); }
   }
-}
 
-.modeBtnYa {
-  &:hover {
-    border-color: var(--success);
-    background: var(--success-bg);
-    svg { color: var(--success); }
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 6px;
+    text-align: center;
+
+    div { align-items: center; }
+    span { display: none; }
   }
+
+  @media (prefers-reduced-motion: reduce) { transition: none; }
 }
 
-.modeBtnYaActive {
-  border-color: var(--success) !important;
-  background: var(--success-bg) !important;
-  box-shadow: 0 0 0 3px rgba(var(--success-rgb), 0.1) !important;
+.modeBtnYa    { --tone: var(--success); --tone-rgb: var(--success-rgb); }
+.modeBtnBolsa { --tone: var(--accent);  --tone-rgb: var(--accent-rgb); }
+.modeBtnDebe  { --tone: var(--danger);  --tone-rgb: var(--danger-rgb); }
 
-  svg { color: var(--success) !important; }
-  strong { color: var(--success) !important; }
-}
-
-.modeBtnBolsa {
-  &:hover {
-    border-color: var(--accent);
-    background: var(--accent-bg);
-    svg { color: var(--accent); }
-  }
-}
-
-.modeBtnBolsaActive {
-  border-color: var(--accent) !important;
-  background: var(--accent-bg) !important;
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1) !important;
-
-  svg { color: var(--accent) !important; }
-  strong { color: var(--accent) !important; }
-}
-
-.modeBtnDebe {
-  &:hover {
-    border-color: var(--danger);
-    background: var(--danger-bg);
-    svg { color: var(--danger); }
-  }
-}
-
+.modeBtnYaActive,
+.modeBtnBolsaActive,
 .modeBtnDebeActive {
-  border-color: var(--danger) !important;
-  background: var(--danger-bg) !important;
-  box-shadow: 0 0 0 3px rgba(var(--danger-rgb), 0.1) !important;
+  &.modeBtn {
+    border-color: var(--tone);
+    box-shadow: inset 0 1px 0 var(--lg-rim), 0 0 0 3px rgba(var(--tone-rgb), 0.16);
 
-  svg { color: var(--danger) !important; }
-  strong { color: var(--danger) !important; }
+    svg { background: var(--tone); color: #FFFFFF; }
+    strong { color: var(--tone); }
+  }
 }
 
 .infoBanner {

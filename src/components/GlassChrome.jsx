@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import {
-  Search, UserRound, SlidersHorizontal, Sun, Moon, LogOut, Clock, LayoutGrid, Plus,
+  Search, UserRound, SlidersHorizontal, Sun, Moon, LogOut, Clock, LayoutGrid, Plus, Calendar, Inbox,
 } from 'lucide-react';
 import logoIcon from '../assets/logos/logo-icon.png';
 import logoColor from '../assets/logos/logo-color.png';
@@ -18,7 +18,7 @@ const SHORT = {
 /** Top bar of the glass appearance: logo + search, section pill, clock + theme + bell + profile menu. */
 export function GlassHeader({
   items, page, badges, onNavigate, onSearch, clockStr, bell, avatar,
-  user, workday, onLogout, isDark, onToggleTheme, children,
+  user, workday, upcomingCount = 0, openRequests = 0, onLogout, isDark, onToggleTheme, children,
 }) {
   return (
     <header className={styles.header} role="banner">
@@ -93,6 +93,8 @@ export function GlassHeader({
           avatar={avatar}
           user={user}
           workday={workday}
+          upcomingCount={upcomingCount}
+          openRequests={openRequests}
           onNavigate={onNavigate}
           onLogout={onLogout}
         />
@@ -102,9 +104,9 @@ export function GlassHeader({
   );
 }
 
-/** The avatar (its ring is the workday) opens the account menu. Workday, reservations and pending
- * requests are not repeated here: the ring, the dashboard and the section badges already show them. */
-function ProfileMenu({ avatar, user, workday, onNavigate, onLogout }) {
+/** The avatar (its ring is the workday) opens the account menu: the classic sidebar profile's
+ * figures (workday, own upcoming reservations and pending requests) and the account links. */
+function ProfileMenu({ avatar, user, workday, upcomingCount, openRequests, onNavigate, onLogout }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -144,6 +146,15 @@ function ProfileMenu({ avatar, user, workday, onNavigate, onLogout }) {
             <div className={styles.menuHead}>
               <strong>{user?.name}</strong>
               <span>{[user?.position, user?.dept].filter(Boolean).join(' · ')}</span>
+            </div>
+            <div className={styles.menuStats}>
+              <span><Clock size={14} aria-hidden="true" /><strong>{workday}%</strong> Jornada</span>
+              <button type="button" onClick={() => go('reservations')}>
+                <Calendar size={14} aria-hidden="true" /><strong>{upcomingCount}</strong> {upcomingCount === 1 ? 'reserva' : 'reservas'}
+              </button>
+              <button type="button" onClick={() => go('requests')}>
+                <Inbox size={14} aria-hidden="true" /><strong>{openRequests}</strong> {openRequests === 1 ? 'pendiente' : 'pendientes'}
+              </button>
             </div>
             <div className={styles.menuLinks}>
               <button type="button" onClick={() => go('profile')}><UserRound size={16} aria-hidden="true" /> Mi perfil</button>

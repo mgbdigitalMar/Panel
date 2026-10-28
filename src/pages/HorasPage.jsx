@@ -296,6 +296,8 @@ export default function HorasPage() {
                   return (
                     <button
                       key={key}
+                      type="button"
+                      aria-pressed={mode === key}
                       className={clsx(styles.modeBtn, {
                         [styles.modeBtnYa]: key === 'ya',
                         [styles.modeBtnYaActive]: key === 'ya' && mode === 'ya',

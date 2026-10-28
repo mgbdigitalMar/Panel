@@ -346,10 +346,12 @@ export default function RequestsPage() {
           ].map(rt => (
             <button 
               key={rt.id} 
+              type="button"
               onClick={() => setReqType(rt.id)}
               className={clsx(styles.typeBtn, { [styles.typeBtnActive]: reqType === rt.id })}
+              aria-pressed={reqType === rt.id}
             >
-              <rt.icon size={16} className={styles.typeBtnIcon} />
+              <rt.icon size={17} className={styles.typeBtnIcon} aria-hidden="true" />
               <span className={styles.typeBtnLabel}>{rt.label}</span>
               <span className={styles.typeBtnDesc}>{rt.desc}</span>
             </button>

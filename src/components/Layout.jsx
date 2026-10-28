@@ -557,6 +557,8 @@ export default function Layout({ children }) {
             )}
             user={user}
             workday={Math.round(workdayProgress(now))}
+            upcomingCount={myUpcoming.length}
+            openRequests={myOpenRequests}
             onLogout={() => logout()}
             isDark={isDark}
             onToggleTheme={() => setMode(isDark ? 'light' : 'dark')}

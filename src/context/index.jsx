@@ -33,8 +33,10 @@ export function ThemeProvider({ children }) {
   const applyMode = (m) => {
     const resolved = resolveTheme(m);
     document.documentElement.setAttribute('data-theme', resolved);
+    // Same colour as the canvas under the browser bars (global.scss --canvas)
+    const glass = document.documentElement.getAttribute('data-appearance') !== 'classic';
     document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
-      meta.setAttribute('content', resolved === 'dark' ? '#0A0C10' : '#F2F4F8');
+      meta.setAttribute('content', glass ? (resolved === 'dark' ? '#0C1428' : '#E4EBFB') : (resolved === 'dark' ? '#0A0C10' : '#F2F4F8'));
     });
     try { localStorage.setItem('app-theme-mode', m); } catch {}
   }
@@ -92,7 +94,8 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     document.documentElement.setAttribute('data-appearance', appearance);
     try { localStorage.setItem('app-appearance', appearance); } catch {}
-  }, [appearance]);
+    applyMode(mode); // theme-color follows the canvas, which depends on the appearance
+  }, [appearance]); // eslint-disable-line react-hooks/exhaustive-deps
   const setAppearance = (a) => {
     if (a === appearance) return;
     withThemeTransition(() => setAppearanceState(a));
@@ -397,6 +400,16 @@ const [readIds, setReadIds] = useState(() => {
   }
 
   useEffect(() => {
+    // Signed out (login screen, after logout): the tables are closed to the anon role, so loading
+    // would only fill the console with 401 / "permission denied". Clear what the last person saw.
+    if (!user?.id) {
+      setRequestsState([]); setReservationsState([]); setRooms([]); setVehicles([]); setDocuments([])
+      setHourCompensations([]); setNews([]); setPersonalDays([]); setLiveNotifs([])
+      setLoadFailed(false)
+      setLoadingData(false)
+      return undefined
+    }
+    setLoadingData(true)
     refetchAll().finally(() => setLoadingData(false))
 
     // One table change often produces two events (e.g. the request UPDATE and
@@ -1186,10 +1199,11 @@ export function AuthProvider({ children }) {
     // Back from the background: catch profile changes the socket may have missed
     const handleVisibility = async () => {
       if (document.visibilityState !== 'visible') return
-      loadAllEmployees()
       let id = null
       try { id = JSON.parse(localStorage.getItem('margube_session') || 'null')?.id } catch { /* corrupt entry */ }
+      // Signed out: profiles are closed to the anon role, nothing to refresh
       if (!id) return
+      loadAllEmployees()
       const { data } = await supabase.from('profiles').select('*').eq('id', id).single()
       if (data) setUser(prev => (prev && prev.id === data.id ? { ...prev, ...mapProfile(data), phone: mapProfile(data).phone || prev.phone } : prev))
     }

@@ -1,30 +1,20 @@
-/* Login on phones and small tablets: the app's login (mobile/src/screens/LoginScreen.jsx).
-   The hero is always dark; the sheet follows the theme. Brand blue as the accent. */
+/* Login on phones and small tablets: the app's login (mobile/src/screens/LoginScreen.jsx) over the
+   web's wallpaper, with the same liquid glass as the rest of the intranet. Brand blue as the accent. */
+@use '../styles/patterns' as p;
+
 .page {
-  --hero-acc: #5B7CFF;
-  --sheet: rgba(250, 251, 252, 0.92);
-  --sheet-line: #FFFFFF;
-  --fld: rgba(12, 16, 20, 0.045);
-  --fld-line: rgba(12, 16, 20, 0.13);
-  --btn2: rgba(12, 16, 20, 0.06);
+  --fld: rgba(var(--text-rgb), 0.05);
+  --fld-line: rgba(var(--text-rgb), 0.13);
+  --btn2: rgba(var(--text-rgb), 0.07);
 
   position: relative;
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
   overflow: hidden;
-  background: #0B0F14;
+  background: transparent;
   color: var(--text);
   font-family: var(--font-body);
-
-  :global([data-theme='dark']) & {
-    --hero-acc: var(--accent);
-    --sheet: rgba(19, 22, 29, 0.88);
-    --sheet-line: rgba(255, 255, 255, 0.14);
-    --fld: rgba(255, 255, 255, 0.06);
-    --fld-line: rgba(255, 255, 255, 0.13);
-    --btn2: rgba(255, 255, 255, 0.08);
-  }
 }
 
 .rise { animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
@@ -36,16 +26,15 @@
 /* Hero ------------------------------------------------------------------------ */
 .hero {
   position: relative;
+  z-index: 1;
   flex: 1;
   min-height: 340px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 28px;
-  padding: calc(18px + env(safe-area-inset-top)) 16px 56px;
-  background-image: radial-gradient(rgba(237, 241, 243, 0.075) 1px, transparent 1.3px);
-  background-size: 18px 18px;
+  gap: 24px;
+  padding: calc(16px + env(safe-area-inset-top)) 16px 28px;
 }
 
 .glow {
@@ -56,7 +45,7 @@
   height: 300px;
   margin-left: -150px;
   border-radius: 50%;
-  background: var(--hero-acc);
+  background: var(--accent);
   opacity: 0.14;
   filter: blur(70px);
   animation: breathe 7s ease-in-out infinite;
@@ -67,18 +56,13 @@
 }
 
 .brand {
-  position: relative;
+  @include p.liquid;
   display: inline-flex;
   align-items: center;
   gap: 10px;
   padding: 6px 14px 6px 6px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
-  color: #EDF1F3;
+  color: var(--text);
 }
 
 /* The leaf PNG has transparent padding: the negative margin trims it to a 30 px tile */
@@ -100,7 +84,7 @@
   font: 600 10px/1 var(--font-mono);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #B8C2C9;
+  color: var(--text-sec);
 }
 
 /* The Margube "M" in tiles, with a scan line passing over it */
@@ -121,7 +105,7 @@
 }
 
 .tileOn {
-  background: var(--hero-acc);
+  background: var(--accent);
   animation: wave 3.4s cubic-bezier(0.6, 0, 0.4, 1) infinite backwards;
 }
 
@@ -131,18 +115,18 @@
 }
 
 .tileOff {
-  background: rgba(237, 241, 243, 0.055);
-  box-shadow: inset 0 0 0 1px rgba(237, 241, 243, 0.06);
+  background: rgba(var(--text-rgb), 0.055);
+  box-shadow: inset 0 0 0 1px rgba(var(--text-rgb), 0.07);
   transition: background 1.4s ease-out;
   animation: twinkle 7s ease-in-out infinite backwards;
 
   /* A tap lights the tile up, then it fades back */
-  &:active { background: var(--hero-acc); transition: background 0s; }
+  &:active { background: var(--accent); transition: background 0s; }
 }
 
 @keyframes twinkle {
-  0%, 86%, 100% { box-shadow: inset 0 0 0 1px rgba(237, 241, 243, 0.06); }
-  92% { box-shadow: inset 0 0 0 1px var(--hero-acc); }
+  0%, 86%, 100% { box-shadow: inset 0 0 0 1px rgba(var(--text-rgb), 0.07); }
+  92% { box-shadow: inset 0 0 0 1px var(--accent); }
 }
 
 .scan {
@@ -151,8 +135,8 @@
   right: -20px;
   top: 0;
   height: 2px;
-  background: var(--hero-acc);
-  box-shadow: 0 0 16px 2px var(--hero-acc);
+  background: var(--accent);
+  box-shadow: 0 0 16px 2px var(--accent);
   opacity: 0;
   pointer-events: none;
   animation: scan 6.5s cubic-bezier(0.6, 0, 0.4, 1) 1.4s infinite;
@@ -165,23 +149,18 @@
   56%, 100% { top: 100%; opacity: 0; }
 }
 
-/* Glass sheet ------------------------------------------------------------------ */
+/* Liquid glass card, floating above the bottom edge ----------------------------------------- */
 .sheet {
-  position: relative;
+  @include p.liquid;
   z-index: 1;
-  margin-top: -30px;
-  padding: 10px 22px calc(26px + env(safe-area-inset-bottom));
-  border-radius: 34px 34px 0 0;
-  background: var(--sheet);
-  border-top: 1px solid var(--sheet-line);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 -24px 60px rgba(0, 0, 0, 0.35);
-  -webkit-backdrop-filter: blur(28px) saturate(170%);
-  backdrop-filter: blur(28px) saturate(170%);
+  margin: 0 12px calc(20px + env(safe-area-inset-bottom));
+  padding: 10px 20px 22px;
+  border-radius: 34px;
   animation: sheetIn 1s cubic-bezier(0.2, 0.85, 0.2, 1) 0.15s backwards;
 }
 
 @keyframes sheetIn {
-  from { transform: translateY(70%); }
+  from { transform: translateY(40%); opacity: 0; }
 }
 
 .grab {

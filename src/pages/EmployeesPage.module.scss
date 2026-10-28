@@ -390,6 +390,9 @@
   height: 44px;
   padding: 0 16px;
   border-radius: var(--radius-full);
+
+  /* Phones: the search shrinks so the view toggle stays on screen beside it */
+  @media (max-width: 479px) { min-width: 0; }
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text-sec);

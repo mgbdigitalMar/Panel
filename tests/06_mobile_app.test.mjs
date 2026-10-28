@@ -107,6 +107,10 @@ export async function runMobileAppTests() {
     .every((f) => src('screens', f).includes('<TopBar />')) && !src('components', 'common', 'TopBar.jsx').includes('<Avatar'), 'Barra superior (hoja, buscar y avisos, sin avatar) en las cinco pestañas');
   assert(src('navigation', 'RootNavigator.jsx').includes('name="Search" component={SearchScreen}') && existsSync(resolve(mobileDir, 'src', 'screens', 'SearchScreen.jsx')),
     'Buscador de personas, noticias, reservas y solicitudes');
+  const login = src('screens', 'LoginScreen.jsx');
+  assert(login.includes('<Monogram') && login.includes('<RememberCheck') && login.includes('loginWithBiometrics') && login.includes('IDLE_TIMEOUT_MOBILE'),
+    'Login de la app: diseño nuevo con monograma, recordarme, biometría y el aviso real de inactividad');
+  assert(src('context', 'AuthContext.js').includes('rememberEmail.current'), 'Recordarme decide si se guarda el último correo');
   const profile = src('screens', 'ProfileScreen.jsx');
   assert(profile.includes('Normas internas firmadas') && profile.includes('Cambiar contraseña') && profile.includes("navigate('Documents')") && profile.includes('<CardTitle>Mi información</CardTitle>'),
     'Mi perfil como el boceto: identidad centrada, modo de trabajo, información, normas y filas de contraseña y documentos');

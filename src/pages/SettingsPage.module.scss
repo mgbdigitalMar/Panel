@@ -98,6 +98,9 @@
 
   @media (max-width: 640px) {
     grid-template-columns: repeat(2, 1fr);
+
+    /* Light, dark and system: the third takes the whole row instead of leaving a hole */
+    > :last-child:nth-child(odd) { grid-column: 1 / -1; }
   }
   @media (max-width: 360px) {
     grid-template-columns: 1fr;

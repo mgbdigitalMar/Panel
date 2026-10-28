@@ -2,7 +2,12 @@
    re-blur when the page scrolls. Margube colours: brand blue, light blue, teal, navy. */
 .wallpaper {
   position: fixed;
-  inset: 0;
+  /* Past the viewport on both ends: on iOS a fixed inset: 0 stops short of the status bar and
+     the floating toolbar, and the canvas showed through there */
+  top: -120px;
+  bottom: -120px;
+  left: 0;
+  right: 0;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
