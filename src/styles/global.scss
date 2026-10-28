@@ -1121,7 +1121,7 @@ html { -webkit-tap-highlight-color: transparent; }
   td { border-bottom-color: var(--border); }
 }
 
-/* Glass on phones and tablets: toasts float above the bottom dock */
-@media (max-width: 1023px) {
-  [data-appearance='glass'] { --toast-bottom: 96px; }
+/* Glass on phones: toasts float above the bottom dock */
+@media (max-width: 767px) {
+  [data-appearance='glass'] { --toast-bottom: 88px; }
 }

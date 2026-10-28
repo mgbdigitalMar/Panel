@@ -1,0 +1,159 @@
+/* Reservas on phones, the app's ReservationsScreen */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--danger);
+}
+
+.search {
+  position: relative;
+  display: block;
+
+  svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-mut);
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px 0 42px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--glass-input, var(--bg-2));
+    color: var(--text);
+    font: inherit;
+    font-size: 16px; /* 16 px: iOS does not zoom into the field */
+
+    &::placeholder { color: var(--text-mut); }
+
+    &:focus-visible {
+      outline: none;
+      border-color: rgba(var(--accent-rgb), 0.5);
+      box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.2);
+    }
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.resource {
+  padding: 16px;
+  border-radius: 24px;
+}
+
+.resTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.resText {
+  flex: 1;
+  min-width: 0;
+
+  h2 {
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  p {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--text-sec);
+  }
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+
+  span {
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: rgba(var(--text-rgb), 0.05);
+    color: var(--text-sec);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .plate {
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+  }
+}
+
+.resActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+
+  button { height: 40px; font-size: 14px; }
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.purpose {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12.5px;
+  color: var(--text-mut);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 28px 18px;
+  text-align: center;
+
+  strong { margin-top: 6px; font-size: 15px; color: var(--text); }
+  span { font-size: 13px; color: var(--text-sec); }
+}

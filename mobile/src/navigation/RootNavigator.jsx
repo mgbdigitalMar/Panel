@@ -34,6 +34,7 @@ import AdminDocumentsScreen from '../screens/admin/AdminDocumentsScreen';
 import SendDocumentScreen from '../screens/admin/SendDocumentScreen';
 import AdminHoursScreen from '../screens/admin/AdminHoursScreen';
 import HoursUserHistoryScreen from '../screens/admin/HoursUserHistoryScreen';
+import SearchScreen from '../screens/SearchScreen';
 
 const Stack = createNativeStackNavigator();
 export const navigationRef = createNavigationContainerRef();
@@ -117,6 +118,7 @@ export default function RootNavigator({ onReady }) {
           <>
             <Stack.Screen name="Main" component={BottomTabs} options={{ animation: 'fade' }} />
             <Stack.Screen name="Notifications" component={NotificationsScreen} />
+            <Stack.Screen name="Search" component={SearchScreen} options={{ animation: 'fade' }} />
             <Stack.Screen name="ResourceCalendar" component={ResourceCalendarScreen} />
             <Stack.Screen name="MyReservations" component={MyReservationsScreen} />
             <Stack.Screen name="NewRequest" component={NewRequestScreen} options={{ animation: 'slide_from_bottom' }} />

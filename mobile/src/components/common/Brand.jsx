@@ -147,11 +147,13 @@ export function BrandTag({ label, icon: Icon }) {
 }
 
 /** White chip on a hero card. */
-export function HeroChip({ label, icon: Icon }) {
+/** Chip on the blue hero card: translucent white, with an optional status dot. */
+export function HeroChip({ label, icon: Icon, dot }) {
   return (
-    <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5, height: 28, paddingHorizontal: 12, borderRadius: 14, backgroundColor: '#FFFFFF' }}>
-      {Icon ? <Icon size={13} color={BRAND.navy} strokeWidth={2.2} /> : null}
-      <T size={12.5} weight="semibold" color={BRAND.navy} numberOfLines={1}>{label}</T>
+    <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, height: 26, paddingHorizontal: 10, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.16)' }}>
+      {dot ? <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: dot }} /> : null}
+      {Icon ? <Icon size={13} color="#FFFFFF" strokeWidth={2.2} /> : null}
+      <T size={12.5} weight="semibold" color="#FFFFFF" numberOfLines={1}>{label}</T>
     </View>
   );
 }

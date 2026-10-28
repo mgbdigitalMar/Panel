@@ -15,6 +15,7 @@ import {
   Eye,
   X,
   ExternalLink,
+  ChevronRight,
   Mail,
   MapPin,
 } from "lucide-react";
@@ -25,6 +26,7 @@ import { changeOwnPassword } from "../../shared/services/auth.js";
 import { useAutoDismiss } from "../hooks/useAutoDismiss";
 import { SignatureView } from "../components/SignaturePad";
 import { fetchPolicySignatures, latestSignatureByUser, formatSignedAt } from "../../shared/services/policy.js";
+import { usePhoneApp, Segmented } from "../components/PhoneKit";
 
 const WORK_MODES = {
   Office: { label: "Oficina" },
@@ -89,6 +91,25 @@ export default function ProfilePage() {
   const [message, setMessage] = useState("");
 
   useAutoDismiss(message, setMessage, 4000);
+
+  // Phones: the app's profile — password and documents fold into rows that open in place
+  const phone = usePhoneApp();
+  const [openPass, setOpenPass] = useState(false);
+  const [openDocs, setOpenDocs] = useState(false);
+  const cardHead = (Icon, title, extra, open, toggle) => (phone ? (
+    <button type="button" className={clsx(styles.cardHeader, styles.cardToggle)} onClick={toggle} aria-expanded={open}>
+      <span className={styles.cardIcon} aria-hidden="true"><Icon size={17} /></span>
+      <h3>{title}</h3>
+      {extra}
+      <ChevronRight size={18} className={clsx(styles.toggleChev, open && styles.toggleChevOpen)} aria-hidden="true" />
+    </button>
+  ) : (
+    <div className={styles.cardHeader}>
+      <span className={styles.cardIcon} aria-hidden="true"><Icon size={17} /></span>
+      <h3>{title}</h3>
+      {extra}
+    </div>
+  ));
 
   const handleWorkModeChange = async (mode) => {
     if (mode === workMode) return;
@@ -162,318 +183,329 @@ export default function ProfilePage() {
         </div>
       </section>
 
+      {/* Wide screens: information and documents on the left, mode and password on the right.
+          Narrower: one column (mode and password side by side when they fit). */}
       <div className={styles.cards}>
-        {/* User Info */}
-        <div>
-        <Card className={styles.infoCard}>
-          <div className={styles.cardHeader}>
-            <span className={styles.cardIcon} aria-hidden="true"><User size={17} /></span>
-            <h3>Mi información</h3>
+        <div className={styles.column}>
+          {/* User Info */}
+          <div className={styles.slotInfo}>
+          <Card className={styles.infoCard}>
+            <div className={styles.cardHeader}>
+              <span className={styles.cardIcon} aria-hidden="true"><User size={17} /></span>
+              <h3>Mi información</h3>
+            </div>
+            <div className={styles.infoGrid}>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Nombre</span>
+                <span className={styles.infoValue}>{user?.name}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Email</span>
+                <span className={styles.infoValue}>{user?.email}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Rol</span>
+                <Badge status={user?.role} />
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Departamento</span>
+                <span className={styles.infoValue}>{user?.dept}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>DNI</span>
+                <span className={styles.infoValue}>{user?.phone}</span>
+              </div>
+              <div className={styles.infoItem}>
+                <span className={styles.infoLabel}>Fecha nacimiento</span>
+                <span className={styles.infoValue}>
+                  {user?.birthdate
+                    ? new Date(user.birthdate).toLocaleDateString("es-ES")
+                    : "No especificada"}
+                </span>
+              </div>
+              <div className={clsx(styles.infoItem, styles.infoItemWide)}>
+                <span className={styles.infoLabel}>Normas internas</span>
+                <span className={styles.infoValue}>
+                  {mySignature
+                    ? `Firmadas el ${formatSignedAt(mySignature.signedAt)} como «${mySignature.signerName}»`
+                    : user?.policyAccepted === true
+                      ? "Aceptadas (registradas por RRHH)"
+                      : "Pendientes de firma"}
+                </span>
+                {mySignature && (
+                  <div className={styles.mySignature}>
+                    <SignatureView strokes={mySignature.strokes} label="Tu firma de las normas internas" />
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
           </div>
-          <div className={styles.infoGrid}>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Nombre</span>
-              <span className={styles.infoValue}>{user?.name}</span>
+
+          {/* Mis Documentos */}
+          <div className={styles.slotDocs}>
+          <Card className={clsx(styles.docsCard, phone && !openDocs && styles.cardFolded)}>
+            {cardHead(FileText, "Mis documentos", myDocs.length > 0 && <span className={styles.docsBadge}>{myDocs.length}</span>, openDocs, () => setOpenDocs((o) => !o))}
+
+            {phone && !openDocs ? null : myDocs.length === 0 ? (
+              <div className={styles.docsEmpty}>
+                <FileText size={40} strokeWidth={1} />
+                <p>No tienes documentos asignados</p>
+              </div>
+            ) : (
+              <div className={styles.docsList}>
+                {myDocs.map((doc) => {
+                  const isPending = doc.status === "pending";
+                  const isSigned = doc.status === "signed";
+                  const isCompleted = doc.status === "completed";
+                  const isUpdating = updatingDoc === doc.id;
+                  const hasFile = !!doc.fileUrl;
+                  return (
+                    <div
+                      key={doc.id}
+                      className={clsx(styles.docItem, {
+                        [styles.docPending]: isPending,
+                        [styles.docSigned]: isSigned,
+                        [styles.docCompleted]: isCompleted,
+                      })}
+                    >
+                      <div className={styles.docIcon}>
+                        <FileText size={22} />
+                      </div>
+                      <div className={styles.docBody}>
+                        <div className={styles.docTop}>
+                          <strong className={styles.docTitle}>{doc.title}</strong>
+                          <span
+                            className={clsx(styles.docStatus, {
+                              [styles.statusPending]: isPending,
+                              [styles.statusSigned]: isSigned,
+                              [styles.statusCompleted]: isCompleted,
+                            })}
+                          >
+                            {isPending && (
+                              <>
+                                <Clock size={11} /> Pendiente
+                              </>
+                            )}
+                            {isSigned && (
+                              <>
+                                <PenTool size={11} /> Firmado
+                              </>
+                            )}
+                            {isCompleted && (
+                              <>
+                                <CheckCircle size={11} /> Completado
+                              </>
+                            )}
+                          </span>
+                        </div>
+                        {doc.description && (
+                          <p className={styles.docDesc}>{doc.description}</p>
+                        )}
+                        <div className={styles.docMeta}>
+                          <span>
+                            Enviado por{" "}
+                            <strong>
+                              {employees?.find(
+                                (e) => String(e.id) === String(doc.senderId),
+                              )?.name ||
+                                doc.senderName ||
+                                "Administración"}
+                            </strong>
+                          </span>
+                          <span>·</span>
+                          <span>
+                            el{" "}
+                            {new Date(doc.createdAt).toLocaleDateString("es-ES", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className={styles.docActions}>
+                        {hasFile &&
+                          (getViewerUrl(doc.fileUrl) ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              icon={Eye}
+                              onClick={() =>
+                                setViewerDoc({
+                                  ...doc,
+                                  viewerUrl: getViewerUrl(doc.fileUrl),
+                                })
+                              }
+                              title="Ver documento"
+                            >
+                              Ver
+                            </Button>
+                          ) : (
+                            <Button
+                              href={doc.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              variant="ghost"
+                              size="sm"
+                              icon={ExternalLink}
+                              title="Abrir archivo"
+                            >
+                              Abrir
+                            </Button>
+                          ))}
+                        {hasFile && (
+                          <Button
+                            href={doc.fileUrl}
+                            download
+                            variant="ghost"
+                            size="sm"
+                            iconOnly
+                            icon={Download}
+                            title="Descargar"
+                          />
+                        )}
+                        {isPending && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              icon={CheckCircle}
+                              disabled={isUpdating}
+                              onClick={async () => {
+                                setUpdatingDoc(doc.id);
+                                await updateDocumentStatus(doc.id, "completed");
+                                setUpdatingDoc(null);
+                              }}
+                              title="Marcar como completado"
+                            >
+                              Completar
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              icon={PenTool}
+                              disabled={isUpdating}
+                              onClick={async () => {
+                                setUpdatingDoc(doc.id);
+                                await updateDocumentStatus(doc.id, "signed");
+                                setUpdatingDoc(null);
+                              }}
+                              title="Marcar como firmado"
+                            >
+                              Firmar
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
+          </div>
+        </div>
+        <div className={styles.column}>
+          {/* Work Mode */}
+          <div className={styles.slotMode}>
+          <Card className={styles.card}>
+            <div className={styles.cardHeader}>
+              <span className={styles.cardIcon} aria-hidden="true"><Shield size={17} /></span>
+              <h3>Modo de trabajo</h3>
             </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Email</span>
-              <span className={styles.infoValue}>{user?.email}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Rol</span>
-              <Badge status={user?.role} />
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Departamento</span>
-              <span className={styles.infoValue}>{user?.dept}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>DNI</span>
-              <span className={styles.infoValue}>{user?.phone}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Fecha nacimiento</span>
-              <span className={styles.infoValue}>
-                {user?.birthdate
-                  ? new Date(user.birthdate).toLocaleDateString("es-ES")
-                  : "No especificada"}
-              </span>
-            </div>
-            <div className={clsx(styles.infoItem, styles.infoItemWide)}>
-              <span className={styles.infoLabel}>Normas internas</span>
-              <span className={styles.infoValue}>
-                {mySignature
-                  ? `Firmadas el ${formatSignedAt(mySignature.signedAt)} como «${mySignature.signerName}»`
-                  : user?.policyAccepted === true
-                    ? "Aceptadas (registradas por RRHH)"
-                    : "Pendientes de firma"}
-              </span>
-              {mySignature && (
-                <div className={styles.mySignature}>
-                  <SignatureView strokes={mySignature.strokes} label="Tu firma de las normas internas" />
+            {phone ? (
+              <Segmented
+                label="Modo de trabajo"
+                value={workMode}
+                onChange={handleWorkModeChange}
+                options={Object.entries(WORK_MODES).map(([k, m]) => ({
+                  value: k,
+                  label: m.label,
+                  disabled: workModeLoading || (k !== workMode && !allowedModes.has(k)),
+                }))}
+              />
+            ) : (
+            <Select
+              label=""
+              value={workMode}
+              onChange={handleWorkModeChange}
+              options={Object.entries(WORK_MODES).map(([k, m]) => ({
+                value: k,
+                label: m.label,
+                disabled: k !== workMode && !allowedModes.has(k),
+              }))}
+              className={styles.select}
+              loading={workModeLoading}
+              disabled={workModeLoading}
+            />
+            )}
+            {user?.teleworkDays?.length > 0 && (
+              <p className={styles.hint}>
+                Teletrabajas los {formatTeleworkDays(user.teleworkDays)}: esos días tu modo pasa a Remoto automáticamente y el resto a Oficina.
+              </p>
+            )}
+            <p className={styles.hint}>
+              {workMode === DEFAULT_WORK_MODE
+                ? "Remoto y externo se activan solos cuando administración aprueba tu solicitud para hoy."
+                : "Si vuelves antes a la oficina, elige Oficina: se avisará a administración."}
+            </p>
+          </Card>
+          </div>
+
+          {/* Password */}
+          <div className={styles.slotPass}>
+          <Card className={clsx(styles.card, phone && !openPass && styles.cardFolded)}>
+            {cardHead(Lock, "Cambiar contraseña", null, openPass, () => setOpenPass((o) => !o))}
+            {(!phone || openPass) && (
+            <div className={styles.form}>
+              <Input
+                label="Contraseña actual"
+                type="password"
+                value={form.currentPassword}
+                onChange={(v) => editPassForm({ currentPassword: v })}
+                placeholder="••••••••"
+                autoComplete="current-password"
+              />
+              <Input
+                label="Nueva contraseña"
+                type="password"
+                value={form.newPassword}
+                onChange={(v) => editPassForm({ newPassword: v })}
+                placeholder="Mínimo 6 caracteres"
+                autoComplete="new-password"
+              />
+              <Input
+                label="Confirmar nueva contraseña"
+                type="password"
+                value={form.confirmPassword}
+                onChange={(v) => editPassForm({ confirmPassword: v })}
+                placeholder="Repite la nueva contraseña"
+                autoComplete="new-password"
+              />
+              <Button
+                icon={Save}
+                onClick={handlePasswordChange}
+                loading={loading}
+                disabled={loading || !form.currentPassword || !form.newPassword || !form.confirmPassword}
+                className={styles.saveBtn}
+              >
+                {loading ? "Actualizando…" : "Actualizar contraseña"}
+              </Button>
+              {passStatus && (
+                <div
+                  className={clsx(styles.message, passStatus.type === "success" ? styles.success : styles.error, "appear")}
+                  role={passStatus.type === "success" ? "status" : "alert"}
+                >
+                  {passStatus.type === "success" ? <CheckCircle size={16} aria-hidden="true" /> : null}
+                  {passStatus.text}
                 </div>
               )}
             </div>
-          </div>
-        </Card>
-        </div>
-
-        {/* Work Mode */}
-        <div>
-        <Card className={styles.card}>
-          <div className={styles.cardHeader}>
-            <span className={styles.cardIcon} aria-hidden="true"><Shield size={17} /></span>
-            <h3>Modo de trabajo</h3>
-          </div>
-          <Select
-            label=""
-            value={workMode}
-            onChange={handleWorkModeChange}
-            options={Object.entries(WORK_MODES).map(([k, m]) => ({
-              value: k,
-              label: m.label,
-              disabled: k !== workMode && !allowedModes.has(k),
-            }))}
-            className={styles.select}
-            loading={workModeLoading}
-            disabled={workModeLoading}
-          />
-          {user?.teleworkDays?.length > 0 && (
-            <p className={styles.hint}>
-              Teletrabajas los {formatTeleworkDays(user.teleworkDays)}: esos días tu modo pasa a Remoto automáticamente y el resto a Oficina.
-            </p>
-          )}
-          <p className={styles.hint}>
-            {workMode === DEFAULT_WORK_MODE
-              ? "Remoto y externo se activan solos cuando administración aprueba tu solicitud para hoy."
-              : "Si vuelves antes a la oficina, elige Oficina: se avisará a administración."}
-          </p>
-        </Card>
-        </div>
-
-        {/* Password */}
-        <div>
-        <Card className={styles.card}>
-          <div className={styles.cardHeader}>
-            <span className={styles.cardIcon} aria-hidden="true"><Lock size={17} /></span>
-            <h3>Cambiar contraseña</h3>
-          </div>
-          <div className={styles.form}>
-            <Input
-              label="Contraseña actual"
-              type="password"
-              value={form.currentPassword}
-              onChange={(v) => editPassForm({ currentPassword: v })}
-              placeholder="••••••••"
-              autoComplete="current-password"
-            />
-            <Input
-              label="Nueva contraseña"
-              type="password"
-              value={form.newPassword}
-              onChange={(v) => editPassForm({ newPassword: v })}
-              placeholder="Mínimo 6 caracteres"
-              autoComplete="new-password"
-            />
-            <Input
-              label="Confirmar nueva contraseña"
-              type="password"
-              value={form.confirmPassword}
-              onChange={(v) => editPassForm({ confirmPassword: v })}
-              placeholder="Repite la nueva contraseña"
-              autoComplete="new-password"
-            />
-            <Button
-              icon={Save}
-              onClick={handlePasswordChange}
-              loading={loading}
-              disabled={loading || !form.currentPassword || !form.newPassword || !form.confirmPassword}
-              className={styles.saveBtn}
-            >
-              {loading ? "Actualizando…" : "Actualizar contraseña"}
-            </Button>
-            {passStatus && (
-              <div
-                className={clsx(styles.message, passStatus.type === "success" ? styles.success : styles.error, "appear")}
-                role={passStatus.type === "success" ? "status" : "alert"}
-              >
-                {passStatus.type === "success" ? <CheckCircle size={16} aria-hidden="true" /> : null}
-                {passStatus.text}
-              </div>
             )}
+          </Card>
           </div>
-        </Card>
-        </div>
-
-        {/* Mis Documentos */}
-        <div>
-        <Card className={styles.docsCard}>
-          <div className={styles.cardHeader}>
-            <span className={styles.cardIcon} aria-hidden="true"><FileText size={17} /></span>
-            <h3>Mis documentos</h3>
-            {myDocs.length > 0 && (
-              <span className={styles.docsBadge}>{myDocs.length}</span>
-            )}
-          </div>
-
-          {myDocs.length === 0 ? (
-            <div className={styles.docsEmpty}>
-              <FileText size={40} strokeWidth={1} />
-              <p>No tienes documentos asignados</p>
-            </div>
-          ) : (
-            <div className={styles.docsList}>
-              {myDocs.map((doc) => {
-                const isPending = doc.status === "pending";
-                const isSigned = doc.status === "signed";
-                const isCompleted = doc.status === "completed";
-                const isUpdating = updatingDoc === doc.id;
-                const hasFile = !!doc.fileUrl;
-                return (
-                  <div
-                    key={doc.id}
-                    className={clsx(styles.docItem, {
-                      [styles.docPending]: isPending,
-                      [styles.docSigned]: isSigned,
-                      [styles.docCompleted]: isCompleted,
-                    })}
-                  >
-                    <div className={styles.docIcon}>
-                      <FileText size={22} />
-                    </div>
-                    <div className={styles.docBody}>
-                      <div className={styles.docTop}>
-                        <strong className={styles.docTitle}>{doc.title}</strong>
-                        <span
-                          className={clsx(styles.docStatus, {
-                            [styles.statusPending]: isPending,
-                            [styles.statusSigned]: isSigned,
-                            [styles.statusCompleted]: isCompleted,
-                          })}
-                        >
-                          {isPending && (
-                            <>
-                              <Clock size={11} /> Pendiente
-                            </>
-                          )}
-                          {isSigned && (
-                            <>
-                              <PenTool size={11} /> Firmado
-                            </>
-                          )}
-                          {isCompleted && (
-                            <>
-                              <CheckCircle size={11} /> Completado
-                            </>
-                          )}
-                        </span>
-                      </div>
-                      {doc.description && (
-                        <p className={styles.docDesc}>{doc.description}</p>
-                      )}
-                      <div className={styles.docMeta}>
-                        <span>
-                          Enviado por{" "}
-                          <strong>
-                            {employees?.find(
-                              (e) => String(e.id) === String(doc.senderId),
-                            )?.name ||
-                              doc.senderName ||
-                              "Administración"}
-                          </strong>
-                        </span>
-                        <span>·</span>
-                        <span>
-                          el{" "}
-                          {new Date(doc.createdAt).toLocaleDateString("es-ES", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className={styles.docActions}>
-                      {hasFile &&
-                        (getViewerUrl(doc.fileUrl) ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            icon={Eye}
-                            onClick={() =>
-                              setViewerDoc({
-                                ...doc,
-                                viewerUrl: getViewerUrl(doc.fileUrl),
-                              })
-                            }
-                            title="Ver documento"
-                          >
-                            Ver
-                          </Button>
-                        ) : (
-                          <Button
-                            href={doc.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            variant="ghost"
-                            size="sm"
-                            icon={ExternalLink}
-                            title="Abrir archivo"
-                          >
-                            Abrir
-                          </Button>
-                        ))}
-                      {hasFile && (
-                        <Button
-                          href={doc.fileUrl}
-                          download
-                          variant="ghost"
-                          size="sm"
-                          iconOnly
-                          icon={Download}
-                          title="Descargar"
-                        />
-                      )}
-                      {isPending && (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            icon={CheckCircle}
-                            disabled={isUpdating}
-                            onClick={async () => {
-                              setUpdatingDoc(doc.id);
-                              await updateDocumentStatus(doc.id, "completed");
-                              setUpdatingDoc(null);
-                            }}
-                            title="Marcar como completado"
-                          >
-                            Completar
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            icon={PenTool}
-                            disabled={isUpdating}
-                            onClick={async () => {
-                              setUpdatingDoc(doc.id);
-                              await updateDocumentStatus(doc.id, "signed");
-                              setUpdatingDoc(null);
-                            }}
-                            title="Marcar como firmado"
-                          >
-                            Firmar
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Card>
         </div>
       </div>
 

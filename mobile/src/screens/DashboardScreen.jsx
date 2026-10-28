@@ -3,14 +3,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
-  Bell, Building2, Car, Timer, CalendarDays, Inbox, ShieldCheck, Pin, ChevronRight, Gift, Newspaper, Clock, CalendarCheck, Hourglass,
+  Building2, Car, Timer, CalendarDays, Inbox, ShieldCheck, Pin, ChevronRight, Gift, Newspaper, Clock, CalendarCheck, Hourglass,
 } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { Screen } from '../components/common/Screen';
+import { TopBar } from '../components/common/TopBar';
 import { GlassCard } from '../components/common/GlassCard';
-import { IconButton } from '../components/common/GlassButton';
 import { PressScale } from '../components/common/Pressable';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { T } from '../components/common/Text';
@@ -56,15 +56,17 @@ function WeekRings({ now, busyDays }) {
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
       {days.map(({ d, iso, value, isToday, busy }) => (
-        <View key={iso} style={{ alignItems: 'center', gap: 8, flex: 1 }}
+        <View key={iso} style={{ alignItems: 'center', gap: 6, flex: 1 }}
           accessible accessibilityLabel={`${DAYS[d.getDay()]} ${d.getDate()}${isToday ? ', hoy' : ''}, jornada ${Math.round(value)}%${busy ? ', con reservas o solicitudes' : ''}`}>
-          <T size={12.5} weight={isToday ? 'semibold' : 'regular'} color={isToday ? colors.text : colors.text3}>{DAYS_SHORT[d.getDay()]}</T>
-          <Ring value={value} size={isToday ? 50 : 42} stroke={isToday ? 4 : 3} color={isToday ? colors.accent : colors.accentBorder}>
-            <T size={isToday ? 14 : 12.5} weight="semibold" color={isToday ? colors.text : colors.text2} style={{ fontVariant: ['tabular-nums'] }}>
-              {isToday && value > 0 && value < 100 ? `${Math.round(value)}%` : d.getDate()}
+          {/* Same box for every day, so today's bigger ring keeps the labels in line */}
+          <View style={{ height: 50, justifyContent: 'center' }}>
+          <Ring value={value} size={isToday ? 50 : 42} stroke={isToday ? 4 : 3} color={colors.accent}>
+            <T size={isToday ? 16 : 12.5} weight={isToday ? 'bold' : 'semibold'} color={isToday ? colors.text : colors.text2} style={{ fontVariant: ['tabular-nums'] }}>
+              {d.getDate()}
             </T>
           </Ring>
-          <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: busy ? colors.accent : 'transparent' }} />
+          </View>
+          <T size={12.5} weight={isToday ? 'semibold' : 'regular'} color={isToday ? colors.text : colors.text3}>{DAYS_SHORT[d.getDay()]}</T>
         </View>
       ))}
     </View>
@@ -129,7 +131,7 @@ export default function DashboardScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation();
   const { user, employees } = useAuth();
-  const { requests, personalDays, reservations, hourCompensations, news, unreadCount, refresh } = useData();
+  const { requests, personalDays, reservations, hourCompensations, news, refresh } = useData();
   const pendingApprovals = usePendingApprovals();
   const [refreshing, setRefreshing] = useState(false);
   const now = useNow();
@@ -214,13 +216,7 @@ export default function DashboardScreen() {
 
   return (
     <Screen tabBarSpace onRefresh={onRefresh} refreshing={refreshing}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 52 }}>
-        <Pressable onPress={() => navigation.navigate('Profile')} accessibilityRole="button" accessibilityLabel="Mi perfil" hitSlop={4}>
-          <Avatar name={user?.name} initials={user?.avatar} src={user?.avatarUrl} size={50} />
-        </Pressable>
-        <IconButton icon={Bell} size={50} badge={unreadCount} onPress={() => navigation.navigate('Notifications')}
-          accessibilityLabel={unreadCount ? `Notificaciones, ${unreadCount} sin leer` : 'Notificaciones'} />
-      </View>
+      <TopBar />
 
       <View style={{ gap: 2 }}>
         <T size={14} color={colors.text3}>{greeting(now)},</T>
@@ -231,7 +227,7 @@ export default function DashboardScreen() {
 
       <HeroCard>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <HeroChip label={status} />
+          <HeroChip label={status} dot={weekend || progress >= 100 ? '#B8BEC9' : progress <= 0 ? '#F5B544' : '#34D399'} />
           <T mono weight="semibold" size={14} color={ON_BRAND.text}>{Math.round(progress)}%</T>
         </View>
         <View style={{ flex: 1, minHeight: 36 }} />

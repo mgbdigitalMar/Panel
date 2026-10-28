@@ -36,11 +36,15 @@ export async function runGlassAppearanceTests() {
   assert('Clásico: barra superior con buscador, hora, tema y campana', layout.includes('Busca personas, reservas, solicitudes…'));
   assert('Clásico: inicio de siempre cuando no es Cristal', dash.includes("if (appearance === 'glass')") && dash.includes('Mis módulos'));
   assert('Móvil clásico: el menú desplegable sigue', layout.includes('getSidebarContent(true)'));
-  assert('Móvil Cristal: dock abajo con todas las secciones (las que no caben, en «Más»)',
-    layout.includes('<GlassTabBar') && chrome.includes("const DOCK_IDS = ['dashboard', 'reservations', 'requests', 'news'];") && chrome.includes('const more = items.filter((i) => !DOCK_IDS.includes(i.id));'));
+  const chromeStyles = read('src', 'components', 'GlassChrome.module.scss');
+  assert('Móvil Cristal: la sección abierta con nombre, el resto solo icono',
+    layout.includes('<GlassTabBar') && chrome.includes('{items.map((item) => {') && chrome.includes('{active && <span className={styles.tabLabel}>'));
+  assert('iPad Cristal: las secciones en la barra superior, sin dock', /\.dock \{[\s\S]*?@media \(min-width: 768px\) \{ display: none; \}/.test(chromeStyles)
+    && /\.nav \{[\s\S]*?@media \(max-width: 767px\) \{ display: none; \}/.test(chromeStyles));
+  assert('Cristal: logo con nombre en ordenador y solo la hoja en móvil y iPad', chrome.includes('isDark ? logoWhite : logoColor') && chrome.includes('className={styles.brandIcon}'));
   assert('Móvil Cristal: sin menú lateral que repita el perfil del avatar', !chrome.includes('onOpenMenu') && !layout.includes('onOpenMenu'));
   const chromeCss = read('src', 'components', 'GlassChrome.module.scss');
-  assert('Menús y dock legibles: cristal denso', chromeCss.includes('@mixin frosted-dense') && /\.menu \{\s*@include frosted-dense;/.test(chromeCss) && /\.tabBar \{\s*@include frosted-dense;/.test(chromeCss));
+  assert('Menús y dock legibles: cristal denso', chromeCss.includes('@mixin frosted-dense') && /\.menu \{\s*@include frosted-dense;/.test(chromeCss) && chromeCss.includes('var(--lg-popover, rgba(255, 255, 255, 0.86))'));
   assert('Los avisos quedan por encima del dock', read('src', 'components', 'LiveToastContainer.jsx').includes('var(--toast-bottom, 24px)'));
 
   // 3. Cristal: navegación completa
@@ -52,7 +56,9 @@ export async function runGlassAppearanceTests() {
   assert('Cristal: búsqueda (Ctrl+K), perfil, ajustes y cerrar sesión siguen arriba',
     ['onSearch', "go('profile')", "go('settings')", 'onLogout'].every(k => chrome.includes(k)));
   assert('Cristal: atajos de teclado siguen con «?» y desde el buscador', layout.includes("if (e.key === '?')") && layout.includes('onShowShortcuts={openShortcuts}'));
-  assert('Cristal: el logo no repite «Inicio»', !chrome.includes("onNavigate('dashboard')"));
+  assert('Cristal: el logo lleva al inicio', chrome.includes("onClick={() => onNavigate('dashboard')}") && chrome.includes('aria-label="Margube, ir al inicio"'));
+  assert('Cristal: la sección abierta va en azul y subrayada (dock y píldora)', /\.tabActive \{[\s\S]*?color: var\(--accent\);[\s\S]*?&::after/.test(chromeCss) && /\.navItemActive \{[\s\S]*?color: var\(--accent\);[\s\S]*?&::after/.test(chromeCss));
+  assert('Cristal: cristal líquido en el buscador, el dock y la píldora', chrome.includes('clsx(styles.round, styles.liquid)') && /\.tabBar \{\s*@include p\.liquid;/.test(chromeCss) && /\.nav \{\s*@include p\.liquid;/.test(chromeCss));
   assert('Cristal: el avatar muestra jornada, reservas y pendientes del perfil clásico',
     chrome.includes('upcomingCount') && chrome.includes('openRequests') && chrome.includes('Jornada'));
   assert('Cristal: barra de carga de datos', layout.includes('<TopProgress active={loadingData} />\n          </GlassHeader>'));
@@ -74,6 +80,21 @@ export async function runGlassAppearanceTests() {
   assert('Inicio Cristal: sin la barra de jornada repetida en el saludo', !glass.includes('workdayTrack'));
   assert('Inicio Cristal: «Hoy» no repite la fecha ni los botones de crear', !glass.includes('<p className={styles.panelSub}>{dateLine}</p>') && glass.split("/reservations?nueva=1").length === 2);
   assert('Inicio Cristal: filas que se estiran (sin huecos)', read('src', 'pages', 'DashboardGlass.module.scss').includes('align-items: stretch;'));
+
+  // 4b. Móvil: la web se ve como la app
+  const glassCss = read('src', 'pages', 'DashboardGlass.module.scss');
+  assert('Móvil: el inicio es el de ordenador, adaptado (fijadas en carrusel y reservas recientes en filas)',
+    !glass.includes('DashboardPhone') && glass.includes('styles.recentList') && glassCss.includes('scroll-snap-type: x mandatory'));
+  assert('Móvil: dock de la app — Inicio, Reservas, Solicitudes, Horas, Más y el «+»',
+    chrome.includes("const DOCK_IDS = ['dashboard', 'reservations', 'requests', 'horas'];") && chrome.includes("id: 'mas'")
+    && chrome.includes("onNavigate('requests?nueva=1')") && read('src', 'App.tsx').includes('path="/mas"'));
+  assert('Móvil: «Más» con perfil, accesos, apariencia, ajustes y cerrar sesión',
+    ['Accesos rápidos', 'Apariencia', "navigate('/settings')", 'logout()', "navigate('/profile')"].every((k) => read('src', 'pages', 'MorePage.jsx').includes(k)));
+  assert('Móvil: Reservas, Solicitudes y Horas con las pantallas de la app',
+    read('src', 'pages', 'ReservationsPage.jsx').includes('<ReservationsPhone') && read('src', 'pages', 'RequestsPage.jsx').includes('<RequestsPhone')
+    && read('src', 'pages', 'HorasPage.jsx').includes('<HorasPhoneSummary'));
+  assert('Móvil: perfil con modo de trabajo en segmentos y contraseña y documentos plegados',
+    read('src', 'pages', 'ProfilePage.jsx').includes('<Segmented') && read('src', 'pages', 'ProfilePage.jsx').includes('aria-expanded={open}'));
 
   // 5. Estilo
   assert('Paneles translúcidos en la intranet y el login (modales siguen sólidos)', vars.includes("[data-appearance='glass'] :is(.app-shell, .glass-scope) {"));

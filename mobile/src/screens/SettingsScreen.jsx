@@ -10,6 +10,7 @@ import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
 import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
+import { TopBar } from '../components/common/TopBar';
 import { GlassCard } from '../components/common/GlassCard';
 import { GlassButton } from '../components/common/GlassButton';
 import { PressScale } from '../components/common/Pressable';
@@ -102,6 +103,7 @@ export default function SettingsScreen() {
 
   return (
     <Screen tabBarSpace>
+      <TopBar />
       <Header title="Más" />
 
       <PressScale onPress={() => navigation.navigate('Profile')} accessibilityRole="button" accessibilityLabel={`Mi perfil, ${user?.name || ''}`} scaleTo={0.98}>

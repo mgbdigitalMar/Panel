@@ -1,3 +1,5 @@
+@use '../styles/patterns' as p;
+
 /* Chrome of the glass appearance. Every surface here is frosted (real backdrop blur):
    they float over the wallpaper and the page scrolling underneath. */
 @mixin frosted {
@@ -35,14 +37,16 @@
   padding: 14px clamp(16px, 2.4vw, 32px);
 
   @media (max-width: 1023px) {
-    grid-template-columns: auto 1fr;
     gap: 8px;
     padding: calc(10px + env(safe-area-inset-top)) 12px 10px;
   }
 
+  /* Phones: the sections go to the bottom dock */
+  @media (max-width: 767px) { grid-template-columns: auto 1fr; }
+
   /* Phones: slightly smaller round buttons so the bar fits at 320 px */
   @media (max-width: 479px) {
-    .round, .brand { width: 40px; height: 40px; }
+    .round { width: 40px; height: 40px; }
     .left, .right { gap: 6px; }
   }
 }
@@ -57,8 +61,7 @@
 
 .right { justify-content: flex-end; }
 
-.round,
-.brand {
+.round {
   @include frosted;
   @include focus-ring;
   flex-shrink: 0;
@@ -78,30 +81,75 @@
   }
 }
 
+/* The logo sits straight on the wallpaper, no bubble, and takes you home */
 .brand {
-  cursor: default;
+  @include focus-ring;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  margin-right: 6px;
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  background: none;
+  cursor: pointer;
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.12));
+  transition: transform 0.15s var(--ease-out);
 
-  &:active { transform: none; }
+  &:active { transform: scale(0.96); }
+}
+
+.brandFull {
+  height: 34px;
+  width: auto;
+
+  @media (max-width: 1023px) { display: none; }
+}
+
+/* The leaf PNG has transparent padding around the tile: the negative margin trims it so
+   the visible tile is 38 px (34 px on phones) */
+.brandIcon {
+  width: 62px;
+  height: 62px;
+  max-width: none;
+  margin: -12px;
+
+  @media (min-width: 1024px) { display: none; }
+
+  @media (max-width: 479px) {
+    width: 56px;
+    height: 56px;
+    margin: -11px;
+  }
 }
 
 .swap { display: grid; }
 
-.brand img {
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
+/* The search button: liquid glass that squishes and springs back when pressed */
+.round.liquid {
+  @include p.liquid;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s;
+
+  &:active {
+    transform: scale(0.9);
+    transition-duration: 0.12s;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { background: var(--lg-sheen), var(--lg-fill-hover); }
+  }
 }
 
 /* Section pill, centred */
 .nav {
-  @include frosted;
+  @include p.liquid;
   display: flex;
   align-items: center;
   gap: 2px;
   padding: 5px;
   border-radius: var(--radius-full);
 
-  @media (max-width: 1023px) { display: none; }
+  @media (max-width: 767px) { display: none; }
 }
 
 .navItem {
@@ -129,8 +177,8 @@
     &:hover { color: var(--text); }
   }
 
-  /* Mid widths: inactive sections show their icon only */
-  @media (min-width: 1024px) and (max-width: 1279px) {
+  /* Tablets and mid widths: inactive sections show their icon only */
+  @media (max-width: 1279px) {
     &:not(.navItemActive) {
       padding: 0 11px;
       .navLabel { display: none; }
@@ -138,14 +186,29 @@
   }
 }
 
-.navItemActive { color: var(--text); }
+/* The open section: blue, on a blue-tinted pill, underlined */
+.navItemActive {
+  color: var(--accent);
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 5px;
+    z-index: 1;
+    height: 2.5px;
+    border-radius: 2px;
+    background: currentColor;
+  }
+}
 
 .navPill {
   position: absolute;
   inset: 0;
   z-index: 0;
   border-radius: inherit;
-  background: var(--lg-active);
+  background: rgba(var(--accent-rgb), 0.14);
   box-shadow: inset 0 1px 0 var(--lg-rim), 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -162,7 +225,7 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 
-  @media (min-width: 1024px) and (max-width: 1279px) {
+  @media (max-width: 1279px) {
     position: absolute !important;
     top: 1px;
     right: 1px;
@@ -189,7 +252,12 @@
 }
 
 /* Profile menu */
-.profile { position: relative; }
+.profile {
+  position: relative;
+
+  /* Phones: profile, settings and logout are in "Más" */
+  @media (max-width: 767px) { display: none; }
+}
 
 .avatarBtn {
   @include focus-ring;
@@ -259,49 +327,76 @@
   .round { transition: none; }
 }
 
-/* Bottom dock (phones and tablets) ------------------------------------------- */
-.tabBar {
-  @include frosted-dense;
+/* Bottom dock (phones) --------------------------------------------------------
+   The app's tab bar: four sections and "Más" in a liquid pill, the round "+" beside it. */
+.dock {
   position: fixed;
-  left: 50%;
-  bottom: calc(10px + env(safe-area-inset-bottom));
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom));
   z-index: var(--z-header);
-  transform: translateX(-50%);
   display: flex;
-  align-items: stretch;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+
+  > * { pointer-events: auto; }
+
+  @media (min-width: 768px) { display: none; }
+}
+
+.tabBar {
+  @include p.liquid;
+  background: var(--lg-sheen), var(--lg-popover, rgba(255, 255, 255, 0.86));
+  display: flex;
+  align-items: center;
   gap: 2px;
-  width: min(480px, calc(100% - 20px));
-  padding: 6px;
-  border-radius: 28px;
-
-  @media (min-width: 640px) { width: min(720px, calc(100% - 32px)); }
-  @media (min-width: 1024px) { display: none; }
+  min-width: 0;
+  padding: 4px;
+  border-radius: var(--radius-full);
 }
 
-/* Phones: only the four main sections, the rest under "Más" */
-.tab.tab.tabExtra {
-  @media (max-width: 639px) { display: none; }
+/* The app's round action button */
+.dockPlus {
+  @include p.liquid;
+  @include focus-ring;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &:active {
+    transform: scale(0.9);
+    transition-duration: 0.12s;
+  }
 }
 
-/* Tablets: every section fits, so no "Más" */
-.tab.tab.tabMore {
-  @media (min-width: 640px) { display: none; }
+/* Phones: the theme switch lives in "Más" */
+.themeBtn {
+  @media (max-width: 767px) { display: none !important; }
 }
 
 .tab {
   @include focus-ring;
   position: relative;
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
+  flex: 0 0 auto;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  height: 56px;
-  padding: 0 2px;
+  gap: 7px;
+  min-width: 40px;
+  height: 44px;
+  padding: 0 11px;
   border: none;
-  border-radius: 22px;
+  border-radius: var(--radius-full);
   background: transparent;
   color: var(--text-sec);
   font: inherit;
@@ -311,108 +406,78 @@
 
   &:active { transform: scale(0.95); }
 
-  > span:not(.tabPill) { position: relative; z-index: 1; }
+  > svg, > span:not(.tabPill) { position: relative; z-index: 1; }
+
+  /* 320 px phones: tighter icons so the dock and "+" still fit */
+  @media (max-width: 359px) {
+    min-width: 36px;
+    padding: 0 9px;
+  }
 }
 
-.tabActive { color: var(--accent); }
+/* The open section: blue, on a blue-tinted pill, underlined. It gives up width first when
+   an admin's dock is tight. */
+.tabActive {
+  flex-shrink: 1;
+  min-width: 0;
+  color: var(--accent);
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 5px;
+    z-index: 1;
+    height: 2.5px;
+    border-radius: 2px;
+    background: currentColor;
+  }
+}
 
 .tabPill {
   position: absolute;
   inset: 0;
   z-index: 0;
   border-radius: inherit;
-  background: var(--lg-active);
+  background: rgba(var(--accent-rgb), 0.14);
   box-shadow: inset 0 1px 0 var(--lg-rim), 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.tabIcon {
-  position: relative;
-  display: grid;
-  place-items: center;
+.tabLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13.5px;
+  font-weight: 600;
+  animation: tab-label-in 0.2s var(--ease-out) both;
+
+  @media (max-width: 359px) { display: none; }
+}
+
+@keyframes tab-label-in {
+  from { opacity: 0; }
 }
 
 .tabBadge {
-  position: absolute;
-  top: -6px;
-  right: -10px;
-  min-width: 17px;
-  height: 17px;
+  position: absolute !important;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
   padding: 0 4px;
   display: grid;
   place-items: center;
   border-radius: var(--radius-full);
   background: var(--danger);
   color: #FFFFFF;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
-.tabLabel {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-/* "Más": the remaining sections, just above the dock */
-.moreSheet {
-  @include frosted-dense;
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + 10px);
-  width: min(260px, 100%);
-  padding: 6px;
-  border-radius: 22px;
-  transform-origin: bottom right;
-}
-
-.moreItem {
-  @include focus-ring;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  height: 48px;
-  padding: 0 14px;
-  border: none;
-  border-radius: 16px;
-  background: none;
-  color: var(--text);
-  font: inherit;
-  font-size: 14.5px;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-
-  svg { color: var(--text-sec); }
-  span:first-of-type { flex: 1; }
-
-  &:hover { background: rgba(var(--text-rgb), 0.07); }
-}
-
-.moreItemActive {
-  background: var(--lg-active);
-  color: var(--accent);
-
-  svg { color: var(--accent); }
-}
-
-.moreBadge {
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-full);
-  background: var(--danger);
-  color: #FFFFFF;
-  font-size: 11px;
-  font-weight: 700;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .tab { transition: none; }
+  .tabLabel { animation: none; }
 }

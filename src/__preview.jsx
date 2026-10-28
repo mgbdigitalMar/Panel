@@ -7,6 +7,8 @@ import {
 } from './context'
 import Layout from './components/Layout'
 import DashboardPage from './pages/DashboardPage'
+import LoginPage from './pages/LoginPage'
+const isLogin = new URLSearchParams(location.search).get('page') === 'login'
 import './styles/global.scss'
 
 const q = new URLSearchParams(location.search)
@@ -44,7 +46,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <AuthCtx.Provider value={auth}>
         <P c={DataSyncCtx}><P c={NotifsCtx}><P c={NewsCtx}><P c={PersonalDaysCtx}><P c={HoursCtx}><P c={DocumentsCtx}>
           <P c={ReservationsCtx}><P c={RequestsCtx}><P c={DataCtx}>
-            <Layout><DashboardPage /></Layout>
+            {isLogin ? <LoginPage /> : <Layout><DashboardPage /></Layout>}
           </P></P></P>
         </P></P></P></P></P></P>
       </AuthCtx.Provider>

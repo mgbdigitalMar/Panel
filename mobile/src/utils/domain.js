@@ -4,15 +4,15 @@ import { PERSONAL_DAYS_PER_YEAR, REQUEST_TYPES } from '@shared/config/constants.
 import { daysBetween, fmtDate, fmtDayShort, fmtMoney, timeToMin, minToTime } from './format';
 
 export const REQUEST_TONE = {
-  asuntos_propios: 'accent',
+  asuntos_propios: 'amber',
   remoto: 'teal',
-  external: 'purple',
-  purchase: 'amber',
+  external: 'accent',
+  purchase: 'purple',
 };
 
 export function requestTypeLabel(type) {
   if (type === 'external') return 'Trabajo externo';
-  if (type === 'remoto') return 'Trabajo remoto';
+  if (type === 'remoto') return 'Remoto';
   if (type === 'purchase') return 'Compra';
   return REQUEST_TYPES[type] || 'Asuntos propios';
 }
@@ -38,7 +38,7 @@ export function requestTitle(r) {
 }
 
 export function requestDetail(r) {
-  if (r.type === 'asuntos_propios') return `${fmtDayShort(r.date)} · 1 día`;
+  if (r.type === 'asuntos_propios') return `${fmtDayShort(r.date)} · día completo`;
   if (r.type === 'purchase') return fmtMoney(r.amount);
   const days = r.days || daysBetween(r.startDate, r.endDate);
   if (r.startDate === r.endDate) return `${fmtDayShort(r.startDate)} · 1 día`;
@@ -118,7 +118,7 @@ export function availabilityNow(reservations, type, resourceId, now = new Date()
   const mins = now.getHours() * 60 + now.getMinutes();
   const current = reservationsFor(reservations, { type, resourceId, date })
     .find((r) => timeToMin(r.timeStart) <= mins && timeToMin(r.timeEnd) > mins);
-  return current ? { free: false, label: `Hasta ${current.timeEnd}` } : { free: true, label: 'Libre' };
+  return current ? { free: false, label: `Ocupada · ${current.timeEnd}` } : { free: true, label: 'Libre' };
 }
 
 export function reservationStatusLabel(status) {

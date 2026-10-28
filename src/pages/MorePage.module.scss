@@ -1,0 +1,154 @@
+@use '../styles/patterns' as p;
+
+/* "Más", the app's Más tab (mobile/src/screens/SettingsScreen.jsx) */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+@mixin focus-ring {
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.45);
+  }
+}
+
+.me,
+.tile,
+.list {
+  @include p.glass;
+  border-radius: 22px;
+}
+
+.me,
+.tile {
+  @include focus-ring;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 14px;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s var(--ease-out);
+
+  &:active { transform: scale(0.98); }
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong,
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong { font-size: 15px; font-weight: 600; }
+  span { font-size: 12.5px; color: var(--text-sec); }
+}
+
+.me .text strong { font-size: 16px; }
+
+.tile .text { width: 100%; }
+
+.chev { flex-shrink: 0; color: var(--text-mut); }
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+
+  > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+
+.tile {
+  position: relative;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 14px;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 0;
+
+  & + * { border-top: 1px solid var(--border); }
+}
+
+.itemLabel {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.link {
+  @include focus-ring;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+
+  span { flex: 1; }
+  svg:first-child { color: var(--text-sec); }
+
+  & + & { border-top: 1px solid var(--border); }
+}
+
+.danger,
+.danger svg:first-child { color: var(--danger); }
+
+@media (prefers-reduced-motion: reduce) {
+  .me, .tile { transition: none; }
+}

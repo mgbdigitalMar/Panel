@@ -1,0 +1,142 @@
+@use '../styles/patterns' as p;
+
+/* Solicitudes on phones, the app's RequestsScreen */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sumCard {
+  @include p.glass;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px;
+  border-radius: 22px;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+
+button.sumCard {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s var(--ease-out);
+
+  &:active { transform: scale(0.97); }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.45);
+  }
+}
+
+.sumLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text-sec);
+}
+
+.sumValue {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+
+  span {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-sec);
+  }
+}
+
+.segments {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 4px;
+
+  span {
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(var(--text-rgb), 0.1);
+
+    &[data-on] { background: var(--accent); }
+  }
+}
+
+.letters {
+  display: flex;
+  justify-content: space-between;
+
+  span {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-mut);
+
+    &[data-on] { background: var(--info-bg); color: var(--info); }
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pending { border-color: rgba(var(--warning-rgb), 0.35) !important; }
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.spacer { flex: 1; }
+
+.file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 28px 18px;
+  text-align: center;
+
+  strong { margin-top: 6px; font-size: 15px; color: var(--text); }
+  span { font-size: 13px; color: var(--text-sec); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button.sumCard { transition: none; }
+}

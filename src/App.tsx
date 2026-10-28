@@ -16,6 +16,7 @@ const EmployeesPage      = lazy(() => import('./pages/EmployeesPage'))
 const ProfilePage        = lazy(() => import('./pages/ProfilePage'))
 const HorasPage          = lazy(() => import('./pages/HorasPage'))
 const SettingsPage       = lazy(() => import('./pages/SettingsPage'))
+const MorePage           = lazy(() => import('./pages/MorePage'))
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return (
@@ -75,6 +76,7 @@ function AppShell() {
                       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                       <Route path="/employees" element={<ProtectedRoute><EmployeesPage /></ProtectedRoute>} />
                       <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                      <Route path="/mas" element={<ProtectedRoute><MorePage /></ProtectedRoute>} />
                       
                       <Route path="/admin" element={<ProtectedRoute><AdminRoute><AdminPage /></AdminRoute></ProtectedRoute>} />
                       

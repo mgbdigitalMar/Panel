@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Plus, Download, Users, Timer } from 'lucide-react-native';
+import { Plus, Download, Users, Timer, Clock, CheckCircle2, Minus, XCircle } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -10,14 +10,16 @@ import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
 import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
+import { TopBar } from '../components/common/TopBar';
 import { GlassButton, IconButton } from '../components/common/GlassButton';
 import { DateField } from '../components/common/GlassInput';
 import { Tag } from '../components/common/StatusBadge';
 import { T } from '../components/common/Text';
-import { EmptyState, Segmented } from '../components/common/UI';
+import { EmptyState, Segmented, IconTile } from '../components/common/UI';
+import { GlassCard } from '../components/common/GlassCard';
 import { BrandPanel, ON_BRAND } from '../components/common/Brand';
 import { hourStats, HOUR_LABEL, HOUR_TONE } from '../utils/domain';
-import { fmtHM, fmtHMSigned, parseDate, MONTHS_SHORT, toISODate, fmtDate } from '../utils/format';
+import { fmtHM, fmtHMSigned, parseDate, MONTHS_SHORT, DAYS, toISODate, fmtDate } from '../utils/format';
 import { exportCsv } from '../services/files';
 
 export function hourStateText(h) {
@@ -52,6 +54,36 @@ export function HourRow({ h, showEmployee }) {
   );
 }
 
+/** A record of "Registros" (one line of the grouped card): the state's icon, the type, the day and the amount. */
+function HourItem({ h, first }) {
+  const { colors } = useTheme();
+  const d = parseDate(h.date);
+  const owed = h.type === 'debe';
+  const state = h.status === 'rejected' ? ['danger', XCircle, colors.muted, 'Rechazada']
+    : owed ? ['danger', Minus, colors.dangerFg, h.status === 'pending' ? 'En revisión' : 'Aprobada']
+      : h.status === 'pending' ? ['amber', Clock, colors.warningFg, 'En revisión']
+        : ['green', CheckCircle2, colors.successFg, h.type === 'ya' ? 'Compensada' : 'Aprobada'];
+  const [tone, Icon, amtColor, stateText] = state;
+  const weekday = d ? DAYS[d.getDay()] : '';
+  const day = d ? `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)} ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}` : '—';
+  return (
+    <View
+      accessible
+      accessibilityLabel={`${HOUR_LABEL[h.type]}, ${day}, ${stateText}, ${owed ? 'menos' : 'más'} ${fmtHM(h.hours)} horas${h.reason ? `. ${h.reason}` : ''}`}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 14, borderTopWidth: first ? 0 : 1, borderTopColor: colors.divider }}
+    >
+      <IconTile icon={Icon} tone={tone} size={38} />
+      <View style={{ flex: 1, gap: 1, minWidth: 0 }}>
+        <T size={14.5} weight="semibold" numberOfLines={1}>{HOUR_LABEL[h.type]}</T>
+        <T size={12.5} color={colors.text3} numberOfLines={1}>{day} · {stateText}{h.reason ? ` · ${h.reason}` : ''}</T>
+      </View>
+      <T mono weight="semibold" size={15} color={amtColor} style={h.status === 'rejected' ? { textDecorationLine: 'line-through' } : null}>
+        {owed ? '−' : '+'}{fmtHM(h.hours)}
+      </T>
+    </View>
+  );
+}
+
 export async function exportHoursCsv(rows, filename) {
   const typeLabel = (t) => (t === 'ya' ? 'Inmediata' : t === 'bolsa' ? 'Bolsa' : 'Debo');
   await exportCsv(filename,
@@ -72,7 +104,7 @@ export default function HorasScreen() {
   const [filter, setFilter] = useState('all');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
-  const [showDates, setShowDates] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const mine = useMemo(() => hourCompensations.filter((h) => String(h.employeeId) === String(user?.id)), [hourCompensations, user?.id]);
@@ -92,6 +124,7 @@ export default function HorasScreen() {
 
   return (
     <Screen tabBarSpace onRefresh={onRefresh} refreshing={refreshing}>
+      <TopBar />
       <Header
         title="Horas"
         right={(
@@ -137,29 +170,36 @@ export default function HorasScreen() {
         </View>
       </BrandPanel>
 
-      <Segmented value={filter} onChange={setFilter} height={40}
-        options={[{ value: 'all', label: 'Todo' }, { value: 'ya', label: 'Ya' }, { value: 'bolsa', label: 'Bolsa' }, { value: 'debe', label: 'Debo' }]} />
-
+      {/* Registros: one grouped card; type and dates filters fold behind "Filtrar" */}
       <View style={{ gap: 10 }}>
-        <Pressable onPress={() => setShowDates((s) => !s)} accessibilityRole="button" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <T size={14} weight="medium" color={colors.accentFg}>{showDates ? 'Ocultar filtro de fechas' : 'Filtrar por fechas'}</T>
-          <T size={13} color={colors.text3}>{rows.length} registro{rows.length === 1 ? '' : 's'}</T>
-        </Pressable>
-        {showDates ? (
-          <View style={{ gap: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 32 }}>
+          <T size={15} heading weight="semibold" accessibilityRole="header">Registros</T>
+          <Pressable onPress={() => setShowFilters((x) => !x)} accessibilityRole="button" accessibilityState={{ expanded: showFilters }} hitSlop={10}>
+            <T size={14} weight="semibold" color={colors.accentFg}>
+              {showFilters ? 'Ocultar filtros' : filter !== 'all' || from || to ? 'Filtros activos' : 'Filtrar'}
+            </T>
+          </Pressable>
+        </View>
+        {showFilters ? (
+          <View style={{ gap: 10 }}>
+            <Segmented value={filter} onChange={setFilter} height={40}
+              options={[{ value: 'all', label: 'Todo' }, { value: 'ya', label: 'Ya' }, { value: 'bolsa', label: 'Bolsa' }, { value: 'debe', label: 'Debo' }]} />
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <DateField label="Desde" value={from} onChange={setFrom} style={{ flex: 1 }} placeholder="Inicio" />
               <DateField label="Hasta" value={to} onChange={setTo} style={{ flex: 1 }} placeholder="Hoy" />
             </View>
-            {from || to ? <GlassButton title="Limpiar fechas" variant="ghost" size="sm" onPress={() => { setFrom(''); setTo(''); }} /> : null}
+            {filter !== 'all' || from || to ? (
+              <GlassButton title="Quitar filtros" variant="ghost" size="sm" onPress={() => { setFilter('all'); setFrom(''); setTo(''); }} />
+            ) : null}
           </View>
         ) : null}
-      </View>
-
-      <View style={{ gap: 8 }}>
         {rows.length === 0 ? (
           <EmptyState icon={Timer} title="No hay registros aún" message="Usa «Registrar» para añadir horas." />
-        ) : rows.map((h) => <HourRow key={h.id} h={h} />)}
+        ) : (
+          <GlassCard padding={0}>
+            {rows.map((h, i) => <HourItem key={h.id} h={h} first={i === 0} />)}
+          </GlassCard>
+        )}
       </View>
     </Screen>
   );

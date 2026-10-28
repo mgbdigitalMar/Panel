@@ -10,12 +10,13 @@ import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
 import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
+import { TopBar } from '../components/common/TopBar';
 import { GlassCard } from '../components/common/GlassCard';
 import { IconButton } from '../components/common/GlassButton';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { T } from '../components/common/Text';
 import { ChipRail, CountTabs, EmptyState, IconTile, Row, Segmented } from '../components/common/UI';
-import { buildRequestItems, personalDaysSummary, requestDetail, requestTitle, requestTypeLabel, REQUEST_TONE } from '../utils/domain';
+import { buildRequestItems, personalDaysSummary, requestDetail, requestTypeLabel, REQUEST_TONE } from '../utils/domain';
 import { addDays, startOfWeek, toISODate, DAY_LETTERS } from '../utils/format';
 import { exportCsv } from '../services/files';
 import { requestIcon } from '../utils/icons';
@@ -74,6 +75,7 @@ export default function RequestsScreen() {
 
   return (
     <Screen tabBarSpace onRefresh={onRefresh} refreshing={refreshing}>
+      <TopBar />
       <Header
         title="Solicitudes"
         right={filtered.length ? <IconButton icon={Download} onPress={exportList} accessibilityLabel="Descargar CSV" /> : null}
@@ -140,8 +142,8 @@ export default function RequestsScreen() {
           <Row
             key={`${r.type}-${r.id}`}
             left={<IconTile icon={requestIcon(r.type)} tone={REQUEST_TONE[r.type]} />}
-            title={requestTitle(r)}
-            subtitle={scope === 'team' ? `${r.employeeName || '—'} · ${requestDetail(r)}` : requestDetail(r)}
+            title={requestTypeLabel(r.type)}
+            subtitle={[scope === 'team' ? r.employeeName || '—' : null, r.type === 'purchase' ? r.item : null, requestDetail(r)].filter(Boolean).join(' · ')}
             right={<StatusBadge status={r.status} />}
             onPress={() => navigation.navigate('RequestDetail', { id: String(r.id), kind: r.type === 'asuntos_propios' ? 'asuntos_propios' : 'request' })}
           />

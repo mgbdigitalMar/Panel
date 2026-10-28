@@ -706,6 +706,9 @@ $gap: 18px;
   display: flex;
   align-items: center;
   gap: 18px;
+
+  /* The chart keeps its 120 px; the legend takes what is left */
+  > :first-child { flex-shrink: 0; }
 }
 
 .donutLegend {
@@ -761,6 +764,16 @@ $gap: 18px;
 .tableWrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+
+  @media (max-width: 640px) { display: none; }
+}
+
+.recentList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @media (min-width: 641px) { display: none; }
 }
 
 .tdBold { font-weight: 600; color: var(--text); }
@@ -812,15 +825,37 @@ $gap: 18px;
     > * { flex: 1; justify-content: center; }
   }
 
+  /* Pinned news: a row that slides sideways, the next card peeking in */
+  .pinned:not(.pinnedOne) {
+    display: flex;
+    margin-inline: -14px;
+    padding: 0 14px 2px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 14px;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+
+    > * {
+      flex: 0 0 86%;
+      scroll-snap-align: start;
+    }
+  }
+
   .pinCard, .pinLead { padding: 18px; min-height: 0; }
   .pinMore { margin-left: 0; }
 
   .kpis > * { min-height: 112px; }
 
   .panel { padding: 16px; }
-  .chartPanel { min-height: 320px; }
-  .chartBody { min-height: 220px; }
+  .chartPanel { min-height: 0; }
+  .chartBody { min-height: 190px; }
   .panelHead { flex-wrap: wrap; }
-  .chartTools { justify-content: flex-start; width: 100%; }
+  .chartTools {
+    justify-content: space-between;
+    width: 100%;
+  }
   .goalsBody { gap: 14px; }
 }

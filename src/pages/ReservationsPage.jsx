@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth, useReservations, useNotifs } from '../context';
 import { Badge, Modal, Select, Input, Textarea, Button, Card, ConfirmModal, StatCard, Section } from '../components/ui';
+import { usePhoneApp } from '../components/PhoneKit';
+import ReservationsPhone from './ReservationsPhone';
 import { Building, Car, Check, X, Plus, Download, Trash2, CalendarPlus, CalendarDays, Users, ArrowRight } from 'lucide-react';
 import { downloadReservationIcs } from '../utils/ics';
 import { fmtDayShort, todayKey } from '../utils/format';
@@ -53,14 +55,25 @@ export default function ReservationsPage() {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [form, setForm]         = useState({ type: 'room', resourceId: '', date: '', timeStart: '', timeEnd: '', purpose: '' });
 
-  // ?nueva=1 (search, shortcuts, dashboard) opens the booking form straight away
+  // ?nueva=1 (search, shortcuts, dashboard) opens the booking form straight away; &tipo=vehicle picks a car.
+  // ?mias=1 (phone dashboard) opens "Mis reservas".
   const [searchParams, setSearchParams] = useSearchParams();
+  const [phoneView] = useState(() => (searchParams.get('mias') === '1' ? 'mine' : 'room'));
   useEffect(() => {
     if (searchParams.get('nueva') === '1') {
+      if (searchParams.get('tipo') === 'vehicle') setForm(f => ({ ...f, type: 'vehicle', resourceId: '' }));
       setShowModal(true);
+      setSearchParams({}, { replace: true });
+    } else if (searchParams.get('mias') === '1') {
       setSearchParams({}, { replace: true });
     }
   }, [searchParams, setSearchParams]);
+
+  const phone = usePhoneApp();
+  const book = (type, id) => {
+    setForm(f => ({ ...f, type, resourceId: String(id) }));
+    setShowModal(true);
+  };
 
   const filtered = tab === 'all' ? reservations : tab === 'mine' ? reservations.filter(r => r.employeeId === user?.id) : reservations.filter(r => r.type === tab);
 
@@ -143,6 +156,23 @@ export default function ReservationsPage() {
 
   return (
     <div className={styles.container}>
+      {/* Phones: the app's Reservas screen */}
+      {phone ? (
+        <ReservationsPhone
+          rooms={rooms}
+          vehicles={vehicles}
+          reservations={reservations}
+          user={user}
+          busyUntil={busyUntil}
+          initialView={phoneView}
+          onBook={book}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onDelete={setItemToDelete}
+          onAddToCalendar={downloadReservationIcs}
+        />
+      ) : (
+      <>
       <div className={styles.pageControls}>
         <div className={styles.tabsRow}>
           {tabBtn('all', 'Todas', reservations.length)}
@@ -324,6 +354,8 @@ export default function ReservationsPage() {
           )}
         </Card>
         </Section>
+      )}
+      </>
       )}
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Nueva reserva">

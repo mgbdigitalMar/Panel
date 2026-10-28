@@ -10,6 +10,7 @@ import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
 import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
+import { TopBar } from '../components/common/TopBar';
 import { GlassCard } from '../components/common/GlassCard';
 import { GlassButton } from '../components/common/GlassButton';
 import { GlassInput, DateField, TimeField } from '../components/common/GlassInput';
@@ -129,6 +130,7 @@ export default function ReservationsScreen() {
 
   return (
     <Screen tabBarSpace onRefresh={onRefresh} refreshing={refreshing}>
+      <TopBar />
       <Header
         title="Reservas"
         right={(

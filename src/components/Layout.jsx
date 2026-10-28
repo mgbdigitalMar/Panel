@@ -41,15 +41,18 @@ const adminItems = [
 ];
 const settingsItem = { id: 'settings', label: 'Ajustes', icon: SlidersHorizontal };
 
-/* Heading shown at the top of the content panel. The dashboard draws its own. */
+/* Heading shown at the top of the content panel. The dashboard draws its own.
+   `width`: pages laid out as a centred column; the heading lines up with it.
+   `phone`: on phones (glass) the page draws the app's own header, title and actions on one line. */
 const PAGE_META = {
-  reservations: { title: 'Reservas',           desc: 'Salas y vehículos de empresa: mira qué está libre y reserva en segundos.' },
-  requests:     { title: 'Solicitudes',        desc: 'Asuntos propios, trabajo en remoto o externo y compras.' },
-  horas:        { title: 'Tiempo a compensar', desc: 'Registra tus horas y consulta tu saldo con la empresa.' },
+  reservations: { title: 'Reservas',           desc: 'Salas y vehículos de empresa: mira qué está libre y reserva en segundos.', phone: true },
+  requests:     { title: 'Solicitudes',        desc: 'Asuntos propios, trabajo en remoto o externo y compras.', phone: true },
+  horas:        { title: 'Tiempo a compensar', desc: 'Registra tus horas y consulta tu saldo con la empresa.', phone: true },
+  mas:          { title: 'Más',                desc: 'Tu cuenta, el resto de secciones y tus preferencias.', phone: true },
   news:         { title: 'Noticias y Eventos', desc: 'Comunicados, novedades y próximos eventos de Margube.' },
   employees:    { title: 'Equipo',             desc: 'Directorio del equipo y dónde trabaja cada persona, hoy y durante la semana.' },
-  profile:      { title: 'Mi perfil',          desc: 'Tus datos, modo de trabajo, contraseña y documentos.' },
-  settings:     { title: 'Ajustes',            desc: 'Tema, notificaciones y preferencias de tu cuenta.' },
+  profile:      { title: 'Mi perfil',          desc: 'Tus datos, modo de trabajo, contraseña y documentos.', width: 1180 },
+  settings:     { title: 'Ajustes',            desc: 'Tema, notificaciones y preferencias de tu cuenta.', width: 680 },
   admin:        { title: 'Administración',     desc: 'Empleados, salas, vehículos, documentos y bolsa de horas.' },
 };
 
@@ -633,7 +636,7 @@ export default function Layout({ children }) {
               exit={{ opacity: 0, transition: { duration: 0.12, ease: [0.23, 1, 0.32, 1] } }}
             >
               {meta && (
-                <div className={styles.pageIntro}>
+                <div className={clsx(styles.pageIntro, meta.phone && styles.pageIntroPhoneOwn)} style={meta.width ? { maxWidth: meta.width, marginInline: 'auto' } : undefined}>
                   <h1 className={styles.pageTitle}>{meta.title}</h1>
                   <p className={styles.pageDesc}>{meta.desc}</p>
                 </div>
@@ -658,7 +661,7 @@ export default function Layout({ children }) {
         </main>
       </div>
 
-      {/* Glass on phones and tablets: sections in a dock at the bottom (classic keeps the drawer) */}
+      {/* Glass on phones: sections in a dock at the bottom (tablets have them in the top bar, classic keeps the drawer) */}
       {glass && (
         <GlassTabBar
           items={user?.role === 'admin' ? [...navItems, ...adminItems] : navItems}

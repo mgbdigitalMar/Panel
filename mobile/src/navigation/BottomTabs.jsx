@@ -29,7 +29,7 @@ const TABS = [
   { name: 'Settings', label: 'Más', icon: LayoutGrid, component: SettingsScreen },
 ];
 
-/** Icon only; the active tab gets a filled accent circle that springs in. */
+/** The open tab is named, blue and underlined on a soft blue pill (as on the web); the rest show the icon. */
 function TabItem({ tab, focused, badge, onPress, onLongPress }) {
   const { colors } = useTheme();
   const reduce = useReduceMotion();
@@ -41,7 +41,8 @@ function TabItem({ tab, focused, badge, onPress, onLongPress }) {
   }, [focused, reduce, on]);
 
   const Icon = tab.icon;
-  const dot = TAB_BAR_HEIGHT - 16;
+  const h = TAB_BAR_HEIGHT - 10;
+  const color = focused ? colors.accent : colors.text2;
   return (
     <Pressable
       onPress={onPress}
@@ -49,22 +50,25 @@ function TabItem({ tab, focused, badge, onPress, onLongPress }) {
       accessibilityRole="tab"
       accessibilityState={{ selected: focused }}
       accessibilityLabel={badge ? `${tab.label}, ${badge} pendientes` : tab.label}
-      style={{ flex: 1, height: '100%', alignItems: 'center', justifyContent: 'center' }}
+      style={{
+        height: h, minWidth: 44, paddingHorizontal: focused ? 13 : 0, borderRadius: h / 2,
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
+      }}
     >
-      <View style={{ width: dot, height: dot, alignItems: 'center', justifyContent: 'center' }}>
-        <Animated.View
-          pointerEvents="none"
-          style={{
-            position: 'absolute', width: dot, height: dot, borderRadius: dot / 2, backgroundColor: colors.navActive,
-            opacity: on,
-            transform: [{ scale: on.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }],
-          }}
-        />
-        <Icon size={22} color={focused ? colors.navActiveIcon : colors.text2} strokeWidth={focused ? 2.1 : 1.8} />
+      <Animated.View
+        pointerEvents="none"
+        style={{
+          position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, borderRadius: h / 2,
+          backgroundColor: colors.accentSoft, opacity: on,
+          transform: [{ scale: on.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) }],
+        }}
+      />
+      <View>
+        <Icon size={20} color={color} strokeWidth={focused ? 2.1 : 1.8} />
         {badge ? (
           <View
             style={{
-              position: 'absolute', top: 2, right: 0, minWidth: 18, height: 18, paddingHorizontal: 4, borderRadius: 9,
+              position: 'absolute', top: -7, right: -10, minWidth: 18, height: 18, paddingHorizontal: 4, borderRadius: 9,
               backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.bg,
             }}
           >
@@ -72,6 +76,13 @@ function TabItem({ tab, focused, badge, onPress, onLongPress }) {
           </View>
         ) : null}
       </View>
+      {focused ? <T size={13.5} weight="semibold" color={color} numberOfLines={1}>{tab.label}</T> : null}
+      {focused ? (
+        <Animated.View
+          pointerEvents="none"
+          style={{ position: 'absolute', left: 13, right: 13, bottom: 6, height: 2.5, borderRadius: 2, backgroundColor: colors.accent, opacity: on }}
+        />
+      ) : null}
     </Pressable>
   );
 }
@@ -84,19 +95,19 @@ function TabBar({ state, navigation, badges }) {
     <View
       pointerEvents="box-none"
       style={{
-        position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', justifyContent: 'center', gap: 10,
+        position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
         paddingHorizontal: Math.max(16, insets.left, insets.right), paddingBottom: Math.max(insets.bottom, 10),
       }}
     >
       <View
         accessibilityRole="tablist"
         style={{
-          flex: 1,
-          maxWidth: 400,
+          flexShrink: 1,
           height: TAB_BAR_HEIGHT,
           flexDirection: 'row',
           alignItems: 'center',
-          paddingHorizontal: 6,
+          gap: 2,
+          paddingHorizontal: 5,
           borderRadius: TAB_BAR_HEIGHT / 2,
         }}
       >

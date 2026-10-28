@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth, useHours } from '../context';
 import { Card, Button, Input, Modal, Avatar, StatCard, Section } from '../components/ui';
 import { Clock, Inbox, CheckCircle, XCircle, Download, PenTool, TrendingDown, Search, Zap, Info, AlertTriangle, CheckCheck } from 'lucide-react';
@@ -6,6 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import styles from './HorasPage.module.scss';
 import { todayKey } from '../utils/format';
+import { usePhoneApp } from '../components/PhoneKit';
+import { HorasPhoneHeader, HorasPhoneSummary } from './HorasPhone';
 
 function exportToCSV(rows, filename) {
   const typeLabel = t => t === 'ya' ? 'Inmediata' : t === 'bolsa' ? 'Bolsa' : 'Debo';
@@ -92,7 +95,16 @@ export default function HorasPage() {
   const { user, employees = [] } = useAuth();
   const { hourCompensations = [], createHourCompensation } = useHours();
 
-  const [tab, setTab]   = useState('nueva');
+  // Phones open on the balance and records (the app's Horas tab); ?nueva=1 opens the form
+  const phone = usePhoneApp();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [tab, setTab]   = useState(() => (phone && searchParams.get('nueva') !== '1' ? 'bolsa' : 'nueva'));
+  useEffect(() => {
+    if (searchParams.get('nueva') === '1') {
+      setTab('nueva');
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
   const [mode, setMode] = useState('ya');
   const [form, setForm] = useState({ date: '', reason: '', hours: '' });
   const [loading, setLoading]   = useState(false);
@@ -234,6 +246,17 @@ export default function HorasPage() {
   return (
     <div className={styles.container}>
 
+      {phone && (
+        <HorasPhoneHeader
+          tab={tab}
+          setTab={setTab}
+          isAdmin={user?.role === 'admin'}
+          rows={allRows}
+          onExport={() => exportToCSV(allRows, `horas-${new Date().toISOString().slice(0,10)}.csv`)}
+        />
+      )}
+
+      {!phone && (
       <div className={styles.pageControls}>
         <div className={styles.tabsRow}>
           {tabBtn('nueva', 'Nueva solicitud', 0)}
@@ -252,6 +275,7 @@ export default function HorasPage() {
           )}
         </div>
       </div>
+      )}
 
       <AnimatePresence mode="wait">
         {/* Nueva solicitud */}
@@ -264,7 +288,7 @@ export default function HorasPage() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.2 }}
           >
-            <Section title="Registrar horas" description="Elige si las compensas ya, las acumulas en tu bolsa o las debes a la empresa.">
+            <Section title={phone ? undefined : "Registrar horas"} description="Elige si las compensas ya, las acumulas en tu bolsa o las debes a la empresa.">
             <Card className={styles.formCard}>
               <div className={styles.modeToggle}>
                 {Object.entries(MODE_CONFIG).map(([key, c]) => {
@@ -368,8 +392,28 @@ export default function HorasPage() {
           </motion.div>
         )}
 
-        {/* Mi registro */}
-        {tab === 'bolsa' && (
+        {/* Mi registro — phones: the app's balance card and records */}
+        {tab === 'bolsa' && phone && (
+          <motion.div
+            key="bolsa-phone"
+            className={styles.tabContent}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.2 }}
+          >
+            <HorasPhoneSummary
+              balance={balance}
+              creditHours={creditHours}
+              debtHours={debtHours}
+              pendingHours={pendingHours}
+              rows={allRows}
+              onRegister={() => setTab('nueva')}
+            />
+          </motion.div>
+        )}
+
+        {tab === 'bolsa' && !phone && (
           <motion.div
             key="bolsa"
             className={styles.tabContent}
@@ -489,7 +533,7 @@ export default function HorasPage() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.2 }}
           >
-            <Section title="Saldo por persona" description="Horas a favor, pendientes y en deuda de cada empleado.">
+            <Section title={phone ? undefined : "Saldo por persona"} description="Horas a favor, pendientes y en deuda de cada empleado.">
             <div className={styles.adminSearchHeader}>
               <div className={clsx(styles.userSearchWrapper, styles.userSearchWrapperFlex)}>
                 <Search size={16} />

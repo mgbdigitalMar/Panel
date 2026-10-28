@@ -437,14 +437,13 @@ export default function DashboardGlass({ d }) {
             </div>
           </div>
           <div className={styles.donut}>
-            <ResponsiveContainer width={120} height={120}>
-              <PieChart>
-                <Pie data={resourceTypePie} cx="50%" cy="50%" innerRadius={38} outerRadius={56} paddingAngle={4} dataKey="value" stroke="none">
-                  {resourceTypePie.map((p) => <Cell key={p.name} fill={p.fill} />)}
-                </Pie>
-                <Tooltip content={<ChartTip />} />
-              </PieChart>
-            </ResponsiveContainer>
+            {/* Fixed size: a ResponsiveContainer measures 0 in a narrow flex row and draws nothing */}
+            <PieChart width={120} height={120}>
+              <Pie data={resourceTypePie} cx="50%" cy="50%" innerRadius={38} outerRadius={56} paddingAngle={4} dataKey="value" stroke="none">
+                {resourceTypePie.map((p) => <Cell key={p.name} fill={p.fill} />)}
+              </Pie>
+              <Tooltip content={<ChartTip />} />
+            </PieChart>
             <ul className={styles.donutLegend}>
               {resourceTypePie.map((p) => (
                 <li key={p.name}>
@@ -504,6 +503,20 @@ export default function DashboardGlass({ d }) {
               </tbody>
             </table>
           </div>
+          {/* Phones: one compact row per reservation instead of the table */}
+          <ul className={clsx(styles.agenda, styles.recentList)}>
+            {reservations.slice(0, 6).map((r) => (
+              <li key={r.id} data-type={r.type}>
+                <span className={styles.agendaIcon} aria-hidden="true">{r.type === 'vehicle' ? <Car size={14} /> : <DoorOpen size={14} />}</span>
+                <span className={styles.agendaText}>
+                  <strong>{r.resourceName}{r.date === todayStr && <span className={styles.todayChip}>hoy</span>}</strong>
+                  <span>{fmtDayShort(r.date)} · {r.timeStart}–{r.timeEnd} · {r.employeeName}</span>
+                </span>
+                <Badge status={r.status} />
+              </li>
+            ))}
+            {reservations.length === 0 && <li className={styles.tableEmpty}>Todavía no hay reservas.</li>}
+          </ul>
         </Card>
       </div>
     </div>

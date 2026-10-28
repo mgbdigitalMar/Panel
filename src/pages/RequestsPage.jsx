@@ -7,6 +7,8 @@ import styles from './RequestsPage.module.scss';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fmtDate, fmtRange, fmtMoney, plural, todayKey } from '../utils/format';
+import { usePhoneApp } from '../components/PhoneKit';
+import RequestsPhone from './RequestsPhone';
 
 /** Calendar days from start to end, both included (28 → 29 is 2 days) */
 const daysInclusive = (start, end) =>
@@ -212,8 +214,25 @@ export default function RequestsPage() {
     );
   };
 
+  const phone = usePhoneApp();
+
   return (
     <div className={styles.container}>
+      {/* Phones: the app's Solicitudes screen; new requests come from the dock's "+" */}
+      {phone ? (
+        <RequestsPhone
+          allItems={allItems}
+          user={user}
+          requestDetail={requestDetail}
+          rowKey={rowKey}
+          onExport={exportRequestsCSV}
+          onNewPersonalDay={() => { setReqType('asuntos_propios'); setShowModal(true); }}
+          onApprove={(r) => changeStatus(r.id, 'approved', r.employeeId, r.type)}
+          onReject={(r) => changeStatus(r.id, 'rejected', r.employeeId, r.type)}
+          onDelete={(r) => setItemToDelete({ id: r.id, type: r.type })}
+        />
+      ) : (
+      <>
       <div className={styles.pageControls}>
         <div className={styles.tabsRow}>
           {tabBtn('all', 'Todas')}
@@ -314,6 +333,8 @@ export default function RequestsPage() {
         )}
       </Card>
       </Section>
+      </>
+      )}
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Nueva solicitud">
         <div className={styles.typeButtons}>

@@ -98,5 +98,20 @@ export async function runMobileAppTests() {
     assert(existsSync(resolve(rootDir, 'shared', s)), `Servicio compartido shared/${s} operativo`);
   }
 
+  // Diseño del boceto (igual que la web en el móvil)
+  const src = (...p) => readFileSync(resolve(mobileDir, 'src', ...p), 'utf8');
+  const tabs = src('navigation', 'BottomTabs.jsx');
+  assert(tabs.includes('backgroundColor: colors.accentSoft') && tabs.includes('{focused ? <T size={13.5} weight="semibold" color={color}'),
+    'Barra de pestañas: la abierta con nombre, en azul y subrayada');
+  assert(['DashboardScreen.jsx', 'ReservationsScreen.jsx', 'RequestsScreen.jsx', 'HorasScreen.jsx', 'SettingsScreen.jsx']
+    .every((f) => src('screens', f).includes('<TopBar />')) && !src('components', 'common', 'TopBar.jsx').includes('<Avatar'), 'Barra superior (hoja, buscar y avisos, sin avatar) en las cinco pestañas');
+  assert(src('navigation', 'RootNavigator.jsx').includes('name="Search" component={SearchScreen}') && existsSync(resolve(mobileDir, 'src', 'screens', 'SearchScreen.jsx')),
+    'Buscador de personas, noticias, reservas y solicitudes');
+  const profile = src('screens', 'ProfileScreen.jsx');
+  assert(profile.includes('Normas internas firmadas') && profile.includes('Cambiar contraseña') && profile.includes("navigate('Documents')") && profile.includes('<CardTitle>Mi información</CardTitle>'),
+    'Mi perfil como el boceto: identidad centrada, modo de trabajo, información, normas y filas de contraseña y documentos');
+  assert(src('components', 'common', 'UI.jsx').includes("minHeight: 64, borderRadius: radius, padding: 12, gap: 10, flexDirection: 'row'"),
+    'Accesos rápidos en tarjetas compactas (icono y texto en fila)');
+
   return { passed, failed };
 }

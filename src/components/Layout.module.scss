@@ -795,13 +795,22 @@ $header-h-mobile: 64px;
     padding-left: clamp(20px, 3vw, 44px);
     padding-right: clamp(20px, 3vw, 44px);
 
-    /* Phones and tablets: room for the bottom dock */
     @media (max-width: 1023px) {
-      padding: 12px 14px calc(104px + env(safe-area-inset-bottom));
+      padding: 12px 14px calc(32px + env(safe-area-inset-bottom));
+    }
+
+    /* Phones: room for the bottom dock */
+    @media (max-width: 767px) {
+      padding-bottom: calc(92px + env(safe-area-inset-bottom));
     }
   }
 
   .panelInner { max-width: 1440px; }
+
+  /* Phones: these pages draw the app's header themselves (PhoneKit) */
+  .pageIntroPhoneOwn {
+    @media (max-width: 767px) { display: none; }
+  }
 
   /* Page titles sit on the wallpaper, not on a card */
   .pageTitle { text-shadow: 0 1px 12px rgba(0, 0, 0, 0.12); }

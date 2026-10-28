@@ -68,13 +68,21 @@ export function AuthProvider({ children }) {
     return profile;
   }, []);
 
+  // "Recordarme" on the login: keep the email for next time, or forget it
+  const rememberEmail = useRef(true);
+
   const startSession = useCallback(async (profile) => {
     lastActivity.current = Date.now();
     setUser(profile);
     setLocked(false);
     await persistSession(profile.id, true);
-    await setItem(KEYS.lastEmail, profile.email);
-    setLastEmail(profile.email);
+    if (rememberEmail.current) {
+      await setItem(KEYS.lastEmail, profile.email);
+      setLastEmail(profile.email);
+    } else {
+      await removeItem(KEYS.lastEmail);
+      setLastEmail('');
+    }
     loadEmployees();
     registerForPushNotificationsAsync(profile.id);
   }, [loadEmployees, persistSession]);
@@ -163,8 +171,9 @@ export function AuthProvider({ children }) {
     return () => { supabase.removeChannel(channel); };
   }, [user?.id, loadEmployees, clearSession]);
 
-  const login = useCallback(async (emailInput, pass) => {
+  const login = useCallback(async (emailInput, pass, { remember = true } = {}) => {
     const email = String(emailInput || '').trim();
+    rememberEmail.current = remember;
     if (!email || !pass) return { ok: false, msg: 'Introduce tu correo y tu contraseña.' };
     try {
       // First access with the temporary password: the navigator then forces

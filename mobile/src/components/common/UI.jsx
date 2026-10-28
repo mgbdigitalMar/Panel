@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { ActivityIndicator, Image, Modal, Pressable, ScrollView, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Check, Inbox, X, Info, AlertTriangle, ArrowRight, ArrowUpRight } from 'lucide-react-native';
+import { Check, Inbox, X, Info, AlertTriangle, ArrowRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import Svg, { Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -178,23 +178,19 @@ function ActionTile({ icon, tone = 'accent', label, sub, badge, onPress, width }
       accessibilityRole="button"
       accessibilityLabel={[label, sub, badge ? `${badge} pendientes` : null].filter(Boolean).join(', ')}
       scaleTo={0.96}
-      style={{ width, minHeight: 112, borderRadius: radius, padding: 14, gap: 12, justifyContent: 'space-between' }}
+      style={{ width, minHeight: 64, borderRadius: radius, padding: 12, gap: 10, flexDirection: 'row', alignItems: 'center' }}
     >
       <GlassFill radius={radius} />
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <IconTile icon={icon} tone={tone} size={40} />
-        {badge ? (
-          <View style={{ minWidth: 24, height: 24, paddingHorizontal: 7, borderRadius: 12, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center' }}>
-            <T size={12} weight="bold" color="#FFFFFF" style={{ lineHeight: 14 }}>{badge > 99 ? '99+' : badge}</T>
-          </View>
-        ) : (
-          <ArrowUpRight size={18} color={colors.text3} strokeWidth={2} />
-        )}
+      <IconTile icon={icon} tone={tone} size={40} />
+      <View style={{ flex: 1, minWidth: 0, gap: 1 }}>
+        <T size={14} weight="semibold" numberOfLines={2}>{label}</T>
+        {sub ? <T size={12} color={colors.text3} numberOfLines={2}>{sub}</T> : null}
       </View>
-      <View style={{ gap: 2 }}>
-        <T size={15} weight="semibold" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{label}</T>
-        {sub ? <T size={12.5} color={colors.text3} numberOfLines={1}>{sub}</T> : null}
-      </View>
+      {badge ? (
+        <View style={{ position: 'absolute', top: 8, right: 10, minWidth: 18, height: 18, paddingHorizontal: 5, borderRadius: 9, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center' }}>
+          <T size={10.5} weight="bold" color="#FFFFFF" style={{ lineHeight: 12 }}>{badge > 99 ? '99+' : badge}</T>
+        </View>
+      ) : null}
     </PressScale>
   );
 }
