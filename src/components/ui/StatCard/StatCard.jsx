@@ -10,9 +10,20 @@ import { motion, useMotionValue, useTransform, animate, useReducedMotion } from 
 // Explicit map: `import * as Icons` pulled the whole icon set into the bundle
 const ICONS = { Building, Calendar, Car, CheckCircle, Clock, Home, Inbox, MapPin, Newspaper, TrendingDown, TrendingUp, Users, XCircle };
 
+/** Small trend line in the corner of the tile (values in time order). */
+function Sparkline({ values }) {
+  const max = Math.max(...values, 1);
+  const pts = values.map((v, i) => `${(i / (values.length - 1)) * 100},${30 - (v / max) * 26}`).join(' ');
+  return (
+    <svg className={styles.spark} viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
+      <polyline points={pts} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
 /** `icon` takes a lucide component or one of the names above; `onClick` makes the tile a button.
- * `trend` must only ever carry a computed value. */
-export function StatCard({ label, value, icon, color = 'var(--accent)', sub, trend, trendUp, loading, onClick, actionLabel, className }) {
+ * `trend` must only ever carry a computed value; `spark` is an optional series drawn as a trend line. */
+export function StatCard({ label, value, icon, color = 'var(--accent)', sub, trend, trendUp, loading, onClick, actionLabel, className, spark }) {
   const IconComponent = typeof icon === 'string' ? (ICONS[icon] || HelpCircle) : (icon || HelpCircle);
   const reduce = useReducedMotion();
 
@@ -61,6 +72,7 @@ export function StatCard({ label, value, icon, color = 'var(--accent)', sub, tre
             )}
           </p>
           {sub && <p className={styles.sub}>{sub}</p>}
+          {spark?.length > 1 && <Sparkline values={spark} />}
         </>
       )}
     </Root>

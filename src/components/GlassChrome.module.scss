@@ -1,0 +1,418 @@
+/* Chrome of the glass appearance. Every surface here is frosted (real backdrop blur):
+   they float over the wallpaper and the page scrolling underneath. */
+@mixin frosted {
+  background: var(--lg-chrome);
+  border: 1px solid var(--lg-edge);
+  box-shadow: inset 0 1px 0 var(--lg-rim), 0 10px 30px -12px rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  backdrop-filter: blur(28px) saturate(160%);
+}
+
+/* Menus and the dock: same glass, denser fill and stronger blur so text stays readable over the page */
+@mixin frosted-dense {
+  background: var(--lg-sheen), var(--lg-popover, rgba(255, 255, 255, 0.86));
+  border: 1px solid var(--lg-edge);
+  box-shadow: inset 0 1px 0 var(--lg-rim), 0 18px 44px -14px rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(40px) saturate(180%);
+}
+
+@mixin focus-ring {
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.45);
+  }
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 14px clamp(16px, 2.4vw, 32px);
+
+  @media (max-width: 1023px) {
+    grid-template-columns: auto 1fr;
+    gap: 8px;
+    padding: calc(10px + env(safe-area-inset-top)) 12px 10px;
+  }
+
+  /* Phones: slightly smaller round buttons so the bar fits at 320 px */
+  @media (max-width: 479px) {
+    .round, .brand { width: 40px; height: 40px; }
+    .left, .right { gap: 6px; }
+  }
+}
+
+.left,
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.right { justify-content: flex-end; }
+
+.round,
+.brand {
+  @include frosted;
+  @include focus-ring;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.15s var(--ease-out), background 0.15s;
+
+  &:active { transform: scale(0.94); }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { background: var(--lg-fill-hover); }
+  }
+}
+
+.brand {
+  cursor: default;
+
+  &:active { transform: none; }
+}
+
+.swap { display: grid; }
+
+.brand img {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+}
+
+/* Section pill, centred */
+.nav {
+  @include frosted;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px;
+  border-radius: var(--radius-full);
+
+  @media (max-width: 1023px) { display: none; }
+}
+
+.navItem {
+  @include focus-ring;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-sec);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s;
+
+  > svg, > span { position: relative; z-index: 1; }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { color: var(--text); }
+  }
+
+  /* Mid widths: inactive sections show their icon only */
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    &:not(.navItemActive) {
+      padding: 0 11px;
+      .navLabel { display: none; }
+    }
+  }
+}
+
+.navItemActive { color: var(--text); }
+
+.navPill {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: var(--lg-active);
+  box-shadow: inset 0 1px 0 var(--lg-rim), 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.navBadge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  color: #FFFFFF;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    position: absolute !important;
+    top: 1px;
+    right: 1px;
+    min-width: 16px;
+    height: 16px;
+    font-size: 9.5px;
+  }
+}
+
+.clock {
+  @include frosted;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: var(--radius-full);
+  color: var(--text-sec);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+
+  @media (max-width: 1200px) { display: none; }
+}
+
+/* Profile menu */
+.profile { position: relative; }
+
+.avatarBtn {
+  @include focus-ring;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 14px;
+  background: none;
+  cursor: pointer;
+}
+
+.menu {
+  @include frosted-dense;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: var(--z-dropdown, 50);
+  width: min(300px, calc(100vw - 24px));
+  padding: 8px;
+  border-radius: 22px;
+  transform-origin: top right;
+}
+
+.menuHead {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px 12px;
+
+  > strong { font-size: 15px; color: var(--text); }
+  > span { font-size: 12.5px; color: var(--text-sec); }
+}
+
+.menuLinks {
+  display: flex;
+  flex-direction: column;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+
+  button {
+    @include focus-ring;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 40px;
+    padding: 0 12px;
+    border: none;
+    border-radius: 12px;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+
+    svg { color: var(--text-sec); }
+
+    &:hover { background: rgba(var(--text-rgb), 0.07); }
+  }
+}
+
+.menuDanger,
+.menuDanger svg { color: var(--danger) !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .round { transition: none; }
+}
+
+/* Bottom dock (phones and tablets) ------------------------------------------- */
+.tabBar {
+  @include frosted-dense;
+  position: fixed;
+  left: 50%;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  z-index: var(--z-header);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  width: min(480px, calc(100% - 20px));
+  padding: 6px;
+  border-radius: 28px;
+
+  @media (min-width: 640px) { width: min(720px, calc(100% - 32px)); }
+  @media (min-width: 1024px) { display: none; }
+}
+
+/* Phones: only the four main sections, the rest under "Más" */
+.tab.tab.tabExtra {
+  @media (max-width: 639px) { display: none; }
+}
+
+/* Tablets: every section fits, so no "Más" */
+.tab.tab.tabMore {
+  @media (min-width: 640px) { display: none; }
+}
+
+.tab {
+  @include focus-ring;
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 56px;
+  padding: 0 2px;
+  border: none;
+  border-radius: 22px;
+  background: transparent;
+  color: var(--text-sec);
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s, transform 0.15s var(--ease-out);
+
+  &:active { transform: scale(0.95); }
+
+  > span:not(.tabPill) { position: relative; z-index: 1; }
+}
+
+.tabActive { color: var(--accent); }
+
+.tabPill {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: var(--lg-active);
+  box-shadow: inset 0 1px 0 var(--lg-rim), 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.tabIcon {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.tabBadge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabLabel {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* "Más": the remaining sections, just above the dock */
+.moreSheet {
+  @include frosted-dense;
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  width: min(260px, 100%);
+  padding: 6px;
+  border-radius: 22px;
+  transform-origin: bottom right;
+}
+
+.moreItem {
+  @include focus-ring;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 16px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+
+  svg { color: var(--text-sec); }
+  span:first-of-type { flex: 1; }
+
+  &:hover { background: rgba(var(--text-rgb), 0.07); }
+}
+
+.moreItemActive {
+  background: var(--lg-active);
+  color: var(--accent);
+
+  svg { color: var(--accent); }
+}
+
+.moreBadge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab { transition: none; }
+}

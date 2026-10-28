@@ -15,6 +15,8 @@ import logoWhite from '../assets/logos/logo-white.png';
 import logoIcon from '../assets/logos/logo-icon.png';
 
 import { Avatar, Button, TopProgress, PageLoader, AnimatedBackdrop } from './ui';
+import { Wallpaper } from './Wallpaper';
+import { GlassHeader, GlassTabBar } from './GlassChrome';
 import OnboardingModal from './OnboardingModal';
 import { NotificationsDropdown } from './NotificationsDropdown';
 import { PolicyModal } from './PolicyModal';
@@ -174,7 +176,9 @@ function NavLink({ item, onNavigate, collapsed, badge, active, pillId }) {
 
 export default function Layout({ children }) {
   const { user, logout, needsOnboarding, setLastActivity, patchUser, refreshEmployees } = useAuth();
-  const { theme, setMode } = useTheme();
+  const { theme, setMode, appearance } = useTheme();
+  // 'glass': wallpaper and top section pill · 'classic': sidebar (Ajustes → Apariencia)
+  const glass = appearance === 'glass';
   const navigate = useNavigate();
   const location = useLocation();
   const page = location.pathname.replace('/', '') || 'dashboard';
@@ -341,6 +345,44 @@ export default function Layout({ children }) {
     window.scrollTo(0, 0);
   }, [page]);
 
+  // Notifications bell + dropdown, shared by the classic and the glass top bars
+  const bellNode = (
+            <div className={styles.bellWrap} ref={notiMenuRef}>
+              <button
+                type="button"
+                className={clsx(styles.iconBtn, { [styles.iconBtnActive]: notiMenu })}
+                onClick={() => setNotiMenu(v => !v)}
+                aria-label={`Notificaciones${unreadCount > 0 ? ` (${unreadCount} sin leer)` : ''}`}
+                aria-expanded={notiMenu}
+              >
+                <Bell size={18} aria-hidden="true" />
+              </button>
+              {unreadCount > 0 && (
+                <motion.span
+                  key={unreadCount}
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 520, damping: 24 }}
+                  className={styles.badge}
+                  aria-hidden="true"
+                >
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </motion.span>
+              )}
+
+              <NotificationsDropdown
+                notiMenu={notiMenu}
+                setNotiMenu={setNotiMenu}
+                unreadCount={unreadCount}
+                notifications={notifications}
+                handleMarkAllRead={handleMarkAllRead}
+                markNotifRead={markNotifRead}
+                navigate={navigate}
+                user={user}
+              />
+            </div>
+  );
+
   // Shared by the desktop sidebar and the mobile drawer
   const getSidebarContent = (isMobile = false) => {
     const isCollapsed = !isMobile && collapsed;
@@ -449,10 +491,12 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className={clsx(styles.layout, 'app-shell', { [styles.layoutCollapsed]: collapsed })}>
-      {/* Same backdrop as the login */}
-      <AnimatedBackdrop />
+    <div className={clsx(styles.layout, 'app-shell', { [styles.layoutCollapsed]: collapsed && !glass, [styles.layoutGlass]: glass })}>
+      {/* Glass: the wallpaper the panels frost over · classic: same backdrop as the login */}
+      {glass ? <Wallpaper /> : <AnimatedBackdrop />}
 
+
+      {!glass && (
       <aside className={clsx(styles.sidebar, 'hide-tablet')} aria-label="Barra lateral">
         {getSidebarContent(false)}
         <button
@@ -464,6 +508,7 @@ export default function Layout({ children }) {
           {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
       </aside>
+      )}
 
       {/* Mobile drawer */}
       <AnimatePresence>
@@ -493,7 +538,30 @@ export default function Layout({ children }) {
 
       <div className={styles.main}>
 
-        {/* Top bar */}
+        {glass ? (
+          <GlassHeader
+            items={user?.role === 'admin' ? [...navItems, ...adminItems] : navItems}
+            page={page}
+            badges={navBadges}
+            onNavigate={handleNavigate}
+            onSearch={() => setCmdOpen(true)}
+            clockStr={clockStr}
+            bell={bellNode}
+            avatar={(
+              <ProfileRing progress={workdayProgress(now)} size={46}>
+                <Avatar initials={user?.avatar || '??'} src={user?.avatarUrl} size={38} />
+              </ProfileRing>
+            )}
+            user={user}
+            workday={Math.round(workdayProgress(now))}
+            onLogout={() => logout()}
+            isDark={isDark}
+            onToggleTheme={() => setMode(isDark ? 'light' : 'dark')}
+          >
+            <TopProgress active={loadingData} />
+          </GlassHeader>
+        ) : (
+        /* Top bar */
         <header className={styles.header} role="banner">
           <div className={styles.headerLeft}>
             <Button
@@ -546,45 +614,13 @@ export default function Layout({ children }) {
               </AnimatePresence>
             </button>
 
-            <div className={styles.bellWrap} ref={notiMenuRef}>
-              <button
-                type="button"
-                className={clsx(styles.iconBtn, { [styles.iconBtnActive]: notiMenu })}
-                onClick={() => setNotiMenu(v => !v)}
-                aria-label={`Notificaciones${unreadCount > 0 ? ` (${unreadCount} sin leer)` : ''}`}
-                aria-expanded={notiMenu}
-              >
-                <Bell size={18} aria-hidden="true" />
-              </button>
-              {unreadCount > 0 && (
-                <motion.span
-                  key={unreadCount}
-                  initial={{ scale: 0.6, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: 'spring', stiffness: 520, damping: 24 }}
-                  className={styles.badge}
-                  aria-hidden="true"
-                >
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </motion.span>
-              )}
-
-              <NotificationsDropdown
-                notiMenu={notiMenu}
-                setNotiMenu={setNotiMenu}
-                unreadCount={unreadCount}
-                notifications={notifications}
-                handleMarkAllRead={handleMarkAllRead}
-                markNotifRead={markNotifRead}
-                navigate={navigate}
-                user={user}
-              />
-            </div>
+            {bellNode}
           </div>
 
           {/* Data sync hairline along the bottom edge of the bar */}
           <TopProgress active={loadingData} />
         </header>
+        )}
 
         <main ref={panelRef} className={styles.panel} id="main-content" role="main" aria-busy={loadingData}>
           <AnimatePresence mode="wait" initial={false}>
@@ -621,6 +657,16 @@ export default function Layout({ children }) {
           </AnimatePresence>
         </main>
       </div>
+
+      {/* Glass on phones and tablets: sections in a dock at the bottom (classic keeps the drawer) */}
+      {glass && (
+        <GlassTabBar
+          items={user?.role === 'admin' ? [...navItems, ...adminItems] : navItems}
+          page={page}
+          badges={navBadges}
+          onNavigate={handleNavigate}
+        />
+      )}
 
       <LiveToastContainer liveNotifs={liveNotifs} />
 

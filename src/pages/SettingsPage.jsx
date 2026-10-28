@@ -3,7 +3,7 @@ import { useTheme, useAuth } from '../context';
 import { Card, Avatar } from '../components/ui';
 import {
   Sun, Moon, Monitor, BellRing, BellOff, Volume2, VolumeX,
-  Palette, Check, User, Building, Wifi,
+  Palette, Check, User, Building, Wifi, Layers, PanelLeft,
 } from 'lucide-react';
 import styles from './SettingsPage.module.scss';
 import clsx from 'clsx';
@@ -45,7 +45,7 @@ function Toggle({ checked, onChange, id }) {
 }
 
 export default function SettingsPage() {
-  const { mode, setMode } = useTheme();
+  const { mode, setMode, appearance, setAppearance } = useTheme();
   const { user } = useAuth();
 
   const [browserNotifs, setBrowserNotifs] = useState(() => getLS('margube-browser-notifs', false));
@@ -113,6 +113,11 @@ export default function SettingsPage() {
     { id: 'system', label: 'Sistema', icon: Monitor, desc: 'Sigue al SO' },
   ];
 
+  const LOOK_OPTIONS = [
+    { id: 'glass',   label: 'Cristal', icon: Layers,    desc: 'Paneles translúcidos y menú superior' },
+    { id: 'classic', label: 'Clásico', icon: PanelLeft, desc: 'Menú lateral de siempre' },
+  ];
+
   return (
     <div className={styles.page}>
       <motion.div className={styles.stack} variants={container} initial="hidden" animate="show">
@@ -126,7 +131,34 @@ export default function SettingsPage() {
             </div>
             <div>
               <h2 className={styles.cardTitle}>Apariencia</h2>
-              <p className={styles.cardSub}>Tema visual, colores y densidad</p>
+              <p className={styles.cardSub}>Diseño, tema visual y colores</p>
+            </div>
+          </div>
+
+          {/* Diseño: same pages and features in both */}
+          <div className={styles.field}>
+            <label className={styles.fieldLabel}>Diseño</label>
+            <div className={styles.themeGrid}>
+              {LOOK_OPTIONS.map(({ id, label, icon: Icon, desc }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setAppearance(id)}
+                  aria-pressed={appearance === id}
+                  className={clsx(styles.themeCard, { [styles.themeCardActive]: appearance === id })}
+                >
+                  <div className={styles.themeCardIcon}>
+                    <Icon size={20} />
+                  </div>
+                  <span className={styles.themeCardLabel}>{label}</span>
+                  <span className={styles.themeCardDesc}>{desc}</span>
+                  {appearance === id && (
+                    <span className={styles.themeCardCheck}>
+                      <Check size={10} strokeWidth={3} />
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
 

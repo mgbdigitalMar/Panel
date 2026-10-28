@@ -84,7 +84,21 @@ export function ThemeProvider({ children }) {
   };
   const theme = resolveTheme(mode);
 
-  return <ThemeCtx.Provider value={{ theme, mode, setMode }}>{children}</ThemeCtx.Provider>
+  // Look of the intranet: 'glass' (translucent panels over a wallpaper, top navigation and dock)
+  // or 'classic' (sidebar layout). Same pages and features in both.
+  const [appearance, setAppearanceState] = useState(() => {
+    try { return localStorage.getItem('app-appearance') === 'classic' ? 'classic' : 'glass'; } catch { return 'glass'; }
+  })
+  useEffect(() => {
+    document.documentElement.setAttribute('data-appearance', appearance);
+    try { localStorage.setItem('app-appearance', appearance); } catch {}
+  }, [appearance]);
+  const setAppearance = (a) => {
+    if (a === appearance) return;
+    withThemeTransition(() => setAppearanceState(a));
+  };
+
+  return <ThemeCtx.Provider value={{ theme, mode, setMode, appearance, setAppearance }}>{children}</ThemeCtx.Provider>
 }
 export function useTheme() { return useContext(ThemeCtx) }
 

@@ -142,3 +142,20 @@
   .value { font-size: 24px; }
   .sub { font-size: 12px; }
 }
+
+/* Optional trend line (glass dashboard) */
+.spark {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  width: min(42%, 120px);
+  height: 34px;
+  color: var(--stat-color);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* Narrow tiles (two per row on phones): the number and its label need the room */
+@container (max-width: 230px) {
+  .spark { display: none; }
+}

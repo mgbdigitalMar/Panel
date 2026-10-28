@@ -777,3 +777,41 @@ $header-h-mobile: 64px;
     &:disabled { opacity: 0.6; cursor: default; }
   }
 }
+
+/* ==========================================================================
+   Glass appearance: no sidebar, the page floats over the wallpaper (GlassChrome)
+   ========================================================================== */
+.layoutGlass {
+  grid-template-columns: minmax(0, 1fr);
+  background: transparent;
+
+  @media (max-width: 1023px) { background: transparent; }
+
+  .panel {
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    padding-top: clamp(12px, 1.6vw, 24px);
+    padding-left: clamp(20px, 3vw, 44px);
+    padding-right: clamp(20px, 3vw, 44px);
+
+    /* Phones and tablets: room for the bottom dock */
+    @media (max-width: 1023px) {
+      padding: 12px 14px calc(104px + env(safe-area-inset-bottom));
+    }
+  }
+
+  .panelInner { max-width: 1440px; }
+
+  /* Page titles sit on the wallpaper, not on a card */
+  .pageTitle { text-shadow: 0 1px 12px rgba(0, 0, 0, 0.12); }
+
+  .drawer {
+    background: var(--lg-sheen), var(--lg-chrome);
+    -webkit-backdrop-filter: blur(30px) saturate(160%);
+    backdrop-filter: blur(30px) saturate(160%);
+    border-right: 1px solid var(--lg-edge);
+  }
+
+  .badge { border-color: transparent; }
+}

@@ -44,6 +44,12 @@ if (import.meta.env.DEV && 'serviceWorker' in navigator) {
   })().catch(() => {})
 }
 
+// Set before the first paint so the wallpaper and panels don't flash (see ThemeProvider)
+document.documentElement.setAttribute(
+  'data-appearance',
+  (() => { try { return localStorage.getItem('app-appearance') === 'classic' ? 'classic' : 'glass' } catch { return 'glass' } })()
+)
+
 document.documentElement.setAttribute(
   'data-theme',
   (() => {

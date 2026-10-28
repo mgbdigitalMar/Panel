@@ -374,3 +374,36 @@
   --cmd-border:     rgba(21, 32, 48, 0.90);
   --cmd-item-hover: rgba(62, 99, 221, 0.10);
 }
+
+/* ==========================================================================
+   Appearance "glass" (default; Ajustes → Apariencia). Translucent frosted panels over a
+   wallpaper, like visionOS. Scoped to the signed-in shell and the login (.glass-scope): modals
+   and toasts, rendered outside them, keep their solid surfaces so text stays readable.
+   ========================================================================== */
+[data-appearance='glass'] :is(.app-shell, .glass-scope) {
+  --lg-fill:        rgba(255, 255, 255, 0.42);
+  --lg-fill-hover:  rgba(255, 255, 255, 0.58);
+  --lg-edge:        rgba(255, 255, 255, 0.55);
+  --lg-rim:         rgba(255, 255, 255, 0.85);
+  --lg-sheen:       linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 60%);
+  --lg-chrome:      rgba(255, 255, 255, 0.5);
+  /* Cards blur what is behind them (only in this appearance; see p.glass) */
+  --lg-card-blur:   blur(26px) saturate(160%);
+  /* Menus and the dock sit over busy content: still glass, but dense enough to read */
+  --lg-popover:     rgba(255, 255, 255, 0.94);
+  --lg-active:      rgba(255, 255, 255, 0.92);
+  --border:         rgba(17, 20, 27, 0.1);
+}
+
+[data-appearance='glass'][data-theme='dark'] :is(.app-shell, .glass-scope) {
+  --lg-fill:        rgba(28, 27, 30, 0.42);
+  --lg-fill-hover:  rgba(40, 38, 42, 0.55);
+  --lg-edge:        rgba(255, 255, 255, 0.13);
+  --lg-rim:         rgba(255, 255, 255, 0.16);
+  --lg-sheen:       linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 55%);
+  --lg-chrome:      rgba(30, 29, 32, 0.5);
+  --lg-card-blur:   blur(30px) saturate(150%);
+  --lg-popover:     rgba(20, 24, 34, 0.94);
+  --lg-active:      rgba(255, 255, 255, 0.22);
+  --border:         rgba(255, 255, 255, 0.12);
+}

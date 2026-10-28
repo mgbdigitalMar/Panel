@@ -1,0 +1,78 @@
+/* Fixed behind the whole shell; nothing here animates, so the frosted cards only
+   re-blur when the page scrolls. Margube colours: brand blue, light blue, teal, navy. */
+.wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #EEF2FB;
+}
+
+/* Light theme: airy blue with the brand glows */
+.scene {
+  position: absolute;
+  inset: -6%;
+  background:
+    radial-gradient(46% 42% at 12% 10%, rgba(47, 91, 234, 0.42), transparent 70%),
+    radial-gradient(40% 38% at 92% 18%, rgba(91, 124, 255, 0.34), transparent 70%),
+    radial-gradient(44% 40% at 84% 92%, rgba(14, 159, 154, 0.26), transparent 72%),
+    radial-gradient(50% 44% at 18% 96%, rgba(122, 162, 255, 0.3), transparent 72%),
+    radial-gradient(36% 30% at 52% 50%, rgba(255, 255, 255, 0.7), transparent 70%),
+    linear-gradient(160deg, #E4EBFB 0%, #F3F6FC 50%, #E2EEF3 100%);
+}
+
+/* The brand leaf, large and faint, bottom right */
+.leaf {
+  position: absolute;
+  right: -6vw;
+  bottom: -10vh;
+  width: min(58vw, 760px);
+  aspect-ratio: 1;
+  color: #2F5BEA;
+  opacity: 0.07;
+}
+
+/* Same dot grid as the classic backdrop and the login */
+.dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(17, 20, 27, 0.11) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(80% 70% at 50% 30%, #000, transparent);
+  mask-image: radial-gradient(80% 70% at 50% 30%, #000, transparent);
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Keeps text on the glass readable whatever is behind it */
+.veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 45%);
+}
+
+/* Dark theme: Margube navy with blue and teal light */
+:global([data-theme='dark']) {
+  .wallpaper { background: #0A0D16; }
+
+  .scene {
+    background:
+      radial-gradient(46% 42% at 12% 8%, rgba(47, 91, 234, 0.55), transparent 70%),
+      radial-gradient(38% 36% at 92% 20%, rgba(91, 124, 255, 0.28), transparent 70%),
+      radial-gradient(44% 40% at 86% 94%, rgba(14, 159, 154, 0.3), transparent 72%),
+      radial-gradient(50% 44% at 16% 98%, rgba(45, 75, 216, 0.32), transparent 72%),
+      linear-gradient(160deg, #0E1426 0%, #0A0D16 55%, #08131A 100%);
+  }
+
+  .leaf { color: #7AA2FF; opacity: 0.06; }
+
+  .dots { background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px); }
+
+  .veil { background: linear-gradient(180deg, rgba(5, 7, 12, 0.15), rgba(5, 7, 12, 0) 45%, rgba(5, 7, 12, 0.25)); }
+}

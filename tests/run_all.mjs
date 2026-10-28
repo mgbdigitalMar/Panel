@@ -9,6 +9,7 @@ import { runTeamAvailabilityTests } from './08_team_availability.test.mjs';
 import { runUxStatesTests } from './09_ux_states.test.mjs';
 import { runPrivateDniTests } from './10_private_dni.test.mjs';
 import { runPolicySignatureTests } from './11_policy_signature.test.mjs';
+import { runGlassAppearanceTests } from './12_glass_appearance.test.mjs';
 
 // Suites 2 and 3 read and write the real Supabase project (suite 3 creates and
 // deletes rows): they only run when asked, e.g. against a staging project.
@@ -32,6 +33,7 @@ async function main() {
     { name: 'Estados de Carga y Error', fn: runUxStatesTests },
     { name: 'DNI Privado', fn: runPrivateDniTests },
     { name: 'Firma de Normas Internas', fn: runPolicySignatureTests },
+    { name: 'Diseño Cristal', fn: runGlassAppearanceTests },
   ];
 
   let totalPassed = 0;

@@ -1114,3 +1114,14 @@ html { -webkit-tap-highlight-color: transparent; }
   white-space: nowrap;
   border: 0;
 }
+
+/* Glass appearance: table headers and rows let the frosted card show through */
+[data-appearance='glass'] .app-shell .table {
+  th { background: rgba(var(--text-rgb), 0.05); }
+  td { border-bottom-color: var(--border); }
+}
+
+/* Glass on phones and tablets: toasts float above the bottom dock */
+@media (max-width: 1023px) {
+  [data-appearance='glass'] { --toast-bottom: 96px; }
+}

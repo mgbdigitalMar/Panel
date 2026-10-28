@@ -7,7 +7,8 @@ export function LiveToastContainer({ liveNotifs }) {
       aria-relevant="additions"
       style={{
         position: 'fixed',
-        bottom: 'calc(24px + env(safe-area-inset-bottom))',
+        // --toast-bottom: lifted above the glass dock on phones (global.scss)
+        bottom: 'calc(var(--toast-bottom, 24px) + env(safe-area-inset-bottom))',
         right: 24,
         display: 'flex',
         flexDirection: 'column',

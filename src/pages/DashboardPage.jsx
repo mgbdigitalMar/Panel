@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { useAuth, useReservations, useRequests, useNews, useHours, usePersonalDays, useDocuments } from '../context';
+import { useAuth, useReservations, useRequests, useNews, useHours, usePersonalDays, useDocuments, useTheme } from '../context';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, Badge, StatCard, Card, Button } from '../components/ui';
 import {
@@ -15,6 +15,7 @@ import {
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import { TodayPanel } from '../components/TodayPanel';
+import DashboardGlass from './DashboardGlass';
 import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
 import { fmtDate, fmtDayShort, fmtRange, todayKey } from '../utils/format';
 import { workdayProgress, greetingFor } from '../utils/workday';
@@ -137,6 +138,7 @@ export default function DashboardPage() {
   const { hourCompensations = [] } = useHours() || {};
   const { personalDays = [] } = usePersonalDays() || {};
   const { onboardingDocUrl } = useDocuments() || {};
+  const { appearance } = useTheme() || {};
 
   const today = new Date();
   const currentYear = today.getFullYear();
@@ -264,6 +266,20 @@ export default function DashboardPage() {
   [news]);
   const featured = sortedNews[0];
   const moreNews = sortedNews.slice(1, 4);
+
+  // Glass appearance: same data, laid out like the glass design (DashboardGlass)
+  if (appearance === 'glass') {
+    return (
+      <DashboardGlass d={{
+        user, employees, navigate, reservations, requests, news, todayStr,
+        greeting, dateLine, motivation, progress, pendingCount, todayResCount, newsThisMonth,
+        featured, moreNews, myUpcoming, myRequests, hours, upcomingBirthdays, resourceTypePie,
+        requestsByMonth, requestsYear, prevYear, nextYear, isCurrentYear,
+        reservationsByWeek, chartMonthLabel, prevMonth, nextMonth, isCurrentMonth, chartMonth,
+        onboardingDocUrl, REQUEST_LABELS, STATUS_LABELS,
+      }} />
+    );
+  }
 
   return (
     <div className={styles.page}>

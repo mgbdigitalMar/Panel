@@ -10,6 +10,7 @@ import styles from './LoginPage.module.scss';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
 import { AnimatedBackdrop, LeafField } from '../components/ui';
+import { Wallpaper } from '../components/Wallpaper';
 
 const EASE = [0.22, 1, 0.36, 1];
 const DRAW_EASE = [0.65, 0, 0.35, 1];
@@ -76,7 +77,9 @@ function LeafGlyph({ size = 18 }) {
 
 export default function LoginPage() {
   const { login } = useAuth();
-  const { theme, setMode } = useTheme();
+  const { theme, setMode, appearance } = useTheme();
+  // Same look as the app: Margube wallpaper and glass panels, or the classic backdrop
+  const glass = appearance === 'glass';
 
   const [email,    setEmail]    = useState('');
   const [pass,     setPass]     = useState('');
@@ -110,9 +113,8 @@ export default function LoginPage() {
   if (narrow) {
     return (
       <MotionConfig reducedMotion="user">
-        <div className={styles.mPage}>
-          <AnimatedBackdrop />
-          <LeafField />
+        <div className={`${styles.mPage}${glass ? ' glass-scope' : ''}`}>
+          {glass ? <Wallpaper /> : <><AnimatedBackdrop /><LeafField /></>}
           <motion.div className={styles.mColumn} variants={stagger} initial="hidden" animate="show">
             <motion.div variants={fadeUp} className={styles.mTop}>
                 <button
@@ -252,11 +254,15 @@ export default function LoginPage() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className={styles.page}>
+      <div className={`${styles.page}${glass ? ' glass-scope' : ''}`}>
         {/* Same backdrop as the app shell */}
-        <AnimatedBackdrop />
-        <LeafField />
-        <div className={styles.loginGlow} aria-hidden="true" />
+        {glass ? <Wallpaper /> : (
+          <>
+            <AnimatedBackdrop />
+            <LeafField />
+            <div className={styles.loginGlow} aria-hidden="true" />
+          </>
+        )}
 
         <motion.div
           className={styles.frame}

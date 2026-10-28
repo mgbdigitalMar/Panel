@@ -106,7 +106,11 @@
   gap: 10px;
   align-items: center;
   flex-wrap: nowrap;
-  min-width: 0;
+  /* Takes the free space; never narrower than search + view toggle, so the row wraps
+     instead of pushing the toggle out of the page */
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  min-width: min(430px, 100%);
 
   @media (max-width: 768px) {
     width: 100%;
