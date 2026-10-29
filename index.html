@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-appearance="glass">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -36,24 +36,21 @@
       href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Poppins:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <!-- Saved theme and appearance before the first paint (main.jsx sets the same), so the
-         canvas under Safari's bars has the right colour from the start -->
+    <!-- Saved theme before the first paint (main.jsx sets the same), so the canvas under
+         Safari's bars has the right colour from the start -->
     <script>
       (function () {
-        var d = document.documentElement, m = 'dark', a = 'glass';
-        try { m = localStorage.getItem('app-theme-mode') || 'dark'; a = localStorage.getItem('app-appearance') === 'classic' ? 'classic' : 'glass'; } catch (e) {}
+        var m = 'dark';
+        try { m = localStorage.getItem('app-theme-mode') || 'dark'; } catch (e) {}
         if (m === 'system') m = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        d.setAttribute('data-theme', m);
-        d.setAttribute('data-appearance', a);
+        document.documentElement.setAttribute('data-theme', m);
       })();
     </script>
     <!-- Critical CSS: canvas colour (same values as global.scss) and the skip link, before the bundle -->
     <style>
       html, body { margin: 0; }
-      html { background: #0A0C10; }
-      html[data-theme='light'] { background: #F2F4F8; }
-      html[data-appearance='glass'][data-theme='dark'] { background: #0C1428; }
-      html[data-appearance='glass'][data-theme='light'] { background: #E4EBFB; }
+      html { background: #0C1428; }
+      html[data-theme='light'] { background: #E4EBFB; }
       .skip-link { position: absolute; top: -100px; left: 16px; }
       .skip-link:focus { top: 16px; }
     </style>

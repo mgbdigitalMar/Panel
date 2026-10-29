@@ -3,18 +3,12 @@ import { useAuth, useTheme, useNotifs, useDocuments, useRequests, useReservation
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
-import { springConfig } from '../hooks/useSpringAnimation';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, Settings,
-  LogOut, Menu, Bell, UsersRound, Timer, SlidersHorizontal, Clock,
-  ChevronLeft, ChevronRight, Search, Sun, Moon, AlertTriangle,
+  Bell, UsersRound, Timer, AlertTriangle,
 } from 'lucide-react';
 
-import logoColor from '../assets/logos/logo-color.png';
-import logoWhite from '../assets/logos/logo-white.png';
-import logoIcon from '../assets/logos/logo-icon.png';
-
-import { Avatar, Button, TopProgress, PageLoader, AnimatedBackdrop } from './ui';
+import { Avatar, TopProgress, PageLoader } from './ui';
 import { Wallpaper } from './Wallpaper';
 import { GlassHeader, GlassTabBar } from './GlassChrome';
 import OnboardingModal from './OnboardingModal';
@@ -39,11 +33,10 @@ const navItems = [
 const adminItems = [
   { id: 'admin', label: 'Administración', icon: Settings, badgeKey: 'admin' },
 ];
-const settingsItem = { id: 'settings', label: 'Ajustes', icon: SlidersHorizontal };
 
 /* Heading shown at the top of the content panel. The dashboard draws its own.
    `width`: pages laid out as a centred column; the heading lines up with it.
-   `phone`: on phones (glass) the page draws the app's own header, title and actions on one line. */
+   `phone`: on phones the page draws the app's own header, title and actions on one line. */
 const PAGE_META = {
   reservations: { title: 'Reservas',           desc: 'Salas y vehículos de empresa: mira qué está libre y reserva en segundos.', phone: true },
   requests:     { title: 'Solicitudes',        desc: 'Asuntos propios, trabajo en remoto o externo y compras.', phone: true },
@@ -110,78 +103,9 @@ function ProfileRing({ progress, size, children }) {
   );
 }
 
-function NavLink({ item, onNavigate, collapsed, badge, active, pillId }) {
-  const Icon = item.icon;
-  const [showTip, setShowTip] = useState(false);
-
-  return (
-    <div className={styles.navLinkWrapper}>
-      {/* Active pill — shared element that glides between items */}
-      {active && (
-        <motion.span
-          layoutId={pillId}
-          className={styles.navPill}
-          transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.9 }}
-          aria-hidden="true"
-        />
-      )}
-      <motion.button
-        onClick={() => onNavigate(item.id)}
-        className={clsx(styles.navLink, { [styles.navLinkActive]: active })}
-        aria-current={active ? 'page' : undefined}
-        aria-label={collapsed ? item.label : undefined}
-        aria-describedby={collapsed && showTip ? `tooltip-${item.id}` : undefined}
-        onMouseEnter={() => collapsed && setShowTip(true)}
-        onMouseLeave={() => setShowTip(false)}
-        onFocus={() => collapsed && setShowTip(true)}
-        onBlur={() => setShowTip(false)}
-        whileTap={{ scale: 0.97 }}
-        transition={springConfig.responsive}
-      >
-        <span className={styles.navIcon}><Icon size={18} aria-hidden="true" /></span>
-        <span className={styles.navLabel}>{item.label}</span>
-        {badge > 0 && !collapsed && (
-          <motion.span
-            className={styles.navBadge}
-            aria-label={`${badge} pendientes`}
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', damping: 26, mass: 0.8, stiffness: 300 }}
-          >
-            {badge > 9 ? '9+' : badge}
-          </motion.span>
-        )}
-        {badge > 0 && collapsed && (
-          <span className={styles.navBadgeDot} aria-label={`${badge} pendientes`} />
-        )}
-      </motion.button>
-
-      {/* Floating tooltip when collapsed */}
-      <AnimatePresence>
-        {collapsed && showTip && (
-          <motion.div
-            className={styles.navTooltip}
-            initial={{ opacity: 0, x: -6, y: '-50%', scale: 0.96 }}
-            animate={{ opacity: 1, x: 0, y: '-50%', scale: 1 }}
-            exit={{ opacity: 0, x: -4, y: '-50%', scale: 0.97, transition: { duration: 0.1 } }}
-            transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
-            role="tooltip"
-            id={`tooltip-${item.id}`}
-          >
-            {item.label}
-            {badge > 0 && <span className={styles.navTooltipBadge}>{badge}</span>}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
 export default function Layout({ children }) {
   const { user, logout, needsOnboarding, setLastActivity, patchUser, refreshEmployees } = useAuth();
-  const { theme, setMode, appearance } = useTheme();
-  // 'glass': wallpaper and top section pill · 'classic': sidebar (Ajustes → Apariencia)
-  const glass = appearance === 'glass';
+  const { theme, setMode } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const page = location.pathname.replace('/', '') || 'dashboard';
@@ -226,29 +150,10 @@ export default function Layout({ children }) {
     + personalDays.filter(p => p.employeeId === user?.id && p.status === 'pending').length,
   [requests, personalDays, user?.id]);
 
-  const [sideOpen, setSideOpen] = useState(false);
   const [notiMenu, setNotiMenu] = useState(false);
 
   const [policyRead, setPolicyRead] = useState(false);
   const [policyTimer, setPolicyTimer] = useState(5);
-
-  const [collapsed, setCollapsed] = useState(() => {
-    try {
-      return localStorage.getItem('margube_sidebar_collapsed') === 'true';
-    } catch {
-      return false;
-    }
-  });
-
-  const toggleCollapse = () => {
-    setCollapsed(prev => {
-      const next = !prev;
-      try {
-        localStorage.setItem('margube_sidebar_collapsed', String(next));
-      } catch {}
-      return next;
-    });
-  };
 
   // An admin can mark the rules as pending again: start the reading over
   useEffect(() => {
@@ -286,7 +191,6 @@ export default function Layout({ children }) {
 
   const handleNavigate = useCallback((id) => {
     navigate('/' + id);
-    setSideOpen(false);
   }, [navigate]);
 
   const [cmdOpen, setCmdOpen] = useState(false);
@@ -348,7 +252,7 @@ export default function Layout({ children }) {
     window.scrollTo(0, 0);
   }, [page]);
 
-  // Notifications bell + dropdown, shared by the classic and the glass top bars
+  // Notifications bell + dropdown, in the top bar
   const bellNode = (
             <div className={styles.bellWrap} ref={notiMenuRef}>
               <button
@@ -386,246 +290,35 @@ export default function Layout({ children }) {
             </div>
   );
 
-  // Shared by the desktop sidebar and the mobile drawer
-  const getSidebarContent = (isMobile = false) => {
-    const isCollapsed = !isMobile && collapsed;
-    const pillId = isMobile ? 'nav-pill-drawer' : 'nav-pill-rail';
-    const progress = workdayProgress(now);
-    return (
-      <div className={styles.sidebarInner}>
-        <div className={clsx(styles.logoArea, { [styles.logoAreaCollapsed]: isCollapsed })}>
-          <img
-            src={isCollapsed ? logoIcon : (isDark ? logoWhite : logoColor)}
-            alt="Margube"
-            className={isCollapsed ? styles.logoIcon : styles.logo}
-          />
-        </div>
-
-        {/* Profile — the ring is today's workday */}
-        <div className={clsx(styles.profile, { [styles.profileCollapsed]: isCollapsed })}>
-          <button
-            type="button"
-            className={styles.profileMain}
-            onClick={() => handleNavigate('profile')}
-            aria-label={`${user?.name || 'Mi perfil'}. Ir a mi perfil`}
-            title={`Jornada: ${Math.round(progress)}%`}
-          >
-            <ProfileRing progress={progress} size={isCollapsed ? 48 : 76}>
-              <Avatar initials={user?.avatar || '??'} src={user?.avatarUrl} size={isCollapsed ? 38 : 62} />
-            </ProfileRing>
-            {!isCollapsed && (
-              <span className={styles.profileText}>
-                <span className={styles.profileName}>{user?.name}</span>
-                <span className={styles.profileRole}>{[user?.position, user?.dept].filter(Boolean).join(' · ')}</span>
-              </span>
-            )}
-          </button>
-
-          {!isCollapsed && (
-            <div className={styles.profileStats}>
-              <button type="button" className={styles.profileStat} onClick={() => handleNavigate('reservations')}>
-                <Calendar size={15} aria-hidden="true" />
-                <strong>{myUpcoming.length}</strong>
-                <span>{myUpcoming.length === 1 ? 'reserva' : 'reservas'}</span>
-              </button>
-              <button type="button" className={styles.profileStat} onClick={() => handleNavigate('requests')}>
-                <Inbox size={15} aria-hidden="true" />
-                <strong>{myOpenRequests}</strong>
-                <span>{myOpenRequests === 1 ? 'pendiente' : 'pendientes'}</span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        <nav className={styles.navGroup} aria-label="Navegación principal">
-          {navItems.map(i => (
-            <NavLink
-              key={i.id}
-              item={i}
-              pillId={pillId}
-              onNavigate={handleNavigate}
-              collapsed={isCollapsed}
-              badge={i.badgeKey ? navBadges[i.badgeKey] || 0 : 0}
-              active={page === i.id}
-            />
-          ))}
-
-          {user?.role === 'admin' && (
-            <>
-              {!isCollapsed && <p className={styles.navSectionLabel}>Admin</p>}
-              {isCollapsed && <div className={styles.navDivider} />}
-              {adminItems.map(i => (
-                <NavLink
-                  key={i.id}
-                  item={i}
-                  pillId={pillId}
-                  onNavigate={handleNavigate}
-                  collapsed={isCollapsed}
-                  badge={i.badgeKey ? navBadges[i.badgeKey] || 0 : 0}
-                  active={page === i.id}
-                />
-              ))}
-            </>
-          )}
-        </nav>
-
-        <div className={styles.sidebarFooter}>
-          <NavLink
-            item={settingsItem}
-            pillId={pillId}
-            onNavigate={handleNavigate}
-            collapsed={isCollapsed}
-            badge={0}
-            active={page === settingsItem.id}
-          />
-          <button
-            type="button"
-            className={styles.logoutBtn}
-            onClick={() => logout()}
-            aria-label="Cerrar sesión"
-            title={isCollapsed ? 'Cerrar sesión' : undefined}
-          >
-            <span className={styles.navIcon}><LogOut size={18} aria-hidden="true" /></span>
-            {!isCollapsed && <span className={styles.navLabel}>Cerrar sesión</span>}
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className={clsx(styles.layout, 'app-shell', { [styles.layoutCollapsed]: collapsed && !glass, [styles.layoutGlass]: glass })}>
-      {/* Glass: the wallpaper the panels frost over · classic: same backdrop as the login */}
-      {glass ? <Wallpaper /> : <AnimatedBackdrop />}
-
-
-      {!glass && (
-      <aside className={clsx(styles.sidebar, 'hide-tablet')} aria-label="Barra lateral">
-        {getSidebarContent(false)}
-        <button
-          onClick={toggleCollapse}
-          className={styles.collapseBtn}
-          aria-label={collapsed ? 'Ampliar menú' : 'Colapsar menú'}
-          title={collapsed ? 'Ampliar menú' : 'Colapsar menú'}
-        >
-          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-        </button>
-      </aside>
-      )}
-
-      {/* Mobile drawer */}
-      <AnimatePresence>
-        {sideOpen && (
-          <div className={styles.mobileOverlay} role="dialog" aria-modal="true" aria-label="Menú de navegación">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className={styles.mobileBackdrop}
-              data-scrim
-              onClick={() => setSideOpen(false)}
-            />
-            <motion.aside
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'tween', duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
-              className={styles.drawer}
-            >
-              {getSidebarContent(true)}
-            </motion.aside>
-          </div>
-        )}
-      </AnimatePresence>
+    <div className={clsx(styles.layout, 'app-shell')}>
+      {/* The wallpaper the panels frost over */}
+      <Wallpaper />
 
       <div className={styles.main}>
-
-        {glass ? (
-          <GlassHeader
-            items={user?.role === 'admin' ? [...navItems, ...adminItems] : navItems}
-            page={page}
-            badges={navBadges}
-            onNavigate={handleNavigate}
-            onSearch={() => setCmdOpen(true)}
-            clockStr={clockStr}
-            bell={bellNode}
-            avatar={(
-              <ProfileRing progress={workdayProgress(now)} size={46}>
-                <Avatar initials={user?.avatar || '??'} src={user?.avatarUrl} size={38} />
-              </ProfileRing>
-            )}
-            user={user}
-            workday={Math.round(workdayProgress(now))}
-            upcomingCount={myUpcoming.length}
-            openRequests={myOpenRequests}
-            onLogout={() => logout()}
-            isDark={isDark}
-            onToggleTheme={() => setMode(isDark ? 'light' : 'dark')}
-          >
-            <TopProgress active={loadingData} />
-          </GlassHeader>
-        ) : (
-        /* Top bar */
-        <header className={styles.header} role="banner">
-          <div className={styles.headerLeft}>
-            <Button
-              variant="ghost"
-              iconOnly
-              icon={Menu}
-              className={clsx('show-tablet', styles.menuBtn)}
-              onClick={() => setSideOpen(true)}
-              aria-label="Abrir menú"
-            />
-            <img src={logoIcon} alt="" className={clsx(styles.headerMark, 'show-tablet')} aria-hidden="true" />
-          </div>
-
-          <button
-            type="button"
-            className={styles.searchTrigger}
-            onClick={() => setCmdOpen(true)}
-            aria-label="Buscar (Ctrl+K)"
-            aria-haspopup="dialog"
-          >
-            <Search size={17} aria-hidden="true" />
-            <span className={styles.searchTriggerLabel}>Busca personas, reservas, solicitudes…</span>
-            <kbd className={styles.cmdKbd}>{/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘K' : 'Ctrl K'}</kbd>
-          </button>
-
-          <div className={styles.headerRight}>
-            <div className={styles.liveClock} aria-label={`Hora actual ${clockStr}`}>
-              <Clock size={14} aria-hidden="true" />
-              <span>{clockStr}</span>
-            </div>
-
-            <button
-              type="button"
-              className={styles.iconBtn}
-              onClick={() => setMode(isDark ? 'light' : 'dark')}
-              aria-label={isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
-              title={isDark ? 'Tema claro' : 'Tema oscuro'}
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.span
-                  key={isDark ? 'sun' : 'moon'}
-                  className={styles.iconSwap}
-                  initial={{ opacity: 0, rotate: -45, scale: 0.8 }}
-                  animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                  exit={{ opacity: 0, rotate: 45, scale: 0.8 }}
-                  transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-                >
-                  {isDark ? <Sun size={18} /> : <Moon size={18} />}
-                </motion.span>
-              </AnimatePresence>
-            </button>
-
-            {bellNode}
-          </div>
-
-          {/* Data sync hairline along the bottom edge of the bar */}
+        <GlassHeader
+          items={user?.role === 'admin' ? [...navItems, ...adminItems] : navItems}
+          page={page}
+          badges={navBadges}
+          onNavigate={handleNavigate}
+          onSearch={() => setCmdOpen(true)}
+          clockStr={clockStr}
+          bell={bellNode}
+          avatar={(
+            <ProfileRing progress={workdayProgress(now)} size={46}>
+              <Avatar initials={user?.avatar || '??'} src={user?.avatarUrl} size={38} />
+            </ProfileRing>
+          )}
+          user={user}
+          workday={Math.round(workdayProgress(now))}
+          upcomingCount={myUpcoming.length}
+          openRequests={myOpenRequests}
+          onLogout={() => logout()}
+          isDark={isDark}
+          onToggleTheme={() => setMode(isDark ? 'light' : 'dark')}
+        >
           <TopProgress active={loadingData} />
-        </header>
-        )}
+        </GlassHeader>
 
         <main ref={panelRef} className={styles.panel} id="main-content" role="main" aria-busy={loadingData}>
           <AnimatePresence mode="wait" initial={false}>
@@ -663,15 +356,13 @@ export default function Layout({ children }) {
         </main>
       </div>
 
-      {/* Glass on phones: sections in a dock at the bottom (tablets have them in the top bar, classic keeps the drawer) */}
-      {glass && (
-        <GlassTabBar
-          items={user?.role === 'admin' ? [...navItems, ...adminItems] : navItems}
-          page={page}
-          badges={navBadges}
-          onNavigate={handleNavigate}
-        />
-      )}
+      {/* Phones: sections in a dock at the bottom (tablets and computers have them in the top bar) */}
+      <GlassTabBar
+        items={user?.role === 'admin' ? [...navItems, ...adminItems] : navItems}
+        page={page}
+        badges={navBadges}
+        onNavigate={handleNavigate}
+      />
 
       <LiveToastContainer liveNotifs={liveNotifs} />
 

@@ -38,6 +38,7 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "expo-status-bar",
       "expo-secure-store",
       "expo-sharing",
       "expo-font",

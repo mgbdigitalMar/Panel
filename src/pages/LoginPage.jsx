@@ -9,7 +9,7 @@ import {
 import styles from './LoginPage.module.scss';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
-import { AnimatedBackdrop, LeafField } from '../components/ui';
+import { LeafField } from '../components/ui';
 import { Wallpaper } from '../components/Wallpaper';
 import LoginPhone, { readRemembered } from './LoginPhone';
 
@@ -59,9 +59,7 @@ function LeafGlyph({ size = 18 }) {
 
 export default function LoginPage() {
   const { login } = useAuth();
-  const { theme, setMode, appearance } = useTheme();
-  // Same look as the app: Margube wallpaper and glass panels, or the classic backdrop
-  const glass = appearance === 'glass';
+  const { theme, setMode } = useTheme();
 
   const [email,    setEmail]    = useState(readRemembered);
   const [pass,     setPass]     = useState('');
@@ -112,15 +110,9 @@ export default function LoginPage() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className={`${styles.page}${glass ? ' glass-scope' : ''}`}>
+      <div className={`${styles.page} glass-scope`}>
         {/* Same backdrop as the app shell */}
-        {glass ? <Wallpaper /> : (
-          <>
-            <AnimatedBackdrop />
-            <LeafField />
-            <div className={styles.loginGlow} aria-hidden="true" />
-          </>
-        )}
+        <Wallpaper />
 
         <motion.div
           className={styles.frame}

@@ -21,31 +21,6 @@ $bp-split: 960px;
   }
 }
 
-.loginGlow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  z-index: 0;
-  width: min(1100px, 110vw);
-  height: min(760px, 90vh);
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(var(--accent-rgb), 0.18), transparent 72%);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  animation: login-breathe 9s ease-in-out infinite alternate;
-
-  @media (max-width: $bp-split - 1) { display: none; }
-}
-
-@keyframes login-breathe {
-  from { opacity: 0.6; transform: translate(-50%, -50%) scale(0.94); }
-  to   { opacity: 1;   transform: translate(-50%, -50%) scale(1.04); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .loginGlow { animation: none; }
-}
-
 .frame {
   position: relative;
   z-index: 1;

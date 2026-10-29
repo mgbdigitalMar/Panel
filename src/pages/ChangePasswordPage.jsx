@@ -3,7 +3,8 @@ import { useAuth, useTheme } from '../context';
 import { useNavigate } from 'react-router-dom';
 import logoColor from '../assets/logos/logo-color.png';
 import logoWhite from '../assets/logos/logo-white.png';
-import { Button, AnimatedBackdrop } from '../components/ui';
+import { Button } from '../components/ui';
+import { Wallpaper } from '../components/Wallpaper';
 import { Eye, EyeOff, ShieldCheck, AlertCircle, CheckCircle2, Save } from 'lucide-react';
 import styles from './ChangePasswordPage.module.scss';
 import { supabase } from '../utils/supabase';
@@ -115,8 +116,9 @@ export default function ChangePasswordPage() {
   );
 
   return (
-    <div className={styles.page}>
-      <AnimatedBackdrop />
+    <div className={`${styles.page} glass-scope`}>
+      {/* Same backdrop as the login and the intranet */}
+      <Wallpaper />
 
       <main className={styles.card}>
         <img src={theme === 'dark' ? logoWhite : logoColor} alt="Margube" className={styles.logo} />

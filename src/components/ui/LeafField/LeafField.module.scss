@@ -16,7 +16,7 @@
     --leaf-b: rgba(14, 159, 154, 0.38);
   }
 
-  /* Same as AnimatedBackdrop: on phones a fixed layer makes iOS 26 Safari paint solid strips
+  /* On phones a fixed layer makes iOS 26 Safari paint solid strips
      under its toolbars, so the field scrolls with the page and fades out at both edges */
   @media (max-width: 1023px) {
     position: absolute;

@@ -1,116 +1,21 @@
 @use '../styles/patterns' as p;
 
-/* The sidebar and top bar sit on the canvas (--bg-2); the page sits in one rounded panel (--bg). */
+/* The shell: the wallpaper behind, the glass top bar (GlassChrome) and the page floating over it. */
 
 $header-h: 76px;
 $header-h-mobile: 64px;
 
-/* Root grid */
 .layout {
-  --sb: 280px;
   position: relative;
   display: grid;
-  grid-template-columns: var(--sb) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--bg-2);
+  background: transparent;
   overflow-x: clip;
-  transition: grid-template-columns 0.28s var(--ease-apple-fluid);
-
-  @media (max-width: 1023px) {
-    grid-template-columns: minmax(0, 1fr);
-    /* Same colour as <html>: iOS 26 Safari paints the status bar with it at rest */
-    background: var(--bg);
-  }
 }
 
-.layoutCollapsed { --sb: 88px; }
-
-.sidebar {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  height: 100vh;
-  height: 100dvh;
-  padding: 24px 18px 16px;
-  overflow-y: auto;
-  overflow-x: visible;
-  /* Scrollbar only shows while the pointer is over the rail */
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-  &:hover { scrollbar-color: rgba(var(--text-rgb), 0.18) transparent; }
-
-  @media (max-width: 1023px) { display: none; }
-}
-
-.sidebarInner {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  min-height: 100%;
-}
-
-.logoArea {
-  display: flex;
-  align-items: center;
-  height: 34px;
-  padding-left: 10px;
-}
-
-.logoAreaCollapsed {
-  justify-content: center;
-  padding-left: 0;
-}
-
-.logo {
-  height: 28px;
-  width: auto;
-  object-fit: contain;
-}
-
-.logoIcon {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  object-fit: contain;
-}
-
-/* Profile block */
-.profile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--border);
-}
-
-.profileCollapsed {
-  padding-bottom: 16px;
-}
-
-.profileMain {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  max-width: 100%;
-  padding: 6px 8px;
-  border: none;
-  border-radius: var(--radius-lg);
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: var(--accent-glow);
-  }
-}
-
+/* Profile ring: the workday traced around the avatar of the top bar */
 .ring {
   position: relative;
   flex-shrink: 0;
@@ -139,310 +44,6 @@ $header-h-mobile: 64px;
   place-items: center;
 }
 
-.profileText {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-  max-width: 100%;
-}
-
-.profileName {
-  font-family: var(--font-heading);
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.015em;
-  color: var(--text);
-  overflow-wrap: anywhere;
-}
-
-.profileRole {
-  font-size: 12.5px;
-  line-height: 1.4;
-  color: var(--text-mut);
-  overflow-wrap: anywhere;
-}
-
-.profileStats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  width: 100%;
-}
-
-.profileStat {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  min-width: 0;
-  height: 34px;
-  padding: 0 8px;
-  border: none;
-  border-radius: var(--radius-full);
-  background: rgba(var(--text-rgb), 0.045);
-  color: var(--text-mut);
-  font: inherit;
-  font-size: 12.5px;
-  cursor: pointer;
-  transition: background-color 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.15s var(--ease-out);
-
-  strong {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    font-variant-numeric: tabular-nums;
-  }
-
-  &:active { transform: scale(0.96); }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: var(--accent-glow);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    &:hover {
-      background: var(--accent-bg);
-      color: var(--accent);
-      strong { color: var(--accent); }
-    }
-  }
-}
-
-/* Navigation */
-.navGroup {
-  flex: 1 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.navSectionLabel {
-  margin: 14px 12px 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-mut);
-}
-
-.navDivider {
-  height: 1px;
-  margin: 10px 12px;
-  background: var(--border);
-}
-
-.navLinkWrapper {
-  position: relative;
-}
-
-.navPill {
-  position: absolute;
-  inset: 0;
-  border-radius: 14px;
-  background: var(--accent-bg);
-}
-
-.navLink,
-.logoutBtn {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  height: 42px;
-  padding: 0 8px;
-  border: none;
-  border-radius: 14px;
-  background: transparent;
-  color: var(--text-sec);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: color 0.15s var(--ease-out), background-color 0.15s var(--ease-out);
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: var(--accent-glow);
-  }
-}
-
-.navIcon {
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 10px;
-  transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out), transform 0.2s var(--ease-out);
-}
-
-.navLabel {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .navLink:not(.navLinkActive):hover {
-    color: var(--text);
-    background: rgba(var(--text-rgb), 0.04);
-
-    .navIcon { transform: translateX(2px); }
-  }
-
-  .logoutBtn:hover {
-    color: var(--danger);
-    background: var(--danger-bg);
-  }
-}
-
-.navLinkActive {
-  color: var(--accent);
-  font-weight: 600;
-
-  .navIcon {
-    background: var(--accent);
-    color: var(--accent-fg);
-    box-shadow: 0 6px 14px -6px rgba(var(--accent-rgb), 0.7);
-  }
-}
-
-.navBadge {
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  display: inline-grid;
-  place-items: center;
-  border-radius: var(--radius-full);
-  background: var(--danger);
-  color: #FFFFFF;
-  font-size: 11px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.navBadgeDot {
-  position: absolute;
-  top: 9px;
-  right: 14px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--danger);
-  box-shadow: 0 0 0 2px var(--bg-2);
-}
-
-.navTooltip {
-  position: absolute;
-  left: calc(100% + 12px);
-  top: 50%;
-  z-index: 50;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 11px;
-  border-radius: var(--radius);
-  background: #11141B;
-  color: #F5F6F8;
-  font-size: 12.5px;
-  font-weight: 600;
-  white-space: nowrap;
-  box-shadow: var(--shadow-lg);
-  pointer-events: none;
-}
-
-.navTooltipBadge {
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  display: inline-grid;
-  place-items: center;
-  border-radius: var(--radius-full);
-  background: var(--danger);
-  color: #FFFFFF;
-  font-size: 10.5px;
-}
-
-/* Collapsed rail: icons only */
-.layoutCollapsed .sidebar {
-  padding-left: 14px;
-  padding-right: 14px;
-
-  .navLink,
-  .logoutBtn {
-    justify-content: center;
-    padding: 0;
-  }
-
-  .navLabel { display: none; }
-}
-
-/* Footer (settings + sign out) */
-.sidebarFooter {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-}
-
-/* Collapse handle */
-.collapseBtn {
-  position: fixed;
-  top: 27px;
-  left: calc(var(--sb) - 14px);
-  z-index: 5;
-  width: 28px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  @include p.glass;
-  color: var(--text-sec);
-  cursor: pointer;
-  transition: left 0.28s var(--ease-apple-fluid), color 0.15s, border-color 0.15s, transform 0.15s var(--ease-out);
-
-  &:hover { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.4); }
-  &:active { transform: scale(0.92); }
-  &:focus-visible { outline: none; box-shadow: var(--accent-glow); }
-
-  @media (max-width: 1023px) { display: none; }
-}
-
-/* Mobile drawer */
-.mobileOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-overlay);
-}
-
-.mobileBackdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(10, 12, 16, 0.5);
-}
-
-.drawer {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: min(320px, 86vw);
-  padding: max(22px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
-  overflow-y: auto;
-  background: var(--bg-2);
-  border-radius: 0 28px 28px 0;
-  box-shadow: var(--shadow-2xl);
-}
-
-/* Main column */
 .main {
   position: relative;
   z-index: 1;
@@ -451,169 +52,7 @@ $header-h-mobile: 64px;
   min-width: 0;
 }
 
-/* Top bar */
-.header {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-header);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  height: $header-h;
-  flex-shrink: 0;
-  padding: 0 clamp(16px, 2.6vw, 36px) 0 clamp(8px, 1.4vw, 16px);
-  /* Desktop: the panel scrolls on its own, so the bar can stay see-through
-     and show the same backdrop as the sidebar */
-  background: transparent;
-
-  @media (max-width: 1023px) {
-    height: calc(#{$header-h-mobile} + env(safe-area-inset-top));
-    padding: env(safe-area-inset-top) 12px 0;
-    gap: 8px;
-    /* iOS 26 Safari turns a sticky bar that has its own background or backdrop-filter into a
-       solid strip under the status bar. It ignores pseudo-elements, so the glass lives on ::before. */
-    background: transparent;
-
-    &::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      @include p.glass-chrome;
-      border-width: 0 0 1px;
-      box-shadow: none;
-    }
-
-    /* At the top of the page the bar is clear (matches <html>); the glass fades in as you scroll */
-    @supports (animation-timeline: scroll()) {
-      &::before {
-        opacity: 0;
-        animation: header-glass-in linear both;
-        animation-timeline: scroll(root);
-        animation-range: 0 48px;
-      }
-    }
-  }
-}
-
-@keyframes header-glass-in {
-  to { opacity: 1; }
-}
-
-.headerLeft {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.headerMark {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-}
-
-.menuBtn {
-  width: 44px;
-  height: 44px;
-}
-
-.headerRight {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-left: auto;
-  flex-shrink: 0;
-
-  /* Phones: the round search button already takes the free space */
-  @media (max-width: 767px) { margin-left: 0; }
-  @media (max-width: 479px) { gap: 6px; }
-}
-
-/* Search pill */
-.searchTrigger {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  max-width: 560px;
-  height: 48px;
-  padding: 0 8px 0 18px;
-  border-radius: var(--radius-full);
-  @include p.glass;
-  color: var(--text-mut);
-  font: inherit;
-  font-size: 14px;
-  cursor: pointer;
-  transition: border-color 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), color 0.15s;
-
-  &:focus-visible {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: var(--accent-glow);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    &:hover {
-      color: var(--text-sec);
-      border-color: rgba(var(--accent-rgb), 0.35);
-      box-shadow: var(--shadow-sm);
-    }
-  }
-
-  /* Phones: a round search button next to the bell */
-  @media (max-width: 767px) {
-    flex: none;
-    width: 44px;
-    height: 44px;
-    margin-left: auto;
-    padding: 0;
-    justify-content: center;
-  }
-}
-
-.searchTriggerLabel {
-  flex: 1;
-  min-width: 0;
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  @media (max-width: 767px) { display: none; }
-}
-
-.cmdKbd {
-  flex-shrink: 0;
-  padding: 5px 9px;
-  border-radius: var(--radius-full);
-  background: var(--bg-3);
-  color: var(--text-sec);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  line-height: 1;
-
-  @media (max-width: 767px) { display: none; }
-}
-
-/* Clock + icon buttons */
-.liveClock {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  height: 40px;
-  padding: 0 14px;
-  border-radius: var(--radius-full);
-  background: rgba(var(--text-rgb), 0.045);
-  color: var(--text-sec);
-  font-size: 13px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-
-  @media (max-width: 1100px) { display: none; }
-}
-
+/* Notifications bell (in the top bar) */
 .iconBtn {
   position: relative;
   width: 44px;
@@ -648,8 +87,6 @@ $header-h-mobile: 64px;
   border-color: rgba(var(--accent-rgb), 0.45);
 }
 
-.iconSwap { display: grid; }
-
 .bellWrap { position: relative; }
 
 .badge {
@@ -666,14 +103,14 @@ $header-h-mobile: 64px;
   color: #FFFFFF;
   font-size: 10.5px;
   font-weight: 700;
-  border: 2px solid var(--bg-2);
+  border: 2px solid transparent;
   pointer-events: none;
   font-variant-numeric: tabular-nums;
 }
 
 /* Content panel */
 /* Desktop: a fixed window onto the page (only the panel scrolls).
-   Phones: normal page scrolling under a solid top bar. */
+   Phones and tablets: normal page scrolling under the sticky top bar. */
 @media (min-width: 1024px) {
   .layout {
     height: 100vh;
@@ -697,28 +134,26 @@ $header-h-mobile: 64px;
   }
 }
 
+/* The page floats over the wallpaper: no panel of its own */
 .panel {
   position: relative;
   flex: 1;
   min-height: calc(100dvh - #{$header-h});
-  padding: clamp(24px, 3vw, 44px) clamp(20px, 3.2vw, 52px) calc(clamp(32px, 4vw, 56px) + env(safe-area-inset-bottom));
-  /* Same wash as the app's backdrop: brand blue from the top, teal from the right */
-  background:
-    radial-gradient(90% 420px at 30% -60px, var(--lg-wash-a), transparent 70%),
-    radial-gradient(55% 380px at 105% 340px, var(--lg-wash-b), transparent 70%),
-    var(--bg);
-  border-top-left-radius: 44px;
-  box-shadow: inset 1px 1px 0 rgba(var(--text-rgb), 0.05);
+  padding: clamp(12px, 1.6vw, 24px) clamp(20px, 3vw, 44px) calc(clamp(32px, 4vw, 56px) + env(safe-area-inset-bottom));
 
   @media (max-width: 1023px) {
     min-height: calc(100dvh - #{$header-h-mobile});
-    border-radius: 28px 28px 0 0;
-    padding: 22px 16px calc(28px + env(safe-area-inset-bottom));
+    padding: 12px 14px calc(32px + env(safe-area-inset-bottom));
+  }
+
+  /* Phones: room for the bottom dock */
+  @media (max-width: 767px) {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
   }
 }
 
 .panelInner {
-  max-width: var(--content-max-w);
+  max-width: 1440px;
   margin: 0 auto;
 }
 
@@ -726,6 +161,12 @@ $header-h-mobile: 64px;
   margin-bottom: clamp(20px, 2.4vw, 30px);
 }
 
+/* Phones: these pages draw the app's header themselves (PhoneKit) */
+.pageIntroPhoneOwn {
+  @media (max-width: 767px) { display: none; }
+}
+
+/* Page titles sit on the wallpaper, not on a card */
 .pageTitle {
   margin: 0 0 6px;
   font-family: var(--font-heading);
@@ -734,6 +175,7 @@ $header-h-mobile: 64px;
   line-height: 1.15;
   letter-spacing: -0.025em;
   color: var(--text);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.12);
 }
 
 .pageDesc {
@@ -778,49 +220,6 @@ $header-h-mobile: 64px;
   }
 }
 
-/* ==========================================================================
-   Glass appearance: no sidebar, the page floats over the wallpaper (GlassChrome)
-   ========================================================================== */
-.layoutGlass {
-  grid-template-columns: minmax(0, 1fr);
-  background: transparent;
-
-  @media (max-width: 1023px) { background: transparent; }
-
-  .panel {
-    background: transparent;
-    box-shadow: none;
-    border-radius: 0;
-    padding-top: clamp(12px, 1.6vw, 24px);
-    padding-left: clamp(20px, 3vw, 44px);
-    padding-right: clamp(20px, 3vw, 44px);
-
-    @media (max-width: 1023px) {
-      padding: 12px 14px calc(32px + env(safe-area-inset-bottom));
-    }
-
-    /* Phones: room for the bottom dock */
-    @media (max-width: 767px) {
-      padding-bottom: calc(92px + env(safe-area-inset-bottom));
-    }
-  }
-
-  .panelInner { max-width: 1440px; }
-
-  /* Phones: these pages draw the app's header themselves (PhoneKit) */
-  .pageIntroPhoneOwn {
-    @media (max-width: 767px) { display: none; }
-  }
-
-  /* Page titles sit on the wallpaper, not on a card */
-  .pageTitle { text-shadow: 0 1px 12px rgba(0, 0, 0, 0.12); }
-
-  .drawer {
-    background: var(--lg-sheen), var(--lg-chrome);
-    -webkit-backdrop-filter: blur(30px) saturate(160%);
-    backdrop-filter: blur(30px) saturate(160%);
-    border-right: 1px solid var(--lg-edge);
-  }
-
-  .badge { border-color: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  .iconBtn { transition: none; }
 }

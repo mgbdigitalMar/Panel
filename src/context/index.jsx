@@ -34,9 +34,8 @@ export function ThemeProvider({ children }) {
     const resolved = resolveTheme(m);
     document.documentElement.setAttribute('data-theme', resolved);
     // Same colour as the canvas under the browser bars (global.scss --canvas)
-    const glass = document.documentElement.getAttribute('data-appearance') !== 'classic';
     document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
-      meta.setAttribute('content', glass ? (resolved === 'dark' ? '#0C1428' : '#E4EBFB') : (resolved === 'dark' ? '#0A0C10' : '#F2F4F8'));
+      meta.setAttribute('content', resolved === 'dark' ? '#0C1428' : '#E4EBFB');
     });
     try { localStorage.setItem('app-theme-mode', m); } catch {}
   }
@@ -86,22 +85,7 @@ export function ThemeProvider({ children }) {
   };
   const theme = resolveTheme(mode);
 
-  // Look of the intranet: 'glass' (translucent panels over a wallpaper, top navigation and dock)
-  // or 'classic' (sidebar layout). Same pages and features in both.
-  const [appearance, setAppearanceState] = useState(() => {
-    try { return localStorage.getItem('app-appearance') === 'classic' ? 'classic' : 'glass'; } catch { return 'glass'; }
-  })
-  useEffect(() => {
-    document.documentElement.setAttribute('data-appearance', appearance);
-    try { localStorage.setItem('app-appearance', appearance); } catch {}
-    applyMode(mode); // theme-color follows the canvas, which depends on the appearance
-  }, [appearance]); // eslint-disable-line react-hooks/exhaustive-deps
-  const setAppearance = (a) => {
-    if (a === appearance) return;
-    withThemeTransition(() => setAppearanceState(a));
-  };
-
-  return <ThemeCtx.Provider value={{ theme, mode, setMode, appearance, setAppearance }}>{children}</ThemeCtx.Provider>
+  return <ThemeCtx.Provider value={{ theme, mode, setMode }}>{children}</ThemeCtx.Provider>
 }
 export function useTheme() { return useContext(ThemeCtx) }
 

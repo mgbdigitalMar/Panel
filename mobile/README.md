@@ -1,4 +1,4 @@
-# Margube · App móvil (Expo SDK 57)
+# Margube · App móvil (Expo SDK 58)
 
 App Android/iOS de la intranet. Usa la misma base de datos Supabase, las mismas tablas, los mismos canales Realtime y la misma lógica de negocio que la web (`../shared`). El diseño sigue el archivo «Margube · App móvil y Web» (Margube Glass).
 

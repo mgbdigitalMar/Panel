@@ -27,16 +27,16 @@ export async function runGlassAppearanceTests() {
   const settings = read('src', 'pages', 'SettingsPage.jsx');
   const vars = read('src', 'styles', 'variables.scss');
 
-  // 1. Preferencia de diseño
-  assert('Cristal es el diseño por defecto y Clásico se puede elegir', ctx.includes("=== 'classic' ? 'classic' : 'glass'") && ctx.includes('setAppearance'));
-  assert('Se aplica antes de pintar (sin parpadeo)', read('src', 'main.jsx').includes("'data-appearance'"));
-  assert('Ajustes: selector Cristal / Clásico', settings.includes("{ id: 'glass',") && settings.includes("{ id: 'classic',") && settings.includes('setAppearance(id)'));
-
-  // 2. El clásico sigue intacto
-  assert('Clásico: barra lateral con perfil, secciones, ajustes y cerrar sesión', layout.includes('{!glass && (') && layout.includes('getSidebarContent(false)'));
-  assert('Clásico: barra superior con buscador, hora, tema y campana', layout.includes('Busca personas, reservas, solicitudes…'));
-  assert('Clásico: inicio de siempre cuando no es Cristal', dash.includes("if (appearance === 'glass')") && dash.includes('Mis módulos'));
-  assert('Móvil clásico: el menú desplegable sigue', layout.includes('getSidebarContent(true)'));
+  // 1. Un solo diseño: Cristal (el Clásico se ha retirado)
+  assert('Solo existe el diseño Cristal: sin preferencia ni selector', !ctx.includes('setAppearance') && !ctx.includes('app-appearance')
+    && !settings.includes("id: 'classic'") && !settings.includes('Clásico') && !settings.includes('setAppearance'));
+  assert('El diseño viene fijado en el HTML (sin parpadeo) y se olvida la preferencia antigua',
+    read('index.html').includes('<html lang="es" data-appearance="glass">') && read('src', 'main.jsx').includes("localStorage.removeItem('app-appearance')"));
+  assert('Sin barra lateral, cajón ni cabecera del diseño Clásico', !layout.includes('getSidebarContent') && !layout.includes('Busca personas, reservas, solicitudes…')
+    && layout.includes('<GlassHeader') && layout.includes('<Wallpaper />'));
+  assert('Inicio: siempre el de Cristal', dash.includes('<DashboardGlass') && !dash.includes('Mis módulos') && !dash.includes('appearance'));
+  assert('Sin el fondo animado del diseño Clásico', !read('src', 'components', 'ui', 'index.js').includes('AnimatedBackdrop')
+    && read('src', 'pages', 'ChangePasswordPage.jsx').includes('<Wallpaper />'));
   const chromeStyles = read('src', 'components', 'GlassChrome.module.scss');
   assert('Móvil Cristal: la sección abierta con nombre, el resto solo icono',
     layout.includes('<GlassTabBar') && chrome.includes('{items.map((item) => {') && chrome.includes('{active && <span className={styles.tabLabel}>'));
@@ -62,7 +62,7 @@ export async function runGlassAppearanceTests() {
   assert('Cristal: cristal líquido en el buscador, el dock y la píldora', chrome.includes('clsx(styles.round, styles.liquid)') && /\.tabBar \{\s*@include p\.liquid;/.test(chromeCss) && /\.nav \{\s*@include p\.liquid;/.test(chromeCss));
   assert('Cristal: el avatar muestra jornada, reservas y pendientes del perfil clásico',
     chrome.includes('upcomingCount') && chrome.includes('openRequests') && chrome.includes('Jornada'));
-  assert('Cristal: barra de carga de datos', layout.includes('<TopProgress active={loadingData} />\n          </GlassHeader>'));
+  assert('Cristal: barra de carga de datos', /<TopProgress active=\{loadingData\} \/>\s*<\/GlassHeader>/.test(layout));
 
   // 4. Cristal: el inicio conserva todos los módulos
   const modules = [
@@ -105,7 +105,7 @@ export async function runGlassAppearanceTests() {
   assert('Safari: el fondo Cristal llega bajo la barra de estado y la barra inferior',
     /\.wallpaper \{[\s\S]*?top: -120px;[\s\S]*?bottom: -120px;/.test(read('src', 'components', 'Wallpaper.module.scss')));
   assert('Safari: tema y apariencia aplicados antes del primer pintado (sin destello)',
-    indexHtml.includes("localStorage.getItem('app-theme-mode')") && indexHtml.includes("html[data-appearance='glass'][data-theme='dark'] { background: #0C1428; }"));
+    indexHtml.includes("localStorage.getItem('app-theme-mode')") && indexHtml.includes("html { background: #0C1428; }") && indexHtml.includes("html[data-theme='light'] { background: #E4EBFB; }"));
   assert('Safari: bajo las barras se ve el degradado del fondo, no una franja gris plana',
     globalCss.includes("html[data-appearance='glass'] {") && globalCss.includes('background-size: 100% 100lvh;')
     && read('src', 'components', 'Wallpaper.module.scss').includes('background: transparent;'));
@@ -114,14 +114,14 @@ export async function runGlassAppearanceTests() {
   const loginPhone = read('src', 'pages', 'LoginPhone.jsx');
   assert('Login móvil web: diseño nuevo (monograma, hoja, recordarme) sin perder la ayuda ni el aviso de inactividad',
     loginPhone.includes('styles.monogram') && loginPhone.includes('Recordarme') && loginPhone.includes('¿Primer acceso o contraseña olvidada?')
-    && read('src', 'pages', 'LoginPage.jsx').includes('<LoginPhone') && loginPhone.includes('glass ? <Wallpaper />'));
+    && read('src', 'pages', 'LoginPage.jsx').includes('<LoginPhone') && loginPhone.includes('<Wallpaper />'));
 
   // 5. Estilo
   assert('Paneles translúcidos en la intranet y el login (modales siguen sólidos)', vars.includes("[data-appearance='glass'] :is(.app-shell, .glass-scope) {"));
   const login = read('src', 'pages', 'LoginPage.jsx');
-  assert('Login: mismo fondo y cristal liquid que la intranet en Cristal (escritorio y móvil)',
-    (login.match(/glass \? <Wallpaper \/>/g) || []).length === 1 && login.includes("' glass-scope'")
-    && read('src', 'pages', 'LoginPhone.jsx').includes('glass ? <Wallpaper />') && /\.sheet \{\s*@include p\.liquid;/.test(read('src', 'pages', 'LoginPhone.module.scss')));
+  assert('Login: mismo fondo y cristal liquid que la intranet (escritorio y móvil)',
+    login.includes('<Wallpaper />') && login.includes('glass-scope') && !login.includes('AnimatedBackdrop')
+    && read('src', 'pages', 'LoginPhone.jsx').includes('<Wallpaper />') && /\.sheet \{\s*@include p\.liquid;/.test(read('src', 'pages', 'LoginPhone.module.scss')));
   const wp = read('src', 'components', 'Wallpaper.module.scss');
   assert('Fondo con los colores de Margube, no atardecer', wp.includes('rgba(47, 91, 234') && wp.includes('rgba(14, 159, 154') && !wp.includes('.windows'));
   assert('El desenfoque de tarjetas solo existe en Cristal', read('src', 'styles', '_patterns.scss').includes('backdrop-filter: var(--lg-card-blur, none);'));

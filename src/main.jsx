@@ -44,12 +44,10 @@ if (import.meta.env.DEV && 'serviceWorker' in navigator) {
   })().catch(() => {})
 }
 
-// Set before the first paint so the wallpaper and panels don't flash (see ThemeProvider)
-document.documentElement.setAttribute(
-  'data-appearance',
-  (() => { try { return localStorage.getItem('app-appearance') === 'classic' ? 'classic' : 'glass' } catch { return 'glass' } })()
-)
+// One design (glass): index.html marks it; forget the old Cristal / Clásico preference
+try { localStorage.removeItem('app-appearance') } catch { /* private mode */ }
 
+// Set before the first paint so the wallpaper and panels don't flash (see ThemeProvider)
 document.documentElement.setAttribute(
   'data-theme',
   (() => {

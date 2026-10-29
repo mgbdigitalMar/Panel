@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-import { useTheme } from '../context';
 import { useMediaQuery, PHONE_QUERY } from '../hooks/useMediaQuery';
 import styles from './PhoneKit.module.scss';
 
@@ -8,10 +7,9 @@ import styles from './PhoneKit.module.scss';
  * (mobile/src/components/common/UI.jsx). Pages switch to them with usePhoneApp().
  */
 
-/** Phones with the glass appearance (the one with the bottom dock). */
+/** Phones: the width where the web shows the bottom dock and the app's screens. */
 export function usePhoneApp() {
-  const { appearance } = useTheme() || {};
-  return useMediaQuery(PHONE_QUERY) && appearance === 'glass';
+  return useMediaQuery(PHONE_QUERY);
 }
 
 /** Large title with the screen's actions on the right. */

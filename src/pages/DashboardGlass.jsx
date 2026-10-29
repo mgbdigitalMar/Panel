@@ -85,8 +85,8 @@ function Ring({ value, size = 108, children }) {
 
 /**
  * Dashboard of the glass appearance: greeting, pinned news in front, KPIs with trend lines, a large
- * activity chart with Semana / Mes / Año, a "Hoy" column, workday, team, birthdays and the rest. Same data as the classic
- * dashboard: DashboardPage computes it and passes it in `d`.
+ * activity chart with Semana / Mes / Año, a "Hoy" column, workday, team, birthdays and the rest. The data comes from
+ * DashboardPage, which computes it and passes it in `d`.
  */
 export default function DashboardGlass({ d }) {
   const {

@@ -104,7 +104,7 @@ export function GlassHeader({
   );
 }
 
-/** The avatar (its ring is the workday) opens the account menu: the classic sidebar profile's
+/** The avatar (its ring is the workday) opens the account menu: the person's
  * figures (workday, own upcoming reservations and pending requests) and the account links. */
 function ProfileMenu({ avatar, user, workday, upcomingCount, openRequests, onNavigate, onLogout }) {
   const [open, setOpen] = useState(false);
