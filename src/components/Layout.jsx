@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, Settings,
-  Bell, UsersRound, Timer, AlertTriangle,
+  Bell, UsersRound, Timer, AlertTriangle, UserRound, SlidersHorizontal, LayoutGrid,
 } from 'lucide-react';
 
 import { Avatar, TopProgress, PageLoader } from './ui';
@@ -36,17 +36,20 @@ const adminItems = [
 
 /* Heading shown at the top of the content panel. The dashboard draws its own.
    `width`: pages laid out as a centred column; the heading lines up with it.
-   `phone`: on phones the page draws the app's own header, title and actions on one line. */
+   `touch`: on phones and tablets the page composes its own screen, masthead included (Touch.jsx).
+   `own`: the page draws its own header everywhere (title, description and actions).
+   `coverOwn`: on phones and tablets the page's own first panel is its cover (Mi perfil).
+   `icon`: the section mark of the masthead the heading becomes on phones and tablets. */
 const PAGE_META = {
-  reservations: { title: 'Reservas',           desc: 'Salas y vehículos de empresa: mira qué está libre y reserva en segundos.', phone: true },
-  requests:     { title: 'Solicitudes',        desc: 'Asuntos propios, trabajo en remoto o externo y compras.', phone: true },
-  horas:        { title: 'Tiempo a compensar', desc: 'Registra tus horas y consulta tu saldo con la empresa.', phone: true },
-  mas:          { title: 'Más',                desc: 'Tu cuenta, el resto de secciones y tus preferencias.', phone: true },
-  news:         { title: 'Noticias y Eventos', desc: 'Comunicados, novedades y próximos eventos de Margube.' },
-  employees:    { title: 'Equipo',             desc: 'Directorio del equipo y dónde trabaja cada persona, hoy y durante la semana.' },
-  profile:      { title: 'Mi perfil',          desc: 'Tus datos, modo de trabajo, contraseña y documentos.', width: 1180 },
-  settings:     { title: 'Ajustes',            desc: 'Tema, notificaciones y preferencias de tu cuenta.', width: 680 },
-  admin:        { title: 'Administración',     desc: 'Empleados, salas, vehículos, documentos y bolsa de horas.' },
+  reservations: { title: 'Reservas',           desc: 'Salas y vehículos de empresa: mira qué está libre y reserva en segundos.', touch: true, icon: Calendar },
+  requests:     { title: 'Solicitudes',        desc: 'Asuntos propios, trabajo en remoto o externo y compras.', touch: true, icon: Inbox },
+  horas:        { title: 'Tiempo a compensar', desc: 'Registra tus horas y consulta tu saldo con la empresa.', own: true, icon: Timer },
+  mas:          { title: 'Más',                desc: 'Tu cuenta, el resto de secciones y tus preferencias.', own: true, icon: LayoutGrid },
+  news:         { title: 'Noticias y Eventos', desc: 'Comunicados, novedades y próximos eventos de Margube.', icon: Newspaper },
+  employees:    { title: 'Equipo',             desc: 'Directorio del equipo y dónde trabaja cada persona, hoy y durante la semana.', touch: true, icon: UsersRound },
+  profile:      { title: 'Mi perfil',          desc: 'Tus datos, modo de trabajo, contraseña y documentos.', width: 1180, coverOwn: true, icon: UserRound },
+  settings:     { title: 'Ajustes',            desc: 'Tema, notificaciones y preferencias de tu cuenta.', width: 680, icon: SlidersHorizontal },
+  admin:        { title: 'Administración',     desc: 'Empleados, salas, vehículos, documentos y bolsa de horas.', icon: Settings },
 };
 
 function useClock() {
@@ -331,7 +334,12 @@ export default function Layout({ children }) {
               exit={{ opacity: 0, transition: { duration: 0.12, ease: [0.23, 1, 0.32, 1] } }}
             >
               {meta && (
-                <div className={clsx(styles.pageIntro, meta.phone && styles.pageIntroPhoneOwn)} style={meta.width ? { maxWidth: meta.width, marginInline: 'auto' } : undefined}>
+                <div className={clsx(styles.pageIntro, meta.touch && styles.pageIntroTouchOwn, meta.own && styles.pageIntroOwn, meta.coverOwn && styles.pageIntroCoverOwn)} style={meta.width ? { maxWidth: meta.width, marginInline: 'auto' } : undefined}>
+                  {/* Phones and tablets: the heading is a masthead on the wallpaper (section mark and today's date) */}
+                  <p className={styles.introEyebrow}>
+                    {meta.icon && <span className={styles.introMark} aria-hidden="true"><meta.icon size={15} /></span>}
+                    <span>{now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                  </p>
                   <h1 className={styles.pageTitle}>{meta.title}</h1>
                   <p className={styles.pageDesc}>{meta.desc}</p>
                 </div>

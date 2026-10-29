@@ -1,4 +1,5 @@
-// 14 · Tiempo a compensar (tab "Mi Registro" of the web HorasPage)
+// 14 · Tiempo a compensar (tab "Mi Registro" of the web HorasPage): the balance as a big figure,
+// proportion pills, a month calendar of records with the chosen day in a dark card, then the list.
 import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -18,8 +19,11 @@ import { T } from '../components/common/Text';
 import { EmptyState, Segmented, IconTile } from '../components/common/UI';
 import { GlassCard } from '../components/common/GlassCard';
 import { BrandPanel, ON_BRAND } from '../components/common/Brand';
+import { PressScale } from '../components/common/Pressable';
+import { BigFigure, MonthCalendar, MonthSwitcher, SplitPills } from '../components/common/Bento';
+import { BRAND, tone as toneOf } from '../theme/tokens';
 import { hourStats, HOUR_LABEL, HOUR_TONE } from '../utils/domain';
-import { fmtHM, fmtHMSigned, parseDate, MONTHS_SHORT, DAYS, toISODate, fmtDate } from '../utils/format';
+import { fmtHM, fmtHMSigned, parseDate, MONTHS_SHORT, DAYS, toISODate, todayISO, fmtDate } from '../utils/format';
 import { exportCsv } from '../services/files';
 
 export function hourStateText(h) {
@@ -106,6 +110,8 @@ export default function HorasScreen() {
   const [to, setTo] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [cursor, setCursor] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [day, setDay] = useState(todayISO);
 
   const mine = useMemo(() => hourCompensations.filter((h) => String(h.employeeId) === String(user?.id)), [hourCompensations, user?.id]);
   const inRange = mine.filter((h) => (!from || h.date >= from) && (!to || h.date <= to));
@@ -114,7 +120,29 @@ export default function HorasScreen() {
     .filter((h) => filter === 'all' || h.type === filter)
     .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
-  const total = stats.credit + stats.debe + stats.pending || 1;
+  // Calendar marks: owed hours in rose, waiting for admin in amber, earned in brand blue
+  const marks = useMemo(() => {
+    const byDay = {};
+    mine.forEach((h) => {
+      if (!h.date || h.status === 'rejected') return;
+      if (!byDay[h.date]) byDay[h.date] = [];
+      byDay[h.date].push(h);
+    });
+    const out = {};
+    Object.entries(byDay).forEach(([iso, list]) => {
+      const t = list.some((h) => h.type === 'debe') ? 'rose' : list.some((h) => h.status === 'pending') ? 'amber' : 'accent';
+      const [bg, fg] = toneOf(colors, t);
+      const net = list.reduce((sum, h) => sum + (h.type === 'debe' ? -1 : 1) * (Number(h.hours) || 0), 0);
+      out[iso] = { bg, fg, dot: fg, label: `${fmtHMSigned(net)} horas` };
+    });
+    return out;
+  }, [mine, colors]);
+
+  const dayRows = mine.filter((h) => h.date === day);
+  const dayNet = dayRows.filter((h) => h.status !== 'rejected')
+    .reduce((sum, h) => sum + (h.type === 'debe' ? -1 : 1) * (Number(h.hours) || 0), 0);
+  const dayDate = parseDate(day);
+  const dayTitle = dayDate ? `${DAYS[dayDate.getDay()].charAt(0).toUpperCase()}${DAYS[dayDate.getDay()].slice(1)} ${dayDate.getDate()} ${MONTHS_SHORT[dayDate.getMonth()]}` : '';
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -140,35 +168,60 @@ export default function HorasScreen() {
         )}
       />
 
-      <BrandPanel padding={20} style={{ gap: 14 }}>
-        <T size={12} weight="semibold" color={ON_BRAND.text2} upper>Saldo aprobado{from || to ? ' · periodo filtrado' : ''}</T>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
-          <T mono weight="semibold" size={48} style={{ lineHeight: 56, flexShrink: 1 }} color={stats.balance < 0 ? '#FB7185' : ON_BRAND.text} numberOfLines={1} adjustsFontSizeToFit>
-            {fmtHMSigned(stats.balance)}
-          </T>
-          <T size={15} color={ON_BRAND.text3} style={{ paddingBottom: 10 }}>horas</T>
+      <View style={{ gap: 2 }}>
+        <T size={12} weight="semibold" color={colors.text3} upper>Saldo aprobado{from || to ? ' · periodo filtrado' : ''}</T>
+        <BigFigure value={fmtHMSigned(stats.balance)} unit="horas" size={54} color={stats.balance < 0 ? colors.dangerFg : colors.text}
+          accessibilityLabel={`Saldo aprobado: ${fmtHMSigned(stats.balance)} horas`} />
+      </View>
+
+      <SplitPills
+        items={[
+          { label: 'Ganadas', value: stats.credit, display: `+${fmtHM(stats.credit)}`, bg: BRAND.blue, fg: '#FFFFFF' },
+          { label: 'Debo', value: stats.debe, display: `−${fmtHM(stats.debe)}`, bg: colors.plateBg, fg: colors.plateText },
+          { label: 'En revisión', value: stats.pending, display: `+${fmtHM(stats.pending)}`, bg: colors.warningSoft, fg: colors.warningFg },
+        ]}
+      />
+
+      <GlassCard padding={14} style={{ gap: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingLeft: 4 }}>
+          <T size={15} heading weight="semibold" accessibilityRole="header">Calendario</T>
+          <MonthSwitcher value={cursor} onChange={(m) => { setCursor(m); setDay(null); }} />
         </View>
-        <View style={{ flexDirection: 'row', height: 8, borderRadius: 4, overflow: 'hidden', gap: 2, backgroundColor: ON_BRAND.track }}>
-          {stats.credit > 0 ? <View style={{ flex: stats.credit / total, backgroundColor: '#34D399' }} /> : null}
-          {stats.debe > 0 ? <View style={{ flex: stats.debe / total, backgroundColor: '#FB7185' }} /> : null}
-          {stats.pending > 0 ? <View style={{ flex: stats.pending / total, backgroundColor: '#F5B544' }} /> : null}
-        </View>
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          {[
-            ['Ganadas', `+${fmtHM(stats.credit)}`, '#34D399'],
-            ['Debo', `−${fmtHM(stats.debe)}`, '#FB7185'],
-            ['En revisión', `+${fmtHM(stats.pending)}`, '#F5B544'],
-          ].map(([label, value, c]) => (
-            <View key={label} style={{ flex: 1, minWidth: 0, gap: 3 }} accessible accessibilityLabel={`${label}: ${value}`}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c }} />
-                <T size={12.5} color={ON_BRAND.text2} numberOfLines={1}>{label}</T>
+        <MonthCalendar month={cursor} marks={marks} selected={day} onSelect={(iso) => setDay((d) => (d === iso ? null : iso))} />
+      </GlassCard>
+
+      {/* The chosen day in the dark brand card: its records and the net amount */}
+      {day ? (
+        <BrandPanel padding={20} radius={28} rings={false} style={{ gap: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFFFFF' }} />
+            <T size={15.5} weight="semibold" color={ON_BRAND.text} style={{ flex: 1 }}>{day === todayISO() ? `Hoy · ${dayTitle}` : dayTitle}</T>
+          </View>
+          {dayRows.length ? dayRows.map((h) => (
+            <View key={h.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <T size={14} weight="semibold" color={ON_BRAND.text} numberOfLines={1}>{HOUR_LABEL[h.type]} · {hourStateText(h)}</T>
+                {h.reason ? <T size={12.5} color={ON_BRAND.text2} numberOfLines={2}>{h.reason}</T> : null}
               </View>
-              <T mono weight="semibold" size={15} color={ON_BRAND.text} numberOfLines={1} adjustsFontSizeToFit>{value}</T>
+              <T mono weight="semibold" size={15} color={ON_BRAND.text} style={h.status === 'rejected' ? { textDecorationLine: 'line-through', opacity: 0.6 } : null}>
+                {h.type === 'debe' ? '−' : '+'}{fmtHM(h.hours)}
+              </T>
             </View>
-          ))}
-        </View>
-      </BrandPanel>
+          )) : (
+            <T size={13} color={ON_BRAND.text2}>Sin registros este día.</T>
+          )}
+          <View style={{ marginVertical: 2, borderTopWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.22)' }} />
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+            <BigFigure value={fmtHMSigned(dayNet)} unit="h · neto" size={34} color={dayNet < 0 ? '#FB7185' : ON_BRAND.text} unitColor={ON_BRAND.text2}
+              accessibilityLabel={`Neto del día: ${fmtHMSigned(dayNet)} horas`} />
+            <PressScale onPress={() => navigation.navigate('NewHours', { date: day })} accessibilityRole="button" accessibilityLabel="Registrar horas este día"
+              style={{ height: 44, paddingHorizontal: 16, borderRadius: 22, backgroundColor: '#FFFFFF', flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Plus size={17} color={BRAND.navy} strokeWidth={2.2} />
+              <T size={14} weight="semibold" color={BRAND.navy}>Registrar</T>
+            </PressScale>
+          </View>
+        </BrandPanel>
+      ) : null}
 
       {/* Registros: one grouped card; type and dates filters fold behind "Filtrar" */}
       <View style={{ gap: 10 }}>

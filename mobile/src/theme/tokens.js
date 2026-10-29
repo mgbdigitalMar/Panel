@@ -9,12 +9,17 @@ export const FONTS = {
   medium: 'Inter_500Medium',
   semibold: 'Inter_600SemiBold',
   bold: 'Inter_700Bold',
+  // Light Poppins for large figures and display names ("164:30 h")
+  headingLight: 'Poppins_300Light',
   headingMedium: 'Poppins_500Medium',
   heading: 'Poppins_600SemiBold',
   headingBold: 'Poppins_700Bold',
   mono: 'GeistMono_500Medium',
   monoBold: 'GeistMono_600SemiBold',
 };
+
+// Corner radii: soft, generous cards; calendar cells and tiles a step tighter.
+export const RADIUS = { card: 28, tile: 24, cell: 14 };
 
 // The login's brand panel: navy in both themes, used for one highlight per screen.
 export const BRAND = {
@@ -92,6 +97,11 @@ const dark = {
   glowB: '#0E9F9A',
   glowBOpacity: 0.26,
   dots: 'rgba(240,244,255,0.13)',
+  // Calendar cells, diagonal hatching for days that don't count, capsule-bar tracks
+  cell: 'rgba(255,255,255,0.05)',
+  cellBorder: 'rgba(255,255,255,0.07)',
+  hatch: 'rgba(255,255,255,0.09)',
+  capsule: 'rgba(255,255,255,0.09)',
   shadow: '#000000',
   shadowOpacity: 0.4,
   statusBar: 'light',
@@ -161,6 +171,10 @@ const light = {
   glowB: '#0E9F9A',
   glowBOpacity: 0.12,
   dots: 'rgba(6,17,43,0.12)',
+  cell: 'rgba(255,255,255,0.78)',
+  cellBorder: 'rgba(17,20,27,0.05)',
+  hatch: 'rgba(17,20,27,0.09)',
+  capsule: '#FFFFFF',
   shadow: '#06112B',
   shadowOpacity: 0.08,
   statusBar: 'dark',

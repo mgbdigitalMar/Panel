@@ -144,6 +144,12 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+
+  /* Phones and tablets: the rows are record cards (global .table), inset from the panel */
+  @media (max-width: 1023px) {
+    overflow: visible;
+    padding: 12px;
+  }
 }
 
 .table {

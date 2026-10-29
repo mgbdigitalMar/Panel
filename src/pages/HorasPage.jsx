@@ -1,14 +1,15 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth, useHours } from '../context';
-import { Card, Button, Input, Modal, Avatar, StatCard, Section } from '../components/ui';
+import { Card, Button, Input, Modal, Avatar, Section } from '../components/ui';
 import { Clock, Inbox, CheckCircle, XCircle, Download, PenTool, TrendingDown, Search, Zap, Info, AlertTriangle, CheckCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import styles from './HorasPage.module.scss';
 import { todayKey } from '../utils/format';
-import { usePhoneApp } from '../components/PhoneKit';
-import { HorasPhoneHeader, HorasPhoneSummary } from './HorasPhone';
+import { useTouch } from '../components/Touch';
+import { HorasTouchHeader, HorasTouchRecords, HorasTouchTeam } from './HorasTouch';
+import { HorasDeskHeader, HorasStatement } from './HorasDesk';
 
 function exportToCSV(rows, filename) {
   const typeLabel = t => t === 'ya' ? 'Inmediata' : t === 'bolsa' ? 'Bolsa' : 'Debo';
@@ -95,10 +96,11 @@ export default function HorasPage() {
   const { user, employees = [] } = useAuth();
   const { hourCompensations = [], createHourCompensation } = useHours();
 
-  // Phones open on the balance and records (the app's Horas tab); ?nueva=1 opens the form
-  const phone = usePhoneApp();
+  // Both open on the balance and records. ?nueva=1 opens the form: its own screen on phones and tablets,
+  // the always-open side form on computers (focused, then back to "bolsa").
+  const touch = useTouch();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [tab, setTab]   = useState(() => (phone && searchParams.get('nueva') !== '1' ? 'bolsa' : 'nueva'));
+  const [tab, setTab]   = useState(() => (touch && searchParams.get('nueva') === '1' ? 'nueva' : 'bolsa'));
   useEffect(() => {
     if (searchParams.get('nueva') === '1') {
       setTab('nueva');
@@ -230,56 +232,45 @@ export default function HorasPage() {
     return <span className={clsx(styles.typeBadge, styles.typeDebe)}>Debo</span>;
   };
 
-  const tabBtn = (id, label, count) => (
-    <button
-      key={id}
-      onClick={() => setTab(id)}
-      className={clsx(styles.tabBtn, { [styles.tabBtnActive]: tab === id })}
-    >
-      {label}
-      {count > 0 && <span className={styles.tabCount}>{count}</span>}
-    </button>
-  );
-
   const cfg = MODE_CONFIG[mode];
+  // Computers have no "nueva" screen: the form lives in the statement's side column
+  const view = !touch && tab === 'nueva' ? 'bolsa' : tab;
+  const onComposerFocused = useCallback(() => setTab('bolsa'), []);
+  const exportMine = () => exportToCSV(allRows, `horas-${new Date().toISOString().slice(0,10)}.csv`);
 
   return (
     <div className={styles.container}>
 
-      {phone && (
-        <HorasPhoneHeader
+      {touch && (
+        <HorasTouchHeader
           tab={tab}
           setTab={setTab}
           isAdmin={user?.role === 'admin'}
           rows={allRows}
-          onExport={() => exportToCSV(allRows, `horas-${new Date().toISOString().slice(0,10)}.csv`)}
+          onExport={exportMine}
+          onExportTeam={() => exportAllUsersCSV(filteredUserStats)}
+          canExportTeam={filteredUserStats.length > 0}
+          balance={balance}
+          creditHours={creditHours}
+          debtHours={debtHours}
+          pendingHours={pendingHours}
         />
       )}
 
-      {!phone && (
-      <div className={styles.pageControls}>
-        <div className={styles.tabsRow}>
-          {tabBtn('nueva', 'Nueva solicitud', 0)}
-          {tabBtn('bolsa', 'Mi registro', myAll.length)}
-          {user?.role === 'admin' && tabBtn('usuarios', 'Historial de usuarios', userStats.filter(s => s.pending > 0).length)}
-        </div>
-        <div className={styles.controlsRight}>
-          {tab === 'bolsa' && allRows.length > 0 && (
-            <Button
-              icon={Download}
-              variant="ghost"
-              onClick={() => exportToCSV(allRows, `horas-${new Date().toISOString().slice(0,10)}.csv`)}
-            >
-              Descargar Excel
-            </Button>
-          )}
-        </div>
-      </div>
+      {!touch && (
+        <HorasDeskHeader
+          view={view}
+          setView={setTab}
+          isAdmin={user?.role === 'admin'}
+          teamPending={userStats.filter(s => s.pending > 0).length}
+          onExport={exportMine}
+          canExport={view === 'bolsa' && allRows.length > 0}
+        />
       )}
 
       <AnimatePresence mode="wait">
-        {/* Nueva solicitud */}
-        {tab === 'nueva' && (
+        {/* Nueva solicitud (phones and tablets; computers use the side form) */}
+        {tab === 'nueva' && touch && (
           <motion.div
             key="nueva"
             className={styles.tabContent}
@@ -288,7 +279,7 @@ export default function HorasPage() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.2 }}
           >
-            <Section title={phone ? undefined : "Registrar horas"} description="Elige si las compensas ya, las acumulas en tu bolsa o las debes a la empresa.">
+            <Section title={touch ? undefined : "Registrar horas"} description="Elige si las compensas ya, las acumulas en tu bolsa o las debes a la empresa.">
             <Card className={styles.formCard}>
               <div className={styles.modeToggle}>
                 {Object.entries(MODE_CONFIG).map(([key, c]) => {
@@ -394,28 +385,28 @@ export default function HorasPage() {
           </motion.div>
         )}
 
-        {/* Mi registro — phones: the app's balance card and records */}
-        {tab === 'bolsa' && phone && (
+        {/* Mi registro — phones and tablets: the records by month (the balance is in the header) */}
+        {tab === 'bolsa' && touch && (
           <motion.div
-            key="bolsa-phone"
+            key="bolsa-touch"
             className={styles.tabContent}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.2 }}
           >
-            <HorasPhoneSummary
-              balance={balance}
-              creditHours={creditHours}
-              debtHours={debtHours}
-              pendingHours={pendingHours}
+            <HorasTouchRecords
               rows={allRows}
               onRegister={() => setTab('nueva')}
+              from={filterFrom}
+              to={filterTo}
+              setFrom={setFilterFrom}
+              setTo={setFilterTo}
             />
           </motion.div>
         )}
 
-        {tab === 'bolsa' && !phone && (
+        {view === 'bolsa' && !touch && (
           <motion.div
             key="bolsa"
             className={styles.tabContent}
@@ -424,109 +415,42 @@ export default function HorasPage() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.2 }}
           >
-            <div className={styles.statsGrid}>
-              <StatCard
-                label="A mi favor"
-                value={`${creditHours.toFixed(1)}h`}
-                icon="Clock"
-                color="var(--success)"
-                sub="Horas aprobadas"
-              />
-              <StatCard
-                label="Pendientes"
-                value={`${pendingHours.toFixed(1)}h`}
-                icon="Clock"
-                color="var(--warning)"
-                sub="En revisión administrativa"
-              />
-              <StatCard
-                label="Debo a la empresa"
-                value={`${debtHours.toFixed(1)}h`}
-                icon="TrendingDown"
-                color="var(--danger)"
-                sub="Horas por recuperar"
-              />
-              <StatCard
-                label="Balance neto"
-                value={`${balance >= 0 ? '+' : ''}${balance.toFixed(1)}h`}
-                icon={balance >= 0 ? "TrendingUp" : "TrendingDown"}
-                color={balance >= 0 ? "var(--accent)" : "var(--danger)"}
-                sub={balance >= 0 ? "Saldo a favor" : "Saldo deudor"}
-              />
-            </div>
-
-            <Section title="Mi registro" description="Tus horas a favor y las que debes, por fecha.">
-            <Card className={styles.filterCard}>
-              <div className={styles.filterRow}>
-                <div className={styles.filterGroup}>
-                  <label className={styles.filterLabel}>Desde</label>
-                  <input type="date" className={styles.filterInput} value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
-                </div>
-                <div className={styles.filterGroup}>
-                  <label className={styles.filterLabel}>Hasta</label>
-                  <input type="date" className={styles.filterInput} value={filterTo} onChange={e => setFilterTo(e.target.value)} />
-                </div>
-                {(filterFrom || filterTo) && (
-                  <Button variant="ghost" onClick={() => { setFilterFrom(''); setFilterTo(''); }}>
-                    Limpiar
-                  </Button>
-                )}
-                <span className={styles.filterCount}>{allRows.length} registro{allRows.length !== 1 ? 's' : ''}</span>
-              </div>
-            </Card>
-
-            {allRows.length === 0 ? (
-              <Card className={styles.emptyCard}>
-                <div className={styles.emptyStateIcon}>
-                  <Inbox size={28} strokeWidth={1.5} />
-                </div>
-                <p className={styles.emptyStateTitle}>No hay registros aún</p>
-                <span className={styles.emptyStateSub}>Usa "Nueva solicitud" para añadir horas</span>
-              </Card>
-            ) : (
-              <Card className={styles.tableCard}>
-                <div className={styles.tableWrapper}>
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        {['Fecha', 'Tipo', 'Motivo', 'Horas', 'Estado', 'Revisado'].map(h => (
-                          <th key={h}>{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="stagger-quick">
-                      {allRows.map(h => (
-                        <tr key={h.id} className={h.type === 'debe' ? styles.rowDebe : ''}>
-                          <td className={styles.dateCell} data-label="Fecha">
-                            {h.date ? new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
-                          </td>
-                          <td data-label="Tipo">{typeBadge(h.type)}</td>
-                          <td className={styles.reasonCell} data-label="Motivo">{h.reason}</td>
-                          <td data-label="Horas">
-                            <span className={clsx(styles.hoursChip, h.type === 'debe' ? styles.hoursChipDebe : '')}>
-                              {h.type === 'debe' ? '-' : '+'}{h.hours}h
-                            </span>
-                          </td>
-                          <td data-label="Estado">{statusBadge(h.status)}</td>
-                          <td className={styles.reviewCell} data-label="Revisado">
-                            {h.reviewerName
-                              ? <><strong>{h.reviewerName}</strong><span>{h.reviewedAt ? new Date(h.reviewedAt).toLocaleDateString('es-ES') : ''}</span></>
-                              : <span className={styles.textMut}>—</span>
-                            }
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-            )}
-            </Section>
+            <HorasStatement
+              records={myAll}
+              balance={balance}
+              creditHours={creditHours}
+              pendingHours={pendingHours}
+              debtHours={debtHours}
+              from={filterFrom}
+              to={filterTo}
+              setFrom={setFilterFrom}
+              setTo={setFilterTo}
+              focusComposer={!touch && tab === 'nueva'}
+              onComposerFocused={onComposerFocused}
+              composer={{
+                config: MODE_CONFIG, mode, setMode, form, setForm, today,
+                hoursError, dateError, loading, submit: handleSubmit, success, saveError,
+              }}
+            />
           </motion.div>
         )}
 
         {/* Historial de usuarios (admin) */}
-        {tab === 'usuarios' && user?.role === 'admin' && (
+        {/* Saldo del equipo (admin) — phones and tablets: one row per person */}
+        {view === 'usuarios' && user?.role === 'admin' && touch && (
+          <motion.div
+            key="usuarios-touch"
+            className={styles.tabContent}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.2 }}
+          >
+            <HorasTouchTeam stats={filteredUserStats} query={userSearch} setQuery={setUserSearch} onHistory={setSelectedUser} />
+          </motion.div>
+        )}
+
+        {view === 'usuarios' && user?.role === 'admin' && !touch && (
           <motion.div
             key="usuarios"
             className={styles.tabContent}
@@ -535,7 +459,7 @@ export default function HorasPage() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.2 }}
           >
-            <Section title={phone ? undefined : "Saldo por persona"} description="Horas a favor, pendientes y en deuda de cada empleado.">
+            <Section title="Saldo por persona" description="Horas a favor, pendientes y en deuda de cada empleado.">
             <div className={styles.adminSearchHeader}>
               <div className={clsx(styles.userSearchWrapper, styles.userSearchWrapperFlex)}>
                 <Search size={16} />

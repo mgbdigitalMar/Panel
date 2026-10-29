@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth, useReservations, useNotifs } from '../context';
 import { Badge, Modal, Select, Input, Textarea, Button, Card, ConfirmModal, StatCard, Section } from '../components/ui';
-import { usePhoneApp } from '../components/PhoneKit';
-import ReservationsPhone from './ReservationsPhone';
+import { useTouch } from '../components/Touch';
+import ReservationsTouch from './ReservationsTouch';
 import { Building, Car, Check, X, Plus, Download, Trash2, CalendarPlus, CalendarDays, Users, ArrowRight } from 'lucide-react';
 import { downloadReservationIcs } from '../utils/ics';
 import { fmtDayShort, todayKey } from '../utils/format';
@@ -58,7 +58,7 @@ export default function ReservationsPage() {
   // ?nueva=1 (search, shortcuts, dashboard) opens the booking form straight away; &tipo=vehicle picks a car.
   // ?mias=1 (phone dashboard) opens "Mis reservas".
   const [searchParams, setSearchParams] = useSearchParams();
-  const [phoneView] = useState(() => (searchParams.get('mias') === '1' ? 'mine' : 'room'));
+  const [touchView] = useState(() => (searchParams.get('mias') === '1' ? 'agenda' : 'resources'));
   useEffect(() => {
     if (searchParams.get('nueva') === '1') {
       if (searchParams.get('tipo') === 'vehicle') setForm(f => ({ ...f, type: 'vehicle', resourceId: '' }));
@@ -69,7 +69,7 @@ export default function ReservationsPage() {
     }
   }, [searchParams, setSearchParams]);
 
-  const phone = usePhoneApp();
+  const touch = useTouch();
   const book = (type, id) => {
     setForm(f => ({ ...f, type, resourceId: String(id) }));
     setShowModal(true);
@@ -156,20 +156,22 @@ export default function ReservationsPage() {
 
   return (
     <div className={styles.container}>
-      {/* Phones: the app's Reservas screen */}
-      {phone ? (
-        <ReservationsPhone
+      {/* Phones and tablets: the web's touch composition */}
+      {touch ? (
+        <ReservationsTouch
           rooms={rooms}
           vehicles={vehicles}
           reservations={reservations}
           user={user}
           busyUntil={busyUntil}
-          initialView={phoneView}
+          initialView={touchView}
           onBook={book}
+          onNew={() => setShowModal(true)}
           onApprove={handleApprove}
           onReject={handleReject}
           onDelete={setItemToDelete}
           onAddToCalendar={downloadReservationIcs}
+          onExport={exportReservationsCSV}
         />
       ) : (
       <>

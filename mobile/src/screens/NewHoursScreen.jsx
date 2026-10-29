@@ -1,7 +1,7 @@
 // 15 · Registrar horas (Ya / Bolsa / Debo) — "Nueva solicitud" tab of the web HorasPage
 import { useState } from 'react';
 import { View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { HOUR_TYPES } from '@shared/config/constants.js';
 import { toUserMessage } from '@shared/utils/errors.js';
@@ -32,12 +32,14 @@ const SUCCESS = {
 export default function NewHoursScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation();
+  const route = useRoute();
   const toast = useToast();
   const { user } = useAuth();
   const { hourCompensations, createHourCompensation } = useData();
   const [mode, setMode] = useState('bolsa');
   const [min, setMin] = useState(60);
-  const [date, setDate] = useState(todayISO());
+  // Horas opens it on the day picked in its calendar
+  const [date, setDate] = useState(route.params?.date || todayISO());
   const [reason, setReason] = useState('');
   const [saving, setSaving] = useState(false);
 

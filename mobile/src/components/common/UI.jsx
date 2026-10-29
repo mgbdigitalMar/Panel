@@ -252,7 +252,7 @@ export function Ring({ value = 0, size = 44, stroke = 3.5, color, track, childre
 }
 
 /** Brand blue washing in from the top-left: only for the one item that is "now" in a list. */
-export function WashCard({ children, onPress, radius = 24, padding = 16, style, accessibilityLabel }) {
+export function WashCard({ children, onPress, radius = 28, padding = 16, style, accessibilityLabel }) {
   const { colors } = useTheme();
   const body = (
     <>
@@ -280,7 +280,7 @@ export function Pill({ label, mono, tone }) {
 /** List row: [left] title/subtitle [right]. Use `first`/`last` to build grouped lists. */
 export function Row({ left, title, subtitle, right, onPress, first = true, last = true, style, titleWeight = 'semibold', subtitleLines = 2, accessibilityLabel }) {
   const { colors } = useTheme();
-  const radius = { tl: first ? 18 : 6, bl: last ? 18 : 6 };
+  const radius = { tl: first ? 24 : 8, bl: last ? 24 : 8 };
   const content = (
     <>
       {left}

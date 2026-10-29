@@ -60,3 +60,12 @@ export function fmtMoney(amount) {
 export function todayKey(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
+
+/** Hours as h:mm: 1.5 → "1:30"; with `sign`, "+1:30" / "−1:30". */
+export function fmtHM(hours, sign) {
+  const n = Number(hours) || 0;
+  const total = Math.round(Math.abs(n) * 60);
+  const text = `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+  if (!sign || total === 0) return text;
+  return `${n < 0 ? '−' : '+'}${text}`;
+}

@@ -1,4 +1,5 @@
-// Inicio: hero card for the day, the week as progress rings, quick access, agenda, news and birthdays.
+// Inicio: hero card for the day, a bento row (days left, hour balance), the week as capsule bars,
+// quick access, agenda, news and birthdays.
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -14,13 +15,15 @@ import { GlassCard } from '../components/common/GlassCard';
 import { PressScale } from '../components/common/Pressable';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { T } from '../components/common/Text';
-import { HeroCard, HeroChip, ON_BRAND } from '../components/common/Brand';
-import { ActionGrid, Avatar, IconTile, Pill, ProgressBar, Ring, Row, SectionHead, WashCard } from '../components/common/UI';
+import { BrandPanel, HeroCard, HeroChip, ON_BRAND } from '../components/common/Brand';
+import { AccentTile, BigFigure, CapsuleBars, InfoTile } from '../components/common/Bento';
+import { ActionGrid, Avatar, IconTile, Pill, ProgressBar, Row, SectionHead, WashCard } from '../components/common/UI';
 import { usePendingApprovals } from '../hooks/usePendingApprovals';
 import { buildRequestItems, hourStats, personalDaysSummary, requestTitle, requestDetail, REQUEST_TONE, reservationStatusLabel, reservationTone } from '../utils/domain';
-import { fmtHMSigned, firstName, greeting, todayISO, fmtDate, parseDate, toISODate, addDays, startOfWeek, MONTHS, MONTHS_SHORT, DAYS, DAYS_SHORT } from '../utils/format';
+import { fmtHM, fmtHMSigned, firstName, greeting, todayISO, fmtDate, parseDate, toISODate, addDays, startOfWeek, MONTHS, MONTHS_SHORT, DAYS, DAYS_SHORT } from '../utils/format';
 import { workdayProgress, isWeekend, motivationFor } from '../utils/workday';
 import { requestIcon } from '../utils/icons';
+import { BRAND } from '../theme/tokens';
 
 /** Re-renders once a minute so the greeting, hero and rings stay current. */
 function useNow(interval = 60000) {
@@ -42,35 +45,26 @@ function HeroMeta({ icon: Icon, value, label, color, onPress }) {
   );
 }
 
-/** Mon–Fri as rings: past days full, today partial, future empty. */
-function WeekRings({ now, busyDays }) {
-  const { colors } = useTheme();
+/** Mon–Fri as capsules filled with the workday: past days full, today partial, future empty. */
+function WeekCapsules({ now, busyDays }) {
   const today = toISODate(now);
   const monday = startOfWeek(now);
-  const days = [0, 1, 2, 3, 4].map((i) => {
+  const items = [0, 1, 2, 3, 4].map((i) => {
     const d = addDays(monday, i);
     const iso = toISODate(d);
     const value = iso < today ? 100 : iso === today ? workdayProgress(now) : 0;
-    return { d, iso, value, isToday: iso === today, busy: busyDays.has(iso) };
+    const isToday = iso === today;
+    const busy = busyDays.has(iso);
+    return {
+      key: iso,
+      label: `${DAYS_SHORT[d.getDay()]} ${d.getDate()}`,
+      value,
+      highlight: isToday,
+      dot: busy,
+      accessibilityLabel: `${DAYS[d.getDay()]} ${d.getDate()}${isToday ? ', hoy' : ''}, jornada ${Math.round(value)}%${busy ? ', con reservas o solicitudes' : ''}`,
+    };
   });
-  return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-      {days.map(({ d, iso, value, isToday, busy }) => (
-        <View key={iso} style={{ alignItems: 'center', gap: 6, flex: 1 }}
-          accessible accessibilityLabel={`${DAYS[d.getDay()]} ${d.getDate()}${isToday ? ', hoy' : ''}, jornada ${Math.round(value)}%${busy ? ', con reservas o solicitudes' : ''}`}>
-          {/* Same box for every day, so today's bigger ring keeps the labels in line */}
-          <View style={{ height: 50, justifyContent: 'center' }}>
-          <Ring value={value} size={isToday ? 50 : 42} stroke={isToday ? 4 : 3} color={colors.accent}>
-            <T size={isToday ? 16 : 12.5} weight={isToday ? 'bold' : 'semibold'} color={isToday ? colors.text : colors.text2} style={{ fontVariant: ['tabular-nums'] }}>
-              {d.getDate()}
-            </T>
-          </Ring>
-          </View>
-          <T size={12.5} weight={isToday ? 'semibold' : 'regular'} color={isToday ? colors.text : colors.text3}>{DAYS_SHORT[d.getDay()]}</T>
-        </View>
-      ))}
-    </View>
-  );
+  return <CapsuleBars items={items} height={104} width={16} />;
 }
 
 /** The first agenda card is washed in brand blue. */
@@ -158,6 +152,8 @@ export default function DashboardScreen() {
     if (myItems.some((r) => r.status === 'approved' && r.startDate && iso >= r.startDate && iso <= (r.endDate || r.startDate))) busyDays.add(iso);
   }
 
+  const weekBusy = [0, 1, 2, 3, 4].filter((i) => busyDays.has(toISODate(addDays(startOfWeek(now), i)))).length;
+
   const upcomingBirthdays = useMemo(() => {
     if (!employees || !employees.length) return [];
     const midnight = new Date();
@@ -220,7 +216,7 @@ export default function DashboardScreen() {
 
       <View style={{ gap: 2 }}>
         <T size={14} color={colors.text3}>{greeting(now)},</T>
-        <T size={30} weight="semibold" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} accessibilityRole="header">
+        <T size={36} weight="light" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} accessibilityRole="header">
           {firstName(user?.name)}
         </T>
       </View>
@@ -234,14 +230,12 @@ export default function DashboardScreen() {
         <View style={{ gap: 10 }}>
           <View>
             <T size={13} weight="medium" color={ON_BRAND.text2} upper>{DAYS[now.getDay()]}, {now.getDate()} de {MONTHS[now.getMonth()]}</T>
-            <T size={28} weight="semibold" color={ON_BRAND.text} numberOfLines={2}>{workdayText}</T>
+            <T size={29} weight="light" color={ON_BRAND.text} numberOfLines={2}>{workdayText}</T>
           </View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 16, rowGap: 4 }}>
             <HeroMeta icon={Clock} value={weekend ? 'Libre' : `8:00–${endsAt}`} label="Horario de hoy" onPress={() => navigation.navigate('Horas')} />
-            <HeroMeta icon={CalendarCheck} value={`${days.left}/${days.total} días`} label="Días propios disponibles" onPress={() => navigation.navigate('NewRequest', { type: 'asuntos_propios' })} />
-            <HeroMeta icon={Hourglass} value={fmtHMSigned(hours.balance)} label="Bolsa de horas" color={hours.balance < 0 ? '#FB7185' : '#34D399'} onPress={() => navigation.navigate('Horas')} />
           </View>
-          <ProgressBar value={progress} track={ON_BRAND.track} color="#FFFFFF" height={4} accessibilityLabel="Progreso de jornada laboral" />
+          <ProgressBar value={progress} track={ON_BRAND.track} color="#FFFFFF" height={6} accessibilityLabel="Progreso de jornada laboral" />
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <T size={13} color={ON_BRAND.text2}>{myPending.length ? `${myPending.length} solicitud${myPending.length === 1 ? '' : 'es'} en revisión` : 'Nada pendiente'}</T>
             <Pressable onPress={() => navigation.navigate('Requests')} accessibilityRole="button" hitSlop={10} style={{ flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 32 }}>
@@ -252,25 +246,60 @@ export default function DashboardScreen() {
         </View>
       </HeroCard>
 
-      <GlassCard radius={26} padding={16} style={{ gap: 14 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
-          <T size={15} weight="semibold">Esta semana</T>
-          <T size={13} color={colors.text3}>{MONTHS[startOfWeek(now).getMonth()]} {startOfWeek(now).getDate()}–{addDays(startOfWeek(now), 4).getDate()}</T>
+      {/* Bento: the days left stand out in brand blue, the hour balance beside them in glass */}
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        <AccentTile
+          icon={CalendarCheck}
+          label="Días propios"
+          value={`${days.left}/${days.total}`}
+          sub="Disponibles este año"
+          style={{ flex: 1.1 }}
+          onPress={() => navigation.navigate('NewRequest', { type: 'asuntos_propios' })}
+          accessibilityLabel={`Días propios disponibles: ${days.left} de ${days.total}`}
+        />
+        <InfoTile
+          icon={Hourglass}
+          label="Bolsa de horas"
+          value={fmtHMSigned(hours.balance)}
+          valueColor={hours.balance < 0 ? colors.dangerFg : colors.text}
+          sub={hours.pending ? `+${fmtHM(hours.pending)} en revisión` : 'Ver registro'}
+          style={{ flex: 1 }}
+          onPress={() => navigation.navigate('Horas')}
+        />
+      </View>
+
+      <GlassCard padding={18} style={{ gap: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+          <View style={{ gap: 2, flex: 1, minWidth: 0 }}>
+            <T size={15} weight="semibold" accessibilityRole="header">Esta semana</T>
+            <T size={13} color={colors.text3}>{MONTHS[startOfWeek(now).getMonth()]} {startOfWeek(now).getDate()}–{addDays(startOfWeek(now), 4).getDate()}</T>
+          </View>
+          <BigFigure value={String(weekBusy)} unit={weekBusy === 1 ? 'día con agenda' : 'días con agenda'} size={28}
+            accessibilityLabel={`${weekBusy} días con reservas o solicitudes esta semana`} />
         </View>
-        <WeekRings now={now} busyDays={busyDays} />
+        <WeekCapsules now={now} busyDays={busyDays} />
       </GlassCard>
 
       {user?.role === 'admin' && pendingApprovals.length > 0 ? (
-        <WashCard onPress={() => navigation.navigate('Admin')} accessibilityLabel={`${pendingApprovals.length} pendientes de aprobar`}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-            <IconTile icon={ShieldCheck} tone="accent" size={46} solid />
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <T size={15.5} weight="semibold">{pendingApprovals.length} pendiente{pendingApprovals.length === 1 ? '' : 's'} de aprobar</T>
-              <T size={13} color={colors.text3} numberOfLines={1}>Solicitudes, reservas y horas del equipo</T>
+        <PressScale onPress={() => navigation.navigate('Admin')} accessibilityRole="button" scaleTo={0.98}
+          accessibilityLabel={`${pendingApprovals.length} pendientes de aprobar`}>
+          <BrandPanel padding={20} radius={28} rings={false} style={{ gap: 10 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFFFFF' }} />
+              <T size={15.5} weight="semibold" color={ON_BRAND.text} style={{ flex: 1 }}>Por aprobar</T>
+              <ShieldCheck size={18} color={ON_BRAND.text2} />
             </View>
-            <ChevronRight size={20} color={colors.text2} />
-          </View>
-        </WashCard>
+            <T size={13} color={ON_BRAND.text2} style={{ maxWidth: 260 }}>Solicitudes, reservas y horas del equipo esperando tu revisión.</T>
+            <View style={{ marginVertical: 4, borderTopWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.22)' }} />
+            <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+              <BigFigure value={String(pendingApprovals.length)} unit={`pendiente${pendingApprovals.length === 1 ? '' : 's'}`} size={40}
+                color={ON_BRAND.text} unitColor={ON_BRAND.text2} />
+              <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
+                <ChevronRight size={20} color={BRAND.navy} />
+              </View>
+            </View>
+          </BrandPanel>
+        </PressScale>
       ) : null}
 
       <View style={{ gap: 10 }}>

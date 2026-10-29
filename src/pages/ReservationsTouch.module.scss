@@ -1,0 +1,346 @@
+@use '../styles/patterns' as p;
+
+/* Reservas on phones and tablets (ReservationsTouch.jsx) */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Next booking, as a ticket on the brand panel */
+.ticketBody {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.ticketIcon {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--shape-leaf);
+  background: rgba(255, 255, 255, 0.1);
+  color: #C3D1FF;
+}
+
+.ticketName {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+}
+
+.ticketWhen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 6px 0 0;
+
+  strong {
+    font-family: var(--font-heading);
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: #FFFFFF;
+    font-variant-numeric: tabular-nums;
+  }
+
+  span {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.72);
+
+    &::first-letter { text-transform: uppercase; }
+  }
+}
+
+.ticketFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.72);
+
+  > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+.ticketState {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #FFFFFF;
+
+  &::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  &[data-tone='success'] { color: #34D399; }
+  &[data-tone='warning'] { color: #F5B544; }
+  &[data-tone='danger'] { color: #FB7185; }
+}
+
+.ticketNone {
+  max-width: 40ch;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.views { margin-top: 4px; }
+
+/* Rooms or vehicles */
+.kinds {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kind {
+  @include p.glass;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 12px 14px;
+  border-radius: 20px;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.18s var(--ease-out), background-color 0.18s var(--ease-out), transform 0.16s var(--ease-out);
+
+  &:active { transform: scale(0.98); }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.45); }
+
+  > span:last-child { display: grid; gap: 2px; min-width: 0; }
+
+  strong {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  span span {
+    font-size: 12.5px;
+    color: var(--text-sec);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.kindOn {
+  border-color: rgba(var(--accent-rgb), 0.6);
+  background: color-mix(in srgb, var(--accent) 12%, transparent), var(--lg-fill);
+  box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.35);
+}
+
+/* Resource cards: two per row on tablets */
+.resources {
+  display: grid;
+  gap: 12px;
+
+  @media (min-width: 768px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.resource {
+  @include p.glass;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 16px 14px;
+  border-radius: 24px;
+}
+
+.resHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.resName {
+  min-width: 0;
+
+  h3 {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  p {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--text-sec);
+
+    svg { color: var(--text-mut); flex-shrink: 0; }
+  }
+}
+
+.avail {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 11px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+  color: var(--success);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+  &[data-busy] {
+    background: color-mix(in srgb, var(--warning) 14%, transparent);
+    color: var(--warning);
+  }
+}
+
+/* Today from 8 to 20 */
+.strip { display: grid; gap: 6px; }
+
+.stripTrack {
+  position: relative;
+  height: 12px;
+  border-radius: 4px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0, transparent calc(100% / 12 - 1px), var(--lg-edge) calc(100% / 12 - 1px), var(--lg-edge) calc(100% / 12)),
+    rgba(var(--text-rgb), 0.05);
+
+  i {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    min-width: 4px;
+    border-radius: 3px;
+    background: var(--accent);
+
+    &[data-pending] {
+      background: repeating-linear-gradient(135deg, var(--warning) 0 4px, color-mix(in srgb, var(--warning) 55%, transparent) 4px 8px);
+    }
+  }
+
+  b {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 2px;
+    margin-left: -1px;
+    border-radius: 1px;
+    background: var(--danger);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 25%, transparent);
+  }
+}
+
+.stripScale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-mut);
+  font-variant-numeric: tabular-nums;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  span {
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: rgba(var(--text-rgb), 0.05);
+    color: var(--text-sec);
+    font-size: 12px;
+    font-weight: 600;
+  }
+}
+
+.tags .plate {
+  border: 1px solid var(--border-2);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+}
+
+.resActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--lg-edge);
+}
+
+.resCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--text-sec);
+
+  svg { color: var(--text-mut); flex-shrink: 0; }
+}
+
+.bookBtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--gradient-cta);
+  color: #FFFFFF;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--shadow-cta);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.16s var(--ease-out);
+
+  &:active { transform: scale(0.97); }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.45); }
+}
+
+.pastGroups {
+  display: grid;
+  gap: 18px;
+}
+
+/* The calendar keeps its own panel */
+.calendar > * { margin: 0; }

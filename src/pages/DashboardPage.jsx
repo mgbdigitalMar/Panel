@@ -2,6 +2,8 @@ import { useState, useMemo, useCallback } from 'react';
 import { useAuth, useReservations, useRequests, useNews, useHours, usePersonalDays, useDocuments } from '../context';
 import { useNavigate } from 'react-router-dom';
 import DashboardGlass from './DashboardGlass';
+import DashboardTouch from './DashboardTouch';
+import { useTouch } from '../components/Touch';
 import { todayKey } from '../utils/format';
 import { workdayProgress, greetingFor } from '../utils/workday';
 
@@ -187,9 +189,12 @@ export default function DashboardPage() {
     return { balance: credit - debt, pending };
   }, [hourCompensations, user?.id]);
 
-  // Computes the data here; DashboardGlass lays it out
+  const touch = useTouch();
+
+  // Computes the data here; DashboardGlass lays it out on computers, DashboardTouch on phones and tablets
+  const Composition = touch ? DashboardTouch : DashboardGlass;
   return (
-    <DashboardGlass d={{
+    <Composition d={{
       user, employees, navigate, reservations, requests, news, todayStr,
       greeting, dateLine, motivation, progress, pendingCount, todayResCount, newsThisMonth,
       myUpcoming, myRequests, hours, upcomingBirthdays, resourceTypePie,

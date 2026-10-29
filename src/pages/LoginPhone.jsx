@@ -1,21 +1,13 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, AlertCircle, X } from 'lucide-react';
-import logoIcon from '../assets/logos/logo-icon.png';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, X, CalendarDays, Inbox, Timer } from 'lucide-react';
+import logoWhite from '../assets/logos/logo-white.png';
 import { Wallpaper } from '../components/Wallpaper';
+import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
 import styles from './LoginPhone.module.scss';
 
 const HELP_MAIL = 'mailto:rrhh@margube.com?subject=Acceso%20a%20la%20intranet';
 export const REMEMBER_KEY = 'margube_last_email';
-
-// The "M" of Margube drawn in an 11 × 9 grid of tiles (two legs and a V), same as the app
-const TILES = Array.from({ length: 99 }, (_, i) => {
-  const r = Math.floor(i / 11);
-  const c = i % 11;
-  const on = c <= 1 || c >= 9 || (r <= 4 && (c === r || c === r + 1 || c === 10 - r || c === 9 - r)) || (r === 5 && c === 5);
-  const delay = on ? (r + c) * 0.09 : ((r * 7 + c * 13) % 23) * 0.31;
-  return { on, delay: `${delay.toFixed(2)}s` };
-});
 
 function greeting(now = new Date()) {
   const h = now.getHours();
@@ -28,8 +20,9 @@ export const readRemembered = () => {
 };
 
 /**
- * Login on phones and small tablets: the Margube monogram over the web's wallpaper and the form
- * on a floating liquid glass card (the app's login). The parent owns the credentials and the sign-in.
+ * Login on phones and small tablets: the navy cover with the wordmark and what the intranet holds,
+ * and the form on a liquid glass card that overlaps it, over the web's wallpaper. The parent owns
+ * the credentials and the sign-in.
  */
 export default function LoginPhone({ email, setEmail, pass, setPass, err, errKey, loading, onSubmit, idleText }) {
   const [show, setShow] = useState(false);
@@ -47,27 +40,28 @@ export default function LoginPhone({ email, setEmail, pass, setPass, err, errKey
 
   return (
     <div className={`${styles.page} glass-scope`}>
-      {/* The same backdrop as the rest of the web, so the liquid glass reads the same */}
+      {/* The same backdrop as the rest of the web */}
       <Wallpaper />
-      <div className={styles.hero}>
-        <span className={styles.glow} aria-hidden="true" />
+      <header className={styles.hero}>
+        <svg className={styles.heroLeaf} viewBox="0 0 48 48" aria-hidden="true">
+          <path d={LEAF_PATH} />
+          <path d={VEIN_PATH} />
+        </svg>
         <div className={`${styles.brand} ${styles.rise}`}>
-          <img src={logoIcon} alt="" className={styles.brandLogo} />
-          <span className={styles.brandName}>Margube</span>
+          <img src={logoWhite} alt="Margube" className={styles.brandLogo} />
           <span className={styles.brandTag}>Intranet</span>
         </div>
-        <div className={`${styles.monogram} ${styles.rise}`} style={{ animationDelay: '.25s' }} aria-hidden="true">
-          <div className={styles.grid}>
-            {TILES.map((t, i) => (
-              <span key={i} className={t.on ? styles.tileOn : styles.tileOff} style={{ animationDelay: t.delay }} />
-            ))}
-          </div>
-          <span className={styles.scan} />
+        <div className={`${styles.pitch} ${styles.rise}`} style={{ animationDelay: '.12s' }}>
+          <p className={styles.pitchTitle}>Tu día en Margube, en un solo sitio.</p>
+          <ul className={styles.pitchList} aria-label="Qué encontrarás">
+            <li><CalendarDays size={14} aria-hidden="true" /> Reservas</li>
+            <li><Inbox size={14} aria-hidden="true" /> Solicitudes</li>
+            <li><Timer size={14} aria-hidden="true" /> Horas</li>
+          </ul>
         </div>
-      </div>
+      </header>
 
       <section className={styles.sheet} aria-label="Iniciar sesión">
-        <div className={styles.grab} aria-hidden="true" />
         <motion.div
           key={errKey}
           className={styles.body}
@@ -76,15 +70,8 @@ export default function LoginPhone({ email, setEmail, pass, setPass, err, errKey
         >
           <div className={`${styles.intro} ${styles.rise}`} style={{ animationDelay: '.5s' }}>
             <span className={styles.hello}><span className={styles.pulse} />{greeting()}</span>
-            <h1 className={styles.title}>
-              Inicia{' '}
-              <span className={styles.titleMark}>
-                sesión
-                <svg className={styles.squig} viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true">
-                  <path d="M3 13 C 40 4, 70 18, 105 9 S 170 4, 197 11" />
-                </svg>
-              </span>
-            </h1>
+            <h1 className={styles.title}>Inicia sesión</h1>
+            <p className={styles.lead}>Con tu correo corporativo y tu contraseña.</p>
           </div>
 
           <form className={`${styles.form} ${styles.rise}`} style={{ animationDelay: '.6s' }} onSubmit={submit} noValidate>

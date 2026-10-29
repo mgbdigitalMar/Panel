@@ -1,0 +1,294 @@
+@use '../styles/patterns' as p;
+
+/* Big figure ---------------------------------------------------------------- */
+.figure {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  margin: 0;
+  min-width: 0;
+  color: var(--text);
+
+  strong {
+    @include p.display-figure(var(--figure-size, clamp(40px, 5vw, 58px)));
+  }
+
+  span {
+    font-family: var(--font-heading);
+    font-size: calc(var(--figure-size, 48px) * 0.36);
+    font-weight: var(--weight-display);
+    color: var(--text-mut);
+  }
+}
+
+.figure_danger strong { color: var(--danger); }
+.figure_onInk { color: #FFFFFF; span { color: rgba(255, 255, 255, 0.66); } }
+
+/* Proportion pills ------------------------------------------------------------ */
+.split {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+
+.splitItem {
+  flex-basis: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.splitLabel {
+  font-size: 13px;
+  color: var(--text-sec);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.splitPill {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  background: rgba(var(--text-rgb), 0.08);
+  color: var(--text-sec);
+
+  &[data-tone='accent'] { background: var(--gradient-tile); color: #FFFFFF; box-shadow: 0 10px 22px -14px rgba(47, 91, 234, 0.9); }
+  &[data-tone='plate']  { background: var(--plate); color: var(--plate-fg); }
+  &[data-tone='amber']  { background: var(--warning-bg); color: var(--warning); }
+}
+
+/* Capsule bars ---------------------------------------------------------------- */
+.capsules {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.capsule {
+  display: flex;
+  align-items: flex-end;
+  width: 16px;
+  height: var(--capsule-h, 110px);
+  padding: 2px;
+  border-radius: var(--radius-full);
+  background: var(--capsule);
+  border: 1px solid var(--cell-border);
+
+  i {
+    display: block;
+    width: 100%;
+    border-radius: var(--radius-full);
+    background: var(--accent);
+    transform-origin: bottom;
+    animation: capsule-rise 700ms var(--ease-apple-default) both;
+  }
+}
+
+.capsuleOn .capsule { border-color: rgba(var(--accent-rgb), 0.45); }
+
+.capsuleLabel {
+  font-size: 12px;
+  color: var(--text-mut);
+  white-space: nowrap;
+}
+
+.capsuleOn .capsuleLabel { color: var(--text); font-weight: 600; }
+
+.capsuleDot {
+  width: 5px;
+  height: 5px;
+  margin-top: -4px;
+  border-radius: 50%;
+}
+
+.capsuleDotOn { background: var(--accent); }
+
+@keyframes capsule-rise {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+/* Month calendar ---------------------------------------------------------------- */
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: clamp(4px, 0.8vw, 8px);
+}
+
+.calHead {
+  padding-bottom: 2px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-mut);
+}
+
+.calHeadWeekend { color: var(--danger); }
+
+.cell {
+  position: relative;
+  aspect-ratio: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 7px 8px;
+  border: 1px solid var(--cell-border);
+  border-radius: var(--radius-cell);
+  background: var(--cell);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 140ms var(--ease-out), border-color 140ms var(--ease-out), background-color 140ms var(--ease-out);
+
+  &:disabled { cursor: default; }
+  &:not(:disabled):active { transform: scale(0.95); }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--accent-glow);
+  }
+
+  i {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  &[data-tone='accent'] { background: var(--accent-bg-2); border-color: transparent; color: var(--accent); font-weight: 600; }
+  &[data-tone='amber']  { background: var(--warning-bg); border-color: transparent; color: var(--warning); font-weight: 600; }
+  &[data-tone='danger'] { background: var(--danger-bg); border-color: transparent; color: var(--danger); font-weight: 600; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cell:not(:disabled):hover { border-color: rgba(var(--accent-rgb), 0.4); }
+}
+
+/* Wide calendars: cells a little wider than tall, so the grid doesn't grow too high */
+@media (min-width: 900px) {
+  .cell { aspect-ratio: 4 / 3; }
+}
+
+.cellWeekend {
+  background-color: transparent;
+  @include p.hatch;
+}
+
+.cellOut {
+  background-color: transparent;
+  color: var(--text-mut);
+  @include p.hatch;
+}
+
+.cellToday { border-color: rgba(var(--accent-rgb), 0.5); color: var(--accent); font-weight: 700; }
+
+.cellSelected {
+  border: 1.5px solid var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.16);
+}
+
+/* Month switcher ---------------------------------------------------------------- */
+.switcher {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 3px;
+  border-radius: var(--radius-full);
+  @include p.glass;
+
+  span {
+    min-width: 92px;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  button {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-sec);
+    cursor: pointer;
+    transition: background-color 140ms var(--ease-out), color 140ms var(--ease-out);
+
+    &:hover { background: rgba(var(--text-rgb), 0.06); color: var(--text); }
+    &:focus-visible { outline: none; box-shadow: var(--accent-glow); }
+  }
+}
+
+/* Ink card ---------------------------------------------------------------- */
+.ink {
+  @include p.brand-panel;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: clamp(18px, 2.2vw, 24px);
+  border-radius: var(--radius-card);
+}
+
+.inkTitle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 600;
+  color: #FFFFFF;
+
+  i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #FFFFFF;
+  }
+}
+
+.inkDivider {
+  width: 100%;
+  margin: 2px 0;
+  border: none;
+  border-top: 1px dashed rgba(255, 255, 255, 0.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .capsule i { animation: none; }
+  .cell { transition: none; }
+}

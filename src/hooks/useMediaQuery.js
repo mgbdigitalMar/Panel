@@ -15,3 +15,6 @@ export function useMediaQuery(query) {
 
 /** Phones: the width where the glass layout shows the bottom dock (GlassChrome.module.scss). */
 export const PHONE_QUERY = '(max-width: 767px)';
+
+/** Phones and tablets: below the computer layout the web switches to its touch compositions (Touch.jsx). */
+export const TOUCH_QUERY = '(max-width: 1023px)';

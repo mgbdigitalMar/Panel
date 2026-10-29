@@ -1,3 +1,5 @@
+@use '../styles/patterns' as p;
+
 /* Glass dashboard: pinned news, KPIs, then a 12-column grid whose rows stretch so cards
    in the same row always end at the same line (no gaps under short cards). */
 $gap: 18px;
@@ -858,4 +860,67 @@ $gap: 18px;
     width: 100%;
   }
   .goalsBody { gap: 14px; }
+}
+
+/* Phones and tablets ------------------------------------------------------------
+   The greeting is the screen's cover (brand panel, white type, the two create buttons inside)
+   and the figures slide sideways on phones. */
+@media (max-width: 1023px) {
+  .hero {
+    @include p.cover;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+  }
+
+  .date { @include p.cover-eyebrow; margin: 0 0 8px; }
+
+  .greeting {
+    @include p.cover-title;
+    font-size: clamp(30px, 6vw, 40px);
+  }
+
+  .meta { @include p.cover-desc; }
+
+  .heroActions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+
+    > * { width: 100%; justify-content: center; }
+
+    /* "Nueva solicitud": frosted white on the navy */
+    > :first-child {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border-color: rgba(255, 255, 255, 0.18) !important;
+      color: #FFFFFF !important;
+      box-shadow: none !important;
+    }
+
+    /* "Nueva reserva": white with Margube blue text */
+    > :last-child {
+      background: #FFFFFF !important;
+      border-color: transparent !important;
+      color: #1E40AF !important;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .kpis {
+    display: flex;
+    gap: 10px;
+    margin: 0 -14px;
+    padding: 2px 14px 6px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+
+    > * {
+      flex: 0 0 72%;
+      scroll-snap-align: start;
+    }
+  }
 }

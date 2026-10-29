@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { glassSurface } from '../../theme/tokens';
+import { glassSurface, RADIUS } from '../../theme/tokens';
 import { GlassFill } from './LiquidGlass';
 import { PressScale } from './Pressable';
 
@@ -9,7 +9,7 @@ import { PressScale } from './Pressable';
  * No drop shadow. `strong` uses the full liquid-glass layer (blur / native glass) for hero cards;
  * plain cards stay cheap so long lists scroll smoothly. `tint`/`border` recolour it (callouts).
  */
-export function GlassCard({ children, style, onPress, radius = 22, padding = 16, strong, tint, border, accessibilityLabel, disabled }) {
+export function GlassCard({ children, style, onPress, radius = RADIUS.card, padding = 18, strong, tint, border, accessibilityLabel, disabled }) {
   const { colors } = useTheme();
   const surface = [
     { borderRadius: radius, padding },

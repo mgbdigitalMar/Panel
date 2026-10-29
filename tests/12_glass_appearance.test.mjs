@@ -82,20 +82,42 @@ export async function runGlassAppearanceTests() {
   assert('Inicio Cristal: «Hoy» no repite la fecha ni los botones de crear', !glass.includes('<p className={styles.panelSub}>{dateLine}</p>') && glass.split("/reservations?nueva=1").length === 2);
   assert('Inicio Cristal: filas que se estiran (sin huecos)', read('src', 'pages', 'DashboardGlass.module.scss').includes('align-items: stretch;'));
 
-  // 4b. Móvil: la web se ve como la app
+  // 4b. Móvil y tablet: composiciones táctiles propias de la web (no copian la app de Expo)
   const glassCss = read('src', 'pages', 'DashboardGlass.module.scss');
-  assert('Móvil: el inicio es el de ordenador, adaptado (fijadas en carrusel y reservas recientes en filas)',
-    !glass.includes('DashboardPhone') && glass.includes('styles.recentList') && glassCss.includes('scroll-snap-type: x mandatory'));
+  const globalCssTouch = read('src', 'styles', 'global.scss');
+  const touchKit = read('src', 'components', 'Touch.jsx');
+  const srcFiles = (dir) => fs.readdirSync(path.join(root, dir), { withFileTypes: true }).flatMap((d) =>
+    d.isDirectory() ? srcFiles(path.join(dir, d.name)) : /\.(jsx?|tsx?|scss)$/.test(d.name) ? [path.join(dir, d.name)] : []);
+  const webSources = srcFiles('src').filter((f) => !path.basename(f).startsWith('__'));
+  assert('Táctil: solo por debajo de 1024 px (el escritorio no cambia)',
+    read('src', 'hooks', 'useMediaQuery.js').includes("export const TOUCH_QUERY = '(max-width: 1023px)';") && touchKit.includes('useMediaQuery(TOUCH_QUERY)'));
+  assert('Táctil: la web no importa nada de la app móvil ni conserva su kit de pantallas',
+    webSources.every((f) => !/from ['"][./]*mobile\//.test(fs.readFileSync(path.join(root, f), 'utf8')))
+    && !fs.existsSync(path.join(root, 'src', 'components', 'PhoneKit.jsx'))
+    && !webSources.some((f) => /(Requests|Reservations|Horas)Phone\.jsx$/.test(f)));
+  assert('Táctil: kit propio — cabecera sobre el fondo, cifras, panel de marca, accesos, filtros, filas que se abren y pliegues',
+    ['export function Masthead', 'export function Ledger', 'export function Spotlight', 'export function ActionTiles',
+      'export function TabStrip', 'export function Toolbar', 'export function FeedItem', 'export function Fold', 'export function TouchEmpty'].every((k) => touchKit.includes(k)));
+  assert('Móvil y tablet: Inicio con su composición táctil (el de ordenador sigue igual)',
+    dash.includes("const Composition = touch ? DashboardTouch : DashboardGlass;")
+    && glass.includes('styles.recentList') && glassCss.includes('scroll-snap-type: x mandatory'));
   assert('Móvil: dock de la app — Inicio, Reservas, Solicitudes, Horas, Más y el «+»',
     chrome.includes("const DOCK_IDS = ['dashboard', 'reservations', 'requests', 'horas'];") && chrome.includes("id: 'mas'")
     && chrome.includes("onNavigate('requests?nueva=1')") && read('src', 'App.tsx').includes('path="/mas"'));
   assert('Móvil: «Más» con perfil, accesos, apariencia, ajustes y cerrar sesión',
     ['Accesos rápidos', 'Apariencia', "navigate('/settings')", 'logout()', "navigate('/profile')"].every((k) => read('src', 'pages', 'MorePage.jsx').includes(k)));
-  assert('Móvil: Reservas, Solicitudes y Horas con las pantallas de la app',
-    read('src', 'pages', 'ReservationsPage.jsx').includes('<ReservationsPhone') && read('src', 'pages', 'RequestsPage.jsx').includes('<RequestsPhone')
-    && read('src', 'pages', 'HorasPage.jsx').includes('<HorasPhoneSummary'));
-  assert('Móvil: perfil con modo de trabajo en segmentos y contraseña y documentos plegados',
-    read('src', 'pages', 'ProfilePage.jsx').includes('<Segmented') && read('src', 'pages', 'ProfilePage.jsx').includes('aria-expanded={open}'));
+  assert('Móvil y tablet: Reservas, Solicitudes, Horas y Equipo con sus composiciones táctiles',
+    read('src', 'pages', 'ReservationsPage.jsx').includes('<ReservationsTouch') && read('src', 'pages', 'RequestsPage.jsx').includes('<RequestsTouch')
+    && read('src', 'pages', 'HorasPage.jsx').includes('<HorasTouchRecords') && read('src', 'pages', 'EmployeesPage.jsx').includes('<EmployeesTouch'));
+  assert('Táctil: las acciones de cada fila conservan sus funciones (aprobar, rechazar, eliminar, calendario, justificante, CSV)',
+    ['onApprove(r.id)', 'onReject(r.id)', 'onDelete(r.id)', 'onAddToCalendar(r)', 'onExport(agenda)'].every((k) => read('src', 'pages', 'ReservationsTouch.jsx').includes(k))
+    && ['onApprove(r)', 'onReject(r)', 'onDelete(r)', 'download="justificante"', 'onExport(filtered)'].every((k) => read('src', 'pages', 'RequestsTouch.jsx').includes(k)));
+  assert('Táctil: las tablas que quedan (Administración) pasan a fichas con etiquetas y acciones al pie',
+    globalCssTouch.includes("td[data-label='Acciones'] {") && /@media \(max-width: 1023px\) \{
+    min-width: 100%;
+    border: none;/.test(globalCssTouch));
+  assert('Móvil y tablet: perfil con modo de trabajo en opciones con nombre y contraseña y documentos plegados',
+    read('src', 'pages', 'ProfilePage.jsx').includes('styles.modeChoice') && read('src', 'pages', 'ProfilePage.jsx').includes('aria-expanded={open}'));
 
   // 4c. Safari en iOS: el lienzo bajo las barras sigue al fondo (no el casi negro de --bg)
   const globalCss = read('src', 'styles', 'global.scss');
@@ -116,8 +138,8 @@ export async function runGlassAppearanceTests() {
   assert('Desde la pantalla de inicio se abre a pantalla completa (sin las barras de Safari)',
     read('vite.config.js').includes("display: 'standalone'") && indexHtml.includes('apple-mobile-web-app-capable') && indexHtml.includes('black-translucent') && indexHtml.includes('viewport-fit=cover'));
   const loginPhone = read('src', 'pages', 'LoginPhone.jsx');
-  assert('Login móvil web: diseño nuevo (monograma, hoja, recordarme) sin perder la ayuda ni el aviso de inactividad',
-    loginPhone.includes('styles.monogram') && loginPhone.includes('Recordarme') && loginPhone.includes('¿Primer acceso o contraseña olvidada?')
+  assert('Login móvil web: diseño nuevo (portada de marca, hoja, recordarme) sin perder la ayuda ni el aviso de inactividad',
+    loginPhone.includes('styles.pitchTitle') && loginPhone.includes('LEAF_PATH') && loginPhone.includes('Recordarme') && loginPhone.includes('¿Primer acceso o contraseña olvidada?')
     && read('src', 'pages', 'LoginPage.jsx').includes('<LoginPhone') && loginPhone.includes('<Wallpaper />'));
 
   // 5. Estilo

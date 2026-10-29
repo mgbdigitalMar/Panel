@@ -18,6 +18,8 @@ import {
   ChevronRight,
   Mail,
   MapPin,
+  Building2,
+  Home,
 } from "lucide-react";
 import styles from "./ProfilePage.module.scss";
 import clsx from "clsx";
@@ -26,12 +28,12 @@ import { changeOwnPassword } from "../../shared/services/auth.js";
 import { useAutoDismiss } from "../hooks/useAutoDismiss";
 import { SignatureView } from "../components/SignaturePad";
 import { fetchPolicySignatures, latestSignatureByUser, formatSignedAt } from "../../shared/services/policy.js";
-import { usePhoneApp, Segmented } from "../components/PhoneKit";
+import { useTouch, ItemAction } from "../components/Touch";
 
 const WORK_MODES = {
-  Office: { label: "Oficina" },
-  remoto: { label: "Remoto" },
-  externo: { label: "Externo" },
+  Office: { label: "Oficina", icon: Building2, tone: "accent" },
+  remoto: { label: "Remoto", icon: Home, tone: "success" },
+  externo: { label: "Externo", icon: MapPin, tone: "warning" },
 };
 const DEFAULT_WORK_MODE = "Office";
 
@@ -92,8 +94,8 @@ export default function ProfilePage() {
 
   useAutoDismiss(message, setMessage, 4000);
 
-  // Phones: the app's profile — password and documents fold into rows that open in place
-  const phone = usePhoneApp();
+  // Phones and tablets: password and documents fold into rows that open in place
+  const phone = useTouch();
   const [openPass, setOpenPass] = useState(false);
   const [openDocs, setOpenDocs] = useState(false);
   const cardHead = (Icon, title, extra, open, toggle) => (phone ? (
@@ -416,16 +418,16 @@ export default function ProfilePage() {
               <h3>Modo de trabajo</h3>
             </div>
             {phone ? (
-              <Segmented
-                label="Modo de trabajo"
-                value={workMode}
-                onChange={handleWorkModeChange}
-                options={Object.entries(WORK_MODES).map(([k, m]) => ({
-                  value: k,
-                  label: m.label,
-                  disabled: workModeLoading || (k !== workMode && !allowedModes.has(k)),
-                }))}
-              />
+              <div className={styles.modeChoice} role="group" aria-label="Modo de trabajo">
+                {Object.entries(WORK_MODES).map(([k, m]) => (
+                  <ItemAction key={k} icon={m.icon} tone={m.tone} pressed={workMode === k}
+                    disabled={workModeLoading || (k !== workMode && !allowedModes.has(k))}
+                    title={k !== workMode && !allowedModes.has(k) ? "Necesitas una solicitud aprobada para hoy" : undefined}
+                    onClick={() => handleWorkModeChange(k)}>
+                    {m.label}
+                  </ItemAction>
+                ))}
+              </div>
             ) : (
             <Select
               label=""

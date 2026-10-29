@@ -501,8 +501,8 @@
   margin-top: 6px;
 }
 
-/* Phones (glass): the app's profile — centred identity, two-column details and the password
-   and documents folded into rows (PhoneKit) */
+/* Phones (glass): centred identity, two-column details and the password and documents folded
+   into rows that open in place */
 .cardToggle {
   width: 100%;
   border-top: none;
@@ -562,4 +562,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .toggleChev { transition: none; }
+}
+
+/* Phones and tablets: the work mode as three named options (Touch.jsx ItemAction) */
+.modeChoice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }

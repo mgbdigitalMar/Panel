@@ -157,6 +157,52 @@
   }
 }
 
+/* Cover of a screen on phones and tablets: the brand panel, generous padding, white type.
+   Its uses in the small-screen blocks of DashboardGlass and HorasDesk are no longer reached:
+   below 1024 px those pages render their touch compositions (Touch.jsx). */
+@mixin cover {
+  @include brand-panel;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 22px 20px 20px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  @media (min-width: 768px) { padding: 28px 28px 26px; border-radius: 32px; }
+}
+
+@mixin cover-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9DB4FF;
+}
+
+@mixin cover-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(28px, 4.6vw, 36px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #FFFFFF;
+  text-shadow: none;
+}
+
+@mixin cover-desc {
+  max-width: 46ch;
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.72);
+}
+
 /* Hairline leaf drawn into a brand panel */
 @mixin brand-leaf {
   position: absolute;

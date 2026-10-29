@@ -144,7 +144,11 @@ $header-h-mobile: 64px;
 
   @media (max-width: 1023px) {
     min-height: calc(100svh - #{$header-h-mobile});
-    padding: 12px 14px calc(32px + env(safe-area-inset-bottom));
+    padding: 12px 28px calc(40px + env(safe-area-inset-bottom));
+  }
+
+  @media (max-width: 767px) {
+    padding-inline: 16px;
   }
 
   /* Phones: room for the bottom dock */
@@ -162,9 +166,68 @@ $header-h-mobile: 64px;
   margin-bottom: clamp(20px, 2.4vw, 30px);
 }
 
-/* Phones: these pages draw the app's header themselves (PhoneKit) */
-.pageIntroPhoneOwn {
-  @media (max-width: 767px) { display: none; }
+/* Phones and tablets: these pages compose their own touch screen, masthead included (Touch.jsx) */
+.pageIntroTouchOwn {
+  @media (max-width: 1023px) { display: none; }
+}
+
+/* Pages with their own header on every screen (Tiempo a compensar) */
+.pageIntroOwn { display: none; }
+
+/* Phones and tablets: the page's own first panel is the cover (Mi perfil) */
+.pageIntroCoverOwn {
+  @media (max-width: 1023px) { display: none; }
+}
+
+/* Masthead parts, only on phones and tablets */
+.introEyebrow { display: none; }
+
+/* Phones and tablets: the heading becomes a masthead on the wallpaper — the section's mark and
+   today's date, a large title and the description (the same as Touch.jsx's Masthead) */
+@media (max-width: 1023px) {
+  .pageIntro { margin: 8px 2px 22px; }
+
+  .introEyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-sec);
+
+    > span:last-child::first-letter { text-transform: uppercase; }
+  }
+
+  .introMark {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border-radius: var(--shape-leaf);
+    background: var(--gradient-cta);
+    color: #FFFFFF;
+    box-shadow: 0 8px 18px -10px rgba(47, 91, 234, 0.9);
+  }
+
+  .pageIntro .pageTitle {
+    margin: 0;
+    font-size: clamp(30px, 8vw, 46px);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    text-shadow: none;
+    overflow-wrap: anywhere;
+  }
+
+  .pageIntro .pageDesc {
+    max-width: 46ch;
+    margin-top: 10px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .pageIntro { margin: 18px 4px 28px; }
 }
 
 /* Page titles sit on the wallpaper, not on a card */

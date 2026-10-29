@@ -4,6 +4,7 @@ import { FONTS } from '../../theme/tokens';
 
 // Android ignores fontWeight for custom fonts, so each weight maps to its own family.
 const BODY = {
+  light: FONTS.regular,
   regular: FONTS.regular,
   medium: FONTS.medium,
   semibold: FONTS.semibold,
@@ -11,6 +12,7 @@ const BODY = {
 };
 
 const HEADING = {
+  light: FONTS.headingLight,
   regular: FONTS.headingMedium,
   medium: FONTS.headingMedium,
   semibold: FONTS.heading,
@@ -21,13 +23,13 @@ const HEADING = {
  * Themed text. Like the web, headings (17+ semibold/bold) use Poppins and body uses Inter.
  * `mono` uses Geist Mono for small figures; large figures (22+) switch to Poppins with
  * tabular numerals, matching the web's KPI tiles. `heading` forces the choice either way.
- * @param {{ size?: number, weight?: 'regular'|'medium'|'semibold'|'bold', color?: string, mono?: boolean,
+ * @param {{ size?: number, weight?: 'light'|'regular'|'medium'|'semibold'|'bold', color?: string, mono?: boolean,
  *   heading?: boolean, tracking?: number, upper?: boolean, align?: 'left'|'center'|'right' }} props
  */
 export function T({ size = 15, weight = 'regular', color, mono, heading, tracking, upper, align, style, children, ...rest }) {
   const { colors } = useTheme();
   const bigFigure = mono && size >= 22;
-  const isHeading = heading ?? (bigFigure || (!mono && size >= 17 && (weight === 'semibold' || weight === 'bold')));
+  const isHeading = heading ?? (bigFigure || weight === 'light' || (!mono && size >= 17 && (weight === 'semibold' || weight === 'bold')));
   // Display sizes read lighter: semibold drops to medium from 24 up.
   const headingWeight = size >= 24 && weight === 'semibold' && !bigFigure ? 'medium' : weight;
   const fontFamily = isHeading

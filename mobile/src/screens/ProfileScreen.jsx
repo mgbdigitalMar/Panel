@@ -1,8 +1,8 @@
 // Mi perfil (ProfilePage on the web): info, work mode, password. Documents live in DocumentsScreen.
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { FileText, ChevronRight, ChevronLeft, KeyRound, Lock, CheckCircle2, Clock } from 'lucide-react-native';
+import { FileText, ChevronRight, ChevronLeft, KeyRound, Lock, CheckCircle2, Clock, Cake, IdCard, ArrowDown, Timer } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
 import { allowedWorkModes, formatTeleworkDays } from '@shared/services/workMode.js';
 import { fetchPolicySignatures, latestSignatureByUser, formatSignedAt } from '@shared/services/policy.js';
@@ -14,15 +14,16 @@ import { Screen } from '../components/common/Screen';
 import { GlassCard } from '../components/common/GlassCard';
 import { GlassInput } from '../components/common/GlassInput';
 import { GlassButton, IconButton } from '../components/common/GlassButton';
-import { PressScale } from '../components/common/Pressable';
 import { T } from '../components/common/Text';
 import { Avatar, Segmented, IconTile, Banner, Sheet } from '../components/common/UI';
-import { BrandPanel, BrandTag, ON_BRAND } from '../components/common/Brand';
+import { BrandTag, ON_BRAND } from '../components/common/Brand';
+import { AccentTile, CapsuleBars, FileChip, InfoTile, PhotoHero } from '../components/common/Bento';
+import { tone as toneOf } from '../theme/tokens';
 import { WORK_MODES } from './EmployeesScreen';
 import { MIN_PASSWORD, StrengthMeter } from './ChangePasswordScreen';
 import { SignatureView } from '../components/SignaturePad';
 import { supabase } from '../lib/supabase';
-import { fmtDate } from '../utils/format';
+import { fmtDate, fmtHM, parseDate, MONTHS_SHORT } from '../utils/format';
 
 /** One label/value pair of "Mi información" (two per row). */
 function Field({ label, value, mono }) {
@@ -45,7 +46,7 @@ export default function ProfileScreen() {
   const navigation = useNavigation();
   const toast = useToast();
   const { user, changePassword } = useAuth();
-  const { documents, requests, setWorkMode } = useData();
+  const { documents, requests, hourCompensations, setWorkMode } = useData();
   const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
   const [pwErr, setPwErr] = useState('');
   const [saving, setSaving] = useState(false);
@@ -87,32 +88,83 @@ export default function ProfileScreen() {
     return undefined;
   };
 
+  // Approved hours earned in each of the last six months, scaled to the busiest one
+  const months = useMemo(() => {
+    const now = new Date();
+    const list = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+      return { key: `${d.getFullYear()}-${d.getMonth()}`, y: d.getFullYear(), m: d.getMonth(), hours: 0 };
+    });
+    hourCompensations.forEach((h) => {
+      if (String(h.employeeId) !== String(user?.id) || h.status !== 'approved' || h.type === 'debe') return;
+      const d = parseDate(h.date);
+      const slot = d && list.find((x) => x.y === d.getFullYear() && x.m === d.getMonth());
+      if (slot) slot.hours += Number(h.hours) || 0;
+    });
+    const max = Math.max(...list.map((x) => x.hours), 0);
+    return list.map((x, i) => ({
+      key: x.key,
+      label: MONTHS_SHORT[x.m],
+      value: max ? (x.hours / max) * 100 : 0,
+      highlight: i === list.length - 1,
+      accessibilityLabel: `${MONTHS_SHORT[x.m]}: ${fmtHM(x.hours)} horas`,
+      hours: x.hours,
+    }));
+  }, [hourCompensations, user?.id]);
+  const sixMonthHours = months.reduce((s, x) => s + x.hours, 0);
+
   const workMode = user?.workMode || 'Office';
   const role = user?.role === 'admin' ? 'Administrador' : 'Empleado';
   const policySigned = !!signature || user?.policyAccepted === true;
+  const birth = parseDate(user?.birthdate);
 
   return (
     <Screen>
-      {/* Back, title in the middle */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 }}>
-        <IconButton icon={ChevronLeft} onPress={() => navigation.goBack()} accessibilityLabel="Volver" />
-        <T size={17} heading weight="semibold" align="center" style={{ flex: 1 }} accessibilityRole="header">Mi perfil</T>
-        <View style={{ width: 44 }} />
-      </View>
-
-      {/* Identity: the brand panel with the person's leaf avatar, centred */}
-      <BrandPanel padding={22} style={{ alignItems: 'center', gap: 12 }}>
-        <Avatar name={user?.name} initials={user?.avatar} src={user?.avatarUrl} size={84} ring="rgba(255,255,255,0.12)" />
-        <View style={{ alignItems: 'center', gap: 2 }}>
-          <T size={22} heading weight="semibold" color={ON_BRAND.text} align="center">{user?.name}</T>
-          <T size={14} color={ON_BRAND.text2} align="center">{[user?.position, user?.dept].filter(Boolean).join(' · ') || role}</T>
-        </View>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6 }}>
+      {/* Identity: the photo (or the leaf avatar on the brand gradient) with the name over it */}
+      <PhotoHero
+        src={user?.avatarUrl}
+        fallback={<Avatar name={user?.name} initials={user?.avatar} size={132} ring="rgba(255,255,255,0.22)" />}
+        top={(
+          <>
+            <IconButton icon={ChevronLeft} onPress={() => navigation.goBack()} accessibilityLabel="Volver" />
+            <View style={{ height: 32, paddingHorizontal: 12, borderRadius: 16, justifyContent: 'center', backgroundColor: 'rgba(10,12,16,0.35)' }}>
+              <T size={13} weight="semibold" color={ON_BRAND.text} accessibilityRole="header">Mi perfil</T>
+            </View>
+          </>
+        )}
+      >
+        <T size={30} weight="light" color={ON_BRAND.text} align="center" numberOfLines={2}>{user?.name}</T>
+        <T size={14} color={ON_BRAND.text2} align="center" numberOfLines={1}>{[user?.position, user?.dept].filter(Boolean).join(' · ') || role}</T>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginTop: 4 }}>
           <BrandTag label={role} />
           <BrandTag label={WORK_MODES[workMode]?.label || 'Oficina'} />
-          {user?.email ? <BrandTag label={user.email} /> : null}
         </View>
-      </BrandPanel>
+      </PhotoHero>
+
+      {/* Bento: birthday in brand blue, the DNI beside it */}
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        <AccentTile
+          icon={Cake}
+          label="Cumpleaños"
+          value={birth ? `${birth.getDate()} ${MONTHS_SHORT[birth.getMonth()]}` : '—'}
+          sub={birth ? String(birth.getFullYear()) : 'No especificada'}
+          style={{ flex: 1.1 }}
+          accessibilityLabel={birth ? `Fecha de nacimiento: ${fmtDate(user.birthdate)}` : 'Fecha de nacimiento no especificada'}
+        />
+        <InfoTile icon={IdCard} label="DNI" value={user?.phone || '—'} mono sub={user?.email} style={{ flex: 1 }} />
+      </View>
+
+      <GlassCard style={{ gap: 16 }} onPress={() => navigation.navigate('Main', { screen: 'Horas' })}
+        accessibilityLabel={`Horas ganadas en los últimos seis meses: ${fmtHM(sixMonthHours)}. Abrir horas`}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Timer size={17} color={colors.text2} />
+          <CardTitle>Horas ganadas</CardTitle>
+          <View style={{ flex: 1 }} />
+          <T mono weight="semibold" size={14} color={colors.text2}>{fmtHM(sixMonthHours)} h</T>
+          <ChevronRight size={18} color={colors.text3} />
+        </View>
+        <CapsuleBars items={months} height={84} width={14} />
+      </GlassCard>
 
       <GlassCard style={{ gap: 12 }}>
         <CardTitle>Modo de trabajo{modeSaving ? ' · guardando…' : ''}</CardTitle>
@@ -135,7 +187,7 @@ export default function ProfileScreen() {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: -12 }}>
           <Field label="Departamento" value={user?.dept} />
           <Field label="Rol" value={role} />
-          <Field label="DNI" value={user?.phone} mono />
+          <Field label="Puesto" value={user?.position} />
           <Field label="Fecha nacimiento" value={user?.birthdate ? fmtDate(user.birthdate) : 'No especificada'} />
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.divider }}>
@@ -154,37 +206,39 @@ export default function ProfileScreen() {
         </View>
       </GlassCard>
 
-      {/* Password and documents as rows; the password form opens in place */}
-      <GlassCard padding={0}>
-        <PressScale onPress={() => setPwOpen((o) => !o)} accessibilityRole="button" accessibilityState={{ expanded: pwOpen }} scaleTo={0.985}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 54, paddingHorizontal: 16 }}>
-          <Lock size={19} color={colors.text2} />
-          <T size={15} weight="medium" style={{ flex: 1 }}>Cambiar contraseña</T>
-          <ChevronRight size={18} color={colors.text3} style={{ transform: [{ rotate: pwOpen ? '90deg' : '0deg' }] }} />
-        </PressScale>
-        {pwOpen ? (
-          <View style={{ gap: 14, paddingHorizontal: 16, paddingBottom: 16 }}>
-            <GlassInput label="Contraseña actual" value={pw.current} onChangeText={(v) => setPw((p) => ({ ...p, current: v }))} secure autoComplete="current-password" />
-            <GlassInput label="Nueva contraseña" value={pw.next} onChangeText={(v) => setPw((p) => ({ ...p, next: v }))} secure autoComplete="new-password" placeholder={`Mínimo ${MIN_PASSWORD} caracteres`} />
-            {pw.next ? <StrengthMeter value={pw.next} /> : null}
-            <GlassInput label="Confirmar nueva contraseña" value={pw.confirm} onChangeText={(v) => setPw((p) => ({ ...p, confirm: v }))} secure autoComplete="new-password" />
-            {pwErr ? <Banner tone="danger">{pwErr}</Banner> : null}
-            <GlassButton title="Actualizar contraseña" icon={KeyRound} onPress={savePassword} loading={saving} disabled={!pw.next} />
-          </View>
-        ) : null}
-        <PressScale onPress={() => navigation.navigate('Documents')} accessibilityRole="button" scaleTo={0.985}
+      {/* Documents and password as file chips; the password form opens below them */}
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        <FileChip
+          icon={FileText}
+          action={ChevronRight}
+          title="Documentos"
+          sub={pendingDocs ? `${pendingDocs} por revisar` : 'Nóminas y contratos'}
+          badge={pendingDocs || null}
+          tone={toneOf(colors, 'accent')}
+          onPress={() => navigation.navigate('Documents')}
           accessibilityLabel={pendingDocs ? `Mis documentos, ${pendingDocs} pendientes` : 'Mis documentos'}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 54, paddingHorizontal: 16, borderTopWidth: 1, borderTopColor: colors.divider }}>
-          <FileText size={19} color={colors.text2} />
-          <T size={15} weight="medium" style={{ flex: 1 }}>Mis documentos</T>
-          {pendingDocs ? (
-            <View style={{ minWidth: 22, height: 22, paddingHorizontal: 6, borderRadius: 11, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center' }}>
-              <T size={12} weight="bold" color="#FFFFFF" style={{ lineHeight: 14 }}>{pendingDocs}</T>
-            </View>
-          ) : null}
-          <ChevronRight size={18} color={colors.text3} />
-        </PressScale>
-      </GlassCard>
+        />
+        <FileChip
+          icon={Lock}
+          action={ArrowDown}
+          title="Contraseña"
+          sub={pwOpen ? 'Cerrar' : 'Cambiar'}
+          tone={toneOf(colors, pwOpen ? 'purple' : 'neutral')}
+          onPress={() => setPwOpen((o) => !o)}
+          accessibilityLabel="Cambiar contraseña"
+        />
+      </View>
+      {pwOpen ? (
+        <GlassCard style={{ gap: 14 }}>
+          <CardTitle>Cambiar contraseña</CardTitle>
+          <GlassInput label="Contraseña actual" value={pw.current} onChangeText={(v) => setPw((p) => ({ ...p, current: v }))} secure autoComplete="current-password" />
+          <GlassInput label="Nueva contraseña" value={pw.next} onChangeText={(v) => setPw((p) => ({ ...p, next: v }))} secure autoComplete="new-password" placeholder={`Mínimo ${MIN_PASSWORD} caracteres`} />
+          {pw.next ? <StrengthMeter value={pw.next} /> : null}
+          <GlassInput label="Confirmar nueva contraseña" value={pw.confirm} onChangeText={(v) => setPw((p) => ({ ...p, confirm: v }))} secure autoComplete="new-password" />
+          {pwErr ? <Banner tone="danger">{pwErr}</Banner> : null}
+          <GlassButton title="Actualizar contraseña" icon={KeyRound} onPress={savePassword} loading={saving} disabled={!pw.next} />
+        </GlassCard>
+      ) : null}
 
       <Sheet visible={signatureOpen} onClose={() => setSignatureOpen(false)} title="Tu firma de las normas internas">
         {signature ? (

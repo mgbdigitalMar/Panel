@@ -1,70 +1,88 @@
 import { useNavigate } from 'react-router-dom';
 import {
-  UsersRound, Newspaper, Settings, SlidersHorizontal, LogOut, ChevronRight,
+  UsersRound, Newspaper, Settings, SlidersHorizontal, LogOut, ChevronRight, UserRound, LayoutGrid, Sun, Moon, MonitorSmartphone,
+  Building2, Home, Briefcase, ShieldCheck,
 } from 'lucide-react';
 import { useAuth, useTheme, useNews, useHours } from '../context';
 import { Avatar } from '../components/ui';
-import { PhoneHeader, Segmented, IconDisc, PhoneSectionTitle, usePhoneApp } from '../components/PhoneKit';
+import { Masthead, Spotlight, SpotButton, ActionTiles, BlockHead, TabStrip, LeafIcon } from '../components/Touch';
 import styles from './MorePage.module.scss';
 
+const MODE = {
+  Office: { label: 'En la oficina', icon: Building2 },
+  oficina: { label: 'En la oficina', icon: Building2 },
+  Remote: { label: 'En remoto', icon: Home },
+  remoto: { label: 'En remoto', icon: Home },
+  External: { label: 'Trabajo externo', icon: Briefcase },
+  externo: { label: 'Trabajo externo', icon: Briefcase },
+};
+
 /**
- * "Más" (phones, glass): the app's Más tab — profile, the sections that are not in the dock,
- * the theme and the account. Opened from the dock; it works at any width.
+ * "Más", opened from the phone dock: your Margube pass on the brand panel (with your profile and
+ * settings), the sections that are not in the dock as tiles, the theme and the account.
  */
 export default function MorePage() {
   const navigate = useNavigate();
-  const phone = usePhoneApp();
   const { user, employees = [], logout } = useAuth();
   const { mode, setMode } = useTheme();
   const { news = [] } = useNews() || {};
   const { hourCompensations = [] } = useHours() || {};
 
   const adminPending = hourCompensations.filter((h) => h.status === 'pending').length;
+  const work = MODE[user?.workMode] || MODE.Office;
+  const WorkIcon = work.icon;
 
   const links = [
-    { id: 'employees', icon: UsersRound, tone: 'accent', label: 'Equipo', sub: `${employees.length} ${employees.length === 1 ? 'persona' : 'personas'}` },
-    { id: 'news', icon: Newspaper, tone: 'amber', label: 'Noticias', sub: news.length ? 'Comunicados y eventos' : 'Sin comunicados todavía' },
+    { icon: UsersRound, tone: 'accent', label: 'Equipo', hint: `${employees.length} ${employees.length === 1 ? 'persona' : 'personas'}`, onClick: () => navigate('/employees') },
+    { icon: Newspaper, tone: 'warning', label: 'Noticias', hint: news.length ? 'Comunicados y eventos' : 'Sin comunicados todavía', onClick: () => navigate('/news') },
     ...(user?.role === 'admin'
-      ? [{ id: 'admin', icon: Settings, tone: 'purple', label: 'Administración', sub: 'Empleados, recursos y horas', badge: adminPending }]
-      : []),
+      ? [{ icon: Settings, tone: 'purple', label: 'Administración', hint: 'Empleados, recursos y horas', badge: adminPending, onClick: () => navigate('/admin') }]
+      : [{ icon: UserRound, tone: 'info', label: 'Mi perfil', hint: 'Datos y documentos', onClick: () => navigate('/profile') }]),
   ];
 
   return (
     <div className={styles.page}>
-      {/* Wider screens get the title from Layout */}
-      {phone && <PhoneHeader title="Más" />}
+      <Masthead icon={LayoutGrid} eyebrow="Más" title="Tu cuenta" desc="Tu perfil, el resto de secciones y tus preferencias." />
 
-      <button type="button" className={styles.me} onClick={() => navigate('/profile')} aria-label={`${user?.name || 'Mi perfil'}. Ver mi perfil`}>
-        <Avatar initials={user?.avatar || '??'} src={user?.avatarUrl} size={52} />
-        <span className={styles.text}>
-          <strong>{user?.name}</strong>
-          <span>{[user?.dept, user?.email].filter(Boolean).join(' · ')}</span>
-        </span>
-        <ChevronRight size={18} className={styles.chev} aria-hidden="true" />
-      </button>
-
-      <section className={styles.section} aria-labelledby="mas-links">
-        <span id="mas-links"><PhoneSectionTitle upper>Accesos rápidos</PhoneSectionTitle></span>
-        <div className={styles.grid}>
-          {links.map((l) => (
-            <button key={l.id} type="button" className={styles.tile} onClick={() => navigate(`/${l.id}`)}>
-              <IconDisc icon={l.icon} tone={l.tone} size={40} />
-              <span className={styles.text}>
-                <strong>{l.label}</strong>
-                <span>{l.sub}</span>
-              </span>
-              {l.badge > 0 && <span className={styles.badge} aria-label={`${l.badge} pendientes`}>{l.badge > 9 ? '9+' : l.badge}</span>}
-            </button>
-          ))}
+      {/* Your Margube pass */}
+      <Spotlight className={styles.pass} label="Margube · Intranet"
+        actions={(
+          <>
+            <SpotButton primary icon={UserRound} onClick={() => navigate('/profile')}>Mi perfil</SpotButton>
+            <SpotButton icon={SlidersHorizontal} onClick={() => navigate('/settings')}>Ajustes</SpotButton>
+          </>
+        )}>
+        <div className={styles.passBody}>
+          <span className={styles.passAvatar}><Avatar initials={user?.avatar || '??'} src={user?.avatarUrl} size={64} /></span>
+          <div className={styles.passText}>
+            <strong>{user?.name || 'Mi cuenta'}</strong>
+            <span>{[user?.position, user?.dept].filter(Boolean).join(' · ') || user?.email}</span>
+          </div>
         </div>
+        <div className={styles.passTags}>
+          <span><WorkIcon size={13} aria-hidden="true" />{work.label}</span>
+          {user?.role === 'admin' && <span><ShieldCheck size={13} aria-hidden="true" />Administrador</span>}
+          {user?.email && <span className={styles.passMail}>{user.email}</span>}
+        </div>
+      </Spotlight>
+
+      <section aria-labelledby="mas-links">
+        <span id="mas-links"><BlockHead title="Accesos rápidos" /></span>
+        <ActionTiles className={styles.tiles} items={links} />
       </section>
 
-      <section className={styles.section} aria-labelledby="mas-prefs">
-        <span id="mas-prefs"><PhoneSectionTitle upper>Preferencias</PhoneSectionTitle></span>
+      <section aria-labelledby="mas-prefs">
+        <span id="mas-prefs"><BlockHead title="Preferencias" /></span>
         <div className={styles.list}>
           <div className={styles.item}>
-            <span className={styles.itemLabel}>Apariencia</span>
-            <Segmented
+            <span className={styles.itemHead}>
+              <LeafIcon icon={mode === 'dark' ? Moon : mode === 'light' ? Sun : MonitorSmartphone} tone="neutral" size={36} />
+              <span className={styles.linkText}>
+                <strong>Apariencia</strong>
+                <span>{mode === 'system' ? 'Sigue el tema del dispositivo' : mode === 'dark' ? 'Tema oscuro' : 'Tema claro'}</span>
+              </span>
+            </span>
+            <TabStrip
               label="Apariencia"
               value={mode}
               onChange={setMode}
@@ -72,13 +90,13 @@ export default function MorePage() {
             />
           </div>
           <button type="button" className={styles.link} onClick={() => navigate('/settings')}>
-            <SlidersHorizontal size={18} aria-hidden="true" />
-            <span>Ajustes</span>
-            <ChevronRight size={16} className={styles.chev} aria-hidden="true" />
+            <LeafIcon icon={SlidersHorizontal} tone="neutral" size={36} />
+            <span className={styles.linkText}><strong>Ajustes</strong><span>Notificaciones y preferencias de tu cuenta</span></span>
+            <ChevronRight size={18} className={styles.chev} aria-hidden="true" />
           </button>
           <button type="button" className={`${styles.link} ${styles.danger}`} onClick={() => logout()}>
-            <LogOut size={18} aria-hidden="true" />
-            <span>Cerrar sesión</span>
+            <LeafIcon icon={LogOut} tone="danger" size={36} />
+            <span className={styles.linkText}><strong>Cerrar sesión</strong><span>Salir de la intranet en este dispositivo</span></span>
           </button>
         </div>
       </section>

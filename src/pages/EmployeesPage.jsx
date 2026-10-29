@@ -6,6 +6,8 @@ import { allowedWorkModes } from '../../shared/services/workMode.js';
 import { Avatar, Badge, Card, StatCard, Section } from '../components/ui';
 import { Home, Building2, MapPin, LayoutGrid, List, Search, CalendarDays } from 'lucide-react';
 import { TeamWeek } from '../components/TeamWeek';
+import { useTouch } from '../components/Touch';
+import EmployeesTouch from './EmployeesTouch';
 import styles from './EmployeesPage.module.scss';
 import clsx from 'clsx';
 
@@ -77,9 +79,21 @@ export default function EmployeesPage() {
     }
   };
 
+  const touch = useTouch();
+
   const officeCount = useMemo(() => employees.filter(e => (e.workMode || 'office').toLowerCase() === 'office').length, [employees]);
   const remoteCount = useMemo(() => employees.filter(e => (e.workMode || '').toLowerCase() === 'remoto').length, [employees]);
   const fieldCount  = useMemo(() => employees.filter(e => (e.workMode || '').toLowerCase() === 'externo' || (e.workMode || '').toLowerCase() === 'field').length, [employees]);
+
+  // Phones and tablets: the web's touch directory
+  if (touch) {
+    return (
+      <div className={styles.container}>
+        <EmployeesTouch employees={employees} user={user} query={query} setQuery={setQuery} canSeeDni={canSeeDni}
+          modeAllowed={modeAllowed} onModeChange={handleWorkModeChange} initialView={view} />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>

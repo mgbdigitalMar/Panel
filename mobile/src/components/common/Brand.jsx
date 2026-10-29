@@ -183,7 +183,7 @@ const HeroArt = memo(function HeroArt({ width, height }) {
 
 /** Brand blue running into navy with a dark fade at the bottom so white text stays legible.
  * Same colours in both themes, like the brand panel. */
-export function HeroCard({ children, style, padding = 20, radius = 30, minHeight = 230 }) {
+export function HeroCard({ children, style, padding = 22, radius = 32, minHeight = 230 }) {
   const [size, setSize] = useState(null);
   return (
     <View

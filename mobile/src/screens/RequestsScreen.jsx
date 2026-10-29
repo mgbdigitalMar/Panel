@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Download, FileText } from 'lucide-react-native';
+import { Download, FileText, CalendarCheck, Home } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -11,11 +11,11 @@ import { useToast } from '../context/ToastContext';
 import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
 import { TopBar } from '../components/common/TopBar';
-import { GlassCard } from '../components/common/GlassCard';
 import { IconButton } from '../components/common/GlassButton';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { T } from '../components/common/Text';
 import { ChipRail, CountTabs, EmptyState, IconTile, Row, Segmented } from '../components/common/UI';
+import { AccentTile, InfoTile } from '../components/common/Bento';
 import { buildRequestItems, personalDaysSummary, requestDetail, requestTypeLabel, REQUEST_TONE } from '../utils/domain';
 import { addDays, startOfWeek, toISODate, DAY_LETTERS } from '../utils/format';
 import { exportCsv } from '../services/files';
@@ -82,26 +82,30 @@ export default function RequestsScreen() {
       />
 
       <View style={{ flexDirection: 'row', gap: 10 }}>
-        <GlassCard style={{ flex: 1, minWidth: 0, gap: 8 }} padding={14} onPress={() => navigation.navigate('NewRequest', { type: 'asuntos_propios' })}>
-          <T size={13} color={colors.text3} numberOfLines={1}>Asuntos propios</T>
-          <T mono weight="semibold" size={22} numberOfLines={1} adjustsFontSizeToFit>{days.left}<T size={13} color={colors.text3}> / {days.total} días</T></T>
-          <View style={{ flexDirection: 'row', gap: 4 }}>
+        <AccentTile
+          icon={CalendarCheck}
+          label="Asuntos propios"
+          value={`${days.left}/${days.total}`}
+          style={{ flex: 1, minWidth: 0 }}
+          onPress={() => navigation.navigate('NewRequest', { type: 'asuntos_propios' })}
+          accessibilityLabel={`Asuntos propios: ${days.left} de ${days.total} días disponibles. Pedir uno`}
+        >
+          <View style={{ flexDirection: 'row', gap: 3, marginTop: 8 }}>
             {Array.from({ length: Math.max(0, Math.min(30, Number(days.total) || 0)) }).map((_, i) => (
-              <View key={i} style={{ flex: 1, height: 5, borderRadius: 3, backgroundColor: i < days.left ? colors.accent : colors.segTrack }} />
+              <View key={i} style={{ flex: 1, height: 5, borderRadius: 3, backgroundColor: i < days.left ? '#FFFFFF' : 'rgba(255,255,255,0.28)' }} />
             ))}
           </View>
-        </GlassCard>
-        <GlassCard style={{ flex: 1, minWidth: 0, gap: 8 }} padding={14}>
-          <T size={13} color={colors.text3} numberOfLines={1}>Teletrabajo semana</T>
-          <T mono weight="semibold" size={22} numberOfLines={1} adjustsFontSizeToFit>{remoteDays}<T size={13} color={colors.text3}> días</T></T>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        </AccentTile>
+        <InfoTile icon={Home} label="Teletrabajo" value={`${remoteDays} ${remoteDays === 1 ? 'día' : 'días'}`} style={{ flex: 1, minWidth: 0 }}
+          accessibilityLabel={`Teletrabajo esta semana: ${remoteDays} días`}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
             {week.map((d) => (
-              <View key={d.iso} style={{ width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: d.on ? colors.tealSoft : 'transparent' }}>
+              <View key={d.iso} style={{ width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: d.on ? colors.tealSoft : colors.neutralSoft }}>
                 <T size={11} weight="semibold" color={d.on ? colors.tealFg : colors.text3}>{d.letter}</T>
               </View>
             ))}
           </View>
-        </GlassCard>
+        </InfoTile>
       </View>
 
       {/* Employees only receive their own requests, so "Equipo" is for admins */}

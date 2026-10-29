@@ -96,14 +96,12 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 
+  /* Phones: light, dark and system stay side by side as compact choices */
   @media (max-width: 640px) {
-    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
 
-    /* Light, dark and system: the third takes the whole row instead of leaving a hole */
-    > :last-child:nth-child(odd) { grid-column: 1 / -1; }
-  }
-  @media (max-width: 360px) {
-    grid-template-columns: 1fr;
+    > * { padding: 14px 6px 12px; }
+    .themeCardDesc { display: none; }
   }
 }
 
