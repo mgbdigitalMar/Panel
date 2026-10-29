@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, RadialGradient, Stop, Ellipse } from 'react-native-svg';
 import { useTheme } from '../../context/ThemeContext';
 import { TAB_BAR_HEIGHT } from '../../navigation/tabBarMetrics';
+import { onTabScreenScroll } from '../../navigation/tabBarScroll';
 
 // Content column: phones use the full width; tablets and landscape get a readable measure.
 export const CONTENT_MAX = 640;
@@ -58,6 +59,9 @@ export function Screen({
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       showsVerticalScrollIndicator={false}
+      // Tab screens: the floating tab bar shrinks while they scroll (tabBarScroll.js)
+      onScroll={tabBarSpace ? onTabScreenScroll : undefined}
+      scrollEventThrottle={tabBarSpace ? 32 : undefined}
       contentContainerStyle={[
         {
           paddingTop: insets.top + 12,

@@ -1,6 +1,6 @@
 // Historial de reservas (table + actions of the web ReservationsPage)
 import { useMemo, useState } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { Building2, Car, Check, X, Trash2, Download, CalendarX } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
 import { GlassCard } from '../components/common/GlassCard';
@@ -23,6 +24,7 @@ export default function MyReservationsScreen() {
   const { colors } = useTheme();
   const { params } = useRoute();
   const toast = useToast();
+  const confirm = useConfirm();
   const { user } = useAuth();
   const { reservations, setReservationStatus, deleteReservation, refresh } = useData();
   const isAdmin = user?.role === 'admin';
@@ -51,10 +53,18 @@ export default function MyReservationsScreen() {
     else if (ok) toast.success(ok);
   };
 
-  const confirmDelete = (r) => Alert.alert('Eliminar reserva', '¿Seguro que quieres eliminar esta reserva? Esta acción no se puede deshacer.', [
-    { text: 'Cancelar', style: 'cancel' },
-    { text: 'Eliminar', style: 'destructive', onPress: () => act(r, () => deleteReservation(r.id), 'Reserva eliminada') },
-  ]);
+  // Rejecting cancels the booking and notifies its owner: it asks first, as requests do
+  const confirmReject = async (r) => {
+    if (await confirm({ title: 'Rechazar reserva', message: `${r.resourceName} · ${fmtDayShort(r.date)}, ${r.timeStart}–${r.timeEnd} · ${r.employeeName || 'empleado'}. La reserva quedará cancelada y se le avisará.`, confirmText: 'Rechazar', icon: X })) {
+      act(r, () => setReservationStatus(r.id, 'cancelled'), 'Reserva cancelada');
+    }
+  };
+
+  const confirmDelete = async (r) => {
+    if (await confirm({ title: 'Eliminar reserva', message: `${r.resourceName} · ${fmtDayShort(r.date)}, ${r.timeStart}–${r.timeEnd}. Esta acción no se puede deshacer.` })) {
+      act(r, () => deleteReservation(r.id), 'Reserva eliminada');
+    }
+  };
 
   const exportList = async () => {
     try {
@@ -86,7 +96,7 @@ export default function MyReservationsScreen() {
             {isAdmin && r.status === 'pending' ? (
               <>
                 <GlassButton title="Rechazar" icon={X} size="sm" variant="danger" disabled={busy === r.id}
-                  onPress={() => act(r, () => setReservationStatus(r.id, 'cancelled'), 'Reserva cancelada')} />
+                  onPress={() => confirmReject(r)} />
                 <GlassButton title="Aprobar" icon={Check} size="sm" disabled={busy === r.id}
                   onPress={() => act(r, () => setReservationStatus(r.id, 'confirmed'), 'Reserva aprobada')} />
               </>

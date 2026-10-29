@@ -23,33 +23,21 @@
 
 .headText { min-width: 0; }
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 6px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
 .title {
-  margin: 0 0 6px;
+  margin: 0;
   font-family: var(--font-heading);
-  font-size: clamp(26px, 2.3vw, 34px);
+  font-size: clamp(30px, 2.8vw, 40px);
   font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: -0.025em;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
   color: var(--text);
 }
 
 .desc {
-  margin: 0;
+  margin: 8px 0 0;
   max-width: 62ch;
   font-size: 14.5px;
-  line-height: 1.55;
+  line-height: 1.5;
   color: var(--text-sec);
 }
 
@@ -826,7 +814,6 @@ $ledger-cols: 56px minmax(0, 1fr) 84px 84px;
     flex-direction: column;
   }
 
-  .eyebrow { @include p.cover-eyebrow; }
   .title { @include p.cover-title; }
   .desc { @include p.cover-desc; }
 }

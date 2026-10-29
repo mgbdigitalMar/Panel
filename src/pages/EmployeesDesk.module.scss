@@ -1,0 +1,263 @@
+/* Equipo on a computer (EmployeesDesk.jsx); the shared pieces live in components/Desk */
+
+.page { display: block; }
+
+.muted { color: var(--text-mut); }
+
+.you {
+  font-style: normal;
+  font-weight: 500;
+  color: var(--text-mut);
+}
+
+/* You, today, on the brand panel */
+.meHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  span { display: grid; min-width: 0; }
+
+  strong {
+    font-family: var(--font-heading);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  small {
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.7);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.meLine {
+  margin: 4px 0 2px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.8);
+
+  strong { color: #FFFFFF; }
+}
+
+/* Work-mode choice: on the navy panel (.modes) and in the light rows (.modesCompact) */
+%modes {
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+
+  button {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 6px;
+    border-radius: 11px;
+    font: 600 12.5px/1 var(--font-body);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+    svg { flex-shrink: 0; }
+
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+    &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.45); }
+  }
+
+  /* Too narrow for icon and word side by side: the icon goes above the word (it used to be
+     squeezed into a dot) */
+  @container (max-width: 251px) {
+    button {
+      flex-direction: column;
+      gap: 5px;
+      min-height: 50px;
+      padding: 7px 4px;
+    }
+
+    .modeNote { min-height: 50px; }
+  }
+}
+
+.modes {
+  @extend %modes;
+
+  button {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.85);
+
+    &:hover:not(:disabled) { background: rgba(255, 255, 255, 0.16); }
+  }
+
+  .modeOn {
+    background: #FFFFFF;
+    border-color: #FFFFFF;
+    color: #1E40AF;
+
+    &:hover:not(:disabled) { background: #FFFFFF; }
+  }
+}
+
+.modesCompact {
+  @extend %modes;
+  min-width: 270px;
+
+  button {
+    --tone: var(--accent);
+    border: 1px solid var(--lg-edge);
+    background: rgba(var(--text-rgb), 0.04);
+    color: var(--text-sec);
+
+    &[data-tone='success'] { --tone: var(--success); }
+    &[data-tone='warning'] { --tone: var(--warning); }
+    &:hover:not(:disabled) { color: var(--text); background: rgba(var(--text-rgb), 0.07); }
+  }
+
+  .modeOn {
+    border-color: color-mix(in srgb, var(--tone) 45%, transparent);
+    background: color-mix(in srgb, var(--tone) 14%, transparent);
+    color: var(--tone);
+
+    &:hover:not(:disabled) { background: color-mix(in srgb, var(--tone) 18%, transparent); color: var(--tone); }
+  }
+}
+
+.mail {
+  color: var(--text-mut);
+  text-decoration: none;
+
+  &:hover { color: var(--accent); text-decoration: underline; }
+}
+
+/* Cards: the same parts in the same order on every card, the foot pinned to the bottom */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 4px 20px 20px;
+  list-style: none;
+}
+
+.card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(var(--text-rgb), 0.03);
+  border: 1px solid var(--lg-edge);
+  box-shadow: inset 0 1px 0 var(--lg-rim);
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    border-color: rgba(var(--accent-rgb), 0.3);
+    box-shadow: inset 0 1px 0 var(--lg-rim), 0 12px 28px -18px rgba(0, 0, 0, 0.45);
+  }
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+
+  h3 {
+    margin: 0 0 2px;
+    font-family: var(--font-heading);
+    font-size: 15.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    overflow-wrap: anywhere;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-sec);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.cardFoot {
+  display: grid;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--lg-edge);
+
+  /* The table keeps a minimum width for the choice; a card gives it its own width */
+  .modesCompact { min-width: 0; }
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  min-height: 30px;
+  font-size: 12.5px;
+  color: var(--text-mut);
+}
+
+/* Your own card: the mode is changed on the panel at the side (in the choice's place and height) */
+.modeNote {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-mut);
+}
+
+.mailBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 11px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--lg-edge);
+  background: var(--lg-active);
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover { border-color: rgba(var(--accent-rgb), 0.4); color: var(--accent); }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.45); }
+}
+
+.adminTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #7C3AED;
+  font-weight: 600;
+
+  :global([data-theme='dark']) & { color: #B49BFF; }
+}
+
+.cardText .dni {
+  color: var(--text-mut);
+  font-variant-numeric: tabular-nums;
+}
+
+.weekWrap { padding: 0 20px 20px; }

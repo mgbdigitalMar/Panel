@@ -37,7 +37,7 @@ const fadeUp = {
 };
 
 /** True below the split layout's breakpoint: phones get the app's login instead of the framed split. */
-function useNarrow(query = '(max-width: 959px)') {
+function useNarrow(query = '(max-width: 1023px)') {
   const [narrow, setNarrow] = useState(() => window.matchMedia(query).matches);
   useEffect(() => {
     const mq = window.matchMedia(query);
@@ -89,7 +89,8 @@ export default function LoginPage() {
   const isDark = theme === 'dark';
   const narrow = useNarrow();
 
-  // Phones and small tablets: the app's login (dark hero with the monogram, form on a glass sheet)
+  // Phones and tablets (the touch layer, below 1024 px): the login after the app's — the monogram
+  // over the wallpaper and the form on a floating glass sheet
   if (narrow) {
     return (
       <MotionConfig reducedMotion="user">

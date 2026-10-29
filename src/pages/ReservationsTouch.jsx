@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import {
-  Masthead, Ledger, Spotlight, SpotButton, TabStrip, Toolbar, ToolButton, FeedGroup, FeedItem, ItemAction, Fold,
+  Masthead, Spotlight, SpotButton, TabStrip, Toolbar, ToolButton, FeedGroup, FeedItem, ItemAction, Fold,
   TouchEmpty, TouchButton, LeafIcon, TimeLead, STATUS,
 } from '../components/Touch';
 import { fmtDayShort, todayKey } from '../utils/format';
@@ -69,7 +69,7 @@ function DayStrip({ bookings, now }) {
  */
 export default function ReservationsTouch({
   rooms, vehicles, reservations, user, busyUntil, initialView = 'resources',
-  onBook, onNew, onApprove, onReject, onDelete, onAddToCalendar, onExport,
+  onBook, onNew, onApprove, onReject, onDelete, onAddToCalendar, onExport, busyId,
 }) {
   const [view, setView] = useState(initialView);
   const [kind, setKind] = useState('room');
@@ -87,18 +87,18 @@ export default function ReservationsTouch({
   const next = mineUpcoming[0];
   const toApprove = reservations.filter((r) => r.status === 'pending').length;
 
-  const freeRooms = rooms.filter((r) => !busyUntil('room', r.name)).length;
-  const freeVehicles = vehicles.filter((v) => !busyUntil('vehicle', v.model)).length;
+  const freeRooms = rooms.filter((r) => r.isActive !== false && !busyUntil('room', r.id, r.name)).length;
+  const freeVehicles = vehicles.filter((v) => v.isActive !== false && !busyUntil('vehicle', v.id, v.model)).length;
 
   // Resources of the chosen kind, with today's bookings of each
   const q = query.trim().toLowerCase();
   const resources = (kind === 'vehicle'
     ? vehicles.map((v) => ({
-      id: v.id, type: 'vehicle', name: v.model, until: busyUntil('vehicle', v.model),
+      id: v.id, type: 'vehicle', name: v.model, until: busyUntil('vehicle', v.id, v.model), hidden: v.isActive === false,
       meta: [v.type, v.year].filter(Boolean).join(' · '), tags: [], plate: v.plate,
     }))
     : rooms.map((r) => ({
-      id: r.id, type: 'room', name: r.name, until: busyUntil('room', r.name),
+      id: r.id, type: 'room', name: r.name, until: busyUntil('room', r.id, r.name), hidden: r.isActive === false,
       meta: [r.floor && `Planta ${r.floor}`, r.capacity && `${r.capacity} personas`].filter(Boolean).join(' · '),
       tags: Array.isArray(r.equipment) ? r.equipment : [],
     })))
@@ -118,12 +118,6 @@ export default function ReservationsTouch({
   const upcoming = byDay(agenda.filter((r) => r.date >= today).sort(byTime));
   const past = byDay(agenda.filter((r) => r.date < today).sort((a, b) => byTime(b, a)));
   const countStatus = (s) => reservations.filter((r) => (scope === 'all' || r.employeeId === user?.id) && (type === 'all' || r.type === type) && (s === 'all' || r.status === s)).length;
-
-  const openAgenda = (opts = {}) => {
-    setView('agenda');
-    if (opts.scope) setScope(opts.scope);
-    if (opts.status) setStatus(opts.status);
-  };
 
   const bookingItem = (r) => {
     const mine = r.employeeId === user?.id;
@@ -147,8 +141,8 @@ export default function ReservationsTouch({
         ]}
         actions={(canReview || canCalendar || canDelete) ? (
           <>
-            {canReview && <ItemAction icon={Check} tone="success" onClick={() => onApprove(r.id)}>Aprobar</ItemAction>}
-            {canReview && <ItemAction icon={X} tone="danger" onClick={() => onReject(r.id)}>Rechazar</ItemAction>}
+            {canReview && <ItemAction icon={Check} tone="success" onClick={() => onApprove(r.id)} disabled={busyId === r.id}>{busyId === r.id ? 'Guardando…' : 'Aprobar'}</ItemAction>}
+            {canReview && <ItemAction icon={X} tone="danger" onClick={() => onReject(r.id)} disabled={busyId === r.id}>Rechazar</ItemAction>}
             {canCalendar && <ItemAction icon={CalendarPlus} tone="accent" onClick={() => onAddToCalendar(r)}>Añadir a mi calendario</ItemAction>}
             {canDelete && <ItemAction icon={Trash2} tone="danger" onClick={() => onDelete(r.id)}>Eliminar</ItemAction>}
           </>
@@ -161,20 +155,8 @@ export default function ReservationsTouch({
     <div className={styles.page}>
       <Masthead
         icon={CalendarDays}
-        eyebrow="Reservas"
         title="Salas y vehículos"
         desc="Mira qué está libre ahora, cómo va el día y reserva en segundos."
-        aside={(
-          <Ledger label="Disponibilidad ahora" items={[
-            { label: 'Salas', value: `${freeRooms}/${rooms.length}`, tone: freeRooms ? 'success' : 'warning', hint: 'libres',
-              onClick: () => { setView('resources'); setKind('room'); }, actionLabel: `${freeRooms} de ${rooms.length} salas libres. Ver salas` },
-            { label: 'Vehículos', value: `${freeVehicles}/${vehicles.length}`, tone: freeVehicles ? 'success' : 'warning', hint: 'libres',
-              onClick: () => { setView('resources'); setKind('vehicle'); }, actionLabel: `${freeVehicles} de ${vehicles.length} vehículos libres. Ver vehículos` },
-            isAdmin
-              ? { label: 'Pendientes', value: toApprove, tone: toApprove ? 'warning' : undefined, hint: 'por aprobar', onClick: () => openAgenda({ scope: 'all', status: 'pending' }), actionLabel: `${toApprove} reservas por aprobar. Ver agenda` }
-              : { label: 'Tuyas', value: mineUpcoming.length, hint: 'próximas', onClick: () => openAgenda({ scope: 'mine' }), actionLabel: `${mineUpcoming.length} reservas próximas. Ver agenda` },
-          ]} />
-        )}
       />
 
       {/* Your next booking, as a ticket */}
@@ -190,10 +172,7 @@ export default function ReservationsTouch({
           </div>
         ) : undefined}
         actions={next ? (
-          <>
-            <SpotButton primary icon={CalendarPlus} onClick={() => onAddToCalendar(next)}>Añadir a mi calendario</SpotButton>
-            <SpotButton icon={LayoutList} label="Ver mis reservas" onClick={() => openAgenda({ scope: 'mine' })} />
-          </>
+          <SpotButton primary icon={CalendarPlus} onClick={() => onAddToCalendar(next)}>Añadir a mi calendario</SpotButton>
         ) : (
           <SpotButton primary icon={Plus} onClick={onNew}>Nueva reserva</SpotButton>
         )}
@@ -242,7 +221,6 @@ export default function ReservationsTouch({
           <Toolbar
             search={{ label: 'Buscar recurso', icon: Search, value: query, onChange: setQuery,
               placeholder: kind === 'vehicle' ? 'Modelo o matrícula' : 'Nombre o equipamiento' }}
-            tools={<ToolButton icon={Plus} label="Nueva reserva" onClick={onNew} />}
           />
 
           {shown.length === 0 ? (
@@ -262,8 +240,9 @@ export default function ReservationsTouch({
                         {res.meta || (res.type === 'vehicle' ? 'Vehículo' : 'Sala')}
                       </p>
                     </div>
-                    <span className={styles.avail} data-busy={res.until ? true : undefined}>
-                      {res.until ? `En uso hasta ${res.until}` : 'Libre ahora'}
+                    {/* Only admins see a hidden resource (ReservationsPage filters it for employees) */}
+                    <span className={styles.avail} data-busy={res.until || res.hidden ? true : undefined}>
+                      {res.hidden ? 'Oculto a los empleados' : res.until ? `En uso hasta ${res.until}` : 'Libre ahora'}
                     </span>
                   </div>
 

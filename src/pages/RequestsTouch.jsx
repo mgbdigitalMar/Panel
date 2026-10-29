@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Download, Check, X, Trash2, FileText, Sun, Home, Briefcase, ShoppingCart, Inbox, Plus, Paperclip } from 'lucide-react';
 import {
-  Masthead, Ledger, Spotlight, SpotButton, ActionTiles, BlockHead, Toolbar, ToolButton, FeedGroup, FeedItem, ItemAction,
+  Masthead, Ledger, Spotlight, ActionTiles, BlockHead, Toolbar, ToolButton, FeedGroup, FeedItem, ItemAction,
   TouchEmpty, TouchButton, LeafIcon, STATUS,
 } from '../components/Touch';
 import { todayKey, fmtDate } from '../utils/format';
@@ -26,7 +26,7 @@ const monthTitle = (key) => new Date(`${key}-01T00:00`).toLocaleDateString('es-E
  * that filter, and the requests by month, each opening in place with its details and actions.
  * Tablets keep the allowance and the tiles in a column beside the list. The forms stay in RequestsPage.
  */
-export default function RequestsTouch({ allItems, user, requestDetail, rowKey, onExport, onNew, onApprove, onReject, onDelete }) {
+export default function RequestsTouch({ allItems, user, requestDetail, rowKey, onExport, onNew, onApprove, onReject, onDelete, busyKey, reviewLine }) {
   const isAdmin = user?.role === 'admin';
   const [scope, setScope] = useState('all');
   const [status, setStatus] = useState('all');
@@ -77,16 +77,12 @@ export default function RequestsTouch({ allItems, user, requestDetail, rowKey, o
       { value: 'all', label: 'Todos los tipos' },
       ...Object.entries(TYPE).map(([value, t]) => ({ value, label: t.label, count: scoped.filter((r) => r.type === value).length })),
     ] },
-    { id: 'status', label: 'Estado', value: status, all: 'all', onChange: setStatus, options: [
-      { value: 'all', label: 'Todos' }, { value: 'pending', label: 'Pendientes' }, { value: 'approved', label: 'Aprobadas' }, { value: 'rejected', label: 'Rechazadas' },
-    ] },
   ];
 
   return (
     <div className={styles.page}>
       <Masthead
         icon={Inbox}
-        eyebrow="Solicitudes"
         title={isAdmin ? 'Solicitudes' : 'Tus solicitudes'}
         desc={isAdmin ? 'Asuntos propios, remoto, trabajo externo y compras de todo el equipo.' : 'Asuntos propios, trabajo en remoto o externo y compras.'}
       />
@@ -110,7 +106,7 @@ export default function RequestsTouch({ allItems, user, requestDetail, rowKey, o
                 </ol>
               </div>
             )}
-            actions={<SpotButton primary icon={Plus} onClick={() => onNew('asuntos_propios')}>Pedir un día propio</SpotButton>}>
+            >
             <p className={styles.days}>
               <strong>{daysLeft}</strong>
               <span>de {PERSONAL_DAYS_PER_YEAR} días de asuntos propios disponibles</span>
@@ -154,6 +150,7 @@ export default function RequestsTouch({ allItems, user, requestDetail, rowKey, o
                 const t = TYPE[r.type] || TYPE.purchase;
                 const own = r.employeeId === user?.id;
                 const review = isAdmin && r.status === 'pending';
+                const busy = busyKey === rowKey(r);
                 return (
                   <FeedItem
                     key={rowKey(r)}
@@ -167,13 +164,14 @@ export default function RequestsTouch({ allItems, user, requestDetail, rowKey, o
                       { label: 'Tipo', value: t.label },
                       { label: r.type === 'purchase' ? 'Artículo' : 'Fecha', value: requestDetail(r) },
                       { label: 'Enviada', value: r.createdAt ? fmtDate(r.createdAt) : '—' },
+                      { label: 'Revisión', value: reviewLine?.(r), wide: true },
                       { label: 'Motivo', value: r.reason, wide: true },
                     ]}
                     actions={(review || isAdmin || r.fileUrl) ? (
                       <>
                         {r.fileUrl && <ItemAction icon={Paperclip} tone="accent" href={r.fileUrl} download="justificante">Justificante</ItemAction>}
-                        {review && <ItemAction icon={Check} tone="success" onClick={() => onApprove(r)}>Aprobar</ItemAction>}
-                        {review && <ItemAction icon={X} tone="danger" onClick={() => onReject(r)}>Rechazar</ItemAction>}
+                        {review && <ItemAction icon={Check} tone="success" onClick={() => onApprove(r)} disabled={busy}>{busy ? 'Guardando…' : 'Aprobar'}</ItemAction>}
+                        {review && <ItemAction icon={X} tone="danger" onClick={() => onReject(r)} disabled={busy}>Rechazar</ItemAction>}
                         {isAdmin && <ItemAction icon={Trash2} tone="danger" onClick={() => onDelete(r)}>Eliminar</ItemAction>}
                       </>
                     ) : undefined}

@@ -211,12 +211,12 @@ export default function HorasPage() {
       type: mode,
     });
     setLoading(false);
-    if (result) {
+    if (result && !result.error) {
       setSuccess(MODE_CONFIG[mode].successMsg);
       setForm({ date: '', reason: '', hours: '' });
       setTimeout(() => setSuccess(''), 5000);
     } else {
-      setSaveError('No se pudieron registrar las horas. Revisa los datos e inténtalo de nuevo.');
+      setSaveError(result?.error || 'No se pudieron registrar las horas. Revisa los datos e inténtalo de nuevo.');
     }
   };
 

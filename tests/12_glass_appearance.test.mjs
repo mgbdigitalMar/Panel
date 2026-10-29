@@ -34,7 +34,7 @@ export async function runGlassAppearanceTests() {
     read('index.html').includes('<html lang="es" data-appearance="glass">') && read('src', 'main.jsx').includes("localStorage.removeItem('app-appearance')"));
   assert('Sin barra lateral, cajón ni cabecera del diseño Clásico', !layout.includes('getSidebarContent') && !layout.includes('Busca personas, reservas, solicitudes…')
     && layout.includes('<GlassHeader') && layout.includes('<Wallpaper />'));
-  assert('Inicio: siempre el de Cristal', dash.includes('<DashboardGlass') && !dash.includes('Mis módulos') && !dash.includes('appearance'));
+  assert('Inicio: siempre el de Cristal (en táctil, su composición propia)', dash.includes('touch ? DashboardTouch : DashboardGlass') && !dash.includes('Mis módulos') && !dash.includes('appearance'));
   assert('Sin el fondo animado del diseño Clásico', !read('src', 'components', 'ui', 'index.js').includes('AnimatedBackdrop')
     && read('src', 'pages', 'ChangePasswordPage.jsx').includes('<Wallpaper />'));
   const chromeStyles = read('src', 'components', 'GlassChrome.module.scss');
@@ -104,8 +104,16 @@ export async function runGlassAppearanceTests() {
   assert('Móvil: dock de la app — Inicio, Reservas, Solicitudes, Horas, Más y el «+»',
     chrome.includes("const DOCK_IDS = ['dashboard', 'reservations', 'requests', 'horas'];") && chrome.includes("id: 'mas'")
     && chrome.includes("onNavigate('requests?nueva=1')") && read('src', 'App.tsx').includes('path="/mas"'));
-  assert('Móvil: «Más» con perfil, accesos, apariencia, ajustes y cerrar sesión',
-    ['Accesos rápidos', 'Apariencia', "navigate('/settings')", 'logout()', "navigate('/profile')"].every((k) => read('src', 'pages', 'MorePage.jsx').includes(k)));
+  assert('Dock: se encoge mientras se desplaza la pantalla y vuelve a su tamaño al parar (web y app)',
+    chrome.includes('scrolling && styles.dockCompact') && read('src', 'components', 'GlassChrome.module.scss').includes('.dockCompact {')
+    && read('src', 'hooks', 'useScrolling.js').includes("addEventListener('scroll', onScroll, { passive: true })")
+    && read('mobile', 'src', 'navigation', 'BottomTabs.jsx').includes('tabBarCompact.interpolate')
+    && read('mobile', 'src', 'components', 'common', 'Screen.jsx').includes('onScroll={tabBarSpace ? onTabScreenScroll : undefined}')
+    && read('mobile', 'src', 'navigation', 'tabBarScroll.js').includes('useNativeDriver: true'));
+  const more = read('src', 'pages', 'MorePage.jsx');
+  assert('Móvil: «Más» con perfil, accesos, ajustes y cerrar sesión, cada uno una sola vez',
+    ['Accesos rápidos', "navigate('/settings')", 'logout()', "navigate('/profile')"].every((k) => more.includes(k))
+    && more.split("navigate('/profile')").length === 2 && more.split("navigate('/settings')").length === 2);
   assert('Móvil y tablet: Reservas, Solicitudes, Horas y Equipo con sus composiciones táctiles',
     read('src', 'pages', 'ReservationsPage.jsx').includes('<ReservationsTouch') && read('src', 'pages', 'RequestsPage.jsx').includes('<RequestsTouch')
     && read('src', 'pages', 'HorasPage.jsx').includes('<HorasTouchRecords') && read('src', 'pages', 'EmployeesPage.jsx').includes('<EmployeesTouch'));
@@ -113,9 +121,7 @@ export async function runGlassAppearanceTests() {
     ['onApprove(r.id)', 'onReject(r.id)', 'onDelete(r.id)', 'onAddToCalendar(r)', 'onExport(agenda)'].every((k) => read('src', 'pages', 'ReservationsTouch.jsx').includes(k))
     && ['onApprove(r)', 'onReject(r)', 'onDelete(r)', 'download="justificante"', 'onExport(filtered)'].every((k) => read('src', 'pages', 'RequestsTouch.jsx').includes(k)));
   assert('Táctil: las tablas que quedan (Administración) pasan a fichas con etiquetas y acciones al pie',
-    globalCssTouch.includes("td[data-label='Acciones'] {") && /@media \(max-width: 1023px\) \{
-    min-width: 100%;
-    border: none;/.test(globalCssTouch));
+    globalCssTouch.includes("td[data-label='Acciones'] {") && globalCssTouch.includes('Phones and tablets: each row becomes a record card'));
   assert('Móvil y tablet: perfil con modo de trabajo en opciones con nombre y contraseña y documentos plegados',
     read('src', 'pages', 'ProfilePage.jsx').includes('styles.modeChoice') && read('src', 'pages', 'ProfilePage.jsx').includes('aria-expanded={open}'));
 
@@ -138,9 +144,11 @@ export async function runGlassAppearanceTests() {
   assert('Desde la pantalla de inicio se abre a pantalla completa (sin las barras de Safari)',
     read('vite.config.js').includes("display: 'standalone'") && indexHtml.includes('apple-mobile-web-app-capable') && indexHtml.includes('black-translucent') && indexHtml.includes('viewport-fit=cover'));
   const loginPhone = read('src', 'pages', 'LoginPhone.jsx');
-  assert('Login móvil web: diseño nuevo (portada de marca, hoja, recordarme) sin perder la ayuda ni el aviso de inactividad',
-    loginPhone.includes('styles.pitchTitle') && loginPhone.includes('LEAF_PATH') && loginPhone.includes('Recordarme') && loginPhone.includes('¿Primer acceso o contraseña olvidada?')
-    && read('src', 'pages', 'LoginPage.jsx').includes('<LoginPhone') && loginPhone.includes('<Wallpaper />'));
+  assert('Login móvil y tablet web: inspirado en el de la app (monograma, píldora Margube, hoja flotante, «sesión» subrayado) sin perder recordarme, la ayuda ni el aviso de inactividad',
+    loginPhone.includes('<Monogram />') && loginPhone.includes('styles.pill') && loginPhone.includes('styles.grab') && loginPhone.includes('styles.underlined')
+    && loginPhone.includes('Recordarme') && loginPhone.includes('¿Primer acceso o contraseña olvidada?') && loginPhone.includes('{idleText}')
+    && read('src', 'pages', 'LoginPage.jsx').includes('<LoginPhone') && read('src', 'pages', 'LoginPage.jsx').includes("useNarrow(query = '(max-width: 1023px)')")
+    && loginPhone.includes('<Wallpaper />'));
 
   // 5. Estilo
   assert('Paneles translúcidos en la intranet y el login (modales siguen sólidos)', vars.includes("[data-appearance='glass'] :is(.app-shell, .glass-scope) {"));

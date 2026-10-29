@@ -1,6 +1,6 @@
 // Documentos enviados (AdminPage > Documentos on the web) + documento de inicio
 import { useState } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Send, Upload, FileText, Eye, Trash2 } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
@@ -8,6 +8,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useData, ONBOARDING_DOC_TITLE } from '../../context/DataContext';
 import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 import { Screen } from '../../components/common/Screen';
 import { Header } from '../../components/common/Header';
 import { GlassCard } from '../../components/common/GlassCard';
@@ -23,6 +24,7 @@ export default function AdminDocumentsScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation();
   const toast = useToast();
+  const confirm = useConfirm();
   const { employees } = useAuth();
   const { documents, deleteDocument, setOnboardingDocument, onboardingDocUrl, refresh } = useData();
   const [status, setStatus] = useState('all');
@@ -34,18 +36,12 @@ export default function AdminDocumentsScreen() {
   const sent = documents.filter((d) => d.title !== ONBOARDING_DOC_TITLE && (status === 'all' || d.status === status));
   const recipient = (d) => employees.find((e) => String(e.id) === String(d.recipientId));
 
-  const remove = (d) => Alert.alert('Eliminar documento', `¿Seguro que quieres eliminar «${d.title}»?`, [
-    { text: 'Cancelar', style: 'cancel' },
-    {
-      text: 'Eliminar',
-      style: 'destructive',
-      onPress: async () => {
-        const { error } = await deleteDocument(d);
-        if (error) toast.error(toUserMessage(error));
-        else toast.success('Documento eliminado');
-      },
-    },
-  ]);
+  const remove = async (d) => {
+    if (!(await confirm({ title: 'Eliminar documento', message: `Se eliminará «${d.title}» y su archivo. Esta acción no se puede deshacer.` }))) return;
+    const { error } = await deleteDocument(d);
+    if (error) toast.error(toUserMessage(error));
+    else toast.success('Documento eliminado');
+  };
 
   const uploadOnboarding = async () => {
     if (!pdf) return;

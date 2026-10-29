@@ -18,6 +18,7 @@ import { LiveToastContainer } from './LiveToastContainer';
 import CommandPalette from './CommandPalette';
 import { ShortcutsSheet } from './ShortcutsSheet';
 import { ConnectionStatus } from './ConnectionStatus';
+import { IdleWarning } from './IdleWarning';
 import { todayKey } from '../utils/format';
 import { workdayProgress } from '../utils/workday';
 import styles from './Layout.module.scss';
@@ -38,25 +39,37 @@ const adminItems = [
    `width`: pages laid out as a centred column; the heading lines up with it.
    `touch`: on phones and tablets the page composes its own screen, masthead included (Touch.jsx).
    `own`: the page draws its own header everywhere (title, description and actions).
-   `coverOwn`: on phones and tablets the page's own first panel is its cover (Mi perfil).
-   `icon`: the section mark of the masthead the heading becomes on phones and tablets. */
+   `desk`: on computers the page draws its own heading with its actions (Desk.jsx).
+   `coverOwn`: on phones and tablets the page's own first panel is its cover (Mi perfil); the
+   heading keeps only the date line.
+   `icon`: the section's mark, beside today's date on every screen size. */
 const PAGE_META = {
-  reservations: { title: 'Reservas',           desc: 'Salas y vehículos de empresa: mira qué está libre y reserva en segundos.', touch: true, icon: Calendar },
-  requests:     { title: 'Solicitudes',        desc: 'Asuntos propios, trabajo en remoto o externo y compras.', touch: true, icon: Inbox },
+  reservations: { title: 'Reservas',           desc: 'Salas y vehículos de empresa: mira qué está libre y reserva en segundos.', touch: true, desk: true, icon: Calendar },
+  requests:     { title: 'Solicitudes',        desc: 'Asuntos propios, trabajo en remoto o externo y compras.', touch: true, desk: true, icon: Inbox },
   horas:        { title: 'Tiempo a compensar', desc: 'Registra tus horas y consulta tu saldo con la empresa.', own: true, icon: Timer },
   mas:          { title: 'Más',                desc: 'Tu cuenta, el resto de secciones y tus preferencias.', own: true, icon: LayoutGrid },
   news:         { title: 'Noticias y Eventos', desc: 'Comunicados, novedades y próximos eventos de Margube.', icon: Newspaper },
-  employees:    { title: 'Equipo',             desc: 'Directorio del equipo y dónde trabaja cada persona, hoy y durante la semana.', touch: true, icon: UsersRound },
+  employees:    { title: 'Equipo',             desc: 'Directorio del equipo y dónde trabaja cada persona, hoy y durante la semana.', touch: true, desk: true, icon: UsersRound },
   profile:      { title: 'Mi perfil',          desc: 'Tus datos, modo de trabajo, contraseña y documentos.', width: 1180, coverOwn: true, icon: UserRound },
   settings:     { title: 'Ajustes',            desc: 'Tema, notificaciones y preferencias de tu cuenta.', width: 680, icon: SlidersHorizontal },
-  admin:        { title: 'Administración',     desc: 'Empleados, salas, vehículos, documentos y bolsa de horas.', icon: Settings },
+  admin:        { title: 'Administración',     desc: 'Empleados, salas, vehículos, documentos y bolsa de horas.', touch: true, desk: true, icon: Settings },
 };
 
+// The clock shows hours and minutes: ticking on each minute (not every second) spares a
+// re-render of the whole chrome sixty times a minute
 function useClock() {
   const [time, setTime] = useState(() => new Date());
   useEffect(() => {
-    const id = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(id);
+    let id;
+    const schedule = () => {
+      const now = new Date();
+      id = setTimeout(() => { setTime(new Date()); schedule(); }, 60000 - (now.getSeconds() * 1000 + now.getMilliseconds()) + 50);
+    };
+    schedule();
+    // Back from sleep or a background tab, the timer may be late: catch up at once
+    const onVisible = () => { if (document.visibilityState === 'visible') setTime(new Date()); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => { clearTimeout(id); document.removeEventListener('visibilitychange', onVisible); };
   }, []);
   return time;
 }
@@ -334,8 +347,8 @@ export default function Layout({ children }) {
               exit={{ opacity: 0, transition: { duration: 0.12, ease: [0.23, 1, 0.32, 1] } }}
             >
               {meta && (
-                <div className={clsx(styles.pageIntro, meta.touch && styles.pageIntroTouchOwn, meta.own && styles.pageIntroOwn, meta.coverOwn && styles.pageIntroCoverOwn)} style={meta.width ? { maxWidth: meta.width, marginInline: 'auto' } : undefined}>
-                  {/* Phones and tablets: the heading is a masthead on the wallpaper (section mark and today's date) */}
+                <div className={clsx(styles.pageIntro, meta.touch && styles.pageIntroTouchOwn, meta.desk && styles.pageIntroDeskOwn, meta.own && styles.pageIntroOwn, meta.coverOwn && styles.pageIntroCoverOwn)} style={meta.width ? { maxWidth: meta.width, marginInline: 'auto' } : undefined}>
+                  {/* The section's mark beside today's date, as on every page (a masthead on phones and tablets) */}
                   <p className={styles.introEyebrow}>
                     {meta.icon && <span className={styles.introMark} aria-hidden="true"><meta.icon size={15} /></span>}
                     <span>{now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
@@ -377,6 +390,7 @@ export default function Layout({ children }) {
       <CommandPalette open={cmdOpen} onClose={closeCmd} onShowShortcuts={openShortcuts} />
       <ShortcutsSheet open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} isAdmin={user?.role === 'admin'} />
       <ConnectionStatus />
+      <IdleWarning />
 
       <AnimatePresence>
         {needsOnboarding && <OnboardingModal />}

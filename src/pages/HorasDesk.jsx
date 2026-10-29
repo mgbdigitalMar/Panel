@@ -6,6 +6,7 @@ import {
   Download, Search, CheckCircle, Inbox, TrendingDown, X, CheckCheck, CalendarRange, Timer, UsersRound, Wallet,
 } from 'lucide-react';
 import { Button, Input } from '../components/ui';
+import { DeskEyebrow } from '../components/Desk';
 import { fmtHM } from '../utils/format';
 import styles from './HorasDesk.module.scss';
 
@@ -42,7 +43,7 @@ export function HorasDeskHeader({ view, setView, isAdmin, teamPending = 0, onExp
   return (
     <header className={styles.head}>
       <div className={styles.headText}>
-        <p className={styles.eyebrow}><Timer size={14} aria-hidden="true" /> Tu cuenta de horas</p>
+        <DeskEyebrow icon={Timer} />
         <h1 className={styles.title}>Tiempo a compensar</h1>
         <p className={styles.desc}>Registra tus horas y consulta tu saldo con la empresa.</p>
       </div>

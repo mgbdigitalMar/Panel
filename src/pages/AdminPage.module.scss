@@ -6,32 +6,6 @@
   gap: clamp(16px, 2.5vw, 24px);
 }
 
-.pageControls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: clamp(16px, 2vw, 24px);
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.controlsRight {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-
-  @media (max-width: 768px) {
-    width: 100%;
-    justify-content: flex-start;
-  }
-}
-
-@keyframes tab-indicator {
-  from { width: 0%; opacity: 0; }
-  to   { width: 60%; opacity: 1; }
-}
-
 /* Table Header / Search Area */
 .tableHeaderSection {
   display: flex;
@@ -978,14 +952,6 @@
   flex-shrink: 0;
 }
 
-.tabsRow { @include p.tabs-row; }
-.tabBtn { @include p.tab-btn; }
-.tabBtnActive {
-  @include p.tab-btn-active;
-  .tabCount { @include p.tab-count-on-active; }
-}
-.tabCount { @include p.tab-count; }
-
 /* Telework schedule (employee modal + table) */
 .teleworkField {
   display: flex;
@@ -1212,3 +1178,63 @@
 }
 
 .formSignatureImg { max-width: 320px; }
+
+/* Why a form could not be saved; the form stays open with what was typed */
+.formError {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid rgba(var(--danger-rgb), 0.25);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+/* Computers: what waits for RRHH, on the brand panel at the side; each line opens its section */
+.todo {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 40px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.88);
+    font: 500 13.5px/1.2 var(--font-body);
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover { background: rgba(255, 255, 255, 0.16); }
+    &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5); }
+
+    span { flex: 1; }
+
+    strong {
+      min-width: 26px;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: var(--radius-full);
+      display: inline-grid;
+      place-items: center;
+      background: #FFFFFF;
+      color: #1E40AF;
+      font-size: 12.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Nothing pending: quieter, so what needs work stands out */
+    &[data-zero] { color: rgba(255, 255, 255, 0.6); }
+    &[data-zero] strong { background: rgba(255, 255, 255, 0.14); color: rgba(255, 255, 255, 0.75); }
+  }
+}

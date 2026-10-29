@@ -1,7 +1,7 @@
 // 20 · Bandeja de aprobación (admin). Gathers what the web spreads over
 // RequestsPage, ReservationsPage and AdminPage > Bolsa Horas.
 import { useMemo, useState } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, X, ShieldCheck } from 'lucide-react-native';
@@ -10,6 +10,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
 import { GlassButton } from '../components/common/GlassButton';
@@ -37,6 +38,7 @@ export default function AdminScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const toast = useToast();
+  const confirm = useConfirm();
   const { employees } = useAuth();
   const { setRequestStatus, setReservationStatus, setHourStatus, refresh } = useData();
   const pending = usePendingApprovals();
@@ -70,11 +72,16 @@ export default function AdminScreen() {
     else toast.success(`${entries.length} ${approve ? 'aprobada' : 'rechazada'}${entries.length === 1 ? '' : 's'}`);
   };
 
-  const confirmBulk = (approve) => Alert.alert(
-    approve ? 'Aprobar selección' : 'Rechazar selección',
-    `${selected.length} elemento${selected.length === 1 ? '' : 's'} · se notificará a cada empleado.`,
-    [{ text: 'Cancelar', style: 'cancel' }, { text: approve ? 'Aprobar' : 'Rechazar', style: approve ? 'default' : 'destructive', onPress: () => run(selected, approve) }],
-  );
+  const confirmBulk = async (approve) => {
+    const ok = await confirm({
+      title: approve ? 'Aprobar selección' : 'Rechazar selección',
+      message: `${selected.length} elemento${selected.length === 1 ? '' : 's'} · se notificará a cada empleado.`,
+      confirmText: approve ? 'Aprobar' : 'Rechazar',
+      tone: approve ? 'accent' : 'danger',
+      icon: approve ? Check : X,
+    });
+    if (ok) run(selected, approve);
+  };
 
   const openEntry = (entry) => {
     const it = entry.item;

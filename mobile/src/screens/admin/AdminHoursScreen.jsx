@@ -1,6 +1,6 @@
 // Horas del equipo: AdminPage > Bolsa Horas + HorasPage > Historial de Usuarios (web)
 import { useMemo, useState } from 'react';
-import { Alert, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Check, X, Trash2, Download, Search, Timer, ChevronRight } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
@@ -8,6 +8,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 import { Screen } from '../../components/common/Screen';
 import { Header } from '../../components/common/Header';
 import { GlassButton, IconButton } from '../../components/common/GlassButton';
@@ -25,6 +26,7 @@ export default function AdminHoursScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation();
   const toast = useToast();
+  const confirm = useConfirm();
   const { employees } = useAuth();
   const { hourCompensations, setHourStatus, deleteHourCompensation, refresh } = useData();
   const [tab, setTab] = useState('bolsa');
@@ -57,18 +59,12 @@ export default function AdminHoursScreen() {
     else toast.success(st === 'approved' ? 'Horas aprobadas' : 'Horas rechazadas');
   };
 
-  const remove = (h) => Alert.alert('Eliminar registro', '¿Seguro que quieres eliminar este registro de horas?', [
-    { text: 'Cancelar', style: 'cancel' },
-    {
-      text: 'Eliminar',
-      style: 'destructive',
-      onPress: async () => {
-        const { error } = await deleteHourCompensation(h.id);
-        if (error) toast.error(toUserMessage(error));
-        else toast.success('Registro eliminado');
-      },
-    },
-  ]);
+  const remove = async (h) => {
+    if (!(await confirm({ title: 'Eliminar registro', message: `${h.hours} h de ${h.employeeName || 'empleado'}. Se eliminará de su saldo. Esta acción no se puede deshacer.` }))) return;
+    const { error } = await deleteHourCompensation(h.id);
+    if (error) toast.error(toUserMessage(error));
+    else toast.success('Registro eliminado');
+  };
 
   const exportTab = async () => {
     try {

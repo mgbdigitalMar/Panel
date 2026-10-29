@@ -1,23 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth, useReservations, useNotifs } from '../context';
-import { Badge, Modal, Select, Input, Textarea, Button, Card, ConfirmModal, StatCard, Section } from '../components/ui';
+import { Modal, Select, Input, Textarea, Button, ConfirmModal } from '../components/ui';
 import { useTouch } from '../components/Touch';
 import ReservationsTouch from './ReservationsTouch';
-import { Building, Car, Check, X, Plus, Download, Trash2, CalendarPlus, CalendarDays, Users, ArrowRight } from 'lucide-react';
+import ReservationsDesk from './ReservationsDesk';
+import { X } from 'lucide-react';
 import { downloadReservationIcs } from '../utils/ics';
 import { fmtDayShort, todayKey } from '../utils/format';
 import styles from './ReservationsPage.module.scss';
 import clsx from 'clsx';
-import ReservationsCalendar from './ReservationsCalendar';
 
-/** Live state of a room or vehicle right now, from today's bookings. */
+/** Live state of a room or vehicle right now, from today's bookings. Matched by id: two vehicles of
+ * the same model (or rooms with the same name) are different resources. The name is only a fallback
+ * for a booking without its resource id. */
 function useBusyUntil(reservations) {
   const now = new Date();
   const day = todayKey(now);
   const hm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  return (type, name) => reservations
-    .filter(r => r.type === type && r.resourceName === name && r.date === day
+  const sameResource = (r, type, id, name) => {
+    const rid = type === 'vehicle' ? r.vehicleId : r.roomId;
+    return rid != null ? String(rid) === String(id) : r.resourceName === name;
+  };
+  return (type, id, name) => reservations
+    .filter(r => r.type === type && sameResource(r, type, id, name) && r.date === day
       && r.status !== 'rejected' && r.status !== 'cancelled'
       && r.timeStart <= hm && r.timeEnd > hm)
     .map(r => r.timeEnd)
@@ -25,30 +31,18 @@ function useBusyUntil(reservations) {
     .pop() || null;
 }
 
-function AvailabilityBadge({ until }) {
-  return until
-    ? <Badge status="pending" label={`En uso hasta ${until}`} />
-    : <Badge status="confirmed" label="Libre ahora" />;
-}
-
-/** Keyboard + screen-reader support for the clickable resource cards. */
-const pressable = (onActivate, label) => ({
-  role: 'button',
-  tabIndex: 0,
-  'aria-label': label,
-  onClick: onActivate,
-  onKeyDown: (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onActivate(); }
-  },
-});
-
 export default function ReservationsPage() {
   const { user } = useAuth();
-  const { reservations, rooms, vehicles, createReservation, updateReservationStatus, deleteReservation } = useReservations();
+  const { reservations, rooms: allRooms, vehicles: allVehicles, createReservation, updateReservationStatus, deleteReservation } = useReservations();
   const { announce } = useNotifs();
   const busyUntil = useBusyUntil(reservations);
+  const isAdmin = user?.role === 'admin';
+  // A room or vehicle an admin made unavailable ("Disponible para reservas" off, in the app or in
+  // Administración) is not offered to employees, as in the app. Admins still see it, marked.
+  const rooms = allRooms.filter(r => r.isActive !== false || isAdmin);
+  const vehicles = allVehicles.filter(v => v.isActive !== false || isAdmin);
+  const hiddenMark = (res) => (res.isActive === false ? ' · oculto a los empleados' : '');
 
-  const [tab, setTab]           = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading]   = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -74,8 +68,6 @@ export default function ReservationsPage() {
     setForm(f => ({ ...f, type, resourceId: String(id) }));
     setShowModal(true);
   };
-
-  const filtered = tab === 'all' ? reservations : tab === 'mine' ? reservations.filter(r => r.employeeId === user?.id) : reservations.filter(r => r.type === tab);
 
   const exportReservationsCSV = (rows) => {
     const headers = ['Recurso', 'Tipo', 'Solicitante', 'Fecha', 'Horario', 'Propósito', 'Estado'];
@@ -137,22 +129,31 @@ export default function ReservationsPage() {
     }
   };
 
-  const handleDelete  = async (id) => { await deleteReservation(id); };
-  const handleApprove = async (id) => { await updateReservationStatus(id, 'confirmed', user.id); };
-  const handleReject  = async (id) => { await updateReservationStatus(id, 'cancelled', user.id); };
+  const handleDelete  = async (id) => {
+    const { error } = await deleteReservation(id);
+    if (!error) announce('🗑️', 'Reserva eliminada.');
+  };
 
-  const tabBtn = (id, label, count) => (
-    <button 
-      key={id} 
-      onClick={() => setTab(id)}
-      className={clsx(styles.tabBtn, { [styles.tabBtnActive]: tab === id })}
-    >
-      {label}
-      {typeof count === 'number' && count >= 0 && (
-        <span className={styles.tabCount}>{count}</span>
-      )}
-    </button>
-  );
+  // One review at a time per booking (a double click sent two updates); rejecting asks first,
+  // as in the app, because it cancels the booking and notifies its owner
+  const [busyId, setBusyId] = useState(null);
+  const inFlight = useRef(new Set());
+  const [toReject, setToReject] = useState(null);
+  const findRes = (id) => reservations.find(r => String(r.id) === String(id));
+  const review = async (r, status) => {
+    if (!r || inFlight.current.has(r.id)) return;
+    inFlight.current.add(r.id);
+    setBusyId(r.id);
+    const { error } = await updateReservationStatus(r.id, status, user.id);
+    inFlight.current.delete(r.id);
+    setBusyId(null);
+    if (!error) {
+      const who = r.employeeId === user?.id ? '' : ` Se ha avisado a ${(r.employeeName || 'la persona').split(' ')[0]}.`;
+      announce(status === 'confirmed' ? '✅' : '❌', `${status === 'confirmed' ? 'Reserva confirmada' : 'Reserva cancelada'}.${who}`);
+    }
+  };
+  const handleApprove = (id) => review(findRes(id), 'confirmed');
+  const handleReject  = (id) => setToReject(findRes(id) || null);
 
   return (
     <div className={styles.container}>
@@ -172,192 +173,25 @@ export default function ReservationsPage() {
           onDelete={setItemToDelete}
           onAddToCalendar={downloadReservationIcs}
           onExport={exportReservationsCSV}
+          busyId={busyId}
         />
       ) : (
-      <>
-      <div className={styles.pageControls}>
-        <div className={styles.tabsRow}>
-          {tabBtn('all', 'Todas', reservations.length)}
-          {tabBtn('room', 'Salas', rooms.length)}
-          {tabBtn('vehicle', 'Vehículos', vehicles.length)}
-          {tabBtn('calendar', <><CalendarDays size={15} aria-hidden="true" /> Calendario</>)}
-        </div>
-        <div className={styles.controlsRight}>
-          {filtered.length > 0 && tab !== 'calendar' && (
-            <Button icon={Download} variant="ghost" onClick={() => exportReservationsCSV(filtered)}>
-              Descargar Excel
-            </Button>
-          )}
-          <Button icon={Plus} onClick={() => setShowModal(true)}>Nueva reserva</Button>
-        </div>
-      </div>
-
-      {tab !== 'calendar' && (
-        <div className={styles.statsGrid}>
-          <StatCard
-            label="Total reservas"
-            value={reservations.length}
-            icon="Calendar"
-            color="var(--accent)"
-            sub="Histórico registrado"
-          />
-          <StatCard
-            label="Salas activas"
-            value={rooms.length}
-            icon="Building"
-            color="var(--success)"
-            sub="Espacios de reunión"
-          />
-          <StatCard
-            label="Vehículos flota"
-            value={vehicles.length}
-            icon="Car"
-            color="var(--warning)"
-            sub="Flota disponible"
-          />
-        </div>
-      )}
-
-      {tab === 'calendar' && <ReservationsCalendar />}
-
-      {tab !== 'vehicle' && tab !== 'calendar' && (
-        <Section title="Salas de reuniones" description="Pulsa una sala para reservarla.">
-          <div className={clsx(styles.resourceGrid, 'stagger-quick')}>
-            {rooms.map(room => (
-              <Card
-                key={room.id}
-                className={styles.resourceCard}
-                {...pressable(() => {
-                  setForm(f => ({ ...f, type: 'room', resourceId: String(room.id) }));
-                  setShowModal(true);
-                }, `Reservar ${room.name}`)}
-              >
-                <div className={styles.resourceTop}>
-                  <span className={styles.resourceIcon} data-tone="room" aria-hidden="true">
-                    <Building size={20} />
-                  </span>
-                  <AvailabilityBadge until={busyUntil('room', room.name)} />
-                </div>
-                <h3 className={styles.resourceTitle}>{room.name}</h3>
-                <p className={styles.resourceMeta}>
-                  {room.floor && <span>Planta {room.floor}</span>}
-                  {room.capacity && <span><Users size={13} aria-hidden="true" /> {room.capacity} personas</span>}
-                </p>
-                {(room.equipment || []).length > 0 && (
-                  <div className={styles.tagList}>
-                    {room.equipment.map(eq => (
-                      <span key={eq} className={styles.tag}>{eq}</span>
-                    ))}
-                  </div>
-                )}
-                <span className={styles.resourceCta} aria-hidden="true">Reservar <ArrowRight size={14} /></span>
-              </Card>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {tab !== 'room' && tab !== 'calendar' && (
-        <Section title="Vehículos de empresa" description="Reserva un coche o furgoneta para visitas y obras.">
-          <div className={clsx(styles.resourceGrid, 'stagger-quick')}>
-            {vehicles.map(v => (
-              <Card
-                key={v.id}
-                className={styles.resourceCard}
-                {...pressable(() => {
-                  setForm(f => ({ ...f, type: 'vehicle', resourceId: String(v.id) }));
-                  setShowModal(true);
-                }, `Reservar ${v.model} (${v.plate})`)}
-              >
-                <div className={styles.resourceTop}>
-                  <span className={styles.resourceIcon} data-tone="vehicle" aria-hidden="true">
-                    <Car size={20} />
-                  </span>
-                  <AvailabilityBadge until={busyUntil('vehicle', v.model)} />
-                </div>
-                <h3 className={styles.resourceTitle}>{v.model}</h3>
-                <p className={styles.resourceMeta}>
-                  {[v.type, v.year].filter(Boolean).length > 0 && <span>{[v.type, v.year].filter(Boolean).join(' · ')}</span>}
-                </p>
-                <div className={styles.tagList}>
-                  <span className={styles.plate}>{v.plate}</span>
-                </div>
-                <span className={styles.resourceCta} aria-hidden="true">Reservar <ArrowRight size={14} /></span>
-              </Card>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {tab !== 'calendar' && (
-        <Section title="Historial de reservas" description={`${filtered.length} ${filtered.length === 1 ? 'reserva' : 'reservas'}`}>
-        <Card>
-          {filtered.length === 0 ? (
-            <div className="empty-state">
-              <div className={clsx("icon-box icon-box--lg icon-box--accent empty-state__icon", styles.opaqueIcon)}>
-                <Building size={24} />
-              </div>
-              <h3 className="empty-state__title">No hay reservas</h3>
-              <p className="empty-state__sub">No se han encontrado reservas en este momento.</p>
-            </div>
-          ) : (
-            <div className={styles.tableWrapper}>
-              <table className="table">
-                <thead>
-                  <tr>
-                    {['Recurso', 'Tipo', 'Solicitante', 'Fecha', 'Horario', 'Propósito', 'Estado', 'Acciones'].map(h => (
-                      <th key={h}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="stagger-quick">
-                  {filtered.map(r => (
-                    <tr key={r.id}>
-                      <td data-label="Recurso" className={styles.resourceNameCell}>{r.resourceName}</td>
-                      <td data-label="Tipo">
-                        <span className={clsx(styles.typeBadge, r.type === 'vehicle' ? styles.typeBadgeVehicle : styles.typeBadgeRoom)}>
-                          {r.type === 'vehicle' ? <Car size={13} /> : <Building size={13} />}
-                          {r.type === 'vehicle' ? 'Vehículo' : 'Sala'}
-                        </span>
-                      </td>
-                      <td data-label="Solicitante" className={styles.textSec}>{r.employeeName}</td>
-                      <td data-label="Fecha" className={clsx(styles.textSec, styles.noMargin, styles.nowrap)}>{fmtDayShort(r.date)}</td>
-                      <td data-label="Horario" className={clsx(styles.textSec, styles.noMargin, styles.nowrap)}>{r.timeStart}–{r.timeEnd}</td>
-                      <td data-label="Propósito" className={styles.purposeCell} title={r.purpose}>{r.purpose}</td>
-                      <td data-label="Estado"><Badge status={r.status} /></td>
-                      <td data-label="Acciones">
-                        <div className={styles.actionsCell}>
-                          {user.role === 'admin' && r.status === 'pending' && (
-                            <>
-                              <Button variant="action-success" iconOnly icon={Check} onClick={() => handleApprove(r.id)} title="Aprobar" />
-                              <Button variant="action-danger" iconOnly icon={X} onClick={() => handleReject(r.id)} title="Rechazar" />
-                            </>
-                          )}
-                          {r.employeeId === user?.id && r.status !== 'rejected' && r.status !== 'cancelled' && (
-                            <Button
-                              variant="action-download"
-                              iconOnly
-                              icon={CalendarPlus}
-                              onClick={() => downloadReservationIcs(r)}
-                              title="Añadir a mi calendario"
-                              aria-label={`Añadir ${r.resourceName} a mi calendario`}
-                            />
-                          )}
-                          {(user?.role === 'admin' || r.employeeId === user?.id) && (
-                            <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => setItemToDelete(r.id)} title="Eliminar" />
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Card>
-        </Section>
-      )}
-      </>
+        <ReservationsDesk
+          rooms={rooms}
+          vehicles={vehicles}
+          reservations={reservations}
+          user={user}
+          busyUntil={busyUntil}
+          initialView={touchView}
+          onBook={book}
+          onNew={() => setShowModal(true)}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onDelete={setItemToDelete}
+          onAddToCalendar={downloadReservationIcs}
+          onExport={exportReservationsCSV}
+          busyId={busyId}
+        />
       )}
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Nueva reserva">
@@ -369,8 +203,8 @@ export default function ReservationsPage() {
           options={[
             { value: '', label: 'Selecciona un recurso...' },
             ...(form.type === 'room'
-              ? rooms.map(r => ({ value: r.id, label: `${r.name} (${r.capacity}p)` }))
-              : vehicles.map(v => ({ value: v.id, label: `${v.model} - ${v.plate}` }))),
+              ? rooms.map(r => ({ value: r.id, label: `${r.name} (${r.capacity}p)${hiddenMark(r)}` }))
+              : vehicles.map(v => ({ value: v.id, label: `${v.model} - ${v.plate}${hiddenMark(v)}` }))),
           ]} 
         />
         <Input label="Fecha" value={form.date} onChange={v => setForm({ ...form, date: v })} type="date" min={todayKey()} required />
@@ -401,6 +235,16 @@ export default function ReservationsPage() {
         }} 
         title="Eliminar reserva"
         message="¿Estás seguro de que deseas eliminar esta reserva? Esta acción no se puede deshacer."
+      />
+
+      <ConfirmModal
+        isOpen={!!toReject}
+        onClose={() => setToReject(null)}
+        onConfirm={() => review(toReject, 'cancelled')}
+        icon={X}
+        title="Rechazar reserva"
+        message={toReject ? `${toReject.resourceName} · ${fmtDayShort(toReject.date)}, ${toReject.timeStart}–${toReject.timeEnd} · ${toReject.employeeName || 'empleado'}. La reserva quedará cancelada y se le avisará.` : ''}
+        confirmText="Rechazar"
       />
     </div>
   );

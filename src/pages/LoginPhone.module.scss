@@ -1,5 +1,5 @@
-/* Login on phones and small tablets: the navy cover with the wordmark and what the intranet holds,
-   and the form on a liquid glass card overlapping it, over the web's wallpaper. */
+/* Login on phones and tablets, after the app's: the Margube pill and the monogram over the web's
+   wallpaper, and the form on a floating liquid glass sheet at the bottom. */
 @use '../styles/patterns' as p;
 
 .page {
@@ -23,94 +23,131 @@
   from { opacity: 0; transform: translateY(14px); }
 }
 
-/* Cover -------------------------------------------------------------------- */
-.hero {
-  @include p.brand-panel;
+/* Stage: the Margube pill and the monogram ------------------------------------- */
+.stage {
   position: relative;
-  isolation: isolate;
-  overflow: hidden;
+  z-index: 1;
+  flex: 1;
+  min-height: 280px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 28px;
-  min-height: 300px;
-  margin: calc(10px + env(safe-area-inset-top)) 10px 0;
-  padding: 24px 22px 72px;
-  border-radius: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  padding: calc(18px + env(safe-area-inset-top)) 16px 26px;
 }
 
-.heroLeaf {
-  @include p.brand-leaf;
-  right: -36px;
-  bottom: -30px;
-  z-index: -1;
-  width: 220px;
-  height: 220px;
-}
-
-.brand {
-  display: flex;
+.pill {
+  @include p.liquid;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
+  padding: 6px 14px 6px 6px;
+  border-radius: 21px;
+
+  strong {
+    font-family: var(--font-heading);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text);
+  }
+
+  span {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-mut);
+  }
 }
 
-.brandLogo {
-  height: 28px;
-  width: auto;
+.pillLogo {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
 }
 
-.brandTag {
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.12);
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.82);
+/* The "M" in tiles: the lit ones breathe in a wave, a scan line passes now and then */
+.monogram {
+  --tile: clamp(14px, 4.4vw, 22px);
+  --gap: calc(var(--tile) / 3);
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(11, var(--tile));
+  gap: var(--gap);
 }
 
-.pitch {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.tile,
+.tileOn {
+  width: var(--tile);
+  height: var(--tile);
+  border-radius: calc(var(--tile) * 0.28);
 }
 
-.pitchTitle {
-  max-width: 15ch;
-  margin: 0;
-  font-family: var(--font-heading);
-  font-size: 30px;
-  font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.035em;
-  color: #FFFFFF;
+.tile {
+  background: rgba(var(--text-rgb), 0.05);
+  box-shadow: inset 0 0 0 1px var(--lg-edge);
 }
 
-.pitchList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  li { @include p.brand-tag; gap: 6px; }
+.tileOn {
+  background: var(--accent);
+  box-shadow: 0 0 14px -2px rgba(var(--accent-rgb), 0.55);
+  animation: breathe 3.4s cubic-bezier(0.65, 0, 0.35, 1) infinite backwards;
 }
 
-/* The form card, overlapping the cover ---------------------------------------------- */
+@keyframes breathe {
+  0%, 100% { opacity: 0.5; transform: scale(0.55); }
+  45% { opacity: 1; transform: scale(1); }
+}
+
+.scan {
+  position: absolute;
+  left: -20px;
+  right: -20px;
+  top: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--accent);
+  box-shadow: 0 0 10px 1px var(--accent);
+  opacity: 0;
+  animation: scan 6.5s cubic-bezier(0.65, 0, 0.35, 1) 1.4s infinite;
+}
+
+@keyframes scan {
+  0% { opacity: 0; transform: translateY(0); }
+  6% { opacity: 0.55; }
+  40% { opacity: 0.55; }
+  47%, 100% { opacity: 0; transform: translateY(calc(var(--tile) * 9 + var(--gap) * 8)); }
+}
+
+/* The form on a floating glass sheet --------------------------------------------- */
 .sheet {
   @include p.liquid;
   z-index: 1;
-  margin: -48px 20px calc(20px + env(safe-area-inset-bottom));
-  padding: 22px 20px 20px;
-  border-radius: 26px;
+  align-self: center;
+  width: calc(100% - 24px);
+  max-width: 480px;
+  margin: 0 12px calc(16px + env(safe-area-inset-bottom));
+  padding: 10px 20px 22px;
+  border-radius: 34px;
   background: var(--lg-sheen), var(--lg-popover, var(--lg-chrome));
-  animation: sheetIn 0.9s cubic-bezier(0.2, 0.85, 0.2, 1) 0.1s backwards;
+  /* Slides up, no fade: a fade would flatten the glass while it runs */
+  animation: sheetIn 0.9s cubic-bezier(0.2, 0.85, 0.2, 1) 0.15s backwards;
 }
 
 @keyframes sheetIn {
-  from { transform: translateY(24px); opacity: 0; }
+  from { transform: translateY(320px); }
+}
+
+.grab {
+  display: block;
+  width: 38px;
+  height: 5px;
+  margin: 0 auto 18px;
+  border-radius: 3px;
+  background: var(--fld-line);
 }
 
 .body {
@@ -165,17 +202,41 @@
 .title {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: 28px;
-  font-weight: 600;
+  font-size: 34px;
+  font-weight: 700;
   line-height: 1.1;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.045em;
   color: var(--text);
 }
 
-.lead {
-  margin: -4px 0 0;
-  font-size: 14px;
-  color: var(--text-sec);
+/* "sesión" underlined by hand, drawn once */
+.underlined {
+  position: relative;
+  display: inline-block;
+
+  svg {
+    position: absolute;
+    left: -2%;
+    bottom: -6px;
+    width: 104%;
+    height: 12px;
+    overflow: visible;
+  }
+
+  path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-dasharray: 260;
+    stroke-dashoffset: 0;
+    vector-effect: non-scaling-stroke;
+    animation: draw 1s cubic-bezier(0.6, 0, 0.2, 1) 0.9s backwards;
+  }
+}
+
+@keyframes draw {
+  from { stroke-dashoffset: 260; }
 }
 
 .form {
@@ -472,4 +533,15 @@
     transition: none !important;
   }
 
+}
+
+/* Short screens (small phones, landscape): a smaller monogram so "Entrar" stays in view */
+@media (max-height: 720px) {
+  .stage {
+    min-height: 0;
+    gap: 16px;
+    padding-bottom: 16px;
+  }
+
+  .monogram { --tile: clamp(9px, 2.2vh, 14px); }
 }

@@ -1,6 +1,6 @@
 // 13 · Detalle con decisión
 import { useMemo, useState } from 'react';
-import { Alert, Linking, View } from 'react-native';
+import { Linking, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Check, X, Trash2, Eye, Mail, RotateCcw, FileSearch, Clock, CheckCircle2, XCircle } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
 import { GlassCard } from '../components/common/GlassCard';
@@ -40,6 +41,7 @@ export default function RequestDetailScreen() {
   const navigation = useNavigation();
   const { params } = useRoute();
   const toast = useToast();
+  const confirm = useConfirm();
   const { user, employees } = useAuth();
   const { requests, personalDays, setRequestStatus, deleteRequest } = useData();
   const [busy, setBusy] = useState('');
@@ -66,37 +68,31 @@ export default function RequestDetailScreen() {
 
   const decide = (status) => {
     const verb = status === 'approved' ? 'aprobar' : 'rechazar';
-    Alert.alert(`¿${verb[0].toUpperCase()}${verb.slice(1)} solicitud?`, `${requestTypeLabel(item.type)} de ${item.employeeName || 'empleado'}`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: status === 'approved' ? 'Aprobar' : 'Rechazar',
-        style: status === 'approved' ? 'default' : 'destructive',
-        onPress: async () => {
-          setBusy(status);
-          const { error } = await setRequestStatus(item, status);
-          setBusy('');
-          if (error) toast.error(toUserMessage(error));
-          else toast.success(status === 'approved' ? 'Solicitud aprobada' : 'Solicitud rechazada');
-        },
-      },
-    ]);
+    confirm({
+      title: `¿${verb[0].toUpperCase()}${verb.slice(1)} solicitud?`,
+      message: `${requestTypeLabel(item.type)} de ${item.employeeName || 'empleado'}. Se le avisará de la decisión.`,
+      confirmText: status === 'approved' ? 'Aprobar' : 'Rechazar',
+      tone: status === 'approved' ? 'accent' : 'danger',
+      icon: status === 'approved' ? Check : X,
+    }).then(async (ok) => {
+      if (!ok) return;
+      setBusy(status);
+      const { error } = await setRequestStatus(item, status);
+      setBusy('');
+      if (error) toast.error(toUserMessage(error));
+      else toast.success(status === 'approved' ? 'Solicitud aprobada' : 'Solicitud rechazada');
+    });
   };
 
   const remove = () => {
-    Alert.alert('Eliminar solicitud', '¿Seguro que quieres eliminarla? Esta acción no se puede deshacer.', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          setBusy('delete');
-          const { error } = await deleteRequest(item);
-          setBusy('');
-          if (error) toast.error(toUserMessage(error));
-          else { toast.success('Solicitud eliminada'); navigation.goBack(); }
-        },
-      },
-    ]);
+    confirm({ title: 'Eliminar solicitud', message: `${requestTypeLabel(item.type)} de ${item.employeeName || 'empleado'}. Esta acción no se puede deshacer.` }).then(async (ok) => {
+      if (!ok) return;
+      setBusy('delete');
+      const { error } = await deleteRequest(item);
+      setBusy('');
+      if (error) toast.error(toUserMessage(error));
+      else { toast.success('Solicitud eliminada'); navigation.goBack(); }
+    });
   };
 
   const footer = (

@@ -1,0 +1,113 @@
+/* Solicitudes on a computer (RequestsDesk.jsx); the shared pieces live in components/Desk */
+
+.page { display: block; }
+
+/* Personal days on the brand panel */
+.days {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+
+  strong {
+    font-family: var(--font-heading);
+    font-size: 46px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  span {
+    max-width: 18ch;
+    font-size: 13px;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.75);
+  }
+}
+
+.pips {
+  display: flex;
+  gap: 6px;
+
+  i {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #9DB4FF, #FFFFFF);
+  }
+
+  i[data-used] { background: rgba(255, 255, 255, 0.16); }
+}
+
+.week {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  margin-top: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+
+  > span {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  ol {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: grid;
+    place-items: center;
+    height: 30px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  li[data-away='remoto'] { background: rgba(56, 189, 248, 0.32); color: #FFFFFF; }
+  li[data-away='external'] { background: rgba(167, 139, 250, 0.38); color: #FFFFFF; }
+  li[data-today] { box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.85); }
+}
+
+.person {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+
+  em {
+    font-style: normal;
+    font-weight: 500;
+    color: var(--text-mut);
+  }
+}
+
+.reason {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 34ch;
+  line-height: 1.4;
+}
+
+.reviewed {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--text-mut);
+  max-width: 24ch;
+  line-height: 1.3;
+}
+
+.nowrap { white-space: nowrap; }

@@ -28,7 +28,6 @@ export function HorasTouchHeader({ tab, setTab, isAdmin, rows, onExport, onExpor
     return (
       <Masthead
         icon={Timer}
-        eyebrow="Tiempo a compensar"
         title={tab === 'nueva' ? 'Registrar horas' : 'Saldo del equipo'}
         desc={tab === 'nueva' ? 'Compénsalas ya, acumúlalas en tu bolsa o registra las que debes.' : 'Horas a favor, pendientes y en deuda de cada persona.'}
         aside={(
@@ -46,7 +45,6 @@ export function HorasTouchHeader({ tab, setTab, isAdmin, rows, onExport, onExpor
     <>
       <Masthead
         icon={Timer}
-        eyebrow="Tiempo a compensar"
         title="Tus horas"
         desc="Registra las horas que compensas, acumulas o debes y consulta tu saldo con la empresa."
       />

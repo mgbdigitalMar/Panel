@@ -1,4 +1,6 @@
-import { notifyAdmins } from './notifications.js';
+import { notifyAdmins, createNotification } from './notifications.js';
+
+const isoToDmy = (iso) => (iso ? String(iso).slice(0, 10).split('-').reverse().join('/') : '');
 
 /** The base table, not the `reservations_full` view: clients need employee_id, room_id and
  * vehicle_id to know who owns a reservation and to detect overlaps. */
@@ -102,18 +104,58 @@ export async function createReservation(supabase, employees, rooms, vehicles, em
   return { data };
 }
 
-export async function updateReservationStatus(supabase, id, status, reviewedBy) {
+/** `reservation` (optional, as returned by fetchReservations) lets the owner know the
+ * decision, like requests, personal days and hours already do. */
+export async function updateReservationStatus(supabase, id, status, reviewedBy, reservation) {
   const { error } = await supabase.from('reservations').update({
     status,
     reviewed_by: reviewedBy,
     reviewed_at: new Date().toISOString(),
   }).eq('id', id);
-  if (error) console.error('updateReservationStatus:', error);
-  return { error };
+  if (error) {
+    console.error('updateReservationStatus:', error);
+    return { error };
+  }
+
+  const ownerId = reservation?.employeeId;
+  if (ownerId && ownerId !== reviewedBy && (status === 'confirmed' || status === 'cancelled')) {
+    const what = [
+      reservation.resourceName,
+      isoToDmy(reservation.date),
+      reservation.timeStart && reservation.timeEnd ? `${reservation.timeStart}–${reservation.timeEnd}` : null,
+    ].filter(Boolean).join(' · ');
+    await createNotification(supabase, {
+      userId: ownerId,
+      title: status === 'confirmed' ? '✅ Reserva confirmada' : '❌ Reserva cancelada',
+      body: status === 'confirmed'
+        ? `Tu reserva (${what}) ha sido confirmada.`
+        : `Tu reserva (${what}) ha sido cancelada por un administrador.`,
+      type: status === 'confirmed' ? 'success' : 'error',
+      entityType: 'reservation',
+      entityId: String(id),
+    });
+  }
+  return { error: null };
 }
 
 export async function deleteReservation(supabase, id) {
   const { error } = await supabase.from('reservations').delete().eq('id', id);
   if (error) console.error('deleteReservation:', error);
+  return { error };
+}
+
+/**
+ * Removes a room or vehicle and its reservations (they reference it). The resource is only
+ * deleted once its reservations are gone: if that step fails nothing else is touched.
+ */
+export async function deleteResource(supabase, type, id) {
+  const column = type === 'vehicle' ? 'vehicle_id' : 'room_id';
+  const { error: resErr } = await supabase.from('reservations').delete().eq(column, id);
+  if (resErr) {
+    console.error('deleteResource (reservations):', resErr);
+    return { error: resErr };
+  }
+  const { error } = await supabase.from(type === 'vehicle' ? 'vehicles' : 'rooms').delete().eq('id', id);
+  if (error) console.error('deleteResource:', error);
   return { error };
 }

@@ -13,6 +13,7 @@ import { PressScale } from '../components/common/Pressable';
 import { useReduceMotion } from '../components/common/AuthBackdrop';
 import { usePendingApprovals } from '../hooks/usePendingApprovals';
 import { TAB_BAR_HEIGHT } from './tabBarMetrics';
+import { tabBarCompact, setTabBarReduceMotion } from './tabBarScroll';
 import DashboardScreen from '../screens/DashboardScreen';
 import ReservationsScreen from '../screens/ReservationsScreen';
 import RequestsScreen from '../screens/RequestsScreen';
@@ -87,16 +88,28 @@ function TabItem({ tab, focused, badge, onPress, onLongPress }) {
   );
 }
 
-/** Floating glass nav pill with a round "new request" button beside it. */
+/** Floating glass nav pill with a round "new request" button beside it. It shrinks while the
+ * screen scrolls and returns to its size when it stops (tabBarScroll.js), as the web's dock does. */
 function TabBar({ state, navigation, badges }) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const reduce = useReduceMotion();
+  useEffect(() => { setTabBarReduceMotion(reduce); }, [reduce]);
+  const bottom = Math.max(insets.bottom, 10);
+  // React Native scales from the centre: moving down by half the lost height keeps the bottom
+  // edge where it was, so the bar shrinks towards the bottom of the screen like the web's dock
+  const shrink = 0.84;
+  const sink = ((1 - shrink) * (TAB_BAR_HEIGHT + bottom)) / 2;
   return (
-    <View
+    <Animated.View
       pointerEvents="box-none"
       style={{
         position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-        paddingHorizontal: Math.max(16, insets.left, insets.right), paddingBottom: Math.max(insets.bottom, 10),
+        paddingHorizontal: Math.max(16, insets.left, insets.right), paddingBottom: bottom,
+        transform: [
+          { translateY: tabBarCompact.interpolate({ inputRange: [0, 1], outputRange: [0, sink] }) },
+          { scale: tabBarCompact.interpolate({ inputRange: [0, 1], outputRange: [1, shrink] }) },
+        ],
       }}
     >
       <View
@@ -138,7 +151,7 @@ function TabBar({ state, navigation, badges }) {
         <GlassFill radius={TAB_BAR_HEIGHT / 2} />
         <Plus size={24} color={colors.text} strokeWidth={2} />
       </PressScale>
-    </View>
+    </Animated.View>
   );
 }
 

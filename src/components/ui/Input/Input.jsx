@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import clsx from 'clsx';
 import styles from './Input.module.scss';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,10 +19,13 @@ export function Input({
   rightElement,   // ← e.g. an eye-toggle <button>
   leftElement,
   autoFocus,
-  id,
+  id: idProp,
   showValidationIcon = true,
   ...props
 }) {
+  // Without an id the label named nothing: screen readers announced an unnamed field
+  const autoId = useId();
+  const id = idProp || autoId;
   const hasValidation = (error || success) && showValidationIcon;
   const shouldShowRightElement = rightElement || hasValidation;
 
@@ -29,7 +33,7 @@ export function Input({
     <div className={clsx(styles.container, className)}>
       {label && (
         <label className={styles.label} htmlFor={id}>
-          {label} {required && <span className={styles.asterisk}>*</span>}
+          {label} {required && <span className={styles.asterisk} aria-hidden="true">*</span>}
         </label>
       )}
       <div className={clsx(styles.inputWrap, {
@@ -47,6 +51,7 @@ export function Input({
           placeholder={placeholder}
           disabled={disabled}
           autoFocus={autoFocus}
+          aria-required={required || undefined}
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
           className={clsx(styles.input, {

@@ -56,7 +56,6 @@ export default function EmployeesTouch({ employees, user, query, setQuery, canSe
     <>
       <Masthead
         icon={UsersRound}
-        eyebrow="Equipo"
         title="Equipo"
         desc="Quién es quién en Margube y dónde trabaja cada persona, hoy y durante la semana."
         aside={(
@@ -80,9 +79,6 @@ export default function EmployeesTouch({ employees, user, query, setQuery, canSe
             { id: 'dept', label: 'Departamento', value: dept, all: 'all', onChange: setDept, options: [
               { value: 'all', label: 'Todos', count: employees.length },
               ...depts.map((d) => ({ value: d, label: d, count: employees.filter((e) => e.dept === d).length })),
-            ] },
-            { id: 'mode', label: 'Modo de trabajo', value: mode, all: 'all', onChange: setMode, options: [
-              { value: 'all', label: 'Todos' }, ...Object.entries(MODES).map(([value, m]) => ({ value, label: m.label, count: count(value) })),
             ] },
           ]}
         />

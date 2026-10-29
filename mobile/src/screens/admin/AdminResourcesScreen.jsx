@@ -1,11 +1,12 @@
 // 22 · Salas y flota (AdminPage > Salas / Vehículos on the web)
 import { useState } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Building2, Car, Plus, X } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
 import { useTheme } from '../../context/ThemeContext';
 import { useData } from '../../context/DataContext';
 import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 import { Screen } from '../../components/common/Screen';
 import { Header } from '../../components/common/Header';
 import { GlassCard } from '../../components/common/GlassCard';
@@ -21,6 +22,7 @@ const VEHICLE_TYPES = ['Turismo', 'Furgoneta', 'SUV'];
 export default function AdminResourcesScreen() {
   const { colors } = useTheme();
   const toast = useToast();
+  const confirm = useConfirm();
   const { rooms, vehicles, reservations, saveRoom, deleteRoom, saveVehicle, deleteVehicle, refresh } = useData();
   const [tab, setTab] = useState('room');
   const [edit, setEdit] = useState(null); // { id, ...form }
@@ -51,24 +53,17 @@ export default function AdminResourcesScreen() {
 
   const remove = () => {
     const linked = reservations.filter((r) => (tab === 'room' ? r.roomId : r.vehicleId) === edit.id).length;
-    Alert.alert(
-      tab === 'room' ? 'Eliminar sala' : 'Eliminar vehículo',
-      `Esta acción no se puede deshacer.${linked ? ` También se eliminarán sus ${linked} reservas.` : ''}`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            setSaving(true);
-            const { error } = tab === 'room' ? await deleteRoom(edit.id) : await deleteVehicle(edit.id);
-            setSaving(false);
-            if (error) toast.error(toUserMessage(error));
-            else { toast.success('Eliminado'); setEdit(null); }
-          },
-        },
-      ],
-    );
+    confirm({
+      title: tab === 'room' ? 'Eliminar sala' : 'Eliminar vehículo',
+      message: `Esta acción no se puede deshacer.${linked ? ` También se eliminarán sus ${linked} reservas.` : ''} Si solo quieres que no se pueda reservar, desactiva «Disponible para reservas».`,
+    }).then(async (ok) => {
+      if (!ok) return;
+      setSaving(true);
+      const { error } = tab === 'room' ? await deleteRoom(edit.id) : await deleteVehicle(edit.id);
+      setSaving(false);
+      if (error) toast.error(toUserMessage(error));
+      else { toast.success('Eliminado'); setEdit(null); }
+    });
   };
 
   const addTag = (t) => {

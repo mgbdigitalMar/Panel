@@ -1,6 +1,6 @@
 // 18 · Noticias y eventos (NewsPage on the web)
 import { useMemo, useState } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Pin, Plus, Newspaper, Pencil, Trash2, ArrowRight, ChevronRight } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
 import { GlassButton } from '../components/common/GlassButton';
@@ -74,6 +75,7 @@ export default function NewsScreen() {
   const navigation = useNavigation();
   const { params } = useRoute();
   const toast = useToast();
+  const confirm = useConfirm();
   const { user } = useAuth();
   const { news, deleteNews, refresh } = useData();
   const [filter, setFilter] = useState('all');
@@ -102,18 +104,12 @@ export default function NewsScreen() {
 
   const categories = [...new Set(visible.map((n) => n.category).filter(Boolean))];
 
-  const remove = (n) => Alert.alert('Eliminar publicación', '¿Seguro que quieres eliminar esta noticia o evento? Esta acción no se puede deshacer.', [
-    { text: 'Cancelar', style: 'cancel' },
-    {
-      text: 'Eliminar',
-      style: 'destructive',
-      onPress: async () => {
-        const { error } = await deleteNews(n.id);
-        if (error) toast.error(toUserMessage(error));
-        else { close(); toast.success('Publicación eliminada'); }
-      },
-    },
-  ]);
+  const remove = async (n) => {
+    if (!(await confirm({ title: 'Eliminar publicación', message: `«${n.title}» dejará de verse para todo el equipo. Esta acción no se puede deshacer.` }))) return;
+    const { error } = await deleteNews(n.id);
+    if (error) toast.error(toUserMessage(error));
+    else { close(); toast.success('Publicación eliminada'); }
+  };
 
   return (
     <Screen onRefresh={async () => { setRefreshing(true); try { await refresh(); } finally { setRefreshing(false); } }} refreshing={refreshing}>

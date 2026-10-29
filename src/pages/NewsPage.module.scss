@@ -444,3 +444,14 @@
     align-items: stretch;
   }
 }
+
+/* Why the publication could not be saved; the form keeps what was typed */
+.formError {
+  margin: 4px 0 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid rgba(var(--danger-rgb), 0.25);
+  font-size: 13.5px;
+}

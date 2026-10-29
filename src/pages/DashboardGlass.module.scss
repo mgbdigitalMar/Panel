@@ -20,13 +20,6 @@ $gap: 18px;
   padding: 4px 2px 2px;
 }
 
-.date {
-  margin: 0 0 4px;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--text-sec);
-}
-
 .greeting {
   margin: 0;
   font-family: var(--font-heading);
@@ -872,8 +865,6 @@ $gap: 18px;
     align-items: stretch;
     gap: 18px;
   }
-
-  .date { @include p.cover-eyebrow; margin: 0 0 8px; }
 
   .greeting {
     @include p.cover-title;

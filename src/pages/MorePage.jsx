@@ -1,11 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import {
-  UsersRound, Newspaper, Settings, SlidersHorizontal, LogOut, ChevronRight, UserRound, LayoutGrid, Sun, Moon, MonitorSmartphone,
-  Building2, Home, Briefcase, ShieldCheck,
+  UsersRound, Newspaper, Settings, SlidersHorizontal, LogOut, ChevronRight, LayoutGrid, Building2, Home, Briefcase, ShieldCheck,
 } from 'lucide-react';
-import { useAuth, useTheme, useNews, useHours } from '../context';
+import { useAuth, useNews, useHours } from '../context';
 import { Avatar } from '../components/ui';
-import { Masthead, Spotlight, SpotButton, ActionTiles, BlockHead, TabStrip, LeafIcon } from '../components/Touch';
+import { Masthead, Spotlight, SpotButton, ActionTiles, BlockHead, LeafIcon } from '../components/Touch';
 import styles from './MorePage.module.scss';
 
 const MODE = {
@@ -18,13 +17,13 @@ const MODE = {
 };
 
 /**
- * "Más", opened from the phone dock: your Margube pass on the brand panel (with your profile and
- * settings), the sections that are not in the dock as tiles, the theme and the account.
+ * "Más", opened from the phone dock: your Margube pass on the brand panel (the way to your profile),
+ * the sections that are not in the dock as tiles, and the account (settings, which hold the theme,
+ * and signing out). Each destination appears once.
  */
 export default function MorePage() {
   const navigate = useNavigate();
   const { user, employees = [], logout } = useAuth();
-  const { mode, setMode } = useTheme();
   const { news = [] } = useNews() || {};
   const { hourCompensations = [] } = useHours() || {};
 
@@ -37,21 +36,16 @@ export default function MorePage() {
     { icon: Newspaper, tone: 'warning', label: 'Noticias', hint: news.length ? 'Comunicados y eventos' : 'Sin comunicados todavía', onClick: () => navigate('/news') },
     ...(user?.role === 'admin'
       ? [{ icon: Settings, tone: 'purple', label: 'Administración', hint: 'Empleados, recursos y horas', badge: adminPending, onClick: () => navigate('/admin') }]
-      : [{ icon: UserRound, tone: 'info', label: 'Mi perfil', hint: 'Datos y documentos', onClick: () => navigate('/profile') }]),
+      : []),
   ];
 
   return (
     <div className={styles.page}>
-      <Masthead icon={LayoutGrid} eyebrow="Más" title="Tu cuenta" desc="Tu perfil, el resto de secciones y tus preferencias." />
+      <Masthead icon={LayoutGrid} title="Tu cuenta" desc="Tu perfil, el resto de secciones y tus ajustes." />
 
-      {/* Your Margube pass */}
-      <Spotlight className={styles.pass} label="Margube · Intranet"
-        actions={(
-          <>
-            <SpotButton primary icon={UserRound} onClick={() => navigate('/profile')}>Mi perfil</SpotButton>
-            <SpotButton icon={SlidersHorizontal} onClick={() => navigate('/settings')}>Ajustes</SpotButton>
-          </>
-        )}>
+      {/* Your Margube pass: the one way to your profile */}
+      <Spotlight className={styles.pass} label="Tu tarjeta"
+        actions={<SpotButton primary icon={ChevronRight} onClick={() => navigate('/profile')}>Ver mi perfil</SpotButton>}>
         <div className={styles.passBody}>
           <span className={styles.passAvatar}><Avatar initials={user?.avatar || '??'} src={user?.avatarUrl} size={64} /></span>
           <div className={styles.passText}>
@@ -71,27 +65,11 @@ export default function MorePage() {
         <ActionTiles className={styles.tiles} items={links} />
       </section>
 
-      <section aria-labelledby="mas-prefs">
-        <span id="mas-prefs"><BlockHead title="Preferencias" /></span>
+      <section aria-label="Ajustes y sesión">
         <div className={styles.list}>
-          <div className={styles.item}>
-            <span className={styles.itemHead}>
-              <LeafIcon icon={mode === 'dark' ? Moon : mode === 'light' ? Sun : MonitorSmartphone} tone="neutral" size={36} />
-              <span className={styles.linkText}>
-                <strong>Apariencia</strong>
-                <span>{mode === 'system' ? 'Sigue el tema del dispositivo' : mode === 'dark' ? 'Tema oscuro' : 'Tema claro'}</span>
-              </span>
-            </span>
-            <TabStrip
-              label="Apariencia"
-              value={mode}
-              onChange={setMode}
-              options={[{ value: 'light', label: 'Claro' }, { value: 'dark', label: 'Oscuro' }, { value: 'system', label: 'Auto' }]}
-            />
-          </div>
           <button type="button" className={styles.link} onClick={() => navigate('/settings')}>
             <LeafIcon icon={SlidersHorizontal} tone="neutral" size={36} />
-            <span className={styles.linkText}><strong>Ajustes</strong><span>Notificaciones y preferencias de tu cuenta</span></span>
+            <span className={styles.linkText}><strong>Ajustes</strong><span>Apariencia, notificaciones y sonidos</span></span>
             <ChevronRight size={18} className={styles.chev} aria-hidden="true" />
           </button>
           <button type="button" className={`${styles.link} ${styles.danger}`} onClick={() => logout()}>

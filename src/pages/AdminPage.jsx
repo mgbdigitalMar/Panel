@@ -12,6 +12,10 @@ import { createEmployeeAccount, setEmployeePassword } from '../../shared/service
 import { mapProfile, saveDni } from '../../shared/services/profiles.js';
 import { TELEWORK_WEEKDAYS, teleworkScheduleUpdate, formatTeleworkDays, localISODate } from '../../shared/services/workMode.js';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Settings, UsersRound, KeyRound, ClipboardCheck } from 'lucide-react';
+import { useTouch } from '../components/Touch';
+import { DeskHeader, DeskLayout, DeskRail, DeskSpotlight } from '../components/Desk';
+import AdminTouch from './AdminTouch';
 
 const DEPARTMENTS = [
   { value: 'Administración - RRHH', label: 'Administración - RRHH' },
@@ -27,7 +31,7 @@ const DEPARTMENTS = [
 
 export default function AdminPage() {
   const { user, employees, setEmployees } = useAuth();
-  const { rooms, vehicles } = useReservations();
+  const { rooms, vehicles, reservations = [], deleteResource } = useReservations();
   const { documents, sendDocument, uploadDocumentFile, deleteDocument, deleteEmployeeData } = useDocuments();
   const { hourCompensations = [], updateHourCompensationStatus, deleteHourCompensation } = useHours();
   const { refresh } = useDataSync();
@@ -139,6 +143,81 @@ export default function AdminPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [], policyAccepted: false });
   const [resForm, setResForm] = useState({ id: null, name: '', capacity: '', floor: '', equipment: '', model: '', plate: '', year: '', type: 'Turismo' });
   const [editingRes, setEditingRes] = useState(false);
+  const [resSaving, setResSaving] = useState(false);
+  const [resError, setResError] = useState('');
+  useEffect(() => { if (showResModal) setResError(''); }, [showResModal]);
+
+  // Rooms and vehicles: checked before saving, one save at a time, and a failure keeps the form
+  // open with the reason (it used to close as if it had been saved)
+  const handleSaveResource = async () => {
+    if (resSaving) return;
+    const isRoom = resType === 'room';
+    const toInt = (v) => (String(v ?? '').trim() === '' ? null : parseInt(v, 10));
+    if (isRoom && !String(resForm.name || '').trim()) return setResError('Escribe el nombre de la sala.');
+    if (isRoom && !(toInt(resForm.capacity) > 0)) return setResError('Indica una capacidad de al menos 1 persona.');
+    if (isRoom && Number.isNaN(toInt(resForm.floor))) return setResError('Indica la planta con un número (0 para la baja).');
+    if (!isRoom && (!String(resForm.model || '').trim() || !String(resForm.plate || '').trim())) return setResError('Escribe el modelo y la matrícula.');
+    const year = toInt(resForm.year);
+    if (!isRoom && year != null && (Number.isNaN(year) || year < 1950 || year > new Date().getFullYear() + 1)) return setResError('El año no es válido.');
+
+    const payload = isRoom
+      ? {
+          name: resForm.name.trim(),
+          capacity: toInt(resForm.capacity),
+          floor: toInt(resForm.floor) ?? 0,
+          equipment: resForm.equipment ? resForm.equipment.split(',').map(item => item.trim()).filter(Boolean) : [],
+        }
+      : { model: resForm.model.trim(), plate: resForm.plate.trim().toUpperCase(), year, type: resForm.type };
+    // Availability is only sent when it changes (or a new one starts hidden), as the app does
+    const original = editingRes && resForm.id ? (isRoom ? rooms : vehicles).find(x => x.id === resForm.id) : null;
+    const active = resForm.isActive !== false;
+    if (original ? active !== (original.isActive !== false) : !active) payload.is_active = active;
+
+    setResSaving(true);
+    setResError('');
+    const table = isRoom ? 'rooms' : 'vehicles';
+    const { error } = original
+      ? await supabase.from(table).update(payload).eq('id', resForm.id)
+      : await supabase.from(table).insert([payload]);
+    setResSaving(false);
+    if (error) {
+      console.error('saveResource:', error);
+      setResError(toUserMessage(error));
+      return;
+    }
+    refresh();
+    announce('✅', isRoom ? (original ? 'Sala actualizada.' : 'Sala creada.') : (original ? 'Vehículo actualizado.' : 'Vehículo creado.'));
+    setShowResModal(false);
+    setEditingRes(false);
+  };
+
+  const availabilityField = (
+    <label className={styles.policyCheck}>
+      <input
+        type="checkbox"
+        checked={resForm.isActive !== false}
+        onChange={e => setResForm({ ...resForm, isActive: e.target.checked })}
+      />
+      <span>
+        <span className={styles.policyCheckLabel}>Disponible para reservas</span>
+        <span className={styles.teleworkHint}>
+          {resForm.isActive !== false
+            ? 'Los empleados la ven y pueden reservarla en la web y en la app.'
+            : 'Oculta a los empleados: no podrán reservarla. Sus reservas se conservan.'}
+        </span>
+      </span>
+    </label>
+  );
+
+  // Bolsa de horas: one review at a time per row (a double click sent two notifications)
+  const [hoursBusy, setHoursBusy] = useState(null);
+  const reviewHours = async (h, status) => {
+    if (hoursBusy === h.id) return;
+    setHoursBusy(h.id);
+    const res = await updateHourCompensationStatus(h.id, status, user?.id, h.employeeId);
+    setHoursBusy(null);
+    if (!res?.error) announce(status === 'approved' ? '✅' : '❌', `${status === 'approved' ? 'Horas aprobadas' : 'Horas rechazadas'}. Se ha avisado a ${(h.employeeName || 'la persona').split(' ')[0]}.`);
+  };
 
   const depts = useMemo(() => [...new Set(employees.map(e => e.dept))], [employees]);
   const filtered = useMemo(() => employees.filter(e => {
@@ -149,8 +228,15 @@ export default function AdminPage() {
     return matchesSearch && matchesDept;
   }), [employees, debouncedSearch, deptFilter, depts]);
 
+  // One save at a time: a double click created the account twice (the second one failed half-way)
+  const [savingEmp, setSavingEmp] = useState(false);
   const handleSaveEmployee = async () => {
-    if (!form.name || !form.email) return;
+    if (savingEmp) return;
+    setSavingEmp(true);
+    try { await saveEmployee(); } finally { setSavingEmp(false); }
+  };
+  const saveEmployee = async () => {
+    if (!form.name.trim() || !form.email.trim()) return announce('⚠️', 'Escribe el nombre y el email del empleado.');
     if (!form.password && !editEmp) return announce('⚠️', 'Escribe una contraseña temporal para el nuevo empleado.');
     
     const avatar = form.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
@@ -326,18 +412,67 @@ export default function AdminPage() {
     });
   };
 
-  const tabBtn = (id, label, count) => (
-    <button 
-      key={id} 
-      onClick={() => setTab(id)}
-      className={clsx(styles.tabBtn, { [styles.tabBtnActive]: tab === id })}
-    >
-      {label}
-      {typeof count === 'number' && count >= 0 && (
-        <span className={styles.tabCount}>{count}</span>
-      )}
-    </button>
-  );
+  // One handler per action, shared by the computer layout and the touch one (AdminTouch)
+  const openNewEmployee = () => {
+    setEditEmp(null);
+    setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [], policyAccepted: false });
+    setShowModal(true);
+  };
+
+  const openNewResource = (type) => {
+    setResType(type);
+    setResForm(type === 'room'
+      ? { id: null, name: '', capacity: '', floor: '', equipment: '' }
+      : { id: null, model: '', plate: '', year: '', type: 'Turismo' });
+    setEditingRes(false);
+    setShowResModal(true);
+  };
+
+  const openEditResource = (type, item) => {
+    setResType(type);
+    setResForm(type === 'room'
+      ? { id: item.id, name: item.name, capacity: item.capacity, floor: item.floor, equipment: (item.equipment || []).join(', '), isActive: item.isActive !== false }
+      : { id: item.id, model: item.model, plate: item.plate, year: item.year || '', type: item.type, isActive: item.isActive !== false });
+    setEditingRes(true);
+    setShowResModal(true);
+  };
+
+  const confirmDeleteResource = (type, item) => {
+    const isRoom = type === 'room';
+    const linked = reservations.filter(r => String(isRoom ? r.roomId : r.vehicleId) === String(item.id)).length;
+    setDeleteConfirm({
+      title: isRoom ? 'Eliminar sala' : 'Eliminar vehículo',
+      message: `Se eliminará «${isRoom ? item.name : `${item.model} · ${item.plate}`}»${linked ? ` y sus ${linked} ${linked === 1 ? 'reserva' : 'reservas'} (también el historial)` : ''}. Esta acción no se puede deshacer. Si solo quieres que no se pueda reservar, ${isRoom ? 'edítala' : 'edítalo'} y desmarca «Disponible para reservas».`,
+      action: async () => {
+        const { error } = await deleteResource(type, item.id);
+        if (!error) announce('🗑️', isRoom ? `Sala «${item.name}» eliminada.` : `Vehículo «${item.model}» eliminado.`);
+      }
+    });
+  };
+
+  const confirmDeleteDocument = (doc) => setDeleteConfirm({
+    title: 'Eliminar documento',
+    message: '¿Estás seguro de que deseas eliminar este documento?',
+    action: async () => {
+      await deleteDocument(doc.id);
+    }
+  });
+
+  const confirmRejectHours = (h) => setDeleteConfirm({
+    title: 'Rechazar horas',
+    message: `${h.hours} h de ${h.employeeName || 'empleado'} (${h.date}). Se le avisará de que no se añaden a su bolsa.`,
+    confirmText: 'Rechazar',
+    icon: X,
+    action: () => reviewHours(h, 'rejected'),
+  });
+
+  const confirmDeleteHours = (h) => setDeleteConfirm({
+    title: 'Eliminar registro',
+    message: '¿Estás seguro de que deseas eliminar este registro de horas extras?',
+    action: async () => {
+      await deleteHourCompensation(h.id);
+    }
+  });
 
   const [docUploadStatus, setDocUploadStatus] = useState('');
 
@@ -385,30 +520,21 @@ export default function AdminPage() {
     }
   };
 
-  return (
-    <div className={styles.container}>
-      <div className={styles.pageControls}>
-        <div className={styles.tabsRow}>
-          {tabBtn('employees', 'Empleados', employees.length)}
-          {tabBtn('rooms', 'Salas', rooms.length)}
-          {tabBtn('vehicles', 'Vehículos', vehicles.length)}
-          {tabBtn('documents', 'Documentos', documents.length)}
-          {tabBtn('bolsahoras', 'Bolsa Horas', (hourCompensations || []).length)}
-        </div>
-        
-        <div className={styles.controlsRight}>
+  const touch = useTouch();
+  const sectionActions = (
+    <>
           {tab === 'employees' && (
-            <Button icon={Plus} onClick={() => { setEditEmp(null); setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [], policyAccepted: false }); setShowModal(true); }}>
+            <Button icon={Plus} onClick={openNewEmployee}>
               Nuevo empleado
             </Button>
           )}
           {tab === 'rooms' && (
-            <Button icon={Plus} onClick={() => { setResType('room'); setResForm({ id: null, name: '', capacity: '', floor: '', equipment: '' }); setEditingRes(false); setShowResModal(true); }}>
+            <Button icon={Plus} onClick={() => openNewResource('room')}>
               Nueva sala
             </Button>
           )}
           {tab === 'vehicles' && (
-            <Button icon={Plus} onClick={() => { setResType('vehicle'); setResForm({ id: null, model: '', plate: '', year: '', type: 'Turismo' }); setEditingRes(false); setShowResModal(true); }}>
+            <Button icon={Plus} onClick={() => openNewResource('vehicle')}>
               Nuevo vehículo
             </Button>
           )}
@@ -427,8 +553,66 @@ export default function AdminPage() {
               Descargar Excel
             </Button>
           )}
-        </div>
-      </div>
+    </>
+  );
+  const sentDocs = (documents || []).filter(d => d.title !== '__ONBOARDING_DOC__');
+  const bolsaHours = (hourCompensations || []).filter(h => h.type === 'bolsa');
+  const pendingHours = bolsaHours.filter(h => h.status === 'pending').length;
+  const firstAccess = employees.filter(e => e.firstLogin === true || e.firstLogin === 'true').length;
+  const todo = [
+    { key: 'hours', label: 'Horas por aprobar', value: pendingHours, go: 'bolsahoras', icon: Timer },
+    { key: 'policy', label: 'Normas sin firmar', value: policyCounts.pending, go: 'employees', icon: ClipboardCheck },
+    { key: 'first', label: 'Primer acceso pendiente', value: firstAccess, go: 'employees', icon: KeyRound },
+  ];
+  const deskSide = (
+    <>
+      <DeskRail title="Secciones" value={tab} onChange={setTab} items={[
+        { value: 'employees', label: 'Empleados', hint: 'Altas, accesos y normas', icon: UsersRound, tone: 'accent', count: employees.length },
+        { value: 'rooms', label: 'Salas', hint: 'Espacios que se reservan', icon: Building, tone: 'info', count: rooms.length },
+        { value: 'vehicles', label: 'Vehículos', hint: 'Flota de empresa', icon: Car, tone: 'warning', count: vehicles.length },
+        { value: 'documents', label: 'Documentos', hint: 'Envíos y su estado', icon: FileText, tone: 'purple', count: sentDocs.length },
+        { value: 'bolsahoras', label: 'Bolsa de horas', hint: pendingHours ? 'Esperan tu decisión' : 'Todo revisado', icon: Timer, tone: 'success', count: pendingHours, alert: pendingHours > 0 },
+      ]} />
+      <DeskSpotlight icon={ClipboardCheck} label="Para revisar">
+        <ul className={styles.todo}>
+          {todo.map(t => (
+            <li key={t.key}>
+              <button type="button" onClick={() => setTab(t.go)} data-zero={t.value === 0 || undefined}>
+                <t.icon size={15} aria-hidden="true" />
+                <span>{t.label}</span>
+                <strong>{t.value}</strong>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </DeskSpotlight>
+    </>
+  );
+
+  return (
+    <div className={styles.container}>
+      {touch ? (
+        <AdminTouch
+          tab={tab} setTab={setTab} user={user}
+          employees={employees} rooms={rooms} vehicles={vehicles} reservations={reservations}
+          documents={sentDocs} hours={bolsaHours}
+          lastSignature={lastSignature} policyCounts={policyCounts} signaturesFailed={signatures === null}
+          onNewEmployee={openNewEmployee} onEditEmployee={handleEdit} onDeleteEmployee={handleDelete}
+          onOpenPolicy={setPolicyEmpId} onExportSignatures={exportSignaturesCSV}
+          onNewResource={openNewResource} onEditResource={openEditResource} onDeleteResource={confirmDeleteResource}
+          onSendDocument={() => setShowDocModal(true)} onUpdateOnboarding={() => setShowOnboardingModal(true)} onDeleteDocument={confirmDeleteDocument}
+          onApproveHours={(h) => reviewHours(h, 'approved')} onRejectHours={confirmRejectHours} onDeleteHours={confirmDeleteHours}
+          onExportHours={exportHoursCSV} hoursBusy={hoursBusy}
+        />
+      ) : (
+        <DeskHeader icon={Settings} title="Administración"
+          desc="Empleados, salas, vehículos, documentos y bolsa de horas: todo lo que gestiona RRHH, en un sitio."
+          actions={sectionActions} />
+      )}
+
+      {/* Computers: the sections in a side list next to the content */}
+      {!touch && (
+      <DeskLayout side={deskSide} sideLabel="Secciones de administración">
 
       {/* Employees */}
       <AnimatePresence mode="wait">
@@ -630,30 +814,8 @@ export default function AdminPage() {
                     <Building size={22} />
                   </div>
                   <div className={clsx(styles.actionsCell, styles.actionsCellRight)}>
-                    <Button variant="action" iconOnly icon={Edit2} onClick={() => {
-                      setResType('room');
-                      setResForm({ 
-                        id: room.id, 
-                        name: room.name, 
-                        capacity: room.capacity, 
-                        floor: room.floor, 
-                        equipment: (room.equipment || []).join(', ') 
-                      });
-                      setEditingRes(true);
-                      setShowResModal(true);
-                    }} title="Editar" />
-                    <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => {
-                      setDeleteConfirm({
-                        title: 'Eliminar sala',
-                        message: '¿Estás seguro de que deseas eliminar esta sala? Esta acción no se puede deshacer.',
-                        action: async () => {
-                          await supabase.from('reservations').delete().eq('room_id', room.id);
-                          const { error } = await supabase.from('rooms').delete().eq('id', room.id);
-                          if (error) fail(`No se pudo eliminar la sala: ${toUserMessage(error)}`);
-                          refresh();
-                        }
-                      });
-                    }} title="Eliminar" />
+                    <Button variant="action" iconOnly icon={Edit2} onClick={() => openEditResource('room', room)} title="Editar" />
+                    <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => confirmDeleteResource('room', room)} title="Eliminar" />
                   </div>
                 </div>
                 <h4 className={styles.resourceTitle}>{room.name}</h4>
@@ -686,30 +848,8 @@ export default function AdminPage() {
                     <Car size={22} />
                   </div>
                   <div className={clsx(styles.actionsCell, styles.actionsCellRight)}>
-                    <Button variant="action" iconOnly icon={Edit2} onClick={() => {
-                      setResType('vehicle');
-                      setResForm({ 
-                        id: v.id,
-                        model: v.model, 
-                        plate: v.plate, 
-                        year: v.year || '', 
-                        type: v.type 
-                      });
-                      setEditingRes(true);
-                      setShowResModal(true);
-                    }} title="Editar" />
-                    <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => {
-                      setDeleteConfirm({
-                        title: 'Eliminar vehículo',
-                        message: '¿Estás seguro de que deseas eliminar este vehículo? Esta acción no se puede deshacer.',
-                        action: async () => {
-                          await supabase.from('reservations').delete().eq('vehicle_id', v.id);
-                          const { error } = await supabase.from('vehicles').delete().eq('id', v.id);
-                          if (error) fail(`No se pudo eliminar el vehículo: ${toUserMessage(error)}`);
-                          refresh();
-                        }
-                      });
-                    }} title="Eliminar" />
+                    <Button variant="action" iconOnly icon={Edit2} onClick={() => openEditResource('vehicle', v)} title="Editar" />
+                    <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => confirmDeleteResource('vehicle', v)} title="Eliminar" />
                   </div>
                 </div>
                 <h4 className={styles.resourceTitle}>{v.model}</h4>
@@ -739,10 +879,10 @@ export default function AdminPage() {
                 Documentos enviados
               </p>
               <span className={styles.documentTableHeaderCount}>
-                {(documents || []).filter(d => d.title !== '__ONBOARDING_DOC__').length} documento(s)
+                {sentDocs.length} documento(s)
               </span>
             </div>
-            {(!documents || documents.filter(d => d.title !== '__ONBOARDING_DOC__').length === 0) ? (
+            {sentDocs.length === 0 ? (
               <div className={styles.documentEmptyState}>
                 <FileText size={40} strokeWidth={1} className={styles.emptyStateIcon} />
                 <p className={styles.emptyStateText}>No se ha enviado ningún documento</p>
@@ -758,7 +898,7 @@ export default function AdminPage() {
                     </tr>
                   </thead>
                   <tbody className="stagger-quick">
-                    {(documents || []).filter(d => d.title !== '__ONBOARDING_DOC__').map(doc => {
+                    {sentDocs.map(doc => {
                       const recipient = employees.find(e => String(e.id) === String(doc.recipientId));
                       const recipName   = recipient?.name   || doc.recipientName || '—';
                       const recipAvatar = recipient?.avatar  || recipName.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
@@ -812,15 +952,7 @@ export default function AdminPage() {
                               )}
                               <Button
                                 variant="action-danger" iconOnly icon={Trash2}
-                                onClick={() => {
-                                  setDeleteConfirm({
-                                    title: 'Eliminar documento',
-                                    message: '¿Estás seguro de que deseas eliminar este documento?',
-                                    action: async () => {
-                                      await deleteDocument(doc.id);
-                                    }
-                                  });
-                                }}
+                                onClick={() => confirmDeleteDocument(doc)}
                                 title="Eliminar documento"
                               />
                             </div>
@@ -942,13 +1074,17 @@ export default function AdminPage() {
                                 <>
                                   <Button
                                     variant="action-success" iconOnly icon={Check}
-                                    onClick={() => updateHourCompensationStatus(h.id, 'approved', user?.id, h.employeeId)}
+                                    onClick={() => reviewHours(h, 'approved')}
+                                    loading={hoursBusy === h.id}
                                     title="Aprobar"
+                                    aria-label={`Aprobar ${h.hours} h de ${h.employeeName || 'empleado'}`}
                                   />
                                   <Button
                                     variant="action-danger" iconOnly icon={X}
-                                    onClick={() => updateHourCompensationStatus(h.id, 'rejected', user?.id, h.employeeId)}
+                                    onClick={() => confirmRejectHours(h)}
+                                    disabled={hoursBusy === h.id}
                                     title="Rechazar"
+                                    aria-label={`Rechazar ${h.hours} h de ${h.employeeName || 'empleado'}`}
                                   />
                                 </>
                               ) : (
@@ -958,15 +1094,7 @@ export default function AdminPage() {
                               )}
                               <Button
                                 variant="action-danger" iconOnly icon={Trash2}
-                                onClick={() => {
-                                  setDeleteConfirm({
-                                    title: 'Eliminar registro',
-                                    message: '¿Estás seguro de que deseas eliminar este registro de horas extras?',
-                                    action: async () => {
-                                      await deleteHourCompensation(h.id);
-                                    }
-                                  });
-                                }}
+                                onClick={() => confirmDeleteHours(h)}
                                 title="Eliminar registro"
                               />
                             </div>
@@ -982,6 +1110,8 @@ export default function AdminPage() {
         </motion.div>
       )}
       </AnimatePresence>
+      </DeskLayout>
+      )}
 
       <Modal open={showModal} onClose={() => { setShowModal(false); setEditEmp(null); }} title={editEmp ? 'Editar empleado' : 'Nuevo empleado'}>
         <div className={styles.modalGrid}>
@@ -1111,8 +1241,8 @@ export default function AdminPage() {
           </div>
         )}
         <div className={styles.modalActions}>
-          <Button variant="ghost" onClick={() => { setShowModal(false); setEditEmp(null); }}>Cancelar</Button>
-          <Button onClick={handleSaveEmployee}>{editEmp ? 'Guardar cambios' : 'Crear empleado'}</Button>
+          <Button variant="ghost" onClick={() => { setShowModal(false); setEditEmp(null); }} disabled={savingEmp}>Cancelar</Button>
+          <Button onClick={handleSaveEmployee} loading={savingEmp}>{savingEmp ? 'Guardando…' : editEmp ? 'Guardar cambios' : 'Crear empleado'}</Button>
         </div>
       </Modal>
 
@@ -1127,6 +1257,8 @@ export default function AdminPage() {
         }} 
         title={deleteConfirm?.title || ''}
         message={deleteConfirm?.message || ''}
+        confirmText={deleteConfirm?.confirmText}
+        icon={deleteConfirm?.icon}
       />
 
       <Modal open={!!policyEmp} onClose={() => setPolicyEmpId(null)} title="Normas internas">
@@ -1201,11 +1333,12 @@ export default function AdminPage() {
               <Input label="Capacidad (personas)" value={resForm.capacity} onChange={v => setResForm({ ...resForm, capacity: v })} type="number" required />
               <Input label="Planta" value={resForm.floor} onChange={v => setResForm({ ...resForm, floor: v })} type="number" required />
             </div>
-            <Input 
-              label="Equipamiento (separado por comas)" 
-              value={resForm.equipment} 
-              onChange={v => setResForm({ ...resForm, equipment: v })} 
+            <Input
+              label="Equipamiento (separado por comas)"
+              value={resForm.equipment}
+              onChange={v => setResForm({ ...resForm, equipment: v })}
             />
+            {availabilityField}
           </>
         ) : (
           <>
@@ -1217,59 +1350,17 @@ export default function AdminPage() {
                 label="Tipo" 
                 value={resForm.type} 
                 onChange={v => setResForm({ ...resForm, type: v })}
-                options={[{ value: 'Turismo', label: 'Turismo' }, { value: 'Furgoneta', label: 'Furgoneta' }, { value: 'SUV', label: 'SUV' }]} 
+                options={[{ value: 'Turismo', label: 'Turismo' }, { value: 'Furgoneta', label: 'Furgoneta' }, { value: 'SUV', label: 'SUV' }]}
               />
             </div>
+            {availabilityField}
           </>
         )}
+        {resError && <div className={styles.formError} role="alert">{resError}</div>}
         <div className={styles.modalActions}>
-          <Button variant="ghost" onClick={() => setShowResModal(false)}>Cancelar</Button>
-          <Button onClick={async () => {
-            const equipmentArray = resForm.equipment ? resForm.equipment.split(',').map(item => item.trim()).filter(Boolean) : [];
-            let err = null;
-            if (resType === 'room') {
-              if (editingRes && resForm.id) {
-                const { error } = await supabase.from('rooms').update({ 
-                  name: resForm.name, 
-                  capacity: parseInt(resForm.capacity), 
-                  floor: parseInt(resForm.floor), 
-                  equipment: equipmentArray
-                }).eq('id', resForm.id);
-                err = error;
-              } else {
-                const { error } = await supabase.from('rooms').insert([{ 
-                  name: resForm.name, 
-                  capacity: parseInt(resForm.capacity), 
-                  floor: parseInt(resForm.floor), 
-                  equipment: equipmentArray 
-                }]).select().single();
-                err = error;
-              }
-              if (!err) refresh();
-            } else {
-              if (editingRes && resForm.id) {
-                const { error } = await supabase.from('vehicles').update({ 
-                  model: resForm.model, 
-                  plate: resForm.plate, 
-                  year: parseInt(resForm.year) || null, 
-                  type: resForm.type 
-                }).eq('id', resForm.id);
-                err = error;
-              } else {
-                const { error } = await supabase.from('vehicles').insert([{ 
-                  model: resForm.model, 
-                  plate: resForm.plate, 
-                  year: parseInt(resForm.year), 
-                  type: resForm.type 
-                }]).select().single();
-                err = error;
-              }
-              if (!err) refresh();
-            }
-            setShowResModal(false);
-            setEditingRes(false);
-          }}>
-            {editingRes ? 'Actualizar' : 'Crear'}
+          <Button variant="ghost" onClick={() => setShowResModal(false)} disabled={resSaving}>Cancelar</Button>
+          <Button onClick={handleSaveResource} loading={resSaving}>
+            {resSaving ? 'Guardando…' : editingRes ? 'Actualizar' : 'Crear'}
           </Button>
         </div>
       </Modal>

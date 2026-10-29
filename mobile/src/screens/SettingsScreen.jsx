@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
 import { TopBar } from '../components/common/TopBar';
@@ -52,6 +53,7 @@ export default function SettingsScreen() {
   const { colors, mode, setMode } = useTheme();
   const navigation = useNavigation();
   const toast = useToast();
+  const confirm = useConfirm();
   const { user, employees, logout, biometric, setBiometricEnabled } = useAuth();
   const { unreadCount, documents } = useData();
   const pendingDocs = documents.filter((d) => String(d.recipientId) === String(user?.id) && d.status === 'pending').length;
@@ -74,10 +76,9 @@ export default function SettingsScreen() {
     toast.success(on ? `Desbloqueo con ${bio.label} activado` : 'Desbloqueo biométrico desactivado');
   };
 
-  const confirmLogout = () => Alert.alert('Cerrar sesión', '¿Quieres cerrar la sesión en este dispositivo?', [
-    { text: 'Cancelar', style: 'cancel' },
-    { text: 'Cerrar sesión', style: 'destructive', onPress: logout },
-  ]);
+  const confirmLogout = async () => {
+    if (await confirm({ title: 'Cerrar sesión', message: '¿Quieres cerrar la sesión en este dispositivo?', confirmText: 'Cerrar sesión', icon: LogOut })) logout();
+  };
 
   const handlePushPress = () => {
     if (isAndroidExpoGo) {

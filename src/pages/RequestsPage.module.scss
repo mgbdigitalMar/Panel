@@ -564,3 +564,13 @@
   .tabCount { @include p.tab-count-on-active; }
 }
 .tabCount { @include p.tab-count; }
+
+/* Who reviewed it and when, under the status */
+.reviewedBy {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--text-mut);
+  max-width: 200px;
+}

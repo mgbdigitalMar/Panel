@@ -41,8 +41,10 @@ export function DataProvider({ children }) {
   const userRef = useRef(user);
   const employeesRef = useRef(employees);
   const requestsRef = useRef(requests);
+  const reservationsRef = useRef(reservations);
   useEffect(() => { userRef.current = user; employeesRef.current = employees; }, [user, employees]);
   useEffect(() => { requestsRef.current = requests; }, [requests]);
+  useEffect(() => { reservationsRef.current = reservations; }, [reservations]);
 
   // Employees load only their own requests and personal days; admins load everyone's.
   const ownScope = () => {
@@ -229,7 +231,9 @@ export function DataProvider({ children }) {
       return res;
     },
     setReservationStatus: async (id, status) => {
-      const res = await svc.updateReservationStatus(supabase, id, status, uid());
+      // The reservation lets the service tell its owner about the decision
+      const reservation = reservationsRef.current.find((r) => String(r.id) === String(id));
+      const res = await svc.updateReservationStatus(supabase, id, status, uid(), reservation);
       await loadReservations();
       return res;
     },
@@ -400,8 +404,7 @@ export function DataProvider({ children }) {
       return { error };
     },
     deleteRoom: async (id) => {
-      await supabase.from('reservations').delete().eq('room_id', id);
-      const { error } = await supabase.from('rooms').delete().eq('id', id);
+      const { error } = await svc.deleteResource(supabase, 'room', id);
       await Promise.all([loadRooms(), loadReservations()]);
       return { error };
     },
@@ -420,8 +423,7 @@ export function DataProvider({ children }) {
       return { error };
     },
     deleteVehicle: async (id) => {
-      await supabase.from('reservations').delete().eq('vehicle_id', id);
-      const { error } = await supabase.from('vehicles').delete().eq('id', id);
+      const { error } = await svc.deleteResource(supabase, 'vehicle', id);
       await Promise.all([loadVehicles(), loadReservations()]);
       return { error };
     },

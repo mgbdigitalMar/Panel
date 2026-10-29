@@ -1,14 +1,14 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth, useRequests, usePersonalDays, useDocuments, useNotifs } from '../context';
-import { Avatar, Badge, Modal, Input, Textarea, Button, Card, StatCard, ConfirmModal, Section } from '../components/ui';
-import { Plus, Check, X, FileText, Download, Trash2, Home, Briefcase, ShoppingCart, Calendar } from 'lucide-react';
+import { Modal, Input, Textarea, Button, ConfirmModal } from '../components/ui';
+import { Check, X, FileText, Home, Briefcase, ShoppingCart, Calendar } from 'lucide-react';
 import styles from './RequestsPage.module.scss';
 import clsx from 'clsx';
-import { motion, AnimatePresence } from 'framer-motion';
 import { fmtDate, fmtRange, fmtMoney, plural, todayKey } from '../utils/format';
 import { useTouch } from '../components/Touch';
 import RequestsTouch from './RequestsTouch';
+import RequestsDesk from './RequestsDesk';
 
 /** Calendar days from start to end, both included (28 → 29 is 2 days) */
 const daysInclusive = (start, end) =>
@@ -34,7 +34,6 @@ export default function RequestsPage() {
   const { uploadDocumentFile } = useDocuments();
   const { announce } = useNotifs();
   
-  const [tab, setTab]             = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [reqType, setReqType]     = useState('asuntos_propios');
   const [loading, setLoading]     = useState(false);
@@ -92,11 +91,6 @@ export default function RequestsPage() {
     }))
   ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)), [requests, personalDays, employees]);
 
-  const filtered = useMemo(() => {
-    if (tab === 'all') return allItems;
-    if (tab === 'mine') return allItems.filter(r => r.employeeId === user?.id);
-    return allItems.filter(r => r.type === tab);
-  }, [allItems, tab, user?.id]);
 
   const exportRequestsCSV = (rows) => {
     const headers = ['Empleado', 'Tipo', 'Detalle', 'Estado', 'Fecha solicitud'];
@@ -174,9 +168,9 @@ export default function RequestsPage() {
       created = await createRequest(user.id, payload);
     }
     setLoading(false);
-    if (!created) {
-      // Keep the form so nothing typed is lost
-      setFormError('No se pudo enviar la solicitud. Revisa tu conexión e inténtalo de nuevo.');
+    if (!created || created.error) {
+      // Keep the form so nothing typed is lost; say why it was refused
+      setFormError(created?.error || 'No se pudo enviar la solicitud. Inténtalo de nuevo.');
       return;
     }
     setShowModal(false);
@@ -186,33 +180,33 @@ export default function RequestsPage() {
     announce('✅', 'Solicitud enviada. Te avisaremos cuando se revise.');
   };
 
-  const changeStatus = async (id, status, employeeId, type) => {
-    if (type === 'asuntos_propios') {
-      await updatePersonalDayStatus(id, status, user.id, employeeId);
-    } else {
-      await updateRequestStatus(id, status, user.id, employeeId);
+  // One review at a time per row: a double click used to send two updates and two notifications
+  const [busyKey, setBusyKey] = useState(null);
+  const inFlight = useRef(new Set());
+  // Rejecting can't be undone from here and notifies the person: it asks first, as in the app
+  const [toReject, setToReject] = useState(null);
+
+  const changeStatus = async (r, status) => {
+    const key = rowKey(r);
+    if (inFlight.current.has(key)) return;
+    inFlight.current.add(key);
+    setBusyKey(key);
+    const res = r.type === 'asuntos_propios'
+      ? await updatePersonalDayStatus(r.id, status, user.id, r.employeeId)
+      : await updateRequestStatus(r.id, status, user.id, r.employeeId);
+    inFlight.current.delete(key);
+    setBusyKey(null);
+    // Failures are already announced by the data layer
+    if (!res?.error) {
+      const who = r.employeeId === user?.id ? '' : ` Se ha avisado a ${(r.employeeName || 'la persona').split(' ')[0]}.`;
+      announce(status === 'approved' ? '✅' : '❌', `${status === 'approved' ? 'Solicitud aprobada' : 'Solicitud rechazada'}.${who}`);
     }
   };
 
-  const tabBtn = (id, label) => {
-    const count = id === 'all' ? allItems.length
-      : id === 'mine' ? allItems.filter(r => r.employeeId === user?.id).length
-      : allItems.filter(r => r.type === id).length;
-    const pending = id === 'all' ? allItems.filter(r => r.status === 'pending').length
-      : id === 'mine' ? allItems.filter(r => r.employeeId === user?.id && r.status === 'pending').length
-      : 0;
-    return (
-    <button 
-      key={id} 
-      onClick={() => setTab(id)}
-      className={clsx(styles.tabBtn, { [styles.tabBtnActive]: tab === id })}
-    >
-      {label}
-      {count > 0 && <span className={styles.tabCount}>{count}</span>}
-      {pending > 0 && id !== tab && <span className={styles.tabPending}>{pending}</span>}
-    </button>
-    );
-  };
+  const typeLabelOf = (r) => (r.type === 'asuntos_propios' ? 'Asuntos propios' : r.type === 'remoto' ? 'Trabajo en remoto' : r.type === 'external' ? 'Trabajo externo' : 'Compra');
+  const reviewLine = (r) => (r.status !== 'pending' && r.reviewerName
+    ? `${r.status === 'approved' ? 'Aprobada' : 'Rechazada'} por ${r.reviewerName}${r.reviewedAt ? ` el ${fmtDate(r.reviewedAt)}` : ''}`
+    : null);
 
   const touch = useTouch();
 
@@ -227,113 +221,26 @@ export default function RequestsPage() {
           rowKey={rowKey}
           onExport={exportRequestsCSV}
           onNew={(type) => { if (type) setReqType(type); setShowModal(true); }}
-          onApprove={(r) => changeStatus(r.id, 'approved', r.employeeId, r.type)}
-          onReject={(r) => changeStatus(r.id, 'rejected', r.employeeId, r.type)}
+          onApprove={(r) => changeStatus(r, 'approved')}
+          onReject={(r) => setToReject(r)}
           onDelete={(r) => setItemToDelete({ id: r.id, type: r.type })}
+          busyKey={busyKey}
+          reviewLine={reviewLine}
         />
       ) : (
-      <>
-      <div className={styles.pageControls}>
-        <div className={styles.tabsRow}>
-          {tabBtn('all', 'Todas')}
-          {/* Employees only receive their own requests: "Todas" already is theirs */}
-          {user?.role === 'admin' && tabBtn('mine', 'Mis solicitudes')}
-          {tabBtn('asuntos_propios', 'Asuntos Propios')}
-          {tabBtn('purchase', 'Compras')}
-          {tabBtn('remoto', 'Remoto')}
-          {tabBtn('external', 'Trabajo Externo')}
-        </div>
-        <div className={styles.controlsRight}>
-          {filtered.length > 0 && (
-            <Button icon={Download} variant="ghost" onClick={() => exportRequestsCSV(filtered)}>
-              Descargar Excel
-            </Button>
-          )}
-          <Button icon={Plus} onClick={() => setShowModal(true)}>Nueva solicitud</Button>
-        </div>
-      </div>
-
-      <div className={styles.statsGrid}>
-        <StatCard label="Pendientes" value={allItems.filter(r => r.status === 'pending').length}  color="var(--warning)" icon="Clock" sub="Esperando revisión" />
-        <StatCard label="Aprobadas"  value={allItems.filter(r => r.status === 'approved').length} color="var(--success)" icon="CheckCircle" sub="En total" />
-        <StatCard label="Rechazadas" value={allItems.filter(r => r.status === 'rejected').length} color="var(--danger)"  icon="XCircle" sub="En total" />
-      </div>
-
-      <Section title="Historial de solicitudes" description={`${filtered.length} ${filtered.length === 1 ? 'solicitud' : 'solicitudes'}`}>
-      <Card>
-        {filtered.length === 0 ? (
-          <div className="empty-state">
-            <div className={clsx("icon-box icon-box--lg icon-box--accent empty-state__icon", styles.opaqueIcon)}>
-              <FileText size={24} />
-            </div>
-            <h3 className="empty-state__title">No hay solicitudes</h3>
-            <p className="empty-state__sub">No se han encontrado solicitudes en esta categoría.</p>
-          </div>
-        ) : (
-          <div className={styles.tableWrapper}>
-            <table className="table">
-              <thead>
-                <tr>
-                  {['Empleado', 'Tipo', 'Detalle', 'Fecha solicitud', 'Estado', user.role === 'admin' ? 'Acciones' : null].filter(Boolean).map(h => (
-                    <th key={h}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                <AnimatePresence mode="sync">
-                {filtered.map((r, i) => (
-                  <motion.tr
-                    key={rowKey(r)}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.22, delay: i * 0.03, ease: [0.16, 1, 0.3, 1] }}
-                    className={clsx({ [styles.rowPending]: r.status === 'pending' })}
-                  >
-                    <td data-label="Empleado">
-                      <div className={styles.userCell}>
-                        <Avatar initials={(r.employeeName || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()} size={32} />
-                        <span className={styles.userName}>{r.employeeName || '—'}</span>
-                      </div>
-                    </td>
-                    <td data-label="Tipo">
-                      <Badge status={r.type} label={r.type === 'asuntos_propios' ? 'Asuntos Propios' : r.type === 'remoto' ? 'Remoto' : r.type === 'external' ? 'Trabajo Externo' : 'Compra'} />
-                    </td>
-                    <td data-label="Detalle" className={styles.detailCell}>
-                      {requestDetail(r)}
-                      {r.fileUrl && (
-                        <a href={r.fileUrl} download="justificante" className={styles.downloadLink} title="Descargar justificante">
-                          <Download size={14} />
-                        </a>
-                      )}
-                    </td>
-                    <td data-label="Fecha solicitud" className={styles.dateCell}>
-                      <time dateTime={r.createdAt}>{fmtDate(r.createdAt)}</time>
-                    </td>
-                    <td data-label="Estado"><Badge status={r.status} /></td>
-                    {user.role === 'admin' && (
-                      <td data-label="Acciones">
-                        <div className={styles.actionsCell}>
-                          {r.status === 'pending' && (
-                            <>
-                              <Button variant="action-success" iconOnly icon={Check} onClick={() => changeStatus(r.id, 'approved', r.employeeId, r.type)} title="Aprobar" />
-                              <Button variant="action-danger" iconOnly icon={X} onClick={() => changeStatus(r.id, 'rejected', r.employeeId, r.type)} title="Rechazar" />
-                            </>
-                          )}
-                          <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => setItemToDelete({ id: r.id, type: r.type })} title="Eliminar" />
-                        </div>
-                      </td>
-                    )}
-                  </motion.tr>
-                ))}
-                </AnimatePresence>
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-      </Section>
-      </>
+        <RequestsDesk
+          allItems={allItems}
+          user={user}
+          requestDetail={requestDetail}
+          rowKey={rowKey}
+          onExport={exportRequestsCSV}
+          onNew={(type) => { if (type) setReqType(type); setShowModal(true); }}
+          onApprove={(r) => changeStatus(r, 'approved')}
+          onReject={(r) => setToReject(r)}
+          onDelete={(r) => setItemToDelete({ id: r.id, type: r.type })}
+          busyKey={busyKey}
+          reviewLine={reviewLine}
+        />
       )}
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Nueva solicitud">
@@ -453,6 +360,7 @@ export default function RequestsPage() {
                 <input 
                   type="file" 
                   title=""
+                  aria-label="Adjuntar documentación justificativa (opcional)"
                   onChange={e => setFile(e.target.files[0])} 
                   className={styles.uploadInput}
                 />
@@ -503,6 +411,16 @@ export default function RequestsPage() {
         }} 
         title="Eliminar solicitud"
         message="¿Estás seguro de que deseas eliminar esta solicitud? Esta acción no se puede deshacer."
+      />
+
+      <ConfirmModal
+        isOpen={!!toReject}
+        onClose={() => setToReject(null)}
+        onConfirm={() => changeStatus(toReject, 'rejected')}
+        icon={X}
+        title="Rechazar solicitud"
+        message={toReject ? `${typeLabelOf(toReject)} de ${toReject.employeeName || 'empleado'} · ${requestDetail(toReject)}. Se le avisará de que ha sido rechazada.` : ''}
+        confirmText="Rechazar"
       />
     </div>
   );

@@ -67,7 +67,9 @@ export async function runPrivateDniTests() {
   // 5. Pantallas
   const web = read('src', 'pages', 'EmployeesPage.jsx');
   assert('Web directorio: DNI solo para RRHH o la propia persona', web.includes('const canSeeDni = (emp) => isAdmin || user.id === emp.id'));
-  assert('Web tabla: columna DNI solo para admins', web.includes("...(isAdmin ? ['DNI'] : [])") && web.includes('{isAdmin && <td data-label="DNI"'));
+  const desk = read('src', 'pages', 'EmployeesDesk.jsx');
+  assert('Web tabla: columna DNI solo para admins', desk.includes("...(isAdmin ? [{ label: 'DNI' }] : [])") && desk.includes('{isAdmin && <td className={styles.muted}>{emp.phone')
+    && desk.includes('{canSeeDni(emp) && <p className={styles.dni}>'));
   assert('Web RRHH guarda el DNI aparte', read('src', 'pages', 'AdminPage.jsx').includes('saveDni(supabase, editEmp.id, form.phone)'));
   assert('App ficha: DNI solo para RRHH o la propia persona', read('mobile', 'src', 'screens', 'EmployeeDetailScreen.jsx').includes("((isAdmin || isMe) && emp.phone) ? { label: 'DNI'"));
   assert('App búsqueda: por DNI solo RRHH', read('mobile', 'src', 'screens', 'EmployeesScreen.jsx').includes("const dni = user?.role === 'admin' ? e.phone || '' : ''"));

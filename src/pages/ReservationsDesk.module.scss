@@ -1,0 +1,206 @@
+/* Reservas on a computer (ReservationsDesk.jsx); the shared pieces live in components/Desk */
+
+$name-col: minmax(220px, 280px);
+$end-col: 250px;
+
+.page { display: block; }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+}
+
+.legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 12.5px;
+  color: var(--text-mut);
+
+  i {
+    width: 14px;
+    height: 8px;
+    margin-left: 8px;
+    border-radius: 3px;
+  }
+
+  i[data-status='confirmed'] { background: var(--accent); }
+  i[data-status='pending'] { background: repeating-linear-gradient(135deg, var(--warning) 0 3px, color-mix(in srgb, var(--warning) 45%, transparent) 3px 6px); }
+  i[data-now] { width: 2px; height: 12px; background: var(--danger); border-radius: 1px; }
+}
+
+/* Hours above the lines, aligned with the line column of each row */
+.scale {
+  display: grid;
+  grid-template-columns: $name-col minmax(0, 1fr) $end-col;
+  gap: 18px;
+  padding: 2px 20px 6px;
+  border-bottom: 1px solid var(--lg-edge);
+
+  div { position: relative; height: 16px; }
+
+  em {
+    position: absolute;
+    transform: translateX(-50%);
+    font-style: normal;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-mut);
+    font-variant-numeric: tabular-nums;
+
+    &:first-child { transform: none; }
+    &:last-child { transform: translateX(-100%); }
+  }
+}
+
+.resources {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.resource {
+  display: grid;
+  grid-template-columns: $name-col minmax(0, 1fr) $end-col;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--lg-edge);
+  transition: background 0.12s;
+
+  &:last-child { border-bottom: 0; }
+  &:hover { background: rgba(var(--text-rgb), 0.03); }
+}
+
+.resEnd {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* The day of a resource: 08:00 → 20:00 */
+.line {
+  position: relative;
+  height: 30px;
+  border-radius: 10px;
+  background: rgba(var(--text-rgb), 0.05);
+  border: 1px solid var(--lg-edge);
+  overflow: hidden;
+}
+
+.tick {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: rgba(var(--text-rgb), 0.08);
+}
+
+.block {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  border-radius: 7px;
+  background: linear-gradient(180deg, var(--accent-light), var(--accent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+
+  /* Pending: hatched, so it is told apart by more than its colour */
+  &[data-status='pending'] {
+    background: repeating-linear-gradient(135deg, var(--warning) 0 4px, color-mix(in srgb, var(--warning) 45%, transparent) 4px 8px);
+  }
+}
+
+.now {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--danger);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 25%, transparent);
+}
+
+/* Your next booking on the brand panel */
+.next {
+  display: grid;
+  gap: 4px;
+
+  strong {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+}
+
+.nextWhen {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.85);
+
+  &::first-letter { text-transform: uppercase; }
+}
+
+.nextTime {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.nextPurpose {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nextFoot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.7);
+
+  /* The pill reads on navy: white text on a light wash */
+  > span:first-child {
+    background: rgba(255, 255, 255, 0.14);
+    color: #FFFFFF;
+  }
+}
+
+.nextEmpty {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.who {
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+
+  em { font-style: normal; font-weight: 500; color: var(--text-mut); }
+}
+
+.purpose {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 32ch;
+  line-height: 1.4;
+}
+
+.pastRow td { opacity: 0.72; }

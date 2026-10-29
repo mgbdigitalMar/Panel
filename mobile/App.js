@@ -16,6 +16,7 @@ import { GeistMono_500Medium } from '@expo-google-fonts/geist-mono/500Medium';
 import { GeistMono_600SemiBold } from '@expo-google-fonts/geist-mono/600SemiBold';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { ToastProvider } from './src/context/ToastContext';
+import { ConfirmProvider } from './src/context/ConfirmContext';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { DataProvider } from './src/context/DataContext';
 import RootNavigator from './src/navigation/RootNavigator';
@@ -59,9 +60,11 @@ export default function App() {
     <SafeAreaProvider>
       <ThemeProvider>
         <ToastProvider>
+          <ConfirmProvider>
           <AuthProvider>
             <Shell />
           </AuthProvider>
+          </ConfirmProvider>
         </ToastProvider>
       </ThemeProvider>
     </SafeAreaProvider>

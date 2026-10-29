@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   Calendar, Car, DoorOpen, Timer, FilePlus2, CalendarPlus, Pin, ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight,
-  PartyPopper, Newspaper, BarChart3, Building, Mail, FileText, Home, Briefcase, ShoppingCart, Sun, LifeBuoy,
+  PartyPopper, Newspaper, BarChart3, Building, Mail, FileText, Home, Briefcase, ShoppingCart, Sun, LifeBuoy, LayoutDashboard,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { Avatar } from '../components/ui';
@@ -12,6 +12,7 @@ import {
 } from '../components/Touch';
 import { fmtDate, fmtDayShort, fmtRange } from '../utils/format';
 import { localISODate } from '../../shared/services/workMode.js';
+import { useMediaQuery, PHONE_QUERY } from '../hooks/useMediaQuery';
 import styles from './DashboardTouch.module.scss';
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
@@ -68,20 +69,22 @@ function BarRows({ rows, series, label }) {
 }
 
 /**
- * Inicio on phones and tablets: the greeting on the wallpaper, what you came to do in large tiles,
- * your agenda as a timeline, your balance and workday on the brand panel, the pinned story, the
- * company in figures, who is away, and the rest folded. Same data as DashboardGlass (DashboardPage).
+ * Inicio on phones and tablets: the greeting on the wallpaper, bookings in large tiles, your agenda
+ * as a timeline, your balance and workday on the brand panel (with "Registrar horas"), the pinned
+ * story, the company in figures, who is away, and the rest folded. Each action appears once: on
+ * phones "Nueva solicitud" is the dock's "+". Same data as DashboardGlass (DashboardPage).
  */
 export default function DashboardTouch({ d }) {
   const {
     user, employees, navigate, reservations, news, todayStr,
-    greeting, dateLine, motivation, progress, pendingCount, todayResCount, newsThisMonth,
+    greeting, dateLine, motivation, progress, pendingCount, todayResCount,
     myUpcoming, myRequests, hours, upcomingBirthdays, resourceTypePie,
     requestsByMonth, requestsYear, prevYear, nextYear, isCurrentYear,
     reservationsByWeek, chartMonthLabel, prevMonth, nextMonth, isCurrentMonth, chartMonth,
     onboardingDocUrl, REQUEST_LABELS,
   } = d;
   const [range, setRange] = useState('week');
+  const phone = useMediaQuery(PHONE_QUERY);
   const firstName = user?.name?.split(' ')[0];
 
   const pinnedNews = useMemo(() => news.filter((n) => n.pinned).sort(newestFirst).slice(0, 3), [news]);
@@ -123,17 +126,17 @@ export default function DashboardTouch({ d }) {
   return (
     <div className={styles.page}>
       <Masthead
-        icon={Sun}
+        icon={LayoutDashboard}
         eyebrow={dateLine}
         title={<>{greeting},<br />{firstName}</>}
         desc={motivation}
       />
 
+      {/* Phones already have "Nueva solicitud" in the dock's "+" */}
       <ActionTiles className={styles.tiles} items={[
-        { icon: FilePlus2, label: 'Nueva solicitud', hint: 'Días, remoto o compras', primary: true, onClick: () => navigate('/requests?nueva=1') },
-        { icon: DoorOpen, label: 'Reservar sala', hint: 'Elige sala y horario', onClick: () => navigate('/reservations?nueva=1') },
+        ...(phone ? [] : [{ icon: FilePlus2, label: 'Nueva solicitud', hint: 'Días, remoto o compras', primary: true, onClick: () => navigate('/requests?nueva=1') }]),
+        { icon: DoorOpen, label: 'Reservar sala', hint: 'Elige sala y horario', primary: phone, onClick: () => navigate('/reservations?nueva=1') },
         { icon: Car, label: 'Reservar vehículo', tone: 'info', hint: 'Coches y furgonetas', onClick: () => navigate('/reservations?nueva=1&tipo=vehicle') },
-        { icon: Timer, label: 'Registrar horas', tone: 'warning', hint: 'Compensa o acumula', onClick: () => navigate('/horas?nueva=1') },
       ]} />
 
       <div className={styles.grid}>
@@ -222,7 +225,12 @@ export default function DashboardTouch({ d }) {
                 <span className={styles.meterTrack} aria-hidden="true"><i style={{ width: `${Math.min(100, Math.max(0, progress))}%` }} /></span>
               </div>
             )}
-            actions={<SpotButton primary icon={ArrowUpRight} onClick={() => navigate('/horas')}>Tiempo a compensar</SpotButton>}>
+            actions={(
+              <>
+                <SpotButton primary icon={Timer} onClick={() => navigate('/horas?nueva=1')}>Registrar horas</SpotButton>
+                <SpotButton icon={ArrowUpRight} label="Ver tiempo a compensar" onClick={() => navigate('/horas')} />
+              </>
+            )}>
             <p className={clsx(styles.balance, hours.balance < 0 && styles.balanceNeg)}>
               {hours.balance >= 0 ? '+' : ''}{fmtHours(hours.balance)}<small> h</small>
             </p>
@@ -238,7 +246,6 @@ export default function DashboardTouch({ d }) {
               { label: 'Equipo', value: employees.length, hint: 'en plantilla', onClick: () => navigate('/employees'), actionLabel: `${employees.length} personas en plantilla. Ver equipo` },
               { label: 'Reservas', value: todayResCount, hint: 'para hoy', onClick: () => navigate('/reservations'), actionLabel: `${todayResCount} reservas hoy. Ver reservas` },
               { label: 'Pendientes', value: pendingCount, tone: pendingCount ? 'warning' : undefined, hint: pendingCount ? 'por revisar' : 'todo revisado', onClick: () => navigate('/requests'), actionLabel: `${pendingCount} solicitudes pendientes. Ver solicitudes` },
-              { label: 'Noticias', value: news.length, hint: newsThisMonth ? `${newsThisMonth} este mes` : 'ninguna este mes', onClick: () => navigate('/news'), actionLabel: `${news.length} noticias. Ver noticias` },
             ]} />
           </section>
 

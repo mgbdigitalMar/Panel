@@ -5,6 +5,7 @@ import {
   Sun, Moon, Monitor, BellRing, BellOff, Volume2, VolumeX,
   Palette, Check, User, Building, Wifi,
 } from 'lucide-react';
+import { useTouch } from '../components/Touch';
 import styles from './SettingsPage.module.scss';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
@@ -106,6 +107,9 @@ export default function SettingsPage() {
       } catch {}
     }
   };
+
+  // Phones and tablets: your account is in Más and Mi perfil, so it is not repeated here
+  const touch = useTouch();
 
   const THEME_OPTIONS = [
     { id: 'light',  label: 'Claro',   icon: Sun,     desc: 'Interfaz luminosa' },
@@ -215,6 +219,7 @@ export default function SettingsPage() {
         </motion.div>
 
         {/* Cuenta */}
+        {!touch && (
         <motion.div variants={item}>
         <Card className={styles.card}>
           <div className={styles.cardHeader}>
@@ -262,6 +267,7 @@ export default function SettingsPage() {
           </div>
         </Card>
         </motion.div>
+        )}
 
       </motion.div>
     </div>

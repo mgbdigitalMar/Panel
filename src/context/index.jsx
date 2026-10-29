@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useMemo } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
@@ -11,7 +11,11 @@ import {
 } from '../../shared/services/workMode.js'
 import { mapProfile, fetchDnis, withDni } from '../../shared/services/profiles.js'
 import { signIn, isFirstAccess } from '../../shared/services/auth.js'
-import { fetchReservations as fetchReservationsSvc } from '../../shared/services/reservations.js'
+import {
+  fetchReservations as fetchReservationsSvc, fetchRooms as fetchRoomsSvc, fetchVehicles as fetchVehiclesSvc,
+  updateReservationStatus as updateReservationStatusSvc, deleteResource as deleteResourceSvc,
+} from '../../shared/services/reservations.js'
+import { fetchRequests as fetchRequestsSvc } from '../../shared/services/requests.js'
 import { safeFileUrl } from '../../shared/utils/urls.js'
 import { toUserMessage } from '../../shared/utils/errors.js'
 
@@ -182,33 +186,13 @@ const [readIds, setReadIds] = useState(() => {
   // Employees load only their own requests and personal days; admins load everyone's.
   const ownRowsOnly = (query) => (user?.role === 'admin' ? query : query.eq('employee_id', user?.id))
 
+  // Same queries as the app (shared/services): requests carry who reviewed them, and rooms and
+  // vehicles whether they can be booked (an admin can hide one from the app or the web)
   async function fetchRequests() {
     if (!user?.id) { setRequestsState([]); return }
-    const { data, error } = await ownRowsOnly(supabase
-      .from('requests')
-      // `*` so the query keeps working before the returned_at migration has been run
-      .select(`
-        *,
-        employee:profiles!requests_employee_id_fkey(id, name, department, avatar_initials)
-      `)
-      .order('created_at', { ascending: false }))
-    if (error) { console.error('requests:', error); setLoadFailed(true); return }
-    setRequestsState(data.map(r => ({
-      id: r.id,
-      type: r.type,
-      status: r.status,
-      reason: r.reason,
-      createdAt: r.created_at,
-      employeeId: r.employee?.id,
-      employeeName: r.employee?.name,
-      startDate: r.start_date,
-      endDate: r.end_date,
-      days: r.days,
-      item: r.item,
-      amount: r.amount,
-      // went back to the office early (undefined = column not created yet)
-      returnedAt: 'returned_at' in r ? r.returned_at : undefined,
-    })))
+    const data = await fetchRequestsSvc(supabase, user.role === 'admin' ? {} : { employeeId: user.id })
+    if (data) setRequestsState(data)
+    else setLoadFailed(true)
   }
 
   // Same query as the app: the reservations_full view has no employee_id
@@ -219,15 +203,15 @@ const [readIds, setReadIds] = useState(() => {
   }
 
   async function fetchRooms() {
-    const { data, error } = await supabase.from('rooms').select('*').order('id')
-    if (error) { console.error('rooms:', error); setLoadFailed(true); return }
-    setRooms(data.map(r => ({ id: r.id, name: r.name, capacity: r.capacity, floor: r.floor, equipment: r.equipment })))
+    const data = await fetchRoomsSvc(supabase)
+    if (data) setRooms(data.map(r => ({ ...r, equipment: r.equipment || [] })))
+    else setLoadFailed(true)
   }
 
   async function fetchVehicles() {
-    const { data, error } = await supabase.from('vehicles').select('*').order('id')
-    if (error) { console.error('vehicles:', error); setLoadFailed(true); return }
-    setVehicles(data.map(v => ({ id: v.id, plate: v.plate, model: v.model, year: v.year, type: v.type })))
+    const data = await fetchVehiclesSvc(supabase)
+    if (data) setVehicles(data)
+    else setLoadFailed(true)
   }
 
   async function fetchDocuments() {
@@ -418,37 +402,21 @@ const [readIds, setReadIds] = useState(() => {
       showSystemNotification({ id: row.id, title: row.title, body: row.body, entityType: row.entity_type, entityId: row.entity_id, type: row.type })
     }
 
+    // New requests, reviews and documents for one person already arrive as a row of
+    // `notifications` (toast + system notification below, push on other devices). The table
+    // channels only refresh the lists: toasting them too showed every event twice, and any
+    // later update of an approved request (e.g. back at the office) toasted "aprobada" again.
     const requestChannel = supabase
       .channel('realtime-requests')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'requests' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'requests' }, () => {
         fetchRequests()
-        if (payload.eventType === 'INSERT') {
-          if (payload.new.employee_id !== user?.id && user?.role === 'admin') pushNotif('📋', 'Nueva solicitud recibida')
-        }
-        else if (payload.eventType === 'UPDATE') {
-          if (payload.new.employee_id === user?.id) {
-            const s = payload.new?.status
-            if (s === 'approved') pushNotif('✅', 'Una solicitud ha sido aprobada')
-            else if (s === 'rejected') pushNotif('❌', 'Una solicitud ha sido rechazada')
-          }
-        }
       })
       .subscribe()
 
     const reservationChannel = supabase
       .channel('realtime-reservations')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations' }, () => {
         fetchReservations()
-        if (payload.eventType === 'INSERT') {
-          if (payload.new.employee_id !== user?.id && user?.role === 'admin') pushNotif('📅', 'Nueva reserva pendiente de revisión')
-        }
-        else if (payload.eventType === 'UPDATE') {
-          if (payload.new.employee_id === user?.id) {
-            const s = payload.new?.status
-            if (s === 'confirmed') pushNotif('✅', 'Tu reserva ha sido confirmada')
-            else if (s === 'cancelled') pushNotif('❌', 'Tu reserva ha sido cancelada')
-          }
-        }
       })
       .subscribe()
 
@@ -476,45 +444,26 @@ const [readIds, setReadIds] = useState(() => {
       .channel('realtime-documents')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, (payload) => {
         fetchDocuments()
-        if (payload.eventType === 'INSERT') {
-          if (payload.new.sender_id !== user?.id) {
-            // Only push if it's a broadcast (no recipient) or targeted at me
-            if (!payload.new.recipient_id || payload.new.recipient_id === user?.id) {
-              pushNotif('📄', `Nuevo documento recibido: ${payload.new?.title || ''}`)
-            }
-          }
+        // A document sent to one person comes with its notification; a general one
+        // (no recipient) has none, so it is announced here
+        if (payload.eventType === 'INSERT' && payload.new.sender_id !== user?.id && !payload.new.recipient_id
+          && payload.new.title !== '__ONBOARDING_DOC__') {
+          pushNotif('📄', `Nuevo documento disponible: ${payload.new?.title || ''}`)
         }
       })
       .subscribe()
 
     const hoursChannel = supabase
       .channel('realtime-hours')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'hour_compensations' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'hour_compensations' }, () => {
         fetchHourCompensations()
-        if (payload.eventType === 'UPDATE') {
-          if (payload.new.employee_id === user?.id) {
-            const s = payload.new?.status
-            if (s === 'approved') pushNotif('✅', 'Tu solicitud de bolsa de horas ha sido aprobada')
-            else if (s === 'rejected') pushNotif('❌', 'Tu solicitud de bolsa de horas ha sido rechazada')
-          }
-        }
       })
       .subscribe()
 
     const personalDaysChannel = supabase
       .channel('realtime-personal-days')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'personal_days' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'personal_days' }, () => {
         fetchPersonalDays()
-        if (payload.eventType === 'INSERT') {
-          if (payload.new.employee_id !== user?.id && user?.role === 'admin') pushNotif('📝', 'Nueva solicitud de asuntos propios')
-        }
-        else if (payload.eventType === 'UPDATE') {
-          if (payload.new.employee_id === user?.id) {
-            const s = payload.new?.status
-            if (s === 'approved') pushNotif('✅', 'Asuntos propios aprobados')
-            else if (s === 'rejected') pushNotif('❌', 'Asuntos propios rechazados')
-          }
-        }
       })
       .subscribe()
 
@@ -600,12 +549,14 @@ const [readIds, setReadIds] = useState(() => {
     return res
   }
 
+  // The create actions return { data } or { error } with a message for the person (the database
+  // checks write theirs in Spanish): the form shows it and keeps what was typed.
   const createRequest = async (employeeId, payload) => {
     const { data, error } = await supabase.from('requests').insert([{
       employee_id: employeeId,
       ...payload,
     }]).select().single()
-    if (error) { console.error(error); return null }
+    if (error) { console.error('createRequest:', error); return { error: toUserMessage(error) } }
     await fetchRequests()
     
     const typeLabel = payload.type === 'remoto' ? 'Remoto' : payload.type === 'external' ? 'Trabajo Externo' : 'Compra'
@@ -617,8 +568,8 @@ const [readIds, setReadIds] = useState(() => {
       entityType: 'request',
       entityId: data?.id
     })
-    
-    return data
+
+    return { data }
   }
 
   const updateRequestStatus = async (id, status, reviewedBy, employeeId) => {
@@ -677,7 +628,7 @@ const [readIds, setReadIds] = useState(() => {
       file_url: fileUrl || null,
       status: 'pending',
     }]).select().single()
-    if (error) { console.error('createPersonalDay:', error); return null }
+    if (error) { console.error('createPersonalDay:', error); return { error: toUserMessage(error) } }
     await fetchPersonalDays()
 
     const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado'
@@ -688,7 +639,7 @@ const [readIds, setReadIds] = useState(() => {
       entityType: 'personal_day',
       entityId: data?.id
     })
-    return data
+    return { data }
   }
 
   const updatePersonalDayStatus = async (id, status, reviewedBy, employeeId) => {
@@ -775,11 +726,11 @@ const [readIds, setReadIds] = useState(() => {
     return { data }
   }
 
+  // Shared with the app: the owner gets a notification (and push) with the decision
   const updateReservationStatus = async (id, status, reviewedBy) => {
-    const { error } = await supabase.from('reservations').update({
-      status, reviewed_by: reviewedBy, reviewed_at: new Date().toISOString(),
-    }).eq('id', id)
-    if (error) { console.error(error); return reportError(error) }
+    const reservation = reservations.find(r => String(r.id) === String(id))
+    const { error } = await updateReservationStatusSvc(supabase, id, status, reviewedBy, reservation)
+    if (error) return reportError(error)
     await fetchReservations()
     return { error: null }
   }
@@ -788,6 +739,14 @@ const [readIds, setReadIds] = useState(() => {
     const { error } = await supabase.from('reservations').delete().eq('id', id)
     if (error) { console.error(error); return reportError(error) }
     await fetchReservations()
+    return { error: null }
+  }
+
+  // Admin: a room or vehicle goes with its reservations (same rule as the app)
+  const deleteResource = async (type, id) => {
+    const { error } = await deleteResourceSvc(supabase, type, id)
+    await Promise.all([type === 'vehicle' ? fetchVehicles() : fetchRooms(), fetchReservations()])
+    if (error) return reportError(error)
     return { error: null }
   }
 
@@ -892,7 +851,7 @@ const [readIds, setReadIds] = useState(() => {
       status,
       reviewed_at: type === 'ya' ? new Date().toISOString() : null,
     }]).select().single()
-    if (error) { console.error('createHourCompensation:', error); return null }
+    if (error) { console.error('createHourCompensation:', error); return { error: toUserMessage(error) } }
     await fetchHourCompensations()
 
     if (type === 'bolsa') {
@@ -906,7 +865,7 @@ const [readIds, setReadIds] = useState(() => {
       })
     }
 
-    return data
+    return { data }
   }
 
   const updateHourCompensationStatus = async (id, status, reviewedBy, employeeId) => {
@@ -1002,7 +961,7 @@ const [readIds, setReadIds] = useState(() => {
   // The actions read `employees` and `user` from this render: without them in the deps,
   // a value memoized before the employees loaded would notify no admin.
   const requestValue = useMemo(() => ({ requests, createRequest, updateRequestStatus, deleteRequest, changeWorkMode }), [requests, personalDays, employees, user]);
-  const resValue = useMemo(() => ({ reservations, rooms, vehicles, createReservation, updateReservationStatus, deleteReservation }), [reservations, rooms, vehicles, employees]);
+  const resValue = useMemo(() => ({ reservations, rooms, vehicles, createReservation, updateReservationStatus, deleteReservation, deleteResource }), [reservations, rooms, vehicles, employees]);
   const docValue = useMemo(() => ({ documents, sendDocument, updateDocumentStatus, uploadDocumentFile, deleteDocument, onboardingDocUrl: documents?.find(d => d.title === '__ONBOARDING_DOC__')?.fileUrl || null, deleteEmployeeData }), [documents, personalDays]);
   const hourValue = useMemo(() => ({ hourCompensations, createHourCompensation, updateHourCompensationStatus, deleteHourCompensation }), [hourCompensations, employees]);
   const pdValue = useMemo(() => ({ personalDays, createPersonalDay, updatePersonalDayStatus }), [personalDays, employees]);
@@ -1056,7 +1015,13 @@ export function AuthProvider({ children }) {
   const [authLoading, setAuthLoading]       = useState(true)
 
   const IDLE_TIMEOUT = 60 * 1000
-  const [lastActivity, setLastActivity] = useState(Date.now())
+  // The idle logout is announced this long before, so whatever is being typed can be kept
+  const IDLE_WARNING = 15 * 1000
+  // A ref, not state: activity events fire on every mouse move and must not re-render the app
+  const lastActivityRef = useRef(Date.now())
+  const markerWrittenRef = useRef(0)
+  const setLastActivity = useCallback((t = Date.now()) => { lastActivityRef.current = t }, [])
+  const [idleLeft, setIdleLeft] = useState(null) // seconds shown in the warning; null = hidden
 
   async function loadProfile(id) {
     const { data, error } = await supabase
@@ -1199,49 +1164,49 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // Idle logout, paused while the tab is hidden
+  // Idle logout, paused while the tab is hidden. Checked every second so the warning can count down.
   useEffect(() => {
-    let interval;
-    let isVisible = true;
+    if (!user) { setIdleLeft(null); return undefined }
 
-    const visibilityHandler = () => {
-      isVisible = document.visibilityState === 'visible';
-      if (isVisible) {
-        setLastActivity(Date.now());
-      }
-    };
-
-    document.addEventListener('visibilitychange', visibilityHandler);
-
-    if (user) {
-      const checkIdle = () => {
-        if (!isVisible) return;
-        // Reading inside an iframe (e.g. the mandatory policy PDF) sends no
-        // mouse or key events to this page: don't count it as inactivity
-        if (user.policyAccepted !== true || document.activeElement?.tagName === 'IFRAME') return;
-        const inactive = Date.now() - lastActivity > IDLE_TIMEOUT;
-        if (inactive) logout();
-      };
-      interval = setInterval(checkIdle, 5000);
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') lastActivityRef.current = Date.now()
     }
+    document.addEventListener('visibilitychange', onVisibility)
+
+    const tick = () => {
+      if (document.visibilityState !== 'visible') return
+      // Reading inside an iframe (e.g. the mandatory policy PDF) sends no
+      // mouse or key events to this page: don't count it as inactivity
+      if (user.policyAccepted !== true || document.activeElement?.tagName === 'IFRAME') {
+        lastActivityRef.current = Date.now()
+        setIdleLeft(null)
+        return
+      }
+      const last = lastActivityRef.current
+      const left = IDLE_TIMEOUT - (Date.now() - last)
+      if (left <= 0) { setIdleLeft(null); logout(); return }
+      setIdleLeft(left <= IDLE_WARNING ? Math.ceil(left / 1000) : null)
+
+      // restoreSession treats a marker older than IDLE_TIMEOUT as stale: without this,
+      // a reload a minute after signing in would log every tab out.
+      if (last - markerWrittenRef.current > 5000) {
+        markerWrittenRef.current = last
+        try {
+          const stored = JSON.parse(localStorage.getItem('margube_session') || 'null')
+          if (stored?.id === user.id) localStorage.setItem('margube_session', JSON.stringify({ ...stored, lastActivity: last }))
+        } catch { /* corrupt or blocked storage */ }
+      }
+    }
+    const interval = setInterval(tick, 1000)
 
     return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', visibilityHandler);
-    };
-  }, [user, lastActivity])
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [user])
 
-  // restoreSession treats a marker older than IDLE_TIMEOUT as stale: without this,
-  // a reload a minute after signing in would log every tab out.
-  useEffect(() => {
-    if (!user?.id) return
-    try {
-      const stored = JSON.parse(localStorage.getItem('margube_session') || 'null')
-      if (stored?.id === user.id && lastActivity - (stored.lastActivity || 0) > 5000) {
-        localStorage.setItem('margube_session', JSON.stringify({ ...stored, lastActivity }))
-      }
-    } catch { /* corrupt or blocked storage */ }
-  }, [user?.id, lastActivity])
+  const stayActive = useCallback(() => { lastActivityRef.current = Date.now(); setIdleLeft(null) }, [])
+  const idleValue = useMemo(() => ({ secondsLeft: idleLeft, stayActive }), [idleLeft, stayActive])
 
   // Signed in + "Alertas de escritorio" on → link this browser's Web Push
   // subscription to the current person (idempotent, safe on every load).
@@ -1321,10 +1286,16 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthCtx.Provider value={contextValue}>
-      {children}
+      {/* Its own context: the countdown re-renders only the warning, not the app */}
+      <IdleCtx.Provider value={idleValue}>
+        {children}
+      </IdleCtx.Provider>
     </AuthCtx.Provider>
   )
 }
 export function useAuth() { return useContext(AuthCtx) }
+
+export const IdleCtx = createContext({ secondsLeft: null, stayActive: () => {} })
+export function useIdle() { return useContext(IdleCtx) }
 
 export const AppCtx = createContext()

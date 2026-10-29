@@ -1,5 +1,5 @@
-import { useState, forwardRef } from 'react';
-import { useAuth, useNews } from '../context';
+import { useState, useEffect, forwardRef } from 'react';
+import { useAuth, useNews, useNotifs } from '../context';
 import { Avatar, Badge, Modal, Input, Select, Textarea, Button, Card, ConfirmModal, Section } from '../components/ui';
 import { Edit2, Trash2, Pin, Plus, Newspaper } from 'lucide-react';
 import styles from './NewsPage.module.scss';
@@ -104,13 +104,24 @@ export default function NewsPage() {
   const [editItem, setEditItem]   = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [form, setForm] = useState({ type: 'news', title: '', content: '', category: 'Empresa', pinned: false });
+  const { announce } = useNotifs();
+  // One publish at a time (a double click published it twice); missing fields are said, not ignored
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState('');
+  useEffect(() => { if (showModal) setFormError(''); }, [showModal]);
 
   const filtered = tab === 'all' ? news : news.filter(n => n.type === tab);
   const pinned   = filtered.filter(n => n.pinned);
   const regular  = filtered.filter(n => !n.pinned);
 
   const handleSave = async () => {
-    if (!form.title || !form.content) return;
+    if (saving) return;
+    if (!form.title.trim() || !form.content.trim()) {
+      setFormError('Escribe un título y el contenido antes de publicar.');
+      return;
+    }
+    setFormError('');
+    setSaving(true);
     const payload = {
       title: form.title,
       content: form.content,
@@ -126,8 +137,10 @@ export default function NewsPage() {
       payload.published_at = new Date().toISOString().split('T')[0];
       res = await createNews(payload);
     }
+    setSaving(false);
     // Failed: keep the modal open so nothing typed is lost (the error is announced)
     if (res?.error) return;
+    announce('✅', editItem ? 'Publicación actualizada.' : 'Publicación publicada. Ya la ve todo el equipo.');
     setShowModal(false);
     setEditItem(null);
     setForm({ type: 'news', title: '', content: '', category: 'Empresa', pinned: false });
@@ -247,9 +260,10 @@ export default function NewsPage() {
           <label htmlFor="pinned" style={{ fontSize: 14, color: 'var(--text)', cursor: 'pointer' }}>Fijar esta publicación (aparece destacada)</label>
         </div>
 
+        {formError && <div className={styles.formError} role="alert">{formError}</div>}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <Button variant="ghost" onClick={() => { setShowModal(false); setEditItem(null); }}>Cancelar</Button>
-          <Button onClick={handleSave}>{editItem ? 'Actualizar' : 'Publicar'}</Button>
+          <Button variant="ghost" onClick={() => { setShowModal(false); setEditItem(null); }} disabled={saving}>Cancelar</Button>
+          <Button onClick={handleSave} loading={saving}>{saving ? 'Guardando…' : editItem ? 'Actualizar' : 'Publicar'}</Button>
         </div>
       </Modal>
 

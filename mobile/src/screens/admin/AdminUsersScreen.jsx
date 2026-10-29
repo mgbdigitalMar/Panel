@@ -1,6 +1,6 @@
 // 21 · Gestión de usuarios (AdminPage > Empleados on the web)
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as ExpoCrypto from 'expo-crypto';
 import { Search, UserPlus, Pencil, KeyRound, UserMinus, UsersRound, PenLine, RotateCcw, Check, ShieldCheck } from 'lucide-react-native';
@@ -12,6 +12,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 import { Screen } from '../../components/common/Screen';
 import { Header } from '../../components/common/Header';
 import { GlassCard } from '../../components/common/GlassCard';
@@ -34,6 +35,7 @@ export default function AdminUsersScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation();
   const toast = useToast();
+  const confirm = useConfirm();
   const { user, employees, refreshEmployees } = useAuth();
   const { deleteEmployee, resetEmployeePassword, setPolicyAccepted } = useData();
   const [q, setQ] = useState('');
@@ -72,20 +74,14 @@ export default function AdminUsersScreen() {
       toast.error('No puedes darte de baja a ti mismo.');
       return;
     }
-    Alert.alert('Eliminar empleado', `¿Seguro que quieres eliminar a ${emp.name} y todos sus archivos asociados? Esta acción no se puede deshacer.`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          setBusy(true);
-          const { error } = await deleteEmployee(emp.id);
-          setBusy(false);
-          if (error) toast.error(toUserMessage(error));
-          else { setExpanded(null); toast.success('Empleado eliminado'); }
-        },
-      },
-    ]);
+    confirm({ title: 'Eliminar empleado', message: `Se eliminará a ${emp.name}, su acceso y todos sus archivos asociados. Esta acción no se puede deshacer.` }).then(async (ok) => {
+      if (!ok) return;
+      setBusy(true);
+      const { error } = await deleteEmployee(emp.id);
+      setBusy(false);
+      if (error) toast.error(toUserMessage(error));
+      else { setExpanded(null); toast.success('Empleado eliminado'); }
+    });
   };
 
   const changePolicy = async (emp, accepted) => {

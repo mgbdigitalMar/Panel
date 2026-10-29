@@ -7,6 +7,7 @@ import {
 import logoIcon from '../assets/logos/logo-icon.png';
 import logoColor from '../assets/logos/logo-color.png';
 import logoWhite from '../assets/logos/logo-white.png';
+import { useScrolling } from '../hooks/useScrolling';
 import styles from './GlassChrome.module.scss';
 
 // Short labels for the top pill; the full name stays in the tooltip and for screen readers
@@ -174,8 +175,10 @@ function ProfileMenu({ avatar, user, workday, upcomingCount, openRequests, onNav
 const DOCK_IDS = ['dashboard', 'reservations', 'requests', 'horas'];
 
 /** Bottom dock of the glass appearance on phones (tablets and computers use the top pill), with
- * the app's round "Nueva solicitud" button beside it. The open tab is blue, named and underlined. */
+ * the app's round "Nueva solicitud" button beside it. The open tab is blue, named and underlined.
+ * While the page scrolls the dock shrinks out of the way; it returns to its size when it stops. */
 export function GlassTabBar({ items, page, badges, onNavigate }) {
+  const scrolling = useScrolling();
   const badgeOf = (item) => (item.badgeKey ? badges[item.badgeKey] || 0 : 0);
   const rest = items.filter((i) => !DOCK_IDS.includes(i.id));
   const tabs = [
@@ -185,7 +188,7 @@ export function GlassTabBar({ items, page, badges, onNavigate }) {
   const isActive = (id) => (id === 'mas' ? !DOCK_IDS.includes(page) : page === id);
 
   return (
-    <div className={styles.dock}>
+    <div className={clsx(styles.dock, scrolling && styles.dockCompact)}>
       <nav className={styles.tabBar} aria-label="Navegación principal">
         {tabs.map((item) => {
           const Icon = item.icon;

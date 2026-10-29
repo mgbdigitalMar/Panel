@@ -484,9 +484,11 @@ button.ledgerCell {
     gap: 6px;
     padding: 0 8px;
 
-    > svg { display: none; }
+    > .tabIcon { display: none; }
   }
 }
+
+.tabIcon { flex-shrink: 0; }
 
 .tabOn {
   @include p.tab-btn-active;
@@ -495,6 +497,37 @@ button.ledgerCell {
 }
 
 .tabCount { @include p.tab-count; }
+
+/* Phones: four or five sections, each icon above its name, in a rounded track */
+.tabStripStacked {
+  @media (max-width: 767px) {
+    border-radius: 22px;
+
+    /* Each tab as wide as its name needs, the rest of the row shared out */
+    .tabBtn {
+      flex: 1 1 auto;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 0;
+      height: auto;
+      min-height: 58px;
+      padding: 9px 6px 8px;
+      border-radius: 17px;
+      font-size: 11.5px;
+      letter-spacing: -0.005em;
+
+      > .tabIcon { display: block; }
+    }
+
+    .tabLabel {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tabCount { display: none; }
+  }
+}
 
 /* ── Toolbar and filters ──────────────────────────────────────────── */
 

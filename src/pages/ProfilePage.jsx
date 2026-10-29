@@ -179,7 +179,8 @@ export default function ProfilePage() {
           <p className={styles.heroRole}>{[user?.position, user?.dept].filter(Boolean).join(' · ') || 'Margube'}</p>
           <div className={styles.heroTags}>
             <span className={styles.heroTag}><Shield size={12} aria-hidden="true" /> {user?.role === 'admin' ? 'Administrador' : 'Empleado'}</span>
-            <span className={styles.heroTag}><MapPin size={12} aria-hidden="true" /> {WORK_MODES[workMode]?.label || 'Oficina'}</span>
+            {/* Phones and tablets show the mode once, in its own card below */}
+            {!phone && <span className={styles.heroTag}><MapPin size={12} aria-hidden="true" /> {WORK_MODES[workMode]?.label || 'Oficina'}</span>}
             {user?.email && <span className={styles.heroTag}><Mail size={12} aria-hidden="true" /> {user.email}</span>}
           </div>
         </div>
@@ -197,22 +198,27 @@ export default function ProfilePage() {
               <h3>Mi información</h3>
             </div>
             <div className={styles.infoGrid}>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Nombre</span>
-                <span className={styles.infoValue}>{user?.name}</span>
-              </div>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Email</span>
-                <span className={styles.infoValue}>{user?.email}</span>
-              </div>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Rol</span>
-                <Badge status={user?.role} />
-              </div>
-              <div className={styles.infoItem}>
-                <span className={styles.infoLabel}>Departamento</span>
-                <span className={styles.infoValue}>{user?.dept}</span>
-              </div>
+              {/* Phones and tablets: name, email, role and department are already in the identity panel */}
+              {!phone && (
+                <>
+                  <div className={styles.infoItem}>
+                    <span className={styles.infoLabel}>Nombre</span>
+                    <span className={styles.infoValue}>{user?.name}</span>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <span className={styles.infoLabel}>Email</span>
+                    <span className={styles.infoValue}>{user?.email}</span>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <span className={styles.infoLabel}>Rol</span>
+                    <Badge status={user?.role} />
+                  </div>
+                  <div className={styles.infoItem}>
+                    <span className={styles.infoLabel}>Departamento</span>
+                    <span className={styles.infoValue}>{user?.dept}</span>
+                  </div>
+                </>
+              )}
               <div className={styles.infoItem}>
                 <span className={styles.infoLabel}>DNI</span>
                 <span className={styles.infoValue}>{user?.phone}</span>

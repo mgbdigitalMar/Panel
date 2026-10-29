@@ -2,12 +2,13 @@ import { useMemo, useState } from 'react';
 import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie } from 'recharts';
 import {
   Users, Calendar, Inbox, Newspaper, Pin, Car, DoorOpen, Building, ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight,
-  PartyPopper, CalendarPlus, FilePlus2, Mail, FileText, TrendingUp, TrendingDown, Clock, BarChart3,
+  PartyPopper, CalendarPlus, FilePlus2, Mail, FileText, TrendingUp, TrendingDown, Clock, BarChart3, LayoutDashboard,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import { Avatar, Badge, StatCard, Card, Button } from '../components/ui';
 import { TodayPanel } from '../components/TodayPanel';
+import { DeskEyebrow } from '../components/Desk';
 import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
 import { fmtDate, fmtDayShort, fmtRange } from '../utils/format';
 import { localISODate } from '../../shared/services/workMode.js';
@@ -173,7 +174,7 @@ export default function DashboardGlass({ d }) {
     <div className={styles.page}>
       <header className={styles.hero}>
         <div>
-          <p className={styles.date}>{dateLine}</p>
+          <DeskEyebrow icon={LayoutDashboard} eyebrow={dateLine} />
           <h1 className={styles.greeting}>{greeting}, {firstName}</h1>
           <p className={styles.meta}>{motivation}</p>
         </div>

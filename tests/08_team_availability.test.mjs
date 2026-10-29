@@ -63,10 +63,11 @@ export async function runTeamAvailabilityTests() {
   // 4. Las dos apps usan el mismo cálculo y mantienen sus vistas anteriores
   const root = process.cwd();
   const read = (...p) => fs.readFileSync(path.join(root, ...p), 'utf8');
-  const web = read('src', 'pages', 'EmployeesPage.jsx');
+  // Phones and tablets: EmployeesTouch; computers: EmployeesDesk (the page picks one)
+  const web = read('src', 'pages', 'EmployeesPage.jsx') + read('src', 'pages', 'EmployeesDesk.jsx');
   assert('Web: Equipo muestra la vista Semana', web.includes("view === 'week'") && web.includes('<TeamWeek'));
   assert('Web: la vista Semana usa el cálculo compartido', read('src', 'components', 'TeamWeek.jsx').includes('shared/services/availability.js'));
-  assert('Web: siguen las vistas cuadrícula y tabla', web.includes("view === 'grid'") && web.includes("view === 'list'"));
+  assert('Web: siguen las vistas cuadrícula y tabla', web.includes("value: 'grid'") && web.includes("view === 'list'"));
   const app = read('mobile', 'src', 'screens', 'EmployeesScreen.jsx');
   assert('App: Equipo muestra la vista Semana', app.includes("view === 'week'") && app.includes('<TeamWeek'));
   assert('App: la vista Semana usa el cálculo compartido', read('mobile', 'src', 'components', 'TeamWeek.jsx').includes('@shared/services/availability.js'));

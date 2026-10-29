@@ -50,19 +50,20 @@ export function TimeLead({ start, end }) {
 }
 
 /**
- * Heading of a touch screen, on the wallpaper (no panel): the section mark and a line of context,
- * a large title and the description. `aside` sits on the right on tablets and under it on phones.
+ * Heading of a touch screen, on the wallpaper (no panel): the section mark with today's date (or
+ * `eyebrow`), a large title and the description. The dock already names the section, so the
+ * line above the title gives context instead of repeating it. `aside` sits on the right on
+ * tablets and under the text on phones.
  */
 export function Masthead({ icon: Icon, eyebrow, title, desc, aside, className }) {
+  const line = eyebrow ?? new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
   return (
     <header className={clsx(styles.masthead, aside && styles.mastWithAside, className)}>
       <div className={styles.mastText}>
-        {eyebrow && (
-          <p className={styles.mastEyebrow}>
-            {Icon && <span className={styles.mastMark} aria-hidden="true"><Icon size={15} /></span>}
-            <span>{eyebrow}</span>
-          </p>
-        )}
+        <p className={styles.mastEyebrow}>
+          {Icon && <span className={styles.mastMark} aria-hidden="true"><Icon size={15} /></span>}
+          <span>{line}</span>
+        </p>
         <h1 className={styles.mastTitle}>{title}</h1>
         {desc && <p className={styles.mastDesc}>{desc}</p>}
       </div>
@@ -153,17 +154,20 @@ export function ActionTiles({ items, className }) {
   );
 }
 
-/** The web's pill tabs (white track, the open one in solid accent), stretched across the screen. */
-export function TabStrip({ value, onChange, options, label, className }) {
+/**
+ * The web's pill tabs (white track, the open one in solid accent), stretched across the screen.
+ * `stacked`: for four or five sections, phones put each icon above its name so all of them fit.
+ */
+export function TabStrip({ value, onChange, options, label, className, stacked }) {
   return (
-    <div className={clsx(styles.tabStrip, className)} role="tablist" aria-label={label}>
+    <div className={clsx(styles.tabStrip, stacked && styles.tabStripStacked, className)} role="tablist" aria-label={label}>
       {options.map((o) => {
         const Icon = o.icon;
         return (
           <button key={o.value} type="button" role="tab" aria-selected={value === o.value}
             className={clsx(styles.tabBtn, value === o.value && styles.tabOn)} onClick={() => onChange(o.value)}>
-            {Icon && <Icon size={15} aria-hidden="true" />}
-            {o.label}
+            {Icon && <Icon size={stacked ? 18 : 15} className={styles.tabIcon} aria-hidden="true" />}
+            <span className={styles.tabLabel}>{o.label}</span>
             {o.count != null && <span className={styles.tabCount}>{o.count}</span>}
           </button>
         );
