@@ -50,14 +50,15 @@ html, body {
   min-height: 100%;
 }
 
-/* The canvas behind Safari's status bar, floating toolbar and overscroll. Since iOS 26 Safari
-   ignores theme-color and shows this colour there, so it must match what the page draws at its
-   edges: the wallpaper in the glass appearance (not the near-black --bg, which showed as black
-   bars). Kept in sync with index.html's critical CSS. */
+/* The canvas behind Safari's floating toolbar and the overscroll. Since iOS 26 Safari ignores
+   theme-color and tints its bars with flat colours: the sticky top bar's background at the top
+   (GlassChrome .header) and this one at the bottom. Both are the wallpaper's own colours at
+   that edge, measured from the rendered wallpaper, so the bars read as part of the page.
+   Kept in sync with index.html's critical CSS and theme-color. */
 html { background: var(--canvas, var(--bg)); }
 
-[data-appearance='glass'] { --canvas: #E4EBFB; }
-[data-appearance='glass'][data-theme='dark'] { --canvas: #0C1428; }
+[data-appearance='glass'] { --canvas: #DEEBF6; --canvas-top-rgb: 216, 225, 250; }
+[data-appearance='glass'][data-theme='dark'] { --canvas: #0A1321; --canvas-top-rgb: 16, 25, 54; }
 
 /* Glass: the canvas carries the wallpaper's own gradient (Wallpaper.module.scss .scene), one
    screen tall from the top, so the page reads edge to edge under Safari's bars instead of

@@ -35,7 +35,7 @@ export function ThemeProvider({ children }) {
     document.documentElement.setAttribute('data-theme', resolved);
     // Same colour as the canvas under the browser bars (global.scss --canvas)
     document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
-      meta.setAttribute('content', resolved === 'dark' ? '#0C1428' : '#E4EBFB');
+      meta.setAttribute('content', resolved === 'dark' ? '#101936' : '#D8E1FA');
     });
     try { localStorage.setItem('app-theme-mode', m); } catch {}
   }

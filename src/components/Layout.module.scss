@@ -9,8 +9,9 @@ $header-h-mobile: 64px;
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  /* svh: stays put while Safari's toolbar collapses (dvh resized the page mid-scroll) */
   min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 100svh;
   background: transparent;
   overflow-x: clip;
 }
@@ -138,11 +139,11 @@ $header-h-mobile: 64px;
 .panel {
   position: relative;
   flex: 1;
-  min-height: calc(100dvh - #{$header-h});
+  min-height: calc(100svh - #{$header-h});
   padding: clamp(12px, 1.6vw, 24px) clamp(20px, 3vw, 44px) calc(clamp(32px, 4vw, 56px) + env(safe-area-inset-bottom));
 
   @media (max-width: 1023px) {
-    min-height: calc(100dvh - #{$header-h-mobile});
+    min-height: calc(100svh - #{$header-h-mobile});
     padding: 12px 14px calc(32px + env(safe-area-inset-bottom));
   }
 

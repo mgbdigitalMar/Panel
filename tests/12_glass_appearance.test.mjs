@@ -101,11 +101,15 @@ export async function runGlassAppearanceTests() {
   const globalCss = read('src', 'styles', 'global.scss');
   const indexHtml = read('index.html');
   assert('Safari: el lienzo del documento usa el color del fondo Cristal en cada tema',
-    globalCss.includes("html { background: var(--canvas, var(--bg)); }") && globalCss.includes("[data-appearance='glass'][data-theme='dark'] { --canvas: #0C1428; }"));
+    globalCss.includes("html { background: var(--canvas, var(--bg)); }") && globalCss.includes("[data-appearance='glass'][data-theme='dark'] { --canvas: #0A1321; --canvas-top-rgb: 16, 25, 54; }"));
+  assert('Safari: la cabecera del móvil tapa el contenido bajo la barra de estado y da el color de arriba',
+    /background-color: rgba\(var\(--canvas-top-rgb\), 0\.5\);/.test(chromeStyles) && chromeStyles.includes('backdrop-filter: blur(18px) saturate(160%);'));
+  assert('Safari: alturas mínimas en svh (la página no se recoloca al plegarse la barra)',
+    read('src', 'components', 'Layout.module.scss').includes('min-height: 100svh;') && !read('src', 'components', 'Layout.module.scss').includes('min-height: calc(100dvh'));
   assert('Safari: el fondo Cristal llega bajo la barra de estado y la barra inferior',
     /\.wallpaper \{[\s\S]*?top: -120px;[\s\S]*?bottom: -120px;/.test(read('src', 'components', 'Wallpaper.module.scss')));
   assert('Safari: tema y apariencia aplicados antes del primer pintado (sin destello)',
-    indexHtml.includes("localStorage.getItem('app-theme-mode')") && indexHtml.includes("html { background: #0C1428; }") && indexHtml.includes("html[data-theme='light'] { background: #E4EBFB; }"));
+    indexHtml.includes("localStorage.getItem('app-theme-mode')") && indexHtml.includes("html { background: #0A1321; }") && indexHtml.includes("html[data-theme='light'] { background: #DEEBF6; }"));
   assert('Safari: bajo las barras se ve el degradado del fondo, no una franja gris plana',
     globalCss.includes("html[data-appearance='glass'] {") && globalCss.includes('background-size: 100% 100lvh;')
     && read('src', 'components', 'Wallpaper.module.scss').includes('background: transparent;'));
