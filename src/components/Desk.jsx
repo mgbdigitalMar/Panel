@@ -210,15 +210,20 @@ export function StatusPill({ tone, children }) {
   return <span className={styles.pill} data-tone={tone}><i aria-hidden="true" />{children}</span>;
 }
 
-/** Labelled row action. Tones: success, danger, accent, neutral. */
+/**
+ * Labelled row action. Tones: success, danger, accent, neutral. In a narrow table the word hides
+ * and the icon stays (see .rowActionText), so the button keeps its name for screen readers and as
+ * a tooltip.
+ */
 export function RowAction({ icon: Icon, children, tone = 'neutral', label, iconOnly, href, download, ...rest }) {
   const Tag = href ? 'a' : 'button';
+  const word = typeof children === 'string' ? children : undefined;
   return (
     <Tag type={href ? undefined : 'button'} href={href} download={download}
       className={clsx(styles.rowAction, iconOnly && styles.rowActionIcon)} data-tone={tone}
-      aria-label={iconOnly ? label : undefined} title={iconOnly ? label : undefined} {...rest}>
+      aria-label={iconOnly ? label : word} title={iconOnly ? label : word} {...rest}>
       {Icon && <Icon size={15} aria-hidden="true" />}
-      {!iconOnly && children}
+      {!iconOnly && <span className={styles.rowActionText}>{children}</span>}
     </Tag>
   );
 }
@@ -250,6 +255,8 @@ export function ShowMore({ shown, total, onMore, noun = 'elementos' }) {
 }
 
 export const srOnly = styles.srOnly;
+/** A secondary column (head item `optional: true`, and this class on its cells) that a narrow table drops. */
+export const optionalCol = styles.optional;
 
 /** Dense table for a panel: sticky head, hover rows, horizontal scroll if it ever needs it. */
 export function DeskTable({ head, children, label }) {
@@ -257,7 +264,7 @@ export function DeskTable({ head, children, label }) {
     <div className={styles.tableWrap}>
       <table className={styles.table} aria-label={label}>
         <thead>
-          <tr>{head.map((h) => <th key={h.key || h.label} scope="col" className={h.end ? styles.thEnd : undefined}>{h.label}</th>)}</tr>
+          <tr>{head.map((h) => <th key={h.key || h.label} scope="col" className={clsx(h.end && styles.thEnd, h.optional && styles.optional)}>{h.label}</th>)}</tr>
         </thead>
         <tbody>{children}</tbody>
       </table>

@@ -111,3 +111,13 @@
 }
 
 .nowrap { white-space: nowrap; }
+
+/* The kind of request on one line ("Trabajo en remoto"): the reason column gives way instead */
+@container desk-table (min-width: 761px) {
+  .kind strong { white-space: nowrap; }
+}
+
+/* A narrow table: the name may take two lines rather than push the actions off the panel */
+@container desk-table (max-width: 760px) {
+  .person { white-space: normal; }
+}

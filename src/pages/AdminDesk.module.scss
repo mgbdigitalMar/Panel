@@ -1,0 +1,231 @@
+/* Administración on a computer (AdminDesk.jsx); the shared pieces live in components/Desk */
+
+.page { display: block; }
+
+.muted { color: var(--text-mut); }
+.nowrap { white-space: nowrap; }
+
+.mono {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.you {
+  font-style: normal;
+  font-weight: 500;
+  color: var(--text-mut);
+}
+
+/* Name, (tú) and Admin on one line */
+.person strong { white-space: nowrap; }
+
+.adminTag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, #7C3AED 12%, transparent);
+  color: #7C3AED;
+  font-size: 11.5px;
+  font-weight: 600;
+  vertical-align: 1px;
+
+  :global([data-theme='dark']) & {
+    background: color-mix(in srgb, #B49BFF 16%, transparent);
+    color: #B49BFF;
+  }
+}
+
+.mail {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+  &:focus-visible { outline: none; border-radius: 4px; box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.35); }
+}
+
+/* Not signed in yet: the account exists but the person has not entered */
+.firstTag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--info) 13%, transparent);
+  color: var(--info);
+  font-size: 11.5px;
+  font-weight: 600;
+  vertical-align: 1px;
+}
+
+/* A narrow table (laptops, the 1024 px floor): names and second lines may wrap, the signing date goes */
+@container desk-table (max-width: 980px) {
+  .person strong { white-space: normal; }
+  .subline { white-space: normal; }
+  .policyDate { display: none; }
+}
+
+/* A second line under a pill: telework days, who reviewed */
+.subline {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--text-mut);
+  white-space: nowrap;
+}
+
+/* The internal rules of a person: their state, and the button that opens the signature */
+.policy {
+  --tone: var(--accent);
+  &[data-tone='success'] { --tone: var(--success); }
+  &[data-tone='warning'] { --tone: var(--warning); }
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 11px;
+  border-radius: var(--radius-full);
+  border: 1px solid color-mix(in srgb, var(--tone) 26%, transparent);
+  background: color-mix(in srgb, var(--tone) 9%, transparent);
+  color: var(--tone);
+  font: 600 12.5px/1 var(--font-body);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover { background: color-mix(in srgb, var(--tone) 16%, transparent); }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.45); }
+}
+
+.policyDate {
+  font-weight: 500;
+  color: var(--text-mut);
+  font-variant-numeric: tabular-nums;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 34ch;
+
+  span {
+    padding: 3px 9px;
+    border-radius: var(--radius-full);
+    background: rgba(var(--text-rgb), 0.06);
+    color: var(--text-sec);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+}
+
+.reason {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 34ch;
+  line-height: 1.4;
+}
+
+.hours {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* Date filter in a panel toolbar, the shape of DeskSelect */
+.date {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 6px 0 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--lg-edge);
+  background: rgba(var(--text-rgb), 0.05);
+  color: var(--text-mut);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus-within {
+    border-color: rgba(var(--accent-rgb), 0.5);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.18);
+  }
+
+  input {
+    height: 30px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    color-scheme: light dark;
+  }
+}
+
+/* Under the figures: the signatures could not be loaded */
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -6px 2px 14px;
+  font-size: 13px;
+  color: var(--warning);
+}
+
+/* What waits for RRHH, on the brand panel */
+.todo {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 40px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.88);
+    font: 500 13.5px/1.2 var(--font-body);
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover { background: rgba(255, 255, 255, 0.16); }
+    &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5); }
+
+    span { flex: 1; }
+
+    strong {
+      min-width: 26px;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: var(--radius-full);
+      display: inline-grid;
+      place-items: center;
+      background: #FFFFFF;
+      color: #1E40AF;
+      font-size: 12.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Nothing pending: quieter, so what needs work stands out */
+    &[data-zero] { color: rgba(255, 255, 255, 0.6); }
+    &[data-zero] strong { background: rgba(255, 255, 255, 0.14); color: rgba(255, 255, 255, 0.75); }
+  }
+}

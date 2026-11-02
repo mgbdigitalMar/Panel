@@ -582,8 +582,9 @@
   padding: 36px 20px 40px;
   text-align: center;
 
-  strong { font-size: 15px; color: var(--text); }
-  span { max-width: 44ch; font-size: 13.5px; color: var(--text-sec); }
+  /* Its own lines only: a bare `span` also greyed the label inside the action button */
+  > strong { font-size: 15px; color: var(--text); }
+  > span:not(.emptyMark) { max-width: 44ch; font-size: 13.5px; color: var(--text-sec); }
   > :last-child:not(span):not(strong) { margin-top: 10px; }
 }
 
@@ -632,6 +633,26 @@
 /* Table ---------------------------------------------------------------------------- */
 .tableWrap {
   overflow-x: auto;
+  container: desk-table / inline-size;
+}
+
+/* A narrow table (a laptop, or the 1024 px floor of this layout): row actions keep their icon,
+   their name moves to the tooltip, so the columns fit without a sideways scroll */
+@container desk-table (max-width: 1040px) {
+  .rowAction:not(.rowActionIcon) {
+    width: 34px;
+    padding: 0;
+  }
+
+  .rowActionText { display: none; }
+}
+
+/* At the 1024 px floor the secondary columns go (each row keeps what identifies it) */
+@container desk-table (max-width: 760px) {
+  .optional { display: none; }
+
+  .table th:not(:first-child):not(:last-child),
+  .table td:not(:first-child):not(:last-child) { padding-inline: 10px; }
 }
 
 .table {
@@ -679,9 +700,11 @@
     &:last-child td { border-bottom: 0; }
   }
 
-  /* A row that needs someone: a warm rail on its left edge */
-  tbody tr[data-attention] td:first-child {
-    box-shadow: inset 3px 0 0 var(--warning);
+  /* A row that needs someone: a faint warm wash (its status badge names why) */
+  tbody tr[data-attention] {
+    background: color-mix(in srgb, var(--warning) 5%, transparent);
+
+    &:hover { background: color-mix(in srgb, var(--warning) 8%, transparent); }
   }
 
   /* A labelled divider row inside a list (e.g. "Anteriores") */
@@ -708,13 +731,14 @@
   gap: 2px;
   min-width: 0;
 
-  strong {
+  > strong {
     font-size: 14px;
     font-weight: 600;
     color: var(--text);
   }
 
-  span {
+  /* The second line only: a bare `span` also greyed tags inside the title (Admin, Primer acceso) */
+  > span {
     font-size: 12.5px;
     color: var(--text-mut);
   }
@@ -739,11 +763,11 @@
   border: 1px solid color-mix(in srgb, var(--tone) 22%, transparent);
 }
 
+/* One line: wrapping stacked Aprobar over Rechazar and doubled the height of the rows that wait */
 .rowActions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  flex-wrap: wrap;
   gap: 6px;
 }
 

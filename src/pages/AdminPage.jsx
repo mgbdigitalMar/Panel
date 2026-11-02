@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth, useReservations, useDocuments, useHours, useDataSync, useRequests, useNotifs } from '../context';
 import { toUserMessage } from '../../shared/utils/errors.js';
-import { Avatar, Badge, Modal, Input, Select, Button, Card, ConfirmModal, Section } from '../components/ui';
-import { Search, Plus, Edit2, Trash2, Building, Car, FileText, Send, Clock, CheckCircle, Check, PenTool, Upload, X, Timer, Download, PenLine, RotateCcw, ShieldCheck } from 'lucide-react';
+import { Avatar, Modal, Input, Select, Button, ConfirmModal } from '../components/ui';
+import { FileText, Send, Clock, Check, Upload, X, PenLine, RotateCcw } from 'lucide-react';
 import { SignatureView } from '../components/SignaturePad';
 import { fetchPolicySignatures, latestSignatureByUser, policyStatus, formatSignedAt, PLATFORM_LABELS, POLICY_TITLE } from '../../shared/services/policy.js';
 import styles from './AdminPage.module.scss';
@@ -11,11 +11,9 @@ import { supabase } from '../utils/supabase';
 import { createEmployeeAccount, setEmployeePassword } from '../../shared/services/auth.js';
 import { mapProfile, saveDni } from '../../shared/services/profiles.js';
 import { TELEWORK_WEEKDAYS, teleworkScheduleUpdate, formatTeleworkDays, localISODate } from '../../shared/services/workMode.js';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, UsersRound, KeyRound, ClipboardCheck } from 'lucide-react';
 import { useTouch } from '../components/Touch';
-import { DeskHeader, DeskLayout, DeskRail, DeskSpotlight } from '../components/Desk';
 import AdminTouch from './AdminTouch';
+import AdminDesk from './AdminDesk';
 
 const DEPARTMENTS = [
   { value: 'Administración - RRHH', label: 'Administración - RRHH' },
@@ -39,18 +37,6 @@ export default function AdminPage() {
   // Errors go to the app's toasts instead of a blocking browser alert
   const { announce } = useNotifs();
   const fail = (msg) => announce('❌', msg, 7000);
-
-  const [hoursFilterFrom, setHoursFilterFrom] = useState('');
-  const [hoursFilterTo,   setHoursFilterTo]   = useState('');
-  const [hoursFilterEmp,  setHoursFilterEmp]  = useState('');
-
-  const filteredHours = useMemo(() => (hourCompensations || [])
-    .filter(h => h.type === 'bolsa')
-    .filter(h => !hoursFilterEmp || h.employeeId === hoursFilterEmp)
-    .filter(h => !hoursFilterFrom || h.date >= hoursFilterFrom)
-    .filter(h => !hoursFilterTo   || h.date <= hoursFilterTo), 
-    [hourCompensations, hoursFilterEmp, hoursFilterFrom, hoursFilterTo]
-  );
 
   const exportHoursCSV = (rows) => {
     const headers = ['Empleado', 'Fecha', 'Motivo', 'Horas', 'Estado', 'Revisado por', 'Fecha solicitud'];
@@ -81,13 +67,6 @@ export default function AdminPage() {
   const [showModal, setShowModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [editEmp, setEditEmp]     = useState(null);
-  const [search, setSearch]       = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 300);
-    return () => clearTimeout(t);
-  }, [search]);
-  const [deptFilter, setDeptFilter] = useState('all');
   const [showResModal, setShowResModal] = useState(false);
   const [resType, setResType]     = useState('room');
   const [showDocModal, setShowDocModal] = useState(false);
@@ -218,15 +197,6 @@ export default function AdminPage() {
     setHoursBusy(null);
     if (!res?.error) announce(status === 'approved' ? '✅' : '❌', `${status === 'approved' ? 'Horas aprobadas' : 'Horas rechazadas'}. Se ha avisado a ${(h.employeeName || 'la persona').split(' ')[0]}.`);
   };
-
-  const depts = useMemo(() => [...new Set(employees.map(e => e.dept))], [employees]);
-  const filtered = useMemo(() => employees.filter(e => {
-    const matchesSearch = e.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                          e.email.toLowerCase().includes(debouncedSearch.toLowerCase());
-    const matchesDept = deptFilter === 'all' ||
-      (deptFilter === 'Otros' ? !depts.slice(0, 5).includes(e.dept) : e.dept === deptFilter);
-    return matchesSearch && matchesDept;
-  }), [employees, debouncedSearch, deptFilter, depts]);
 
   // One save at a time: a double click created the account twice (the second one failed half-way)
   const [savingEmp, setSavingEmp] = useState(false);
@@ -412,7 +382,7 @@ export default function AdminPage() {
     });
   };
 
-  // One handler per action, shared by the computer layout and the touch one (AdminTouch)
+  // One handler per action, shared by the computer layout (AdminDesk) and the touch one (AdminTouch)
   const openNewEmployee = () => {
     setEditEmp(null);
     setForm({ name: '', email: '', password: '', role: 'employee', dept: '', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [], policyAccepted: false });
@@ -521,73 +491,8 @@ export default function AdminPage() {
   };
 
   const touch = useTouch();
-  const sectionActions = (
-    <>
-          {tab === 'employees' && (
-            <Button icon={Plus} onClick={openNewEmployee}>
-              Nuevo empleado
-            </Button>
-          )}
-          {tab === 'rooms' && (
-            <Button icon={Plus} onClick={() => openNewResource('room')}>
-              Nueva sala
-            </Button>
-          )}
-          {tab === 'vehicles' && (
-            <Button icon={Plus} onClick={() => openNewResource('vehicle')}>
-              Nuevo vehículo
-            </Button>
-          )}
-          {tab === 'documents' && (
-            <>
-              <Button icon={Upload} variant="ghost" onClick={() => setShowOnboardingModal(true)}>
-                Actualizar doc. inicio
-              </Button>
-              <Button icon={Send} onClick={() => setShowDocModal(true)}>
-                Enviar documento
-              </Button>
-            </>
-          )}
-          {tab === 'bolsahoras' && filteredHours.length > 0 && (
-            <Button icon={Download} variant="ghost" onClick={() => exportHoursCSV(filteredHours)}>
-              Descargar Excel
-            </Button>
-          )}
-    </>
-  );
   const sentDocs = (documents || []).filter(d => d.title !== '__ONBOARDING_DOC__');
   const bolsaHours = (hourCompensations || []).filter(h => h.type === 'bolsa');
-  const pendingHours = bolsaHours.filter(h => h.status === 'pending').length;
-  const firstAccess = employees.filter(e => e.firstLogin === true || e.firstLogin === 'true').length;
-  const todo = [
-    { key: 'hours', label: 'Horas por aprobar', value: pendingHours, go: 'bolsahoras', icon: Timer },
-    { key: 'policy', label: 'Normas sin firmar', value: policyCounts.pending, go: 'employees', icon: ClipboardCheck },
-    { key: 'first', label: 'Primer acceso pendiente', value: firstAccess, go: 'employees', icon: KeyRound },
-  ];
-  const deskSide = (
-    <>
-      <DeskRail title="Secciones" value={tab} onChange={setTab} items={[
-        { value: 'employees', label: 'Empleados', hint: 'Altas, accesos y normas', icon: UsersRound, tone: 'accent', count: employees.length },
-        { value: 'rooms', label: 'Salas', hint: 'Espacios que se reservan', icon: Building, tone: 'info', count: rooms.length },
-        { value: 'vehicles', label: 'Vehículos', hint: 'Flota de empresa', icon: Car, tone: 'warning', count: vehicles.length },
-        { value: 'documents', label: 'Documentos', hint: 'Envíos y su estado', icon: FileText, tone: 'purple', count: sentDocs.length },
-        { value: 'bolsahoras', label: 'Bolsa de horas', hint: pendingHours ? 'Esperan tu decisión' : 'Todo revisado', icon: Timer, tone: 'success', count: pendingHours, alert: pendingHours > 0 },
-      ]} />
-      <DeskSpotlight icon={ClipboardCheck} label="Para revisar">
-        <ul className={styles.todo}>
-          {todo.map(t => (
-            <li key={t.key}>
-              <button type="button" onClick={() => setTab(t.go)} data-zero={t.value === 0 || undefined}>
-                <t.icon size={15} aria-hidden="true" />
-                <span>{t.label}</span>
-                <strong>{t.value}</strong>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </DeskSpotlight>
-    </>
-  );
 
   return (
     <div className={styles.container}>
@@ -605,512 +510,18 @@ export default function AdminPage() {
           onExportHours={exportHoursCSV} hoursBusy={hoursBusy}
         />
       ) : (
-        <DeskHeader icon={Settings} title="Administración"
-          desc="Empleados, salas, vehículos, documentos y bolsa de horas: todo lo que gestiona RRHH, en un sitio."
-          actions={sectionActions} />
-      )}
-
-      {/* Computers: the sections in a side list next to the content */}
-      {!touch && (
-      <DeskLayout side={deskSide} sideLabel="Secciones de administración">
-
-      {/* Employees */}
-      <AnimatePresence mode="wait">
-      {tab === 'employees' && (
-        <motion.div 
-          key="employees"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-        >
-          <Section title="Empleados" description="Altas, datos de contacto y modalidad de cada persona." />
-          <div className={styles.policySummary} aria-label="Firma de las normas internas">
-            <ShieldCheck size={18} aria-hidden="true" />
-            <span className={styles.policySummaryText}>
-              <strong>Normas internas:</strong> {policyCounts.signed} de {employees.length} firmadas
-              {policyCounts.manual > 0 && <> · {policyCounts.manual} aceptadas sin firma</>}
-              {policyCounts.pending > 0 && <> · {policyCounts.pending} pendientes</>}
-              {signatures === null && <> · <span className={styles.policySummaryWarn}>no se han podido cargar las firmas</span></>}
-            </span>
-            <Button size="sm" variant="ghost" icon={Download} onClick={exportSignaturesCSV} disabled={!signatures}>
-              Registro de firmas (CSV)
-            </Button>
-          </div>
-          <Card className={styles.tableCard}>
-            <div className={styles.tableHeaderSection}>
-              <div className={styles.searchWrapper}>
-                <Search className={styles.searchIcon} size={16} />
-                <input 
-                  className={styles.searchInput}
-                  value={search} 
-                  onChange={e => setSearch(e.target.value)} 
-                  placeholder="Buscar empleado por nombre o email..."
-                />
-              </div>
-
-              <div className={styles.deptStats}>
-                <div 
-                  className={clsx(styles.deptBadge, { [styles.deptBadgeActive]: deptFilter === 'all' })} 
-                  title="Todos"
-                  onClick={() => setDeptFilter('all')}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <span>Todos</span>
-                  <span>{employees.length}</span>
-                </div>
-                {depts.slice(0, 5).map(d => (
-                  <div 
-                    key={d} 
-                    className={clsx(styles.deptBadge, { [styles.deptBadgeActive]: deptFilter === d })} 
-                    title={d}
-                    onClick={() => setDeptFilter(deptFilter === d ? 'all' : d)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <span>{d.includes('-') ? d.split('-')[0].trim() : d}</span>
-                    <span>{employees.filter(e => e.dept === d).length}</span>
-                  </div>
-                ))}
-                {depts.length > 5 && (
-                  <div 
-                    className={clsx(styles.deptBadge, { [styles.deptBadgeActive]: deptFilter === 'Otros' })}
-                    onClick={() => setDeptFilter(deptFilter === 'Otros' ? 'all' : 'Otros')}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <span>Otros</span>
-                    <span>{employees.filter(e => !depts.slice(0,5).includes(e.dept)).length}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className={styles.tableWrapper}>
-              <table className="table">
-                <thead>
-                  <tr>
-                    {['Usuario', 'Puesto', 'Contacto', 'Modalidad', 'Acciones'].map(h => (
-                      <th key={h}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="stagger-quick">
-                  {filtered.map(emp => (
-                    <tr key={emp.id}>
-                      <td data-label="Usuario">
-                        <div className={styles.userCell}>
-                          <Avatar initials={emp.avatar} size={42} />
-                          <div>
-                            <div className={styles.userNameContainer}>
-                              <p className={styles.userName}>{emp.name}</p>
-                              {emp.role === 'admin' && <Badge status="admin" />}
-                            </div>
-                            <p className={styles.userPhone}>{emp.phone || 'Sin DNI'}</p>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td data-label="Puesto">
-                        <p className={styles.positionTitle}>{emp.position || 'Sin cargo'}</p>
-                        <p className={styles.positionDept}>{emp.dept}</p>
-                      </td>
-
-                      <td data-label="Contacto">
-                        <div className={styles.contactWrapper}>
-                          <Badge 
-                            status="neutral" 
-                            label={emp.firstLogin ? 'Primer acceso pendiente' : 'Activo'} 
-                            className={emp.firstLogin ? 'variant-warning' : 'variant-success'}
-                          />
-                          {(() => {
-                            const sig = lastSignature[emp.id];
-                            const st = policyStatus(emp, sig);
-                            return (
-                              <button
-                                type="button"
-                                className={clsx(styles.policyToggle, st === 'signed' ? styles.policyAccepted : st === 'manual' ? styles.policyManual : styles.policyPending)}
-                                onClick={() => setPolicyEmpId(emp.id)}
-                                disabled={policySaving === emp.id}
-                                aria-haspopup="dialog"
-                                title="Ver la firma de las normas internas"
-                              >
-                                {st === 'signed' ? <PenLine size={12} aria-hidden="true" /> : st === 'manual' ? <Check size={12} strokeWidth={3} aria-hidden="true" /> : <Clock size={12} aria-hidden="true" />}
-                                {st === 'signed' ? `Normas firmadas ${formatSignedAt(sig.signedAt).slice(0, 10)}` : st === 'manual' ? 'Normas aceptadas sin firma' : 'Firma de normas pendiente'}
-                              </button>
-                            );
-                          })()}
-                          {(() => {
-                            const mode = (emp.workMode || 'office').toLowerCase();
-                            const isExterno = mode === 'externo' || mode === 'field';
-                            const isMe = emp.id === user?.id;
-                            
-                            return isExterno ? (
-                              <a 
-                                href={`mailto:${emp.email}`} 
-                                className={clsx(styles.contactLink, isMe ? styles.contactLinkMe : styles.contactLinkOther)}
-                              >
-                                {emp.email}
-                              </a>
-                            ) : (
-                              <span className={clsx(styles.contactEmailText, isMe ? styles.contactEmailMe : styles.contactEmailOther)}>
-                                {emp.email}
-                              </span>
-                            );
-                          })()}
-                        </div>
-                      </td>
-
-                      <td data-label="Modalidad">
-                        {(() => {
-                          const mode = (emp.workMode || 'office').toLowerCase();
-                          const isOffice = mode === 'office' || mode === 'oficina';
-                          const isRemote = mode === 'remote' || mode === 'remoto';
-                          
-                          return (
-                            <>
-                              <span className={clsx(styles.workModeBadge, isOffice ? styles.workModeOffice : isRemote ? styles.workModeRemote : styles.workModeExternal)}>
-                                {isOffice ? 'OFICINA' : isRemote ? 'REMOTO' : 'EXTERNO'}
-                              </span>
-                              {emp.teleworkDays?.length > 0 && (
-                                <span className={styles.teleworkSchedule} title={`Teletrabajo: ${formatTeleworkDays(emp.teleworkDays)}`}>
-                                  Teletrabajo: {TELEWORK_WEEKDAYS.filter(w => emp.teleworkDays.includes(w.day)).map(w => w.short).join(' · ')}
-                                </span>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </td>
-
-                      <td data-label="Acciones">
-                        <div className={styles.actionsCell}>
-                          <Button variant="action" iconOnly icon={Edit2} onClick={() => handleEdit(emp)} title="Editar empleado" />
-                          <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => handleDelete(emp.id)} title="Dar de baja" />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* Rooms */}
-      {tab === 'rooms' && (
-        <motion.div 
-          key="rooms"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-        >
-          <Section title="Salas" description="Espacios que el equipo puede reservar." />
-
-          <div className={clsx(styles.grid, 'stagger-quick')}>
-            {rooms.map(room => (
-              <Card key={room.id} className={styles.resourceCard}>
-                <div className={styles.resourceHeader}>
-                  <div className={clsx(styles.resourceIcon, styles.iconAccent)}>
-                    <Building size={22} />
-                  </div>
-                  <div className={clsx(styles.actionsCell, styles.actionsCellRight)}>
-                    <Button variant="action" iconOnly icon={Edit2} onClick={() => openEditResource('room', room)} title="Editar" />
-                    <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => confirmDeleteResource('room', room)} title="Eliminar" />
-                  </div>
-                </div>
-                <h4 className={styles.resourceTitle}>{room.name}</h4>
-                <p className={styles.resourceMeta}>Planta {room.floor} · Capacidad: {room.capacity} personas</p>
-                <div className={styles.tagList}>
-                  {room.equipment.map(eq => <span key={eq} className={styles.tag}>{eq}</span>)}
-                </div>
-              </Card>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Vehicles */}
-      {tab === 'vehicles' && (
-        <motion.div 
-          key="vehicles"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-        >
-          <Section title="Vehículos" description="Flota de empresa disponible para reservas." />
-
-          <div className={clsx(styles.grid, 'stagger-quick')}>
-            {vehicles.map(v => (
-              <Card key={v.id} className={styles.resourceCard}>
-                <div className={styles.resourceHeader}>
-                  <div className={clsx(styles.resourceIcon, styles.iconWarning)}>
-                    <Car size={22} />
-                  </div>
-                  <div className={clsx(styles.actionsCell, styles.actionsCellRight)}>
-                    <Button variant="action" iconOnly icon={Edit2} onClick={() => openEditResource('vehicle', v)} title="Editar" />
-                    <Button variant="action-danger" iconOnly icon={Trash2} onClick={() => confirmDeleteResource('vehicle', v)} title="Eliminar" />
-                  </div>
-                </div>
-                <h4 className={styles.resourceTitle}>{v.model}</h4>
-                <p className={styles.resourceMeta}>Matrícula: <strong>{v.plate}</strong></p>
-                <p className={clsx(styles.resourceMeta, styles.resourceMetaNoMargin)}>{v.type} · {v.year}</p>
-              </Card>
-            ))}
-          </div>
-        </motion.div>
-      )}
-      </AnimatePresence>
-
-      {/* Documents */}
-      <AnimatePresence mode="wait">
-      {tab === 'documents' && (
-        <motion.div
-          key="documents"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-        >
-          <Section title="Documentos" description="Envía documentos para firmar o completar y sigue su estado." />
-          <Card className={styles.tableCard}>
-            <div className={clsx(styles.tableHeaderSection, styles.tableHeaderPadding)}>
-              <p className={styles.documentTableHeaderTitle}>
-                Documentos enviados
-              </p>
-              <span className={styles.documentTableHeaderCount}>
-                {sentDocs.length} documento(s)
-              </span>
-            </div>
-            {sentDocs.length === 0 ? (
-              <div className={styles.documentEmptyState}>
-                <FileText size={40} strokeWidth={1} className={styles.emptyStateIcon} />
-                <p className={styles.emptyStateText}>No se ha enviado ningún documento</p>
-              </div>
-            ) : (
-              <div className={styles.tableWrapper}>
-                <table className="table">
-                  <thead>
-                    <tr>
-                      {['Documento', 'Destinatario', 'Estado', 'Fecha', 'Acciones'].map(h => (
-                        <th key={h}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="stagger-quick">
-                    {sentDocs.map(doc => {
-                      const recipient = employees.find(e => String(e.id) === String(doc.recipientId));
-                      const recipName   = recipient?.name   || doc.recipientName || '—';
-                      const recipAvatar = recipient?.avatar  || recipName.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
-                      return (
-                        <tr key={doc.id}>
-                          <td data-label="Documento">
-                            <div className={styles.flexCenterGap10}>
-                              <div className={styles.docIconWrapper}>
-                                <FileText size={16} />
-                              </div>
-                              <div>
-                                <p className={styles.docTitleText}>{doc.title}</p>
-                                {doc.description && (
-                                  <p className={styles.docDescText}>{doc.description}</p>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td data-label="Destinatario">
-                            <div className={styles.flexCenterGap8}>
-                              <Avatar initials={recipAvatar} size={28} />
-                              <div>
-                                <span className={styles.recipName}>{recipName}</span>
-                                {recipient?.dept && <span className={styles.recipDept}>{recipient.dept}</span>}
-                              </div>
-                            </div>
-                          </td>
-                          <td data-label="Estado">
-                            <span className={clsx(styles.docStatusBadge, {
-                              [styles.docStatusPending]:   doc.status === 'pending',
-                              [styles.docStatusSigned]:    doc.status === 'signed',
-                              [styles.docStatusCompleted]: doc.status === 'completed',
-                            })}>
-                              {doc.status === 'pending'   && <><Clock size={11} /> Pendiente</>}
-                              {doc.status === 'signed'    && <><PenTool size={11} /> Firmado</>}
-                              {doc.status === 'completed' && <><CheckCircle size={11} /> Completado</>}
-                            </span>
-                          </td>
-                          <td data-label="Fecha" className={styles.docDate}>
-                            {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
-                          </td>
-                          <td data-label="Acciones">
-                            <div className={styles.actionsCell}>
-                              {doc.fileUrl && (
-                                <Button
-                                  variant="action-download" iconOnly icon={Download}
-                                  href={doc.fileUrl}
-                                  download={doc.title || "documento"}
-                                  title="Descargar archivo"
-                                />
-                              )}
-                              <Button
-                                variant="action-danger" iconOnly icon={Trash2}
-                                onClick={() => confirmDeleteDocument(doc)}
-                                title="Eliminar documento"
-                              />
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Card>
-        </motion.div>
-      )}
-      </AnimatePresence>
-
-      {/* Bolsa horas */}
-      <AnimatePresence mode="wait">
-      {tab === 'bolsahoras' && (
-        <motion.div
-          key="bolsahoras"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-        >
-          <Section title="Bolsa de horas" description="Aprueba o rechaza las horas que acumula el equipo." />
-          <Card className={styles.tableCard}>
-            <div className={styles.filtersHeader}>
-              <div className={styles.filterField}>
-                <label className={styles.filterLabel}>Empleado</label>
-                <select
-                  value={hoursFilterEmp}
-                  onChange={e => setHoursFilterEmp(e.target.value)}
-                  className={styles.filterSelect}
-                >
-                  <option value="">Todos</option>
-                  {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                </select>
-              </div>
-              <div className={styles.filterField}>
-                <label className={styles.filterLabel}>Desde</label>
-                <input type="date" value={hoursFilterFrom} onChange={e => setHoursFilterFrom(e.target.value)}
-                  className={styles.filterDateInput} />
-              </div>
-              <div className={styles.filterField}>
-                <label className={styles.filterLabel}>Hasta</label>
-                <input type="date" value={hoursFilterTo} onChange={e => setHoursFilterTo(e.target.value)}
-                  className={styles.filterDateInput} />
-              </div>
-              {(hoursFilterEmp || hoursFilterFrom || hoursFilterTo) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => { setHoursFilterEmp(''); setHoursFilterFrom(''); setHoursFilterTo(''); }}
-                >
-                  Limpiar
-                </Button>
-              )}
-              <span className={styles.filterSummaryText}>
-                {filteredHours.length} solicitud{filteredHours.length !== 1 ? 'es' : ''} &bull; {filteredHours.reduce((s, h) => s + (h.status === 'approved' ? h.hours : 0), 0).toFixed(1)}h aprobadas
-              </span>
-            </div>
-
-            {filteredHours.length === 0 ? (
-              <div className={styles.documentEmptyState}>
-                <Timer size={40} strokeWidth={1} className={styles.emptyStateIcon} />
-                <p className={styles.emptyStateText}>No hay solicitudes de bolsa con los filtros aplicados</p>
-              </div>
-            ) : (
-              <div className={styles.tableWrapper}>
-                <table className="table">
-                  <thead>
-                    <tr>
-                      {['Empleado', 'Fecha', 'Motivo', 'Horas', 'Estado', 'Acciones'].map(h => <th key={h}>{h}</th>)}
-                    </tr>
-                  </thead>
-                  <tbody className="stagger-quick">
-                    {filteredHours.map(h => {
-                      const emp = employees.find(e => String(e.id) === String(h.employeeId));
-                      const empName = emp?.name || h.employeeName || 'Empleado';
-                      const empAvatar = emp?.avatar || empName.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
-                      return (
-                        <tr key={h.id}>
-                          <td data-label="Empleado">
-                            <div className={styles.flexCenterGap8}>
-                              <Avatar initials={empAvatar} size={30} />
-                              <div>
-                                <span className={styles.recipName}>{empName}</span>
-                                {emp?.dept && <span className={styles.recipDept}>{emp.dept}</span>}
-                              </div>
-                            </div>
-                          </td>
-                          <td data-label="Fecha" className={styles.boldDateCell}>
-                            {h.date ? new Date(h.date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
-                          </td>
-                          <td data-label="Motivo" className={styles.reasonCell}>
-                            {h.reason}
-                          </td>
-                          <td data-label="Horas">
-                            <span className={styles.hoursPill}>
-                              {h.hours}h
-                            </span>
-                          </td>
-                          <td data-label="Estado">
-                            <span className={clsx(styles.docStatusBadge, {
-                              [styles.statusPending]:   h.status === 'pending',
-                              [styles.statusApproved]:  h.status === 'approved',
-                              [styles.statusRejected]:  h.status === 'rejected',
-                            })}>
-                              {h.status === 'pending'  && <><Clock size={11} /> Pendiente</>}
-                              {h.status === 'approved' && <><CheckCircle size={11} /> Aprobada</>}
-                              {h.status === 'rejected' && <><X size={11} /> Rechazada</>}
-                            </span>
-                          </td>
-                          <td data-label="Acciones">
-                            <div className={styles.actionsCell}>
-                              {h.status === 'pending' ? (
-                                <>
-                                  <Button
-                                    variant="action-success" iconOnly icon={Check}
-                                    onClick={() => reviewHours(h, 'approved')}
-                                    loading={hoursBusy === h.id}
-                                    title="Aprobar"
-                                    aria-label={`Aprobar ${h.hours} h de ${h.employeeName || 'empleado'}`}
-                                  />
-                                  <Button
-                                    variant="action-danger" iconOnly icon={X}
-                                    onClick={() => confirmRejectHours(h)}
-                                    disabled={hoursBusy === h.id}
-                                    title="Rechazar"
-                                    aria-label={`Rechazar ${h.hours} h de ${h.employeeName || 'empleado'}`}
-                                  />
-                                </>
-                              ) : (
-                                <span className={styles.reviewerNameText}>
-                                  {h.reviewerName ? `por ${h.reviewerName}` : '—'}
-                                </span>
-                              )}
-                              <Button
-                                variant="action-danger" iconOnly icon={Trash2}
-                                onClick={() => confirmDeleteHours(h)}
-                                title="Eliminar registro"
-                              />
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Card>
-        </motion.div>
-      )}
-      </AnimatePresence>
-      </DeskLayout>
+        <AdminDesk
+          tab={tab} setTab={setTab} user={user}
+          employees={employees} rooms={rooms} vehicles={vehicles}
+          documents={sentDocs} hours={bolsaHours}
+          lastSignature={lastSignature} policyCounts={policyCounts} signaturesFailed={signatures === null}
+          onNewEmployee={openNewEmployee} onEditEmployee={handleEdit} onDeleteEmployee={handleDelete}
+          onOpenPolicy={setPolicyEmpId} onExportSignatures={exportSignaturesCSV}
+          onNewResource={openNewResource} onEditResource={openEditResource} onDeleteResource={confirmDeleteResource}
+          onSendDocument={() => setShowDocModal(true)} onUpdateOnboarding={() => setShowOnboardingModal(true)} onDeleteDocument={confirmDeleteDocument}
+          onApproveHours={(h) => reviewHours(h, 'approved')} onRejectHours={confirmRejectHours} onDeleteHours={confirmDeleteHours}
+          onExportHours={exportHoursCSV} hoursBusy={hoursBusy}
+        />
       )}
 
       <Modal open={showModal} onClose={() => { setShowModal(false); setEditEmp(null); }} title={editEmp ? 'Editar empleado' : 'Nuevo empleado'}>

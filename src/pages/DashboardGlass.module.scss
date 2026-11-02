@@ -417,7 +417,6 @@ $gap: 18px;
     padding: 10px 12px;
     border-radius: 14px;
     background: rgba(var(--text-rgb), 0.05);
-    border-left: 3px solid var(--tone);
 
     &[data-type='vehicle'] { --tone: var(--warning); }
   }
@@ -430,7 +429,8 @@ $gap: 18px;
   height: 30px;
   flex-shrink: 0;
   border-radius: 10px;
-  background: rgba(var(--text-rgb), 0.07);
+  /* The icon tile carries the type's colour (blue room, amber vehicle) */
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
   color: var(--tone);
 }
 

@@ -242,7 +242,7 @@ export default function ReservationsTouch({
                     </div>
                     {/* Only admins see a hidden resource (ReservationsPage filters it for employees) */}
                     <span className={styles.avail} data-busy={res.until || res.hidden ? true : undefined}>
-                      {res.hidden ? 'Oculto a los empleados' : res.until ? `En uso hasta ${res.until}` : 'Libre ahora'}
+                      {res.hidden ? 'Oculto al equipo' : res.until ? `En uso hasta ${res.until}` : 'Libre ahora'}
                     </span>
                   </div>
 

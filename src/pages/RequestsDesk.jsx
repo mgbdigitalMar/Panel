@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
+import clsx from 'clsx';
 import { Download, Plus, Check, X, Trash2, Paperclip, Sun, Home, Briefcase, ShoppingCart, Inbox, Layers, FileText } from 'lucide-react';
 import { Avatar, Button } from '../components/ui';
 import {
   DeskHeader, DeskLayout, DeskRail, DeskMetrics, DeskPanel, DeskSpotlight, SpotAction, DeskSearch, DeskSegmented,
-  DeskTable, CellStack, TypeTile, StatusPill, RowAction, RowActions, DeskEmpty, ShowMore,
+  DeskTable, CellStack, TypeTile, StatusPill, RowAction, RowActions, DeskEmpty, ShowMore, optionalCol,
 } from '../components/Desk';
 import { todayKey, fmtDate } from '../utils/format';
 import { PERSONAL_DAYS_PER_YEAR } from '../../shared/config/constants.js';
@@ -143,7 +144,7 @@ export default function RequestsDesk({ allItems, user, requestDetail, rowKey, on
           tools={(
             <>
               <DeskSearch value={query} onChange={(v) => { setQuery(v); setLimit(PAGE); }} label="Buscar solicitudes"
-                placeholder={isAdmin ? 'Buscar por persona, motivo o artículo' : 'Buscar por motivo o artículo'} />
+                placeholder={isAdmin ? 'Persona, motivo o artículo' : 'Motivo o artículo'} />
               {isAdmin && (
                 <DeskSegmented label="De quién" value={scope} onChange={(v) => { setScope(v); setLimit(PAGE); }} options={[
                   { value: 'all', label: 'Equipo' }, { value: 'mine', label: 'Mías', count: mine.length },
@@ -165,7 +166,7 @@ export default function RequestsDesk({ allItems, user, requestDetail, rowKey, on
                 { label: 'Solicitud' },
                 ...(isAdmin && scope === 'all' ? [{ label: 'Persona' }] : []),
                 { label: 'Motivo' },
-                { label: 'Enviada' },
+                { label: 'Enviada', optional: true },
                 { label: 'Estado' },
                 { label: 'Acciones', end: true },
               ]}>
@@ -176,7 +177,7 @@ export default function RequestsDesk({ allItems, user, requestDetail, rowKey, on
                   const review = isAdmin && r.status === 'pending';
                   return (
                     <tr key={rowKey(r)} data-attention={review || undefined}>
-                      <td><CellStack lead={<TypeTile icon={t.icon} tone={t.tone} />} title={t.label} sub={requestDetail(r)} /></td>
+                      <td className={styles.kind}><CellStack lead={<TypeTile icon={t.icon} tone={t.tone} />} title={t.label} sub={requestDetail(r)} /></td>
                       {isAdmin && scope === 'all' && (
                         <td>
                           <span className={styles.person}>
@@ -186,7 +187,7 @@ export default function RequestsDesk({ allItems, user, requestDetail, rowKey, on
                         </td>
                       )}
                       <td><span className={styles.reason} title={r.reason || undefined}>{r.reason || '—'}</span></td>
-                      <td className={styles.nowrap}><time dateTime={r.createdAt}>{fmtDate(r.createdAt)}</time></td>
+                      <td className={clsx(styles.nowrap, optionalCol)}><time dateTime={r.createdAt}>{fmtDate(r.createdAt)}</time></td>
                       <td>
                         <StatusPill tone={st.tone}>{st.label}</StatusPill>
                         {reviewLine(r) && <span className={styles.reviewed}>{reviewLine(r)}</span>}

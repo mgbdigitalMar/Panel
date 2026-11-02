@@ -16,3 +16,5 @@ pass
 # Web Push secrets (VAPID private key) — set them with: supabase secrets set --env-file supabase/.env.push
 supabase/.env*
 
+# Playwright CLI output (may contain credentials)
+.playwright-cli/

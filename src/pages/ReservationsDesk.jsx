@@ -143,7 +143,7 @@ export default function ReservationsDesk({
                   <DayLine bookings={x.today} nowMins={nowMins} name={x.name} />
                   <div className={styles.resEnd}>
                     {x.isActive === false
-                      ? <StatusPill tone="neutral">Oculto a los empleados</StatusPill>
+                      ? <StatusPill tone="neutral">Oculto al equipo</StatusPill>
                       : x.until
                         ? <StatusPill tone="warning">En uso hasta {x.until}</StatusPill>
                         : <StatusPill tone="success">Libre ahora</StatusPill>}
@@ -222,7 +222,7 @@ export default function ReservationsDesk({
         {view === 'resources' && (
           <>
             <div className={styles.toolbar}>
-              <DeskSearch value={query} onChange={setQuery} label="Buscar salas y vehículos" placeholder="Buscar sala, vehículo, matrícula o equipamiento" />
+              <DeskSearch value={query} onChange={setQuery} label="Buscar salas y vehículos" placeholder="Sala, vehículo o matrícula" />
               <DeskSegmented label="Tipo de recurso" value={kind} onChange={setKind} options={[
                 { value: 'all', label: 'Todo' }, { value: 'room', label: 'Salas', icon: Building2 }, { value: 'vehicle', label: 'Vehículos', icon: Car },
               ]} />
@@ -241,7 +241,7 @@ export default function ReservationsDesk({
             sub={`${ordered.length} ${ordered.length === 1 ? 'reserva' : 'reservas'} · ${upcoming.length} próximas`}
             tools={(
               <>
-                <DeskSearch value={query} onChange={(v) => { setQuery(v); setLimit(PAGE); }} label="Buscar reservas" placeholder="Buscar recurso, persona o propósito" />
+                <DeskSearch value={query} onChange={(v) => { setQuery(v); setLimit(PAGE); }} label="Buscar reservas" placeholder="Recurso, persona o propósito" />
                 <DeskSegmented label="Tipo de recurso" value={kind} onChange={(v) => { setKind(v); setLimit(PAGE); }} options={[
                   { value: 'all', label: 'Todo' }, { value: 'room', label: 'Salas' }, { value: 'vehicle', label: 'Vehículos' },
                 ]} />

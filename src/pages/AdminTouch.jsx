@@ -221,7 +221,7 @@ export default function AdminTouch({
                 : `${policyCounts.signed + policyCounts.manual} de ${employees.length} con las normas aceptadas`}
               action={<TouchButton primary icon={Plus} onClick={onNewEmployee}>Nuevo empleado</TouchButton>} />
             <Toolbar
-              search={{ label: 'Buscar empleados', icon: Search, value: query, onChange: setQuery, placeholder: 'Buscar empleado' }}
+              search={{ label: 'Buscar empleados', icon: Search, value: query, onChange: setQuery, placeholder: 'Buscar' }}
               groups={[
                 { id: 'state', label: 'Estado', value: empState, all: 'all', onChange: setEmpState, options: [
                   { value: 'all', label: 'Todos', count: employees.length },

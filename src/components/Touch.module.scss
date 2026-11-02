@@ -225,12 +225,14 @@
     .ledger[data-n='4'] &:nth-child(n + 3) { border-top: 0; }
   }
 
+  /* Three across on a 360 px phone: give "Rechazadas" the room it needs */
+  @container (max-width: 320px) { padding-inline: 12px; }
+
+  /* Sentence case like the desktop stat strip: tracked capitals cut "Pendientes" on a phone */
   dt {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-mut);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-sec);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -517,6 +519,12 @@ button.ledgerCell {
       letter-spacing: -0.005em;
 
       > .tabIcon { display: block; }
+
+      /* 360 px phones: five names whole ("Documentos") rather than clipped */
+      @media (max-width: 379px) {
+        padding-inline: 3px;
+        font-size: 11px;
+      }
     }
 
     .tabLabel {
@@ -533,6 +541,8 @@ button.ledgerCell {
 
 .toolbar {
   display: grid;
+  /* An `auto` track grows to the search field's min-content and pushes Filtros off screen */
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
 }
 
@@ -775,17 +785,8 @@ button.ledgerCell {
 
   & + & { border-top: 1px solid var(--lg-edge); }
 
-  /* The tone's rail along the left edge */
-  &[data-tone]::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 16px;
-    height: 36px;
-    width: 3px;
-    border-radius: 0 3px 3px 0;
-    background: var(--tone);
-  }
+  /* A row that needs someone: a faint wash of its tone (the status badge names why) */
+  &[data-tone] { background: color-mix(in srgb, var(--tone) 6%, transparent); }
 }
 
 .itemOpen { background: rgba(var(--text-rgb), 0.025); }

@@ -119,7 +119,7 @@ export default function EmployeesDesk({ employees, user, query, setQuery, canSee
           sub={`${filtered.length} ${filtered.length === 1 ? 'persona' : 'personas'}${mode !== 'all' ? ` · ${WORK_MODES[mode].label.toLowerCase()}` : ''}`}
           tools={(
             <>
-              <DeskSearch value={query} onChange={(v) => { setQuery(v); setLimit(PAGE); }} label="Buscar en el equipo" placeholder="Buscar por nombre, puesto, email o departamento" />
+              <DeskSearch value={query} onChange={(v) => { setQuery(v); setLimit(PAGE); }} label="Buscar en el equipo" placeholder="Nombre, puesto o email" />
               <DeskSegmented label="Vista" value={view} onChange={setView} options={[
                 { value: 'grid', icon: LayoutGrid, label: 'Tarjetas' },
                 { value: 'list', icon: List, label: 'Tabla' },

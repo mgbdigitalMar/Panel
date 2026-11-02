@@ -462,10 +462,11 @@ export default function HorasPage() {
             <Section title="Saldo por persona" description="Horas a favor, pendientes y en deuda de cada empleado.">
             <div className={styles.adminSearchHeader}>
               <div className={clsx(styles.userSearchWrapper, styles.userSearchWrapperFlex)}>
-                <Search size={16} />
+                <Search size={16} aria-hidden="true" />
                 <input
-                  type="text"
-                  placeholder="Buscar empleado o departamento..."
+                  type="search"
+                  aria-label="Buscar empleado o departamento"
+                  placeholder="Empleado o departamento"
                   value={userSearch}
                   onChange={e => setUserSearch(e.target.value)}
                 />
