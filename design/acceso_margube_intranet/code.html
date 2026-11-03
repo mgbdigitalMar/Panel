@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "surface-container-highest": "#383433",
+          "secondary-fixed-dim": "#3cddc7",
+          "outline": "#a28d7e",
+          "on-tertiary-fixed-variant": "#4f319c",
+          "border-glass-rim": "rgba(255, 255, 255, 0.08)",
+          "secondary-fixed": "#62fae3",
+          "surface": "#161312",
+          "surface-container": "#221f1e",
+          "inverse-primary": "#914c00",
+          "surface-glass-tint": "rgba(34, 28, 24, 0.65)",
+          "tertiary": "#cebdff",
+          "text-muted": "#A89F91",
+          "on-error": "#690005",
+          "terracotta": "#FF7A45",
+          "surface-container-high": "#2d2928",
+          "on-tertiary": "#381385",
+          "amber-bright": "#FFA959",
+          "on-surface": "#e9e1df",
+          "on-secondary-fixed-variant": "#005047",
+          "error-container": "#93000a",
+          "surface-container-low": "#1e1b1a",
+          "amber-soft": "#F5A65B",
+          "on-secondary-fixed": "#00201c",
+          "on-background": "#e9e1df",
+          "on-primary": "#4e2600",
+          "text-primary": "#FDFBF7",
+          "violet-accent": "#A78BFA",
+          "primary": "#ffb77f",
+          "surface-tint": "#ffb77f",
+          "tertiary-container": "#ab8ffe",
+          "mint-status": "#34D399",
+          "on-error-container": "#ffdad6",
+          "outline-variant": "#544337",
+          "on-secondary": "#003731",
+          "tertiary-fixed-dim": "#cebdff",
+          "secondary-container": "#03c6b2",
+          "tertiary-fixed": "#e8ddff",
+          "surface-bronze": "#221C18",
+          "error": "#ffb4ab",
+          "on-primary-container": "#582c00",
+          "mint-accent": "#2DD4BF",
+          "inverse-on-surface": "#33302e",
+          "surface-obsidian": "#141110",
+          "surface-variant": "#383433",
+          "primary-fixed": "#ffdcc4",
+          "on-tertiary-container": "#3f1e8c",
+          "border-amber-sheen": "rgba(245, 166, 91, 0.28)",
+          "on-secondary-container": "#004d44",
+          "on-primary-fixed-variant": "#6f3900",
+          "surface-glass-highlight": "rgba(245, 166, 91, 0.12)",
+          "surface-container-lowest": "#100e0d",
+          "surface-smoked": "#1A1512",
+          "on-surface-variant": "#dac2b2",
+          "primary-fixed-dim": "#ffb77f",
+          "on-primary-fixed": "#2f1500",
+          "surface-bright": "#3c3837",
+          "background": "#161312",
+          "on-tertiary-fixed": "#21005e",
+          "secondary": "#44e2cd",
+          "inverse-surface": "#e9e1df",
+          "amber-primary": "#E68A38",
+          "primary-container": "#e68a38",
+          "surface-dim": "#161312",
+          "surface-glass-card": "rgba(26, 21, 18, 0.58)"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "space-sm": "0.5rem",
+          "gutter-mobile": "0.75rem",
+          "margin-mobile": "1rem",
+          "space-md": "0.875rem",
+          "space-xl": "1.75rem",
+          "margin": "1.75rem",
+          "space-xs": "0.25rem",
+          "gutter": "1.25rem",
+          "space-lg": "1.25rem"
+        },
+        "fontFamily": {
+          "headline-xl-mobile": [
+            "Space Grotesk"
+          ],
+          "headline-lg-mobile": [
+            "Space Grotesk"
+          ],
+          "body-md": [
+            "Inter"
+          ],
+          "body-lg": [
+            "Inter"
+          ],
+          "body-sm": [
+            "Inter"
+          ],
+          "label-md": [
+            "Inter"
+          ],
+          "stat-metric-sm": [
+            "Space Grotesk"
+          ],
+          "stat-metric": [
+            "Space Grotesk"
+          ],
+          "headline-xl": [
+            "Space Grotesk"
+          ],
+          "label-lg": [
+            "Inter"
+          ],
+          "headline-md": [
+            "Space Grotesk"
+          ],
+          "headline-sm": [
+            "Space Grotesk"
+          ],
+          "label-sm": [
+            "Inter"
+          ],
+          "headline-lg": [
+            "Space Grotesk"
+          ]
+        },
+        "fontSize": {
+          "headline-xl-mobile": [
+            "28px",
+            {
+              "lineHeight": "36px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-lg-mobile": [
+            "22px",
+            {
+              "lineHeight": "30px",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-md": [
+            "13px",
+            {
+              "lineHeight": "20px",
+              "fontWeight": "400"
+            }
+          ],
+          "body-lg": [
+            "15px",
+            {
+              "lineHeight": "24px",
+              "fontWeight": "400"
+            }
+          ],
+          "body-sm": [
+            "12px",
+            {
+              "lineHeight": "17px",
+              "fontWeight": "400"
+            }
+          ],
+          "label-md": [
+            "11px",
+            {
+              "lineHeight": "15px",
+              "letterSpacing": "0.02em",
+              "fontWeight": "500"
+            }
+          ],
+          "stat-metric-sm": [
+            "20px",
+            {
+              "lineHeight": "26px",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ],
+          "stat-metric": [
+            "26px",
+            {
+              "lineHeight": "32px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-xl": [
+            "38px",
+            {
+              "lineHeight": "46px",
+              "letterSpacing": "-0.025em",
+              "fontWeight": "600"
+            }
+          ],
+          "label-lg": [
+            "13px",
+            {
+              "lineHeight": "18px",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-md": [
+            "22px",
+            {
+              "lineHeight": "28px",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "500"
+            }
+          ],
+          "headline-sm": [
+            "17px",
+            {
+              "lineHeight": "24px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "500"
+            }
+          ],
+          "label-sm": [
+            "10px",
+            {
+              "lineHeight": "13px",
+              "letterSpacing": "0.05em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-lg": [
+            "30px",
+            {
+              "lineHeight": "38px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ]
+        }
+      },
+    },
+  }
+</script></head><body class="bg-background font-body-md text-on-surface min-h-screen relative selection:bg-amber-primary/30 selection:text-primary overflow-x-hidden"><div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden"><div class="absolute -top-40 -left-20 w-[680px] h-[680px] rounded-full bg-amber-primary/10 blur-[130px]"></div><div class="absolute top-1/4 -right-24 w-[600px] h-[600px] rounded-full bg-[#914c00]/15 blur-[140px]"></div><div class="absolute -bottom-36 left-1/3 w-[720px] h-[720px] rounded-full bg-[#e68a38]/8 blur-[150px]"></div><div class="absolute top-1/2 left-1/4 w-[350px] h-[350px] rounded-full bg-secondary/5 blur-[120px]"></div><svg class="absolute right-[-80px] bottom-[-80px] w-[500px] h-[500px] opacity-[0.025] text-primary rotate-12 fill-current" viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M100 0 C160 30 190 90 180 150 C170 200 120 200 80 180 C40 160 10 110 20 60 C30 10 70 0 100 0 Z"></path></svg></div><header class="fixed top-0 left-0 right-0 z-50 bg-[#161312]/80 backdrop-blur-[28px] border-b border-white/[0.06] shadow-[0_16px_40px_-8px_rgba(0,0,0,0.7),0_0_24px_-2px_rgba(230,138,56,0.06)]"><div class="h-20 w-full px-margin flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-sm shrink-0"><img alt="Margube Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCyB7KzZ2TWk3DB2H9WWejkU9azoxruHxvvtu4A5CkF1rf2w_gI4jN6JCXqNZN62DvycfnEzZHGIcxELYmtkHIrfxotLY6_tczW0AojkK7uGX30lIFEoUv2DyqiP-xRHuK0LiFHlP9LIlQdtKAe6ucr8CAloe5GY33MX8OToQsd1_f6hUz3exGryGlbQo3MNAIVPnZvySgq60IqEvE5w-PCjAt9jX-dsF1Zfel5Tg"/><span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Margube</span><span class="font-label-sm text-label-sm text-amber-soft uppercase tracking-widest px-space-xs py-0.5 rounded-full bg-surface-container-high/70 border border-amber-primary/20">Intranet</span></div><div class="hidden xl:flex items-center"><nav class="flex items-center gap-space-xs p-1 rounded-full bg-surface-container-lowest/80 backdrop-blur-xl border border-white/[0.06] shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.06)]" data-active-classes="bg-amber-primary text-on-primary font-semibold shadow-[0_2px_14px_rgba(230,138,56,0.35)]"><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200 inline-flex items-center gap-1.5" data-path="inicio" href="#">Inicio</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200 inline-flex items-center gap-1.5" data-path="reservas" href="#">Reservas<span class="w-1.5 h-1.5 rounded-full bg-amber-soft animate-pulse"></span></a><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200 inline-flex items-center gap-1.5" data-path="solicitudes" href="#">Solicitudes<span class="font-label-sm text-label-sm px-1.5 py-0.2 rounded-full bg-error text-on-error font-bold leading-none">2</span></a><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200" data-path="tiempo-a-compensar" href="#">Tiempo a compensar</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200" data-path="noticias-y-eventos" href="#">Noticias y Eventos</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200" data-path="equipo" href="#">Equipo</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200" data-path="administracion" href="#">Administración</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200" data-path="acceso-rapido" href="#">Acceso Rápido</a></nav></div><div class="flex items-center gap-space-sm shrink-0"><button class="hidden sm:flex items-center gap-space-sm h-10 px-3.5 rounded-full bg-surface-container-high/50 hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/[0.05] backdrop-blur-md transition-all shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]" type="button"><span class="material-symbols-outlined text-[18px]">search</span><span class="font-body-sm text-body-sm">Buscar...</span><kbd class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest/80 text-on-surface-variant border border-white/[0.05]">Ctrl+K</kbd></button><button aria-label="Notificaciones" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-surface-container-high/50 hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/[0.05] transition-all" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-terracotta ring-2 ring-surface-container-lowest"></span></button><button aria-label="Cambiar tema" class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container-high/50 hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/[0.05] transition-all" type="button"><span class="material-symbols-outlined text-[20px]">dark_mode</span></button><div class="relative group pl-space-xs"><button aria-expanded="false" aria-haspopup="true" aria-label="Menú de usuario" class="relative p-0.5 rounded-[60%_12%_60%_12%] bg-gradient-to-tr from-amber-primary to-primary shadow-[0_0_14px_rgba(230,138,56,0.3)] focus:outline-none transition-transform active:scale-95"><img alt="Foto de perfil de usuario" class="w-8 h-8 rounded-[60%_12%_60%_12%] object-cover block" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAY03SVGMPmKX_K9X4Ju--Fe7RscuUEC__ceo0r0Ud5ge_WVNQWSeCRF4ydn4mvs0CPqQK_qnjhkU2tpvtiOnKx5vAeK2im303TilUZHSR2OT5eYe8THb4kJaCGsoVw-FxK2clAxkqNKzheTlbHuz0HBGOsB3azsyTajlMYY53E_d1Ew0q7Ej2keQkpgU6vxBgCAEMxcIt9oi4d3Zc_7m7SJvBZfeLQ33oobCG7KMA"/></button><div class="absolute right-0 top-full pt-2 w-56 hidden group-hover:block group-focus-within:block z-50"><div class="bg-[#1e1b1a]/95 backdrop-blur-2xl rounded-xl p-1.5 border border-amber-primary/20 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.8),0_0_0_1px_rgba(255,255,255,0.06)] flex flex-col gap-0.5"><div class="px-3 py-2 border-b border-surface-container-highest/60 mb-1"><p class="font-label-md text-label-md text-on-surface font-semibold truncate">Ana Martínez</p><p class="font-body-sm text-body-sm text-on-surface-variant truncate">ana.martinez@margube.com</p></div><a class="flex items-center gap-2.5 px-3 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/70 transition-colors" data-path="mi-perfil" href="#"><span class="material-symbols-outlined text-[18px]">person</span>Mi Perfil</a><a class="flex items-center gap-2.5 px-3 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/70 transition-colors" data-path="ajustes" href="#"><span class="material-symbols-outlined text-[18px]">settings</span>Ajustes</a><a class="flex items-center gap-2.5 px-3 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/70 transition-colors" data-path="acceso-rapido" href="#"><span class="material-symbols-outlined text-[18px]">bolt</span>Acceso Rápido</a><div class="h-px bg-surface-container-highest/60 my-1"></div><a class="flex items-center gap-2.5 px-3 py-2 rounded-lg font-label-md text-label-md text-error hover:text-error hover:bg-error-container/20 transition-colors" href="#"><span class="material-symbols-outlined text-[18px]">logout</span>Cerrar sesión</a></div></div></div></div></div></header><main class="w-full pt-20 px-margin"><div class="flex flex-col w-full">
+<div class="relative w-full max-w-[1240px] mx-auto py-space-md sm:py-space-lg">
+<!-- Top Floating Meta Horizon -->
+<div class="flex items-center justify-between gap-space-md mb-space-lg px-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-surface-container-high/70 border border-amber-primary/25 shadow-sm text-amber-soft">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">SSO Enterprise Gateway</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-amber-primary animate-ping"></span>
+            Nodo Bilbao Central • v4.18.2
+          </span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-low/75 backdrop-blur-xl p-1 rounded-full border border-white/[0.06] shadow-md">
+<!-- Language Switcher Pill -->
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-high/90 text-on-surface font-label-md text-label-md border border-amber-primary/20 shadow-sm transition-all hover:bg-surface-bright" id="lang-toggle-btn" type="button">
+<span class="material-symbols-outlined text-[16px] text-amber-soft">translate</span>
+<span>ES</span>
+<span class="text-outline font-label-sm text-label-sm">/ EU</span>
+</button>
+<!-- System Cloud Status Badge -->
+<a class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-surface-container-high/60 text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" href="#estado-cloud">
+<span class="w-2 h-2 rounded-full bg-mint-status shadow-[0_0_8px_rgba(52,211,153,0.5)]"></span>
+<span>Sistemas Operativos 100%</span>
+</a>
+</div>
+</div>
+<!-- Main Glass Grid Layout (Bento Asymmetric Horizon) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-stretch">
+<!-- Left Glass Column: Corporate Brand Showcase & Live Activity Indicator -->
+<div class="lg:col-span-5 flex flex-col justify-between rounded-xl bg-surface-container-low/65 backdrop-blur-[28px] border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(245,166,91,0.12)] p-space-lg sm:p-space-xl relative overflow-hidden">
+<!-- Radial Ambient Nodes within container -->
+<div class="absolute -top-24 -left-20 w-72 h-72 rounded-full bg-amber-primary/15 blur-[80px] pointer-events-none"></div>
+<div class="absolute -bottom-24 -right-16 w-80 h-80 rounded-full bg-[#FF7A45]/10 blur-[90px] pointer-events-none"></div>
+<!-- Watermark Corporate Leaf Contour -->
+<svg class="absolute -right-10 -bottom-10 w-64 h-64 opacity-5 text-amber-primary pointer-events-none rotate-12 fill-current" viewbox="0 0 200 200">
+<path d="M100 0 C160 30 190 90 180 150 C170 200 120 200 80 180 C40 160 10 110 20 60 C30 10 70 0 100 0 Z"></path>
+</svg>
+<!-- Top Brand Accent -->
+<div class="relative z-10">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-primary/15 text-amber-bright font-label-sm text-label-sm uppercase tracking-widest mb-space-lg border border-amber-primary/30 shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-bright animate-pulse"></span>
+            Acceso Empleados
+          </div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-text-primary tracking-tight mb-space-sm">
+            Ecosistema de trabajo unificado
+          </h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed max-w-sm">
+            Gestión inteligente de proyectos, reservas de puestos dinámicos, control horario y activos corporativos en una única experiencia espacial.
+          </p>
+</div>
+<!-- Visual Proof Graphic: Modern Minimalist Active Shift Tile -->
+<div class="relative z-10 my-space-lg bg-[#221C18]/70 backdrop-blur-xl border border-amber-sheen rounded-xl p-space-md shadow-[0_8px_24px_rgba(0,0,0,0.4)]">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Actividad en Sedes</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-amber-primary/20 text-amber-bright font-semibold border border-amber-primary/30">Tiempo Real</span>
+</div>
+<!-- Micro SVG Metric Chart -->
+<div class="flex items-end justify-between gap-2 h-16 pt-2">
+<div class="flex-1 flex flex-col items-center gap-1.5">
+<div class="w-full bg-amber-primary/25 rounded-t-sm h-7"></div>
+<span class="font-label-sm text-label-sm text-outline">08:00</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1.5">
+<div class="w-full bg-amber-primary/45 rounded-t-sm h-11"></div>
+<span class="font-label-sm text-label-sm text-outline">09:00</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1.5">
+<div class="w-full bg-gradient-to-t from-amber-primary to-amber-bright rounded-t-sm h-14 shadow-[0_0_12px_rgba(230,138,56,0.35)]"></div>
+<span class="font-label-sm text-label-sm text-amber-bright font-semibold">10:00</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1.5">
+<div class="w-full bg-amber-primary/60 rounded-t-sm h-12"></div>
+<span class="font-label-sm text-label-sm text-outline">11:00</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1.5">
+<div class="w-full bg-amber-primary/30 rounded-t-sm h-8"></div>
+<span class="font-label-sm text-label-sm text-outline">12:00</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex items-center justify-between text-on-surface-variant border-t border-white/[0.05]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-amber-soft">desktop_windows</span>
+<span class="font-body-sm text-body-sm">Puestos activos hoy</span>
+</div>
+<span class="font-headline-sm text-headline-sm font-semibold text-text-primary">342 / 380</span>
+</div>
+</div>
+<!-- Security Footer Disclaimer in Left Bar -->
+<div class="relative z-10 flex items-center gap-space-sm pt-space-sm">
+<span class="material-symbols-outlined text-[20px] text-amber-soft/80">shield</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Encriptación de grado bancario TLS 1.3 con arquitectura Zero Trust integrada.
+          </p>
+</div>
+</div>
+<!-- Right Glass Column: Central Smoked Glass & Amber Authentication Card -->
+<div class="lg:col-span-7 flex flex-col justify-center">
+<div class="rounded-xl bg-[#1e1b1a]/75 backdrop-blur-[28px] border border-white/[0.08] p-space-lg sm:p-space-xl shadow-[0_24px_60px_rgba(0,0,0,0.65),inset_0_1px_1px_rgba(255,255,255,0.08)] relative overflow-hidden">
+<!-- Top Specular Rim Reflection Glow Effect in Amber/Bronze -->
+<div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-soft/50 to-transparent"></div>
+<!-- Card Header & Eyebrow -->
+<div class="mb-space-lg">
+<div class="flex items-center justify-between gap-space-sm mb-1.5">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-amber-bright font-bold">Portal del Empleado</span>
+<span class="font-label-sm text-label-sm px-2.5 py-0.5 rounded-full bg-surface-container-highest border border-white/[0.06] text-on-surface-variant font-medium">Margube ID</span>
+</div>
+<h1 class="font-headline-md text-headline-md font-bold text-text-primary tracking-tight">
+              Bienvenido a Margube Intranet
+            </h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+              Introduce tus credenciales de red corporativa para autenticar tu sesión.
+            </p>
+</div>
+<!-- Interactive Form -->
+<form class="space-y-space-md" id="login-form" onsubmit="event.preventDefault(); handleLoginSubmit();">
+<!-- Email / User Input Field -->
+<div class="space-y-1.5">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-on-surface font-semibold" for="corporate-email">
+                  Correo Corporativo
+                </label>
+<span class="font-label-sm text-label-sm text-outline" id="domain-helper">Dominio requerido @margube.com</span>
+</div>
+<div class="relative flex items-center rounded-xl bg-surface-container-lowest/85 border border-white/[0.07] transition-all focus-within:border-amber-soft/70 focus-within:shadow-[0_0_18px_rgba(230,138,56,0.22)] shadow-sm group">
+<span class="material-symbols-outlined text-[20px] text-outline ml-3.5 group-focus-within:text-amber-soft transition-colors">alternate_email</span>
+<input autocomplete="username" class="w-full bg-transparent px-3 py-3 text-text-primary font-body-md text-body-md placeholder:text-outline/60 focus:outline-none" id="corporate-email" name="corporate-email" oninput="validateCorporateDomain(this.value)" placeholder="usuario@margube.com" required="" type="email"/>
+<span class="material-symbols-outlined text-[20px] text-mint-status mr-3.5 hidden" id="email-valid-indicator">check_circle</span>
+</div>
+</div>
+<!-- Password Input Field -->
+<div class="space-y-1.5">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-on-surface font-semibold" for="corporate-password">
+                  Contraseña de Red
+                </label>
+<a class="font-label-sm text-label-sm text-amber-soft hover:text-amber-bright transition-colors" href="#recuperar">
+                  ¿Olvidaste tu contraseña?
+                </a>
+</div>
+<div class="relative flex items-center rounded-xl bg-surface-container-lowest/85 border border-white/[0.07] transition-all focus-within:border-amber-soft/70 focus-within:shadow-[0_0_18px_rgba(230,138,56,0.22)] shadow-sm group">
+<span class="material-symbols-outlined text-[20px] text-outline ml-3.5 group-focus-within:text-amber-soft transition-colors">lock</span>
+<input autocomplete="current-password" class="w-full bg-transparent px-3 py-3 text-text-primary font-body-md text-body-md placeholder:text-outline/60 focus:outline-none" id="corporate-password" name="corporate-password" placeholder="••••••••••••" required="" type="password"/>
+<button aria-label="Alternar visibilidad de contraseña" class="p-2 mr-1.5 text-outline hover:text-on-surface transition-colors rounded-lg" id="toggle-password-btn" onclick="togglePasswordVisibility()" type="button">
+<span class="material-symbols-outlined text-[20px]" id="password-visibility-icon">visibility</span>
+</button>
+</div>
+<!-- First Login Password Expiry Badge -->
+<div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container-high/60 border border-white/[0.05] text-on-surface-variant font-body-sm text-body-sm mt-1">
+<span class="material-symbols-outlined text-[16px] text-amber-soft">info</span>
+<span>Si es tu primera conexión, se solicitará actualizar tu clave temporal.</span>
+</div>
+</div>
+<!-- Checkbox: Trusted Workstation -->
+<div class="flex items-start gap-3 pt-1">
+<label class="relative flex items-center cursor-pointer select-none">
+<input class="peer sr-only" id="trusted-workstation" name="trusted-workstation" type="checkbox"/>
+<div class="w-5 h-5 rounded-md bg-surface-container-highest border border-white/[0.1] peer-checked:bg-amber-primary peer-checked:border-amber-soft transition-all flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-on-primary opacity-0 peer-checked:opacity-100 transition-opacity font-bold">check</span>
+</div>
+</label>
+<div class="flex flex-col">
+<label class="font-label-md text-label-md text-on-surface cursor-pointer" for="trusted-workstation">
+                  Recordar estación de trabajo de confianza (14 días)
+                </label>
+<span class="font-body-sm text-body-sm text-outline">No habilitar en equipos compartidos o públicos.</span>
+</div>
+</div>
+<!-- Mandatory Security Policy Check -->
+<div class="p-3.5 rounded-xl bg-surface-container-lowest/80 border border-white/[0.05] flex items-start gap-3 shadow-inner">
+<label class="relative flex items-center cursor-pointer select-none pt-0.5">
+<input class="peer sr-only" id="policy-compliance" name="policy-compliance" required="" type="checkbox"/>
+<div class="w-5 h-5 rounded-md bg-surface-container-highest border border-white/[0.1] peer-checked:bg-amber-primary peer-checked:border-amber-bright transition-all flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-on-primary opacity-0 peer-checked:opacity-100 transition-opacity font-bold">done</span>
+</div>
+</label>
+<div class="text-on-surface-variant font-body-sm text-body-sm leading-snug">
+<label class="cursor-pointer text-on-surface font-semibold" for="policy-compliance">
+                  Acepto la Normativa de Seguridad de la Información (PSI-2025).
+                </label>
+<span class="block text-outline mt-0.5">
+                  El acceso a este sistema corporativo está monitorizado y sujeto a la política de uso aceptable de Margube.
+                </span>
+</div>
+</div>
+<!-- Action Buttons: Primary Amber CTA & FIDO2 Touch ID / YubiKey -->
+<div class="space-y-space-sm pt-2">
+<!-- Primary Login CTA in Vibrant Amber with Soft Lift -->
+<button class="w-full relative py-3.5 px-space-lg rounded-xl font-label-lg text-label-lg font-semibold text-[#3b1c00] bg-gradient-to-r from-[#e68a38] via-[#f5a65b] to-[#ffa959] shadow-[0_8px_24px_rgba(230,138,56,0.38),0_1px_2px_rgba(255,255,255,0.2)_inset] hover:shadow-[0_14px_34px_rgba(230,138,56,0.52)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group" id="submit-login" type="submit">
+<span>Acceder al Portal</span>
+<span class="material-symbols-outlined text-[20px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+<!-- Secondary FIDO2 / Biometric Access Key Harmonized with Palette -->
+<button class="w-full py-3 px-space-md rounded-xl font-label-md text-label-md font-medium text-on-surface bg-surface-container-high/60 hover:bg-surface-container-high border border-white/[0.08] hover:border-amber-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 shadow-sm" onclick="triggerBiometricAuth()" type="button">
+<span class="material-symbols-outlined text-[20px] text-amber-soft">fingerprint</span>
+<span>Acceder con credencial biométrica o YubiKey (FIDO2)</span>
+</button>
+</div>
+</form>
+<!-- Toast Notification Indicator Area -->
+<div class="mt-space-md hidden p-3 rounded-lg text-center font-body-sm text-body-sm transition-all border" id="auth-status-toast"></div>
+</div>
+</div>
+</div>
+<!-- Quick Help & IT Support Glass Horizon -->
+<div class="mt-space-lg grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Help Pill 1: Password reset -->
+<a class="p-space-md rounded-xl bg-surface-container-low/60 backdrop-blur-xl border border-white/[0.07] hover:border-amber-primary/35 hover:bg-surface-container/75 shadow-sm transition-all flex items-center gap-space-sm group" href="#restablecer">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high/90 border border-white/[0.05] flex items-center justify-center text-amber-soft group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[20px]">key_vertical</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface truncate">Autogestión de Clave</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Restablecer vía SMS o token MFA</span>
+</div>
+</a>
+<!-- Help Pill 2: IT Helpline Desk -->
+<div class="p-space-md rounded-xl bg-surface-container-low/60 backdrop-blur-xl border border-white/[0.07] hover:border-amber-primary/35 hover:bg-surface-container/75 shadow-sm transition-all flex items-center gap-space-sm group">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high/90 border border-white/[0.05] flex items-center justify-center text-amber-soft group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[20px]">support_agent</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface truncate">Soporte TI Inmediato</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">+34 944 000 000 • Ext. 4001</span>
+</div>
+</div>
+<!-- Help Pill 3: Cloud Infrastructure Telemetry -->
+<a class="p-space-md rounded-xl bg-surface-container-low/60 backdrop-blur-xl border border-white/[0.07] hover:border-amber-primary/35 hover:bg-surface-container/75 shadow-sm transition-all flex items-center gap-space-sm group" href="#estado-cloud">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high/90 border border-white/[0.05] flex items-center justify-center text-mint-status group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[20px]">cloud_sync</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface truncate">Estado de Servicios Cloud</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Latencia 12ms • 99.98% SLA</span>
+</div>
+</a>
+</div>
+</div>
+<!-- Interactive Logic Script for Form Validation and Smoked Glass & Amber interactions -->
+<script>
+    function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('corporate-password');
+      const icon = document.getElementById('password-visibility-icon');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.textContent = 'visibility_off';
+      } else {
+        passwordInput.type = 'password';
+        icon.textContent = 'visibility';
+      }
+    }
+
+    function validateCorporateDomain(email) {
+      const validIndicator = document.getElementById('email-valid-indicator');
+      const helper = document.getElementById('domain-helper');
+      if (email.toLowerCase().endsWith('@margube.com') && email.length > 13) {
+        validIndicator.classList.remove('hidden');
+        helper.classList.remove('text-outline');
+        helper.classList.add('text-amber-soft');
+      } else {
+        validIndicator.classList.add('hidden');
+        helper.classList.remove('text-amber-soft');
+        helper.classList.add('text-outline');
+      }
+    }
+
+    function triggerBiometricAuth() {
+      const toast = document.getElementById('auth-status-toast');
+      toast.className = 'mt-space-md p-3 rounded-lg text-center font-body-sm text-body-sm transition-all border bg-amber-primary/15 text-amber-bright border-amber-primary/30';
+      toast.classList.remove('hidden');
+      toast.innerHTML = '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-bright animate-ping"></span>Solicitando firma biométrica a dispositivo FIDO2 / Windows Hello / Touch ID...</span>';
+      
+      setTimeout(() => {
+        toast.className = 'mt-space-md p-3 rounded-lg text-center font-body-sm text-body-sm transition-all border bg-mint-status/15 text-mint-status border-mint-status/30';
+        toast.innerHTML = '<span class="inline-flex items-center gap-1.5 text-mint-status"><span class="material-symbols-outlined text-[16px]">verified</span>Credencial biométrica verificada. Redirigiendo a tu espacio de trabajo...</span>';
+        setTimeout(() => {
+          window.location.hash = '#inicio';
+        }, 1200);
+      }, 1500);
+    }
+
+    function handleLoginSubmit() {
+      const policyCheckbox = document.getElementById('policy-compliance');
+      const toast = document.getElementById('auth-status-toast');
+      
+      if (!policyCheckbox.checked) {
+        toast.className = 'mt-space-md p-3 rounded-lg text-center font-body-sm text-body-sm transition-all border bg-error-container/30 text-error border-error/40';
+        toast.classList.remove('hidden');
+        toast.textContent = 'Debes aceptar la Normativa de Seguridad de la Información corporativa para continuar.';
+        return;
+      }
+
+      toast.className = 'mt-space-md p-3 rounded-lg text-center font-body-sm text-body-sm transition-all border bg-amber-primary/15 text-amber-bright border-amber-primary/30';
+      toast.classList.remove('hidden');
+      toast.innerHTML = '<span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-bright animate-ping"></span>Validando credenciales en Directorio Activo Margube...</span>';
+
+      setTimeout(() => {
+        toast.className = 'mt-space-md p-3 rounded-lg text-center font-body-sm text-body-sm transition-all border bg-mint-status/15 text-mint-status border-mint-status/30';
+        toast.innerHTML = '<span class="inline-flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px]">check_circle</span>Acceso concedido. Cargando sesión segura...</span>';
+        setTimeout(() => {
+          window.location.hash = '#inicio';
+        }, 1000);
+      }, 1400);
+    }
+  </script>
+</div></main><footer class="w-full mt-margin bg-[#100e0d]/80 backdrop-blur-xl border-t border-white/[0.05] shadow-[0_-1px_12px_rgba(0,0,0,0.4)]"><div class="w-full px-margin py-space-lg flex flex-col md:flex-row items-center justify-between gap-space-md font-body-sm text-body-sm text-on-surface-variant"><div class="flex items-center gap-space-sm"><span class="font-headline-sm text-headline-sm font-semibold text-amber-soft tracking-tight">Margube</span><span>© 2025 Red Corporativa Margube. Entorno Confidencial.</span></div><div class="flex items-center gap-space-lg"><a class="hover:text-on-surface transition-colors" href="#">Soporte IT</a><a class="hover:text-on-surface transition-colors" href="#">Política de Privacidad</a><a class="hover:text-on-surface transition-colors" href="#">Guía del Empleado</a></div></div></footer></body></html>

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import {
-  UsersRound, Newspaper, Settings, SlidersHorizontal, LogOut, ChevronRight, LayoutGrid, Building2, Home, Briefcase, ShieldCheck,
+  UsersRound, Newspaper, SlidersHorizontal, LogOut, ChevronRight, LayoutGrid, Building2, Home, Briefcase, ShieldCheck,
 } from 'lucide-react';
 import { useAuth, useNews, useHours } from '../context';
 import { Avatar } from '../components/ui';
@@ -35,7 +35,7 @@ export default function MorePage() {
     { icon: UsersRound, tone: 'accent', label: 'Equipo', hint: `${employees.length} ${employees.length === 1 ? 'persona' : 'personas'}`, onClick: () => navigate('/employees') },
     { icon: Newspaper, tone: 'warning', label: 'Noticias', hint: news.length ? 'Comunicados y eventos' : 'Sin comunicados todavía', onClick: () => navigate('/news') },
     ...(user?.role === 'admin'
-      ? [{ icon: Settings, tone: 'purple', label: 'Administración', hint: 'Empleados, recursos y horas', badge: adminPending, onClick: () => navigate('/admin') }]
+      ? [{ icon: ShieldCheck, tone: 'purple', label: 'Administración', hint: 'Empleados, recursos y horas', badge: adminPending, onClick: () => navigate('/admin') }]
       : []),
   ];
 

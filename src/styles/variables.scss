@@ -231,6 +231,22 @@
   --lg-active:      #FFFFFF;
   --lg-wash-a:      rgba(47, 91, 234, 0.13);
   --lg-wash-b:      rgba(14, 159, 154, 0.08);
+  /* Smoked glass extras (the shell redefines them; these serve modals and toasts outside it) */
+  --lg-edge-top:    rgba(255, 255, 255, 0.95);
+  --lg-edge-bottom: rgba(17, 20, 27, 0.1);
+  --lg-shadow:      0 14px 34px -18px rgba(16, 25, 54, 0.28);
+  --lg-well:        rgba(17, 20, 27, 0.035);
+  --lg-well-edge:   rgba(17, 20, 27, 0.06);
+  --lg-spot:        linear-gradient(135deg, rgba(47, 91, 234, 0.16) 0%, #FFFFFF 75%);
+  --lg-spot-edge:   rgba(47, 91, 234, 0.28);
+  --lg-spot-glow:   0 20px 44px -22px rgba(47, 91, 234, 0.55);
+
+  /* Analytical accents beside the brand blue: teal for growth and the second series,
+     violet for a third. Never a section's main colour. */
+  --teal:           #0E9F9A;
+  --teal-rgb:       14, 159, 154;
+  --violet:         #7C3AED;
+  --violet-rgb:     124, 58, 237;
 
   /* RGB for rgba() */
   --bg-rgb:         242, 244, 248;
@@ -342,6 +358,19 @@
   --lg-active:      rgba(255, 255, 255, 0.14);
   --lg-wash-a:      rgba(122, 162, 255, 0.2);
   --lg-wash-b:      rgba(14, 159, 154, 0.13);
+  --lg-edge-top:    rgba(255, 255, 255, 0.14);
+  --lg-edge-bottom: rgba(255, 255, 255, 0.03);
+  --lg-shadow:      0 14px 36px -10px rgba(0, 0, 0, 0.62);
+  --lg-well:        rgba(255, 255, 255, 0.035);
+  --lg-well-edge:   rgba(255, 255, 255, 0.06);
+  --lg-spot:        linear-gradient(135deg, rgba(47, 91, 234, 0.4) 0%, #13161D 72%);
+  --lg-spot-edge:   rgba(122, 162, 255, 0.34);
+  --lg-spot-glow:   0 20px 48px -18px rgba(47, 91, 234, 0.5);
+
+  --teal:           #2DD4BF;
+  --teal-rgb:       45, 212, 191;
+  --violet:         #A78BFA;
+  --violet-rgb:     167, 139, 250;
 
   /* RGB for rgba() */
   --bg-rgb:           6, 11, 20;
@@ -381,29 +410,50 @@
    and toasts, rendered outside them, keep their solid surfaces so text stays readable.
    ========================================================================== */
 [data-appearance='glass'] :is(.app-shell, .glass-scope) {
-  --lg-fill:        rgba(255, 255, 255, 0.42);
-  --lg-fill-hover:  rgba(255, 255, 255, 0.58);
-  --lg-edge:        rgba(255, 255, 255, 0.55);
-  --lg-rim:         rgba(255, 255, 255, 0.85);
-  --lg-sheen:       linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 60%);
-  --lg-chrome:      rgba(255, 255, 255, 0.5);
+  /* Smoked glass, light: milky panes on a pale blue mist. The edge is lit from above
+     (bright top, faint bottom), like a milled pane catching the room light. */
+  --lg-fill:        rgba(255, 255, 255, 0.6);
+  --lg-fill-hover:  rgba(255, 255, 255, 0.78);
+  --lg-edge:        rgba(17, 20, 27, 0.07);
+  --lg-edge-top:    rgba(255, 255, 255, 0.95);
+  --lg-edge-bottom: rgba(17, 20, 27, 0.08);
+  --lg-rim:         rgba(255, 255, 255, 0.9);
+  --lg-sheen:       linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 45%);
+  --lg-shadow:      0 14px 34px -18px rgba(16, 25, 54, 0.28);
+  --lg-chrome:      rgba(255, 255, 255, 0.62);
   /* Cards blur what is behind them (only in this appearance; see p.glass) */
   --lg-card-blur:   blur(26px) saturate(160%);
   /* Menus and the dock sit over busy content: still glass, but dense enough to read */
   --lg-popover:     rgba(255, 255, 255, 0.94);
   --lg-active:      rgba(255, 255, 255, 0.92);
+  /* Inset wells inside a pane (rows, fields, nested modules) */
+  --lg-well:        rgba(17, 20, 27, 0.035);
+  --lg-well-edge:   rgba(17, 20, 27, 0.06);
+  /* The page's one highlight: a pane infused with Margube blue */
+  --lg-spot:        linear-gradient(135deg, rgba(47, 91, 234, 0.2) 0%, rgba(91, 124, 255, 0.08) 42%, rgba(255, 255, 255, 0.66) 78%);
+  --lg-spot-edge:   rgba(47, 91, 234, 0.28);
+  --lg-spot-glow:   0 20px 44px -22px rgba(47, 91, 234, 0.55);
   --border:         rgba(17, 20, 27, 0.1);
 }
 
 [data-appearance='glass'][data-theme='dark'] :is(.app-shell, .glass-scope) {
-  --lg-fill:        rgba(28, 27, 30, 0.42);
-  --lg-fill-hover:  rgba(40, 38, 42, 0.55);
-  --lg-edge:        rgba(255, 255, 255, 0.13);
-  --lg-rim:         rgba(255, 255, 255, 0.16);
-  --lg-sheen:       linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 55%);
-  --lg-chrome:      rgba(30, 29, 32, 0.5);
-  --lg-card-blur:   blur(30px) saturate(150%);
-  --lg-popover:     rgba(20, 24, 34, 0.94);
-  --lg-active:      rgba(255, 255, 255, 0.22);
-  --border:         rgba(255, 255, 255, 0.12);
+  /* Smoked glass, dark: deep obsidian panes over a dim room lit in Margube blue */
+  --lg-fill:        rgba(16, 19, 27, 0.6);
+  --lg-fill-hover:  rgba(24, 28, 39, 0.7);
+  --lg-edge:        rgba(255, 255, 255, 0.07);
+  --lg-edge-top:    rgba(255, 255, 255, 0.15);
+  --lg-edge-bottom: rgba(255, 255, 255, 0.025);
+  --lg-rim:         rgba(255, 255, 255, 0.08);
+  --lg-sheen:       linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 38%);
+  --lg-shadow:      0 14px 36px -10px rgba(0, 0, 0, 0.62);
+  --lg-chrome:      rgba(12, 15, 22, 0.74);
+  --lg-card-blur:   blur(28px) saturate(150%);
+  --lg-popover:     rgba(14, 17, 25, 0.95);
+  --lg-active:      rgba(255, 255, 255, 0.1);
+  --lg-well:        rgba(255, 255, 255, 0.035);
+  --lg-well-edge:   rgba(255, 255, 255, 0.06);
+  --lg-spot:        linear-gradient(135deg, rgba(47, 91, 234, 0.42) 0%, rgba(30, 58, 138, 0.2) 40%, rgba(16, 19, 27, 0.66) 78%);
+  --lg-spot-edge:   rgba(122, 162, 255, 0.34);
+  --lg-spot-glow:   0 20px 48px -18px rgba(47, 91, 234, 0.5);
+  --border:         rgba(255, 255, 255, 0.1);
 }

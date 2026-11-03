@@ -3,7 +3,7 @@ import { useAuth, useTheme } from '../context';
 import logoColor from '../assets/logos/logo-color.png';
 import logoWhite from '../assets/logos/logo-white.png';
 import {
-  Eye, EyeOff, AlertCircle, LogIn, Lock, Loader2, Sun, Moon,
+  Eye, EyeOff, AlertCircle, LogIn, Lock, Loader2, Sun, Moon, Info,
   CalendarDays, Car, DoorOpen, Home, Users, FileText,
 } from 'lucide-react';
 import styles from './LoginPage.module.scss';
@@ -251,6 +251,7 @@ export default function LoginPage() {
               initial="hidden"
               animate="show"
             >
+              <motion.p variants={fadeUp} className={styles.formEyebrow}>Portal del empleado</motion.p>
               <motion.h1 variants={fadeUp} className={styles.heading}>
                 Iniciar sesión
               </motion.h1>
@@ -259,7 +260,7 @@ export default function LoginPage() {
               </motion.p>
 
               <motion.div variants={fadeUp} className={styles.field}>
-                <label htmlFor="login-email" className={styles.srOnly}>Correo corporativo</label>
+                <label htmlFor="login-email" className={styles.fieldLabel}>Correo corporativo</label>
                 <input
                   id="login-email"
                   className={styles.input}
@@ -267,7 +268,7 @@ export default function LoginPage() {
                   inputMode="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="Correo corporativo"
+                  placeholder="nombre@margube.com"
                   autoComplete="email"
                   autoFocus
                   required
@@ -276,14 +277,14 @@ export default function LoginPage() {
               </motion.div>
 
               <motion.div variants={fadeUp} className={styles.field}>
-                <label htmlFor="login-password" className={styles.srOnly}>Contraseña</label>
+                <label htmlFor="login-password" className={styles.fieldLabel}>Contraseña</label>
                 <input
                   id="login-password"
                   className={`${styles.input} ${styles.inputWithIcon}`}
                   type={showPass ? 'text' : 'password'}
                   value={pass}
                   onChange={e => setPass(e.target.value)}
-                  placeholder="Contraseña"
+                  placeholder="••••••••"
                   autoComplete="current-password"
                   required
                   aria-invalid={!!err}
@@ -298,6 +299,11 @@ export default function LoginPage() {
                   {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </motion.div>
+
+              <motion.p variants={fadeUp} className={styles.firstNotice}>
+                <Info size={15} aria-hidden="true" />
+                Si es tu primera conexión, te pediremos cambiar la contraseña temporal.
+              </motion.p>
 
               <motion.p variants={fadeUp} className={styles.helpLink}>
                 ¿Problemas de acceso? Contacta con RRHH

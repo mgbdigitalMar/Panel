@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
-  Settings, UsersRound, Building, Car, FileText, Timer, Search, Plus, Send, Upload, Download, Edit2, Trash2,
-  ShieldCheck, Check, X,
+  UsersRound, Building, Car, FileText, Timer, Search, Plus, Send, Upload, Download, Edit2, Trash2,
+  ShieldCheck, Check, X, KeyRound,
 } from 'lucide-react';
 import { Avatar } from '../components/ui';
 import {
@@ -54,7 +54,7 @@ function SectionBar({ meta, action }) {
  */
 export default function AdminTouch({
   tab, setTab, user, employees, rooms, vehicles, reservations, documents, hours, lastSignature, policyCounts, signaturesFailed,
-  onNewEmployee, onEditEmployee, onDeleteEmployee, onOpenPolicy, onExportSignatures,
+  onNewEmployee, onEditEmployee, onDeleteEmployee, onResetPassword, onOpenPolicy, onExportSignatures,
   onNewResource, onEditResource, onDeleteResource,
   onSendDocument, onUpdateOnboarding, onDeleteDocument,
   onApproveHours, onRejectHours, onDeleteHours, onExportHours, hoursBusy,
@@ -190,7 +190,7 @@ export default function AdminTouch({
   return (
     <div className={styles.page}>
       <Masthead
-        icon={Settings}
+        icon={ShieldCheck}
         title="Administración"
         desc="Empleados, salas, vehículos, documentos y bolsa de horas: todo lo que gestiona RRHH."
       />
@@ -271,6 +271,7 @@ export default function AdminTouch({
                         <>
                           <ItemAction icon={Edit2} tone="accent" onClick={() => onEditEmployee(emp)}>Editar</ItemAction>
                           <ItemAction icon={ShieldCheck} onClick={() => onOpenPolicy(emp.id)}>Normas</ItemAction>
+                          {!isMe && <ItemAction icon={KeyRound} onClick={() => onResetPassword(emp)}>Contraseña</ItemAction>}
                           {!isMe && <ItemAction icon={Trash2} tone="danger" onClick={() => onDeleteEmployee(emp.id)}>Dar de baja</ItemAction>}
                         </>
                       )}

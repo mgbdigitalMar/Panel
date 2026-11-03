@@ -1,6 +1,14 @@
+@use '../styles/patterns' as p;
+
 /* Administración on a computer (AdminDesk.jsx); the shared pieces live in components/Desk */
 
-.page { display: block; }
+/* Heading, section tabs, «Para revisar» and the section, one under the other */
+.page {
+  display: grid;
+  gap: 18px;
+
+  > header { margin-bottom: 4px; }
+}
 
 .muted { color: var(--text-mut); }
 .nowrap { white-space: nowrap; }
@@ -183,49 +191,77 @@
 }
 
 /* What waits for RRHH, on the brand panel */
+/* «Para revisar»: one smoked bar under the tabs, each item a pill with its count */
+.todoBar {
+  @include p.surface;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 12px 14px 12px 20px;
+}
+
+.todoTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-mut);
+
+  svg { color: var(--accent); }
+}
+
 .todo {
-  display: grid;
-  gap: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
 
   button {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    width: 100%;
+    gap: 9px;
     min-height: 40px;
-    padding: 0 10px;
-    border: 0;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.88);
-    font: 500 13.5px/1.2 var(--font-body);
-    text-align: left;
+    padding: 0 8px 0 14px;
+    border: 1px solid rgba(var(--warning-rgb), 0.35);
+    border-radius: var(--radius-full);
+    background: rgba(var(--warning-rgb), 0.1);
+    color: var(--text);
+    font: 600 13px/1.2 var(--font-body);
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background-color 0.15s;
 
-    &:hover { background: rgba(255, 255, 255, 0.16); }
-    &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5); }
+    svg { color: var(--warning); }
 
-    span { flex: 1; }
+    &:hover { background: rgba(var(--warning-rgb), 0.18); }
+    &:focus-visible { outline: none; box-shadow: var(--accent-glow); }
 
     strong {
       min-width: 26px;
-      height: 24px;
+      height: 26px;
       padding: 0 8px;
       border-radius: var(--radius-full);
       display: inline-grid;
       place-items: center;
-      background: #FFFFFF;
-      color: #1E40AF;
+      background: var(--warning);
+      color: #1A1206;
       font-size: 12.5px;
       font-variant-numeric: tabular-nums;
     }
 
     /* Nothing pending: quieter, so what needs work stands out */
-    &[data-zero] { color: rgba(255, 255, 255, 0.6); }
-    &[data-zero] strong { background: rgba(255, 255, 255, 0.14); color: rgba(255, 255, 255, 0.75); }
+    &[data-zero] {
+      border-color: var(--lg-well-edge);
+      background: var(--lg-well);
+      color: var(--text-sec);
+
+      svg { color: var(--text-mut); }
+      strong { background: rgba(var(--text-rgb), 0.1); color: var(--text-sec); }
+    }
   }
 }

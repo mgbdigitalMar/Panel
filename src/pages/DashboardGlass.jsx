@@ -1,14 +1,13 @@
 import { useMemo, useState } from 'react';
-import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie } from 'recharts';
+import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, LabelList } from 'recharts';
 import {
   Users, Calendar, Inbox, Newspaper, Pin, Car, DoorOpen, Building, ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight,
-  PartyPopper, CalendarPlus, FilePlus2, Mail, FileText, TrendingUp, TrendingDown, Clock, BarChart3, LayoutDashboard,
+  PartyPopper, CalendarPlus, FilePlus2, Mail, FileText, TrendingUp, TrendingDown, Clock, BarChart3, Megaphone, Timer,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import { Avatar, Badge, StatCard, Card, Button } from '../components/ui';
 import { TodayPanel } from '../components/TodayPanel';
-import { DeskEyebrow } from '../components/Desk';
 import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
 import { fmtDate, fmtDayShort, fmtRange } from '../utils/format';
 import { localISODate } from '../../shared/services/workMode.js';
@@ -74,8 +73,8 @@ function Ring({ value, size = 108, children }) {
         />
         <defs>
           <linearGradient id="glassRing" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="var(--warning)" />
-            <stop offset="1" stopColor="#FF8A3D" />
+            <stop offset="0" stopColor="var(--teal)" />
+            <stop offset="1" stopColor="var(--accent-light)" />
           </linearGradient>
         </defs>
       </svg>
@@ -170,52 +169,45 @@ export default function DashboardGlass({ d }) {
   const pinnedNews = useMemo(() => news.filter((n) => n.pinned).sort(newestFirst).slice(0, 3), [news]);
   const recentNews = useMemo(() => news.filter((n) => !n.pinned).sort(newestFirst).slice(0, 4), [news]);
 
+  // Workday of the hero: where today stands against Margube's hours (08:00–17:00, Fridays to 14:30)
+  const weekday = today.getDay();
+  const endsAt = weekday === 5 ? '14:30' : '17:00';
+  const jornada = weekday === 0 || weekday === 6
+    ? { state: 'Fin de semana', hint: 'Hoy no hay jornada' }
+    : progress >= 100 ? { state: 'Completada', hint: `Terminó a las ${endsAt}` }
+      : progress <= 0 ? { state: 'Aún no ha empezado', hint: 'Empieza a las 08:00' }
+        : { state: 'En curso', hint: `Termina a las ${endsAt}` };
+
   return (
     <div className={styles.page}>
-      <header className={styles.hero}>
-        <div>
-          <DeskEyebrow icon={LayoutDashboard} eyebrow={dateLine} />
+      {/* The page's one highlight: the greeting and today's workday, with the two things people create */}
+      <section className={styles.hero} aria-label="Resumen de hoy">
+        <svg className={styles.heroLeaf} viewBox="0 0 48 48" aria-hidden="true">
+          <path d={LEAF_PATH} />
+          <path d={VEIN_PATH} />
+        </svg>
+        <div className={styles.heroMain}>
+          <p className={styles.heroEyebrow}>Panel de control · {dateLine}</p>
           <h1 className={styles.greeting}>{greeting}, {firstName}</h1>
           <p className={styles.meta}>{motivation}</p>
         </div>
-        <div className={styles.heroActions}>
-          <Button variant="secondary" icon={FilePlus2} onClick={() => navigate('/requests?nueva=1')}>Nueva solicitud</Button>
-          <Button variant="primary" icon={CalendarPlus} onClick={() => navigate('/reservations?nueva=1')}>Nueva reserva</Button>
+        <div className={styles.heroSide}>
+          <div className={styles.jornada}>
+            <Ring value={progress} size={86}>
+              <strong>{Math.round(progress)}%</strong>
+            </Ring>
+            <div className={styles.jornadaText}>
+              <span className={styles.jornadaLabel}>Jornada laboral</span>
+              <strong>{jornada.state}</strong>
+              <span>{jornada.hint}</span>
+            </div>
+          </div>
+          <div className={styles.heroActions}>
+            <Button variant="secondary" icon={FilePlus2} onClick={() => navigate('/requests?nueva=1')}>Nueva solicitud</Button>
+            <Button variant="primary" icon={CalendarPlus} onClick={() => navigate('/reservations?nueva=1')}>Nueva reserva</Button>
+          </div>
         </div>
-      </header>
-
-      {pinnedNews.length > 0 && (
-        <section
-          className={clsx(styles.pinned, pinnedNews.length === 1 && styles.pinnedOne, pinnedNews.length === 3 && styles.pinnedThree)}
-          aria-label="Noticias fijadas"
-        >
-          {pinnedNews.map((n, i) => (
-            <article key={n.id} className={clsx(styles.pinCard, i === 0 && styles.pinLead)}>
-              <svg className={styles.pinLeaf} viewBox="0 0 48 48" aria-hidden="true">
-                <path d={LEAF_PATH} />
-                <path d={VEIN_PATH} />
-              </svg>
-              <div className={styles.pinTags}>
-                <span className={styles.pinBadge}><Pin size={11} aria-hidden="true" /> Fijada</span>
-                <span>{n.type === 'event' ? 'Evento' : 'Noticia'}</span>
-                {n.category && <span>{n.category}</span>}
-              </div>
-              <h2 className={styles.pinTitle}>{n.title}</h2>
-              {n.content && <p className={styles.pinText}>{n.content}</p>}
-              <div className={styles.pinFoot}>
-                <span className={styles.pinAuthor}>
-                  <Avatar initials={n.authorAvatar} size={26} />
-                  {n.authorName}
-                </span>
-                <time dateTime={n.date}>{fmtDate(n.date || n.createdAt)}</time>
-                <button type="button" className={styles.pinMore} onClick={() => navigate('/news')}>
-                  Leer <ArrowRight size={14} aria-hidden="true" />
-                </button>
-              </div>
-            </article>
-          ))}
-        </section>
-      )}
+      </section>
 
       <div className={clsx(styles.kpis, 'stagger-quick')}>
         <StatCard label="Empleados activos" value={employees.length} icon={Users} color="var(--accent)" sub="Total en plantilla"
@@ -266,18 +258,36 @@ export default function DashboardGlass({ d }) {
           )}
           <div className={clsx(styles.chartBody, chartEmpty && styles.chartBodyEmpty)}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chart.data} barCategoryGap={chart.bars.length > 1 ? '22%' : '28%'} barGap={3} margin={{ top: 8, right: 4, left: 4, bottom: 0 }}>
+              <BarChart data={chart.data} barCategoryGap={chart.bars.length > 1 ? '22%' : '28%'} barGap={3} margin={{ top: 34, right: 4, left: 4, bottom: 0 }}>
+                <defs>
+                  {/* The highlighted bar (today, this week): Margube blue lit from the top */}
+                  <linearGradient id="barHot" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="var(--accent-light)" />
+                    <stop offset="1" stopColor="var(--accent)" />
+                  </linearGradient>
+                </defs>
                 <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--text-sec)' }} axisLine={false} tickLine={false} interval={0} />
                 {/* Hidden, but recharts 3 needs it to scale the bars */}
                 <YAxis hide allowDecimals={false} domain={[0, 'auto']} />
                 {!chartEmpty && <Tooltip content={<ChartTip />} cursor={{ fill: 'rgba(var(--text-rgb), 0.05)', radius: 12 }} />}
                 {!chartEmpty && chart.bars.map((b) => (
-                  <Bar key={b.key} dataKey={b.key} name={b.name} radius={chart.bars.length > 1 ? [6, 6, 6, 6] : [14, 14, 14, 14]} maxBarSize={chart.bars.length > 1 ? 14 : 64}
-                    fill={b.color || 'rgba(var(--text-rgb), 0.2)'} minPointSize={chart.bars.length > 1 ? 0 : 4}>
+                  <Bar key={b.key} dataKey={b.key} name={b.name} radius={chart.bars.length > 1 ? [6, 6, 6, 6] : [999, 999, 999, 999]} maxBarSize={chart.bars.length > 1 ? 14 : 58}
+                    fill={b.color || 'rgba(var(--text-rgb), 0.16)'} minPointSize={chart.bars.length > 1 ? 0 : 6}>
                     {chart.bars.length === 1 && chart.data.map((x, i) => (
-                      <Cell key={i} fill={chart.highlight(x) ? 'var(--accent)' : 'rgba(var(--text-rgb), 0.2)'}
+                      <Cell key={i} fill={chart.highlight(x) ? 'url(#barHot)' : 'rgba(var(--text-rgb), 0.16)'}
                         className={chart.highlight(x) ? styles.barGlow : undefined} />
                     ))}
+                    {/* The highlighted bar carries its figure in a floating pill */}
+                    {chart.bars.length === 1 && (
+                      <LabelList dataKey={b.key} content={({ x, y, width, value, index }) => (
+                        chart.highlight(chart.data[index]) && value > 0 ? (
+                          <g className={styles.barLabel}>
+                            <rect x={x + width / 2 - 18} y={y - 30} width={36} height={22} rx={11} />
+                            <text x={x + width / 2} y={y - 15} textAnchor="middle">{value}</text>
+                          </g>
+                        ) : null
+                      )} />
+                    )}
                   </Bar>
                 ))}
               </BarChart>
@@ -289,6 +299,68 @@ export default function DashboardGlass({ d }) {
               </div>
             )}
           </div>
+        </Card>
+
+        {/* Comunicados: the pinned news lead, the rest follow (nothing shows twice) */}
+        <Card className={clsx(styles.panel, styles.newsPanel)}>
+          <div className={styles.panelHead}>
+            <h2 className={clsx(styles.panelTitle, styles.titleIcon)}><Megaphone size={17} aria-hidden="true" /> Comunicados</h2>
+            {newsThisMonth > 0 && <span className={styles.countPill}>{newsThisMonth} este mes</span>}
+          </div>
+          {pinnedNews.length > 0 && (
+            <ul className={styles.pinList} aria-label="Noticias fijadas">
+              {pinnedNews.map((n) => (
+                <li key={n.id}>
+                  <article className={styles.pinCard}>
+                    <div className={styles.pinTags}>
+                      <span className={styles.pinBadge}><Pin size={11} aria-hidden="true" /> Fijada</span>
+                      <span>{n.type === 'event' ? 'Evento' : 'Noticia'}</span>
+                      {n.category && <span>{n.category}</span>}
+                    </div>
+                    <h3 className={styles.pinTitle}>{n.title}</h3>
+                    {n.content && <p className={styles.pinText}>{n.content}</p>}
+                    <div className={styles.pinFoot}>
+                      <span className={styles.pinAuthor}>
+                        <Avatar initials={n.authorAvatar} size={22} />
+                        {n.authorName} · <time dateTime={n.date}>{fmtDate(n.date || n.createdAt)}</time>
+                      </span>
+                      <button type="button" className={styles.pinMore} onClick={() => navigate('/news')}>
+                        Leer <ArrowRight size={14} aria-hidden="true" />
+                      </button>
+                    </div>
+                  </article>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className={styles.subHead}>
+            <span>{pinnedNews.length ? 'Más noticias' : 'Noticias recientes'}</span>
+            <button type="button" onClick={() => navigate('/news')}>Ver todas <ArrowRight size={13} aria-hidden="true" /></button>
+          </div>
+          {recentNews.length === 0 ? (
+            <p className={styles.emptyLine}>
+              <Newspaper size={15} aria-hidden="true" />
+              {pinnedNews.length ? 'No hay más noticias aparte de las fijadas.' : 'Todavía no hay noticias publicadas.'}
+            </p>
+          ) : (
+            <ul className={styles.list}>
+              {recentNews.map((n) => (
+                <li key={n.id}>
+                  <button type="button" className={styles.newsRow} onClick={() => navigate('/news')}>
+                    <span className={clsx(styles.newsDate, n.type === 'event' && styles.newsDateEvent)}>
+                      <strong>{new Date(n.date || n.createdAt).getDate()}</strong>
+                      <span>{new Date(n.date || n.createdAt).toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')}</span>
+                    </span>
+                    <span className={styles.listText}>
+                      <strong>{n.title}</strong>
+                      <span>{n.type === 'event' ? 'Evento' : 'Noticia'}{n.category ? ` · ${n.category}` : ''} · {n.authorName}</span>
+                    </span>
+                    <ArrowRight size={15} className={styles.newsGo} aria-hidden="true" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </Card>
 
         {/* Today: own reservations and requests (the hero already has the date and the create buttons) */}
@@ -340,36 +412,32 @@ export default function DashboardGlass({ d }) {
           )}
         </Card>
 
-        {/* Workday ring + hours balance (the only place the workday is shown in full) */}
-        <Card className={clsx(styles.panel, styles.third)}>
-          <div className={styles.panelHead}>
-            <h2 className={styles.panelTitle}>Tu jornada</h2>
-            <button type="button" className={styles.iconLink} onClick={() => navigate('/horas')} aria-label="Ver tiempo a compensar">
-              <ArrowUpRight size={16} aria-hidden="true" />
-            </button>
-          </div>
-          <div className={styles.goalsBody}>
-            <Ring value={progress}>
-              <strong>{Math.round(progress)}%</strong>
-              <span>jornada</span>
-            </Ring>
-            <div className={styles.goalsText}>
-              <span className={styles.goalsLabel}>Tiempo a compensar</span>
-              <span className={clsx(styles.balance, hours.balance < 0 && styles.balanceNeg)}>
-                {hours.balance >= 0 ? '+' : ''}{hours.balance.toLocaleString('es-ES', { maximumFractionDigits: 1 })} h
-              </span>
-              <span className={styles.goalsHint}>{hours.balance >= 0 ? 'Saldo a favor' : 'Saldo deudor'}</span>
-              {hours.pending > 0 && (
-                <span className={styles.goalsPending}>{hours.pending.toLocaleString('es-ES', { maximumFractionDigits: 1 })} h pendientes de aprobar</span>
-              )}
-            </div>
-          </div>
-        </Card>
-
         {/* Team: who is away today */}
         <div className={clsx(styles.third, styles.teamPanel)}>
           <TodayPanel />
         </div>
+
+        {/* Hours balance (the workday itself is in the hero) */}
+        <Card className={clsx(styles.panel, styles.third, styles.hoursPanel)}>
+          <div className={styles.panelHead}>
+            <span className={styles.hoursIcon} aria-hidden="true"><Timer size={18} /></span>
+            <span className={clsx(styles.hoursState, hours.balance < 0 && styles.hoursStateNeg)}>
+              {hours.balance >= 0 ? 'Saldo a favor' : 'Saldo deudor'}
+            </span>
+            <button type="button" className={styles.iconLink} onClick={() => navigate('/horas')} aria-label="Ver tiempo a compensar">
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </button>
+          </div>
+          <div className={styles.goalsText}>
+            <span className={styles.goalsLabel}>Tiempo a compensar</span>
+            <span className={clsx(styles.balance, hours.balance < 0 && styles.balanceNeg)}>
+              {hours.balance >= 0 ? '+' : ''}{hours.balance.toLocaleString('es-ES', { maximumFractionDigits: 1 })} h
+            </span>
+            {hours.pending > 0
+              ? <span className={styles.goalsPending}>{hours.pending.toLocaleString('es-ES', { maximumFractionDigits: 1 })} h pendientes de aprobar</span>
+              : <span className={styles.goalsHint}>Todo aprobado</span>}
+          </div>
+        </Card>
 
         {/* Birthdays */}
         <Card className={clsx(styles.panel, styles.third, styles.birthdays)}>
@@ -391,38 +459,6 @@ export default function DashboardGlass({ d }) {
                   <span className={clsx(styles.days, e.daysLeft <= 7 && styles.daysSoon)}>
                     {e.daysLeft === 0 ? '¡Hoy!' : `en ${e.daysLeft} d`}
                   </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        {/* Recent news (the pinned ones are at the top) */}
-        <Card className={clsx(styles.panel, styles.newsPanel)}>
-          <div className={styles.panelHead}>
-            <h2 className={styles.panelTitle}>{pinnedNews.length ? 'Más noticias' : 'Noticias recientes'}</h2>
-            <button type="button" className={styles.textLink} onClick={() => navigate('/news')}>Ver todas <ArrowRight size={13} aria-hidden="true" /></button>
-          </div>
-          {recentNews.length === 0 ? (
-            <p className={styles.emptyLine}>
-              <Newspaper size={15} aria-hidden="true" />
-              {pinnedNews.length ? 'No hay más noticias aparte de las fijadas.' : 'Todavía no hay noticias publicadas.'}
-            </p>
-          ) : (
-            <ul className={styles.list}>
-              {recentNews.map((n) => (
-                <li key={n.id}>
-                  <button type="button" className={styles.newsRow} onClick={() => navigate('/news')}>
-                    <span className={clsx(styles.newsDate, n.type === 'event' && styles.newsDateEvent)}>
-                      <strong>{new Date(n.date || n.createdAt).getDate()}</strong>
-                      <span>{new Date(n.date || n.createdAt).toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')}</span>
-                    </span>
-                    <span className={styles.listText}>
-                      <strong>{n.title}</strong>
-                      <span>{n.type === 'event' ? 'Evento' : 'Noticia'}{n.category ? ` · ${n.category}` : ''} · {n.authorName}</span>
-                    </span>
-                    <ArrowRight size={15} className={styles.newsGo} aria-hidden="true" />
-                  </button>
                 </li>
               ))}
             </ul>

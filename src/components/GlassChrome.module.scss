@@ -5,6 +5,7 @@
 @mixin frosted {
   background: var(--lg-chrome);
   border: 1px solid var(--lg-edge);
+  border-color: var(--lg-edge-top, var(--lg-edge)) var(--lg-edge) var(--lg-edge-bottom, var(--lg-edge));
   box-shadow: inset 0 1px 0 var(--lg-rim), 0 10px 30px -12px rgba(0, 0, 0, 0.35);
   -webkit-backdrop-filter: blur(28px) saturate(160%);
   backdrop-filter: blur(28px) saturate(160%);
@@ -14,7 +15,8 @@
 @mixin frosted-dense {
   background: var(--lg-sheen), var(--lg-popover, rgba(255, 255, 255, 0.86));
   border: 1px solid var(--lg-edge);
-  box-shadow: inset 0 1px 0 var(--lg-rim), 0 18px 44px -14px rgba(0, 0, 0, 0.45);
+  border-color: var(--lg-edge-top, var(--lg-edge)) var(--lg-edge) var(--lg-edge-bottom, var(--lg-edge));
+  box-shadow: inset 0 1px 0 var(--lg-rim), 0 20px 48px -12px rgba(0, 0, 0, 0.55);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   backdrop-filter: blur(40px) saturate(180%);
 }
@@ -36,38 +38,51 @@
   gap: 16px;
   padding: 14px clamp(16px, 2.4vw, 32px);
 
+  /* Computers: the rail holds the sections; the bar carries where you are, the search
+     capsule and the tools */
+  @media (min-width: 1024px) {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 460px) minmax(0, 1fr);
+    padding: 18px clamp(20px, 2.4vw, 36px) 10px;
+    /* Transparent bar floating over the page: the gaps between the pills let clicks through
+       to the content scrolled beneath; only the pills themselves catch the pointer */
+    background: transparent;
+    pointer-events: none;
+
+    > * { pointer-events: auto; }
+  }
+
+  /* Laptops and small desktops: both ends keep their full width and the search capsule takes what is left */
+  @media (min-width: 1024px) and (max-width: 1439px) {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    .keycap { display: none; }
+  }
+
   @media (max-width: 1023px) {
     gap: 8px;
     padding: calc(10px + env(safe-area-inset-top)) 12px 10px;
-    /* Solid-ish colour on the bar itself: what Safari samples for its top tint. No filter here,
-       so the round buttons keep their own backdrop blur (a filter would make the bar their
-       backdrop root). */
-    background-color: rgba(var(--canvas-top-rgb), 0.5);
+    /* Transparent bar: the round buttons float on their own smoked glass over the page */
+    background: transparent;
 
-    /* The blur lives on a layer of its own, behind the buttons */
+    /* Only the status-bar strip (the safe area) keeps a veil, so the clock and battery stay
+       legible when the page scrolls under them; zero tall where there is no notch */
     &::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      -webkit-backdrop-filter: blur(18px) saturate(160%);
-      backdrop-filter: blur(18px) saturate(160%);
-      pointer-events: none;
-    }
-
-    /* A short fade under the band, so cards slide under it instead of hitting an edge */
-    &::after {
       content: '';
       position: absolute;
       left: 0;
       right: 0;
-      top: 100%;
-      height: 18px;
-      background: linear-gradient(rgba(var(--canvas-top-rgb), 0.45), transparent);
+      top: 0;
+      z-index: -1;
+      height: env(safe-area-inset-top);
+      background: rgba(var(--canvas-top-rgb), 0.82);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      backdrop-filter: blur(18px) saturate(160%);
       pointer-events: none;
     }
   }
-
 
   /* Phones: the sections go to the bottom dock */
   @media (max-width: 767px) { grid-template-columns: auto 1fr; }
@@ -128,7 +143,7 @@
 }
 
 .brandFull {
-  height: 34px;
+  height: 26px;
   width: auto;
 
   @media (max-width: 1023px) { display: none; }
@@ -178,6 +193,7 @@
   border-radius: var(--radius-full);
 
   @media (max-width: 767px) { display: none; }
+  @media (min-width: 1024px) { display: none; }
 }
 
 .navItem {
@@ -553,4 +569,344 @@
   .tab { transition: none; }
   .tabLabel { animation: none; }
   .dock, .dockCompact { transition: none; }
+}
+
+/* Where you are (computers): the logo and the open section in one smoked pill -------------- */
+.crumbs {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+
+  @media (min-width: 1024px) {
+    @include frosted;
+    gap: 12px;
+    height: 48px;
+    padding: 0 18px 0 16px;
+    border-radius: var(--radius-full);
+  }
+}
+
+.crumb {
+  display: none;
+
+  @media (min-width: 1024px) {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding-left: 12px;
+    border-left: 1px solid var(--lg-edge-top, var(--lg-edge));
+    color: var(--text);
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    svg { flex: none; color: var(--accent); }
+  }
+}
+
+/* Phones and tablets keep the round search button; computers get the capsule */
+.searchRound {
+  @media (min-width: 1024px) { display: none !important; }
+}
+
+.searchBar {
+  @include frosted;
+  @include focus-ring;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 48px;
+  padding: 0 8px 0 18px;
+  border-radius: var(--radius-full);
+  color: var(--text-mut);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease-out), color 0.15s var(--ease-out);
+
+  @media (min-width: 1024px) { display: flex; }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: var(--text-sec);
+      border-color: rgba(var(--accent-rgb), 0.35);
+    }
+  }
+}
+
+.searchText {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.keycap {
+  flex: none;
+  padding: 6px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--lg-well-edge, var(--lg-edge));
+  background: var(--lg-well, rgba(var(--text-rgb), 0.06));
+  color: var(--text-sec);
+  font: 600 11px/1 var(--font-body);
+  letter-spacing: 0.02em;
+}
+
+/* «Nuevo»: the bar's primary action (computers) ------------------------------------------- */
+.newWrap {
+  position: relative;
+
+  @media (max-width: 1023px) { display: none; }
+}
+
+.newBtn {
+  @include focus-ring;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 44px;
+  padding: 0 14px 0 16px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--gradient-cta);
+  color: #FFFFFF;
+  font: 600 14px/1 var(--font-body);
+  letter-spacing: -0.01em;
+  box-shadow: var(--shadow-cta);
+  cursor: pointer;
+  transition: box-shadow 0.18s var(--ease-out), transform 0.15s var(--ease-out), filter 0.15s;
+
+  &:active { transform: scale(0.97); }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { box-shadow: var(--shadow-cta-hover); filter: brightness(1.06); }
+  }
+}
+
+.newChevron {
+  opacity: 0.8;
+  transition: transform 0.2s var(--ease-out);
+}
+
+.newChevronOpen { transform: rotate(180deg); }
+
+.newMenu {
+  width: 320px;
+  display: grid;
+  gap: 2px;
+}
+
+.newItem {
+  @include focus-ring;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 16px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.12s;
+
+  &:hover { background: rgba(var(--text-rgb), 0.06); }
+}
+
+.newIcon {
+  --tone: var(--accent);
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tone) 24%, transparent);
+
+  &[data-tone='teal'] { --tone: var(--teal); }
+  &[data-tone='violet'] { --tone: var(--violet); }
+}
+
+.newText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+
+  strong { font-size: 14px; font-weight: 600; }
+  small { font-size: 12px; color: var(--text-mut); }
+}
+
+/* Floating rail (computers) ------------------------------------------------------------------
+   A slim capsule of smoked glass pinned to the left, clear of the edges. */
+.rail {
+  @include frosted-dense;
+  position: fixed;
+  top: 16px;
+  bottom: 16px;
+  left: 16px;
+  z-index: var(--z-sidebar);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 72px;
+  padding: 12px 0;
+  border-radius: 36px;
+  box-shadow: inset 0 1px 0 var(--lg-rim), 0 24px 52px -12px rgba(0, 0, 0, 0.6), 0 0 24px rgba(var(--accent-rgb), 0.05);
+
+  @media (min-width: 1024px) { display: flex; }
+}
+
+.railBrand {
+  @include focus-ring;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--gradient-cta);
+  color: #FFFFFF;
+  box-shadow: var(--shadow-cta), 0 0 22px rgba(47, 91, 234, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s var(--ease-out);
+
+  svg { width: 24px; height: 24px; }
+
+  &:active { transform: scale(0.95); }
+}
+
+.railList {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.railFoot {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--lg-edge);
+}
+
+.railItem {
+  @include focus-ring;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-mut);
+  cursor: pointer;
+  transition: color 0.15s var(--ease-out), background-color 0.15s var(--ease-out);
+
+  > svg { position: relative; z-index: 1; }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: var(--text);
+      background: rgba(var(--text-rgb), 0.06);
+
+      .railTip { opacity: 1; transform: translate(0, -50%); }
+    }
+  }
+
+  &:focus-visible .railTip { opacity: 1; transform: translate(0, -50%); }
+}
+
+/* The open section: a lit disc (white on dark glass, Margube blue on light) */
+.railItemActive {
+  color: #FFFFFF;
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { color: #FFFFFF; background: transparent; }
+  }
+
+  :global([data-theme='dark']) & {
+    color: #0A0C10;
+
+    &:hover { color: #0A0C10; }
+  }
+}
+
+.railDisc {
+  position: absolute;
+  inset: 3px;
+  z-index: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 6px 18px -6px rgba(47, 91, 234, 0.8);
+
+  :global([data-theme='dark']) & {
+    background: #F5F6F8;
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.6);
+  }
+}
+
+.railBadge {
+  position: absolute;
+  top: 1px;
+  right: 0;
+  z-index: 2;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px var(--lg-popover, var(--bg));
+}
+
+/* Name of a rail item, beside it on hover and keyboard focus */
+.railTip {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 16px);
+  z-index: 3;
+  padding: 7px 12px;
+  border-radius: var(--radius-full);
+  background: var(--lg-popover, var(--bg-2));
+  border: 1px solid var(--lg-edge);
+  box-shadow: 0 12px 28px -10px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-4px, -50%);
+  transition: opacity 0.14s var(--ease-out), transform 0.14s var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .railTip, .railItem, .newChevron { transition: none; }
+}
+
+/* Cerrar sesión at the foot of the rail: red on hover, so it never reads as just another section */
+.railLogout {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { color: var(--danger); background: rgba(var(--danger-rgb), 0.12); }
+  }
 }

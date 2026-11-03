@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import {
-  Download, Search, CheckCircle, Inbox, TrendingDown, X, CheckCheck, CalendarRange, Timer, UsersRound, Wallet,
+  Download, Search, CheckCircle, Inbox, TrendingDown, TrendingUp, X, CheckCheck, CalendarRange, Timer, UsersRound, Wallet,
 } from 'lucide-react';
 import { Button, Input } from '../components/ui';
-import { DeskEyebrow } from '../components/Desk';
+import { DeskEyebrow, DeskGauge, gaugeRow } from '../components/Desk';
 import { fmtHM } from '../utils/format';
 import styles from './HorasDesk.module.scss';
 
@@ -43,7 +43,7 @@ export function HorasDeskHeader({ view, setView, isAdmin, teamPending = 0, onExp
   return (
     <header className={styles.head}>
       <div className={styles.headText}>
-        <DeskEyebrow icon={Timer} />
+        <DeskEyebrow icon={Timer} kicker="Bolsa de horas" />
         <h1 className={styles.title}>Tiempo a compensar</h1>
         <p className={styles.desc}>Registra tus horas y consulta tu saldo con la empresa.</p>
       </div>
@@ -425,6 +425,87 @@ function Composer({ composer, focus, onFocused }) {
   );
 }
 
+const SHORT_MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+const hoursOf = (h) => Number(h.hours) || 0;
+
+function MonthTip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className={styles.tip}>
+      <span>{label}</span>
+      {payload.map((p) => <strong key={p.dataKey}>{p.name}: {fmtHM(p.value)} h</strong>)}
+    </div>
+  );
+}
+
+/** This month in three figures, and the last six months as paired bars (earned vs owed). */
+function MonthSummary({ records, balance }) {
+  const now = new Date();
+  const ym = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  const thisMonth = ym(now);
+  const inMonth = (h, key) => (h.date || '').slice(0, 7) === key;
+  const earned = (key) => records.filter((h) => inMonth(h, key) && h.type !== 'debe' && h.status === 'approved').reduce((s, h) => s + hoursOf(h), 0);
+  const owed = (key) => records.filter((h) => inMonth(h, key) && h.type === 'debe' && h.status !== 'rejected').reduce((s, h) => s + hoursOf(h), 0);
+
+  const earnedNow = earned(thisMonth);
+  const owedNow = owed(thisMonth);
+  const countNow = records.filter((h) => inMonth(h, thisMonth)).length;
+  const months = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+    const key = ym(d);
+    return { label: i === 5 ? `${SHORT_MONTHS[d.getMonth()]} (hoy)` : SHORT_MONTHS[d.getMonth()], generadas: earned(key), debidas: owed(key) };
+  });
+  const empty = months.every((m) => !m.generadas && !m.debidas);
+  const avg = months.reduce((s, m) => s + m.generadas, 0) / months.length;
+
+  return (
+    <>
+      <div className={gaugeRow} style={{ '--n': 3 }}>
+        <DeskGauge icon={TrendingUp} tone="teal" eyebrow="Generadas este mes" value={fmtHM(earnedNow, true)} unit="h"
+          badge={`${countNow} ${countNow === 1 ? 'movimiento' : 'movimientos'}`} />
+        <DeskGauge icon={TrendingDown} tone="danger" eyebrow="Debidas este mes" value={fmtHM(-owedNow, true)} unit="h"
+          badge={owedNow ? 'Restan del saldo' : 'Nada debido'} />
+        <DeskGauge icon={Wallet} tone={balance < 0 ? 'danger' : 'accent'} eyebrow="Saldo neto" value={fmtHM(balance, true)} unit="h"
+          badge={`≈ ${(Math.abs(balance) / 8).toLocaleString('es-ES', { maximumFractionDigits: 1 })} jornadas`} />
+      </div>
+
+      <section className={styles.monthly} aria-labelledby="horas-monthly">
+        <div className={styles.monthlyHead}>
+          <div>
+            <h2 id="horas-monthly">Balance mensual</h2>
+            <p>Horas generadas y debidas en los últimos seis meses</p>
+          </div>
+          <span className={styles.monthlyLegend} aria-hidden="true">
+            <i data-k="gen" /> Generadas <i data-k="deb" /> Debidas
+          </span>
+        </div>
+        <div className={styles.monthlyChart}>
+          {empty ? (
+            <p className={styles.monthlyEmpty}>Aún no hay movimientos en los últimos seis meses.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={months} barGap={6} barCategoryGap="30%" margin={{ top: 8, right: 4, left: 4, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="genBar" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="var(--teal)" />
+                    <stop offset="1" stopColor="color-mix(in srgb, var(--teal) 45%, transparent)" />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--text-sec)' }} axisLine={false} tickLine={false} interval={0} />
+                <YAxis hide domain={[0, 'auto']} />
+                <Tooltip content={<MonthTip />} cursor={{ fill: 'rgba(var(--text-rgb), 0.05)', radius: 10 }} />
+                <Bar dataKey="generadas" name="Generadas" fill="url(#genBar)" radius={[999, 999, 999, 999]} maxBarSize={22} minPointSize={3} />
+                <Bar dataKey="debidas" name="Debidas" fill="rgba(var(--danger-rgb), 0.55)" radius={[999, 999, 999, 999]} maxBarSize={22} minPointSize={3} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+        <p className={styles.monthlyFoot}>Media mensual generada: <strong>{fmtHM(avg)} h</strong></p>
+      </section>
+    </>
+  );
+}
+
 /** The statement: hero and movements in the main column, the form in the side column. */
 export function HorasStatement({
   records, balance, creditHours, pendingHours, debtHours, from, to, setFrom, setTo,
@@ -435,6 +516,7 @@ export function HorasStatement({
       <div className={styles.mainCol}>
         <BalanceHero records={records} balance={balance} creditHours={creditHours} debtHours={debtHours}
           pendingHours={pendingHours} filtered={!!(from || to)} />
+        <MonthSummary records={records} balance={balance} />
         <Movements records={records} from={from} to={to} setFrom={setFrom} setTo={setTo} />
       </div>
       <aside className={styles.sideCol}>

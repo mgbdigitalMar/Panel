@@ -3,8 +3,8 @@ import clsx from 'clsx';
 import { Download, Plus, Check, X, Trash2, Paperclip, Sun, Home, Briefcase, ShoppingCart, Inbox, Layers, FileText } from 'lucide-react';
 import { Avatar, Button } from '../components/ui';
 import {
-  DeskHeader, DeskLayout, DeskRail, DeskMetrics, DeskPanel, DeskSpotlight, SpotAction, DeskSearch, DeskSegmented,
-  DeskTable, CellStack, TypeTile, StatusPill, RowAction, RowActions, DeskEmpty, ShowMore, optionalCol,
+  DeskHeader, DeskTabs, DeskGauge, DeskChips, DeskPanel, DeskSearch, DeskSegmented,
+  DeskTable, CellStack, TypeTile, StatusPill, RowAction, RowActions, DeskEmpty, ShowMore, optionalCol, gaugeRow, filterBar,
 } from '../components/Desk';
 import { todayKey, fmtDate } from '../utils/format';
 import { PERSONAL_DAYS_PER_YEAR } from '../../shared/config/constants.js';
@@ -78,11 +78,15 @@ export default function RequestsDesk({ allItems, user, requestDetail, rowKey, on
   const filtering = type !== 'all' || status !== 'all' || scope !== 'all' || query.trim();
   const pending = count('pending');
 
+  const awayDays = week.filter((d) => d.away).length;
+  const decided = count('approved') + count('rejected');
+
   return (
     <div className={styles.page}>
       <DeskHeader
         icon={Inbox}
-        title={isAdmin ? 'Solicitudes' : 'Tus solicitudes'}
+        kicker="Portal del empleado · Trámites"
+        title={isAdmin ? 'Gestión de solicitudes' : 'Tus solicitudes'}
         desc={isAdmin
           ? 'Asuntos propios, remoto, trabajo externo y compras de todo el equipo. Lo que espera tu decisión aparece primero.'
           : 'Pide asuntos propios, trabajo en remoto o externo y compras, y sigue su estado.'}
@@ -94,65 +98,67 @@ export default function RequestsDesk({ allItems, user, requestDetail, rowKey, on
         )}
       />
 
-      <DeskLayout
-        sideLabel="Tu saldo y filtros"
-        side={(
-          <>
-            <DeskSpotlight icon={Sun} label={`Tus días · ${year}`}
-              actions={<SpotAction primary icon={Plus} onClick={() => onNew('asuntos_propios')} disabled={!daysLeft}>Pedir un día</SpotAction>}>
-              <p className={styles.days}>
-                <strong>{daysLeft}</strong>
-                <span>de {PERSONAL_DAYS_PER_YEAR} días de asuntos propios disponibles</span>
-              </p>
-              <span className={styles.pips} aria-hidden="true">
-                {Array.from({ length: PERSONAL_DAYS_PER_YEAR }, (_, i) => <i key={i} data-used={i >= daysLeft || undefined} />)}
-              </span>
-              <div className={styles.week}>
-                <span>Esta semana fuera de la oficina</span>
-                <ol aria-label="Días fuera de la oficina esta semana">
-                  {week.map((d) => (
-                    <li key={d.iso} data-away={d.away || undefined} data-today={d.today || undefined}
-                      aria-label={`${d.name}: ${d.away === 'remoto' ? 'en remoto' : d.away === 'external' ? 'trabajo externo' : 'en la oficina'}`}>
-                      {d.letter}
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </DeskSpotlight>
+      {/* The kinds of request, each with its count (a dot when something of that kind waits) */}
+      <DeskTabs label="Tipo de solicitud" value={type} onChange={(v) => { setType(v); setLimit(PAGE); }} items={[
+        { value: 'all', label: 'Todas', count: scoped.length },
+        ...Object.entries(TYPE).map(([value, t]) => ({
+          value, label: t.label,
+          count: scoped.filter((r) => r.type === value).length,
+          alert: isAdmin && scoped.some((r) => r.type === value && r.status === 'pending'),
+        })),
+      ]} />
 
-            <DeskRail title="Tipo" asFilter value={type} onChange={(v) => { setType(v); setLimit(PAGE); }} items={[
-              { value: 'all', label: 'Todas', icon: Layers, tone: 'neutral', count: scoped.length },
-              ...Object.entries(TYPE).map(([value, t]) => ({
-                value, label: t.label, icon: t.icon, tone: t.tone,
-                count: scoped.filter((r) => r.type === value).length,
-                alert: isAdmin && scoped.some((r) => r.type === value && r.status === 'pending'),
-              })),
-            ]} />
-          </>
-        )}
-      >
-        <DeskMetrics label="Por estado (pulsa para filtrar)" items={[
-          { label: 'Pendientes', value: pending, tone: 'warning', hint: pending ? (isAdmin ? 'Esperan tu decisión' : 'En revisión') : 'Nada pendiente', onClick: () => toggleStatus('pending'), active: status === 'pending' },
-          { label: 'Aprobadas', value: count('approved'), tone: 'success', hint: 'En total', onClick: () => toggleStatus('approved'), active: status === 'approved' },
-          { label: 'Rechazadas', value: count('rejected'), tone: 'danger', hint: 'En total', onClick: () => toggleStatus('rejected'), active: status === 'rejected' },
-        ]} />
+      <div className={gaugeRow} style={{ '--n': 3 }}>
+        <DeskGauge icon={Sun} tone="warning" eyebrow={`Bolsa anual · ${year}`} title="Días de asuntos propios"
+          value={daysLeft} unit={`/ ${PERSONAL_DAYS_PER_YEAR} disponibles`}
+          badge={`${Math.round((daysLeft / PERSONAL_DAYS_PER_YEAR) * 100)}% restante`}
+          progress={(daysLeft / PERSONAL_DAYS_PER_YEAR) * 100}>
+          <button type="button" className={styles.gaugeAction} onClick={() => onNew('asuntos_propios')} disabled={!daysLeft}>
+            <Plus size={15} aria-hidden="true" /> Pedir un día
+          </button>
+        </DeskGauge>
 
-        <DeskPanel
+        <DeskGauge icon={Home} tone="teal" eyebrow="Esta semana" title="Fuera de la oficina"
+          value={awayDays} unit={awayDays === 1 ? 'día en remoto o externo' : 'días en remoto o externo'}>
+          <ol className={styles.weekStrip} aria-label="Días fuera de la oficina esta semana">
+            {week.map((d) => (
+              <li key={d.iso} data-away={d.away || undefined} data-today={d.today || undefined}
+                aria-label={`${d.name}: ${d.away === 'remoto' ? 'en remoto' : d.away === 'external' ? 'trabajo externo' : 'en la oficina'}`}>
+                {d.letter}
+              </li>
+            ))}
+          </ol>
+        </DeskGauge>
+
+        <DeskGauge icon={Layers} tone={pending ? 'danger' : 'success'}
+          eyebrow={pending ? 'Atención requerida' : 'Al día'} title={isAdmin ? 'Esperan tu decisión' : 'En revisión'}
+          value={pending} unit={pending === 1 ? 'pendiente' : 'pendientes'}
+          badge={`${decided} ${decided === 1 ? 'resuelta' : 'resueltas'}`}
+          progress={typed.length ? (pending / typed.length) * 100 : 0}
+          onClick={() => toggleStatus('pending')} active={status === 'pending'}
+          label={`${pending} pendientes. ${status === 'pending' ? 'Quitar filtro' : 'Ver solo pendientes'}`} />
+      </div>
+
+      <DeskPanel
           flush
           title={{ all: 'Historial', pending: 'Pendientes', approved: 'Aprobadas', rejected: 'Rechazadas' }[status]}
           sub={`${rows.length} ${rows.length === 1 ? 'solicitud' : 'solicitudes'}${filtering ? ' con estos filtros' : ''}`}
-          tools={(
-            <>
-              <DeskSearch value={query} onChange={(v) => { setQuery(v); setLimit(PAGE); }} label="Buscar solicitudes"
-                placeholder={isAdmin ? 'Persona, motivo o artículo' : 'Motivo o artículo'} />
-              {isAdmin && (
-                <DeskSegmented label="De quién" value={scope} onChange={(v) => { setScope(v); setLimit(PAGE); }} options={[
-                  { value: 'all', label: 'Equipo' }, { value: 'mine', label: 'Mías', count: mine.length },
-                ]} />
-              )}
-            </>
+          tools={isAdmin && (
+            <DeskSegmented label="De quién" value={scope} onChange={(v) => { setScope(v); setLimit(PAGE); }} options={[
+              { value: 'all', label: 'Equipo' }, { value: 'mine', label: 'Mías', count: mine.length },
+            ]} />
           )}
         >
+          <div className={filterBar}>
+            <DeskSearch value={query} onChange={(v) => { setQuery(v); setLimit(PAGE); }} label="Buscar solicitudes"
+              placeholder={isAdmin ? 'Persona, motivo o artículo' : 'Motivo o artículo'} />
+            <DeskChips label="Estado" value={status} onChange={(v) => { setStatus(v); setLimit(PAGE); }} options={[
+              { value: 'all', label: 'Todas' },
+              { value: 'pending', label: 'Pendientes', count: pending },
+              { value: 'approved', label: 'Aprobadas' },
+              { value: 'rejected', label: 'Rechazadas' },
+            ]} />
+          </div>
           {rows.length === 0 ? (
             <DeskEmpty icon={FileText}
               title={scoped.length === 0 ? 'Aún no hay solicitudes' : 'Nada con estos filtros'}
@@ -214,7 +220,6 @@ export default function RequestsDesk({ allItems, user, requestDetail, rowKey, on
             </>
           )}
         </DeskPanel>
-      </DeskLayout>
     </div>
   );
 }

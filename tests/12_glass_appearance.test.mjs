@@ -32,7 +32,7 @@ export async function runGlassAppearanceTests() {
     && !settings.includes("id: 'classic'") && !settings.includes('Clásico') && !settings.includes('setAppearance'));
   assert('El diseño viene fijado en el HTML (sin parpadeo) y se olvida la preferencia antigua',
     read('index.html').includes('<html lang="es" data-appearance="glass">') && read('src', 'main.jsx').includes("localStorage.removeItem('app-appearance')"));
-  assert('Sin barra lateral, cajón ni cabecera del diseño Clásico', !layout.includes('getSidebarContent') && !layout.includes('Busca personas, reservas, solicitudes…')
+  assert('Sin el cajón ni la cabecera del diseño Clásico', !layout.includes('getSidebarContent') && !layout.includes('Busca personas, reservas, solicitudes…')
     && layout.includes('<GlassHeader') && layout.includes('<Wallpaper />'));
   assert('Inicio: siempre el de Cristal (en táctil, su composición propia)', dash.includes('touch ? DashboardTouch : DashboardGlass') && !dash.includes('Mis módulos') && !dash.includes('appearance'));
   assert('Sin el fondo animado del diseño Clásico', !read('src', 'components', 'ui', 'index.js').includes('AnimatedBackdrop')
@@ -42,6 +42,10 @@ export async function runGlassAppearanceTests() {
     layout.includes('<GlassTabBar') && chrome.includes('{items.map((item) => {') && chrome.includes('{active && <span className={styles.tabLabel}>'));
   assert('iPad Cristal: las secciones en la barra superior, sin dock', /\.dock \{[\s\S]*?@media \(min-width: 768px\) \{ display: none; \}/.test(chromeStyles)
     && /\.nav \{[\s\S]*?@media \(max-width: 767px\) \{ display: none; \}/.test(chromeStyles));
+  assert('Ordenador: las secciones en el menú lateral flotante; la píldora solo en iPad',
+    /\.nav \{[\s\S]*?@media \(min-width: 1024px\) \{ display: none; \}/.test(chromeStyles)
+    && /\.rail \{[\s\S]*?position: fixed;[\s\S]*?@media \(min-width: 1024px\) \{ display: flex; \}/.test(chromeStyles)
+    && read('src', 'components', 'Layout.module.scss').includes('padding-left: 104px;'));
   assert('Cristal: logo con nombre en ordenador y solo la hoja en móvil y iPad', chrome.includes('isDark ? logoWhite : logoColor') && chrome.includes('className={styles.brandIcon}'));
   assert('Móvil Cristal: sin menú lateral que repita el perfil del avatar', !chrome.includes('onOpenMenu') && !layout.includes('onOpenMenu'));
   const chromeCss = read('src', 'components', 'GlassChrome.module.scss');
@@ -52,14 +56,30 @@ export async function runGlassAppearanceTests() {
   assert('Cristal: todas las secciones en la píldora (Admin solo para admins)', layout.includes("items={user?.role === 'admin' ? [...navItems, ...adminItems] : navItems}"));
   assert('Cristal: insignias de pendientes en la píldora', chrome.includes('badges[item.badgeKey]'));
   assert('Cristal: misma campana de notificaciones', layout.includes('bell={bellNode}') && layout.includes('{bellNode}'));
-  assert('Cristal: sin dock lateral (todo lo que tenía ya está arriba)', !chrome.includes('GlassDock') && !layout.includes('GlassDock'));
+  assert('Ordenador: menú lateral con las mismas secciones e insignias; al pie Administración (escudo), Ajustes y Cerrar sesión',
+    layout.includes('<GlassRail') && /<GlassRail\s+items=\{user\?\.role === 'admin' \? \[\.\.\.navItems, \.\.\.adminItems\] : navItems\}/.test(layout)
+    && layout.includes('onLogout={() => logout()}') && chrome.includes('export function GlassRail')
+    && chrome.includes("const main = items.filter((i) => i.id !== 'admin');") && chrome.includes("...items.filter((i) => i.id === 'admin'),")
+    && chrome.includes("aria-current={active ? 'page' : undefined}") && chrome.includes("id: 'settings'") && chrome.includes('aria-label="Cerrar sesión"')
+    && !chrome.includes('Atajos de teclado') && layout.includes("{ id: 'admin', label: 'Administración', icon: ShieldCheck, badgeKey: 'admin' }"));
+  assert('Ordenador: el avatar solo abre Mi perfil; el menú de cuenta queda para la tablet',
+    chrome.includes("onClick={() => (desk ? onNavigate('profile') : setOpen((o) => !o))}") && chrome.includes('{open && !desk && ('));
+  assert('Ordenador: el nombre de cada sección aparece al pasar el ratón o con el teclado',
+    chromeStyles.includes('.railTip {') && chromeStyles.includes('&:focus-visible .railTip'));
+  assert('Ordenador: «Nuevo» abre reserva, solicitud y registro de horas',
+    ["'reservations?nueva=1'", "'requests?nueva=1'", "'horas?nueva=1'"].every((k) => chrome.includes(k)) && chrome.includes('aria-expanded={open}'));
+  assert('Ordenador: la barra superior dice dónde estás y busca con Ctrl+K',
+    layout.includes('section={page === ') && chrome.includes('className={styles.crumb}') && chrome.includes('className={styles.searchBar} onClick={onSearch}'));
   assert('Cristal: botón de tema claro/oscuro en la barra superior', chrome.includes('onClick={onToggleTheme}') && layout.includes('onToggleTheme={() => setMode('));
   assert('Cristal: búsqueda (Ctrl+K), perfil, ajustes y cerrar sesión siguen arriba',
     ['onSearch', "go('profile')", "go('settings')", 'onLogout'].every(k => chrome.includes(k)));
   assert('Cristal: atajos de teclado siguen con «?» y desde el buscador', layout.includes("if (e.key === '?')") && layout.includes('onShowShortcuts={openShortcuts}'));
   assert('Cristal: el logo lleva al inicio', chrome.includes("onClick={() => onNavigate('dashboard')}") && chrome.includes('aria-label="Margube, ir al inicio"'));
   assert('Cristal: la sección abierta va en azul y subrayada (dock y píldora)', /\.tabActive \{[\s\S]*?color: var\(--accent\);[\s\S]*?&::after/.test(chromeCss) && /\.navItemActive \{[\s\S]*?color: var\(--accent\);[\s\S]*?&::after/.test(chromeCss));
-  assert('Cristal: cristal líquido en el buscador, el dock y la píldora', chrome.includes('clsx(styles.round, styles.liquid)') && /\.tabBar \{\s*@include p\.liquid;/.test(chromeCss) && /\.nav \{\s*@include p\.liquid;/.test(chromeCss));
+  assert('Cristal: cristal líquido en el buscador, el dock y la píldora', chrome.includes('clsx(styles.round, styles.liquid, styles.searchRound)') && /\.tabBar \{\s*@include p\.liquid;/.test(chromeCss) && /\.nav \{\s*@include p\.liquid;/.test(chromeCss));
+  assert('Cristal ahumado: borde iluminado desde arriba y sombra en todas las tarjetas, en los dos temas',
+    /@mixin glass \{[\s\S]*?var\(--lg-edge-top[\s\S]*?var\(--lg-shadow/.test(read('src', 'styles', '_patterns.scss'))
+    && (vars.match(/--lg-edge-top:/g) || []).length >= 4 && (vars.match(/--lg-spot:/g) || []).length >= 4);
   assert('Cristal: el avatar muestra jornada, reservas y pendientes del perfil clásico',
     chrome.includes('upcomingCount') && chrome.includes('openRequests') && chrome.includes('Jornada'));
   assert('Cristal: barra de carga de datos', /<TopProgress active=\{loadingData\} \/>\s*<\/GlassHeader>/.test(layout));
@@ -130,8 +150,19 @@ export async function runGlassAppearanceTests() {
   const indexHtml = read('index.html');
   assert('Safari: el lienzo del documento usa el color del fondo Cristal en cada tema',
     globalCss.includes("html { background: var(--canvas, var(--bg)); }") && globalCss.includes("[data-appearance='glass'][data-theme='dark'] { --canvas: #0A1321; --canvas-top-rgb: 16, 25, 54; }"));
-  assert('Safari: la cabecera del móvil tapa el contenido bajo la barra de estado y da el color de arriba',
-    /background-color: rgba\(var\(--canvas-top-rgb\), 0\.5\);/.test(chromeStyles) && chromeStyles.includes('backdrop-filter: blur(18px) saturate(160%);'));
+  assert('Móvil y tablet: cabecera transparente; solo la franja de la barra de estado lleva velo (Safari)',
+    chromeStyles.includes('background: transparent;') && chromeStyles.includes('height: env(safe-area-inset-top);')
+    && chromeStyles.includes('background: rgba(var(--canvas-top-rgb), 0.82);') && chromeStyles.includes('backdrop-filter: blur(18px) saturate(160%);'));
+  assert('Ordenador: cabecera transparente que flota sobre la página (el contenido pasa por debajo; solo las píldoras reciben clics)',
+    /\.main > header \{\s*position: absolute;/.test(read('src', 'components', 'Layout.module.scss'))
+    && read('src', 'components', 'Layout.module.scss').includes('padding-top: calc(#{$header-h} + clamp(12px, 1.6vw, 24px));')
+    && /pointer-events: none;\s*> \* \{ pointer-events: auto; \}/.test(chromeStyles));
+  const adminPage = read('src', 'pages', 'AdminPage.jsx');
+  assert('RRHH restablece la contraseña de un empleado: temporal aleatoria, solo admins en el servidor, obliga a cambiarla',
+    adminPage.includes('crypto.getRandomValues(bytes)') && adminPage.includes('await setEmployeePassword(supabase, resetEmp.id, resetPass.trim())')
+    && adminPage.includes('firstLogin: true') && adminPage.includes('navigator.clipboard.writeText')
+    && read('src', 'pages', 'AdminDesk.jsx').includes('onClick={() => onResetPassword(emp)}') && read('src', 'pages', 'AdminTouch.jsx').includes('onClick={() => onResetPassword(emp)}')
+    && /if not public\.is_admin\(\) then[\s\S]*?admin_set_password|admin_set_password[\s\S]*?if not public\.is_admin\(\)/.test(read('supabase', 'migrations', '20261022120000_secure_auth.sql')));
   assert('Safari: alturas mínimas en svh (la página no se recoloca al plegarse la barra)',
     read('src', 'components', 'Layout.module.scss').includes('min-height: 100svh;') && !read('src', 'components', 'Layout.module.scss').includes('min-height: calc(100dvh'));
   assert('Safari: el fondo Cristal llega bajo la barra de estado y la barra inferior',

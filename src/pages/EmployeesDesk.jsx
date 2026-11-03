@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { UsersRound, Building2, Home, MapPin, LayoutGrid, List, CalendarDays, Mail, Layers, ShieldCheck, UserRound, ArrowLeft } from 'lucide-react';
+import { UsersRound, Building2, Home, MapPin, LayoutGrid, List, CalendarDays, Mail, ShieldCheck, UserRound, ArrowUp } from 'lucide-react';
 import { Avatar, Button } from '../components/ui';
 import {
-  DeskHeader, DeskLayout, DeskRail, DeskMetrics, DeskPanel, DeskSpotlight, DeskSearch, DeskSegmented,
+  DeskHeader, DeskTabs, DeskMetrics, DeskPanel, DeskSpotlight, DeskSearch, DeskSegmented,
   DeskTable, CellStack, StatusPill, DeskEmpty, ShowMore,
 } from '../components/Desk';
 import { TeamWeek } from '../components/TeamWeek';
@@ -76,14 +76,18 @@ export default function EmployeesDesk({ employees, user, query, setQuery, canSee
     <div className={styles.page}>
       <DeskHeader
         icon={UsersRound}
+        kicker="Directorio"
         title="Equipo"
         desc="Directorio del equipo y dónde trabaja cada persona, hoy y durante la semana."
       />
 
-      <DeskLayout
-        sideLabel="Tu modo de trabajo y departamentos"
-        side={(
-          <>
+      {/* Departments as tabs, each with its head count */}
+      <DeskTabs label="Departamento" value={dept} onChange={(v) => { setDept(v); setLimit(PAGE); }} items={[
+        { value: 'all', label: 'Todo el equipo', count: employees.length },
+        ...depts.map((d) => ({ value: d, label: d, count: employees.filter((e) => e.dept === d).length })),
+      ]} />
+
+      <div className={styles.overview}>
             {me && (
               <DeskSpotlight icon={modeKey(me.workMode) === 'Office' ? Building2 : modeKey(me.workMode) === 'remoto' ? Home : MapPin} label="Tú, hoy">
                 <div className={styles.meHead}>
@@ -98,13 +102,6 @@ export default function EmployeesDesk({ employees, user, query, setQuery, canSee
               </DeskSpotlight>
             )}
 
-            <DeskRail title="Departamentos" asFilter value={dept} onChange={(v) => { setDept(v); setLimit(PAGE); }} items={[
-              { value: 'all', label: 'Todo el equipo', icon: Layers, tone: 'neutral', count: employees.length },
-              ...depts.map((d) => ({ value: d, label: d, count: employees.filter((e) => e.dept === d).length })),
-            ]} />
-          </>
-        )}
-      >
         <DeskMetrics label="Dónde trabaja hoy (pulsa para filtrar)" items={Object.entries(WORK_MODES).map(([k, m]) => ({
           label: k === 'Office' ? 'En oficina' : k === 'remoto' ? 'En remoto' : 'Trabajo externo',
           value: countMode(k),
@@ -113,6 +110,7 @@ export default function EmployeesDesk({ employees, user, query, setQuery, canSee
           onClick: () => toggleMode(k),
           active: mode === k,
         }))} />
+      </div>
 
         <DeskPanel flush
           title={dept === 'all' ? 'Directorio' : dept}
@@ -189,7 +187,7 @@ export default function EmployeesDesk({ employees, user, query, setQuery, canSee
                       {/* Admins change the mode here; their own is changed on the panel at the side */}
                       {isAdmin && (isMe ? (
                         <div className={styles.modesCompact}>
-                          <p className={styles.modeNote}><ArrowLeft size={14} aria-hidden="true" /> Tu modo se cambia en «Tú, hoy»</p>
+                          <p className={styles.modeNote}><ArrowUp size={14} aria-hidden="true" /> Tu modo se cambia en «Tú, hoy»</p>
                         </div>
                       ) : canEdit(emp) && (
                         <ModeChoice compact value={modeKey(emp.workMode)} onChange={(k) => onModeChange(emp.id, k)} allowed={(k) => modeAllowed(emp, k)} name={emp.name} />
@@ -202,7 +200,6 @@ export default function EmployeesDesk({ employees, user, query, setQuery, canSee
           )}
           {view !== 'week' && <ShowMore shown={Math.min(limit, filtered.length)} total={filtered.length} onMore={() => setLimit((l) => l + PAGE)} noun="personas" />}
         </DeskPanel>
-      </DeskLayout>
     </div>
   );
 }

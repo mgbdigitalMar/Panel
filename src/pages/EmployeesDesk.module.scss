@@ -1,6 +1,24 @@
 /* Equipo on a computer (EmployeesDesk.jsx); the shared pieces live in components/Desk */
 
-.page { display: block; }
+/* Heading, department tabs, «Tú, hoy» beside today's figures, and the directory */
+.page {
+  display: grid;
+  gap: 18px;
+
+  > header { margin-bottom: 4px; }
+}
+
+.overview {
+  display: grid;
+  grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+
+  /* Without «Tú, hoy» the figures take the row */
+  > [role='group']:only-child { grid-column: 1 / -1; }
+
+  @media (max-width: 1180px) { grid-template-columns: minmax(0, 1fr); }
+}
 
 .muted { color: var(--text-mut); }
 

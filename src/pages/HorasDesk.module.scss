@@ -394,8 +394,9 @@
 
   .chipOn.chipOn {
     border-color: transparent;
-    background: var(--text);
-    color: var(--bg-2);
+    background: var(--accent);
+    color: var(--accent-fg);
+    box-shadow: 0 8px 18px -10px rgba(var(--accent-rgb), 0.9);
 
     span { color: inherit; opacity: 0.7; }
   }
@@ -816,4 +817,66 @@ $ledger-cols: 56px minmax(0, 1fr) 84px 84px;
 
   .title { @include p.cover-title; }
   .desc { @include p.cover-desc; }
+}
+
+/* This month and the last six (MonthSummary) ------------------------------------------------ */
+.monthly {
+  @include p.surface;
+  display: grid;
+  gap: 14px;
+  padding: 20px 22px;
+}
+
+.monthlyHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--text);
+  }
+
+  p { margin: 3px 0 0; font-size: 13px; color: var(--text-mut); }
+}
+
+.monthlyLegend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-sec);
+
+  i { width: 10px; height: 10px; margin-left: 8px; border-radius: 3px; }
+  i[data-k='gen'] { background: var(--teal); }
+  i[data-k='deb'] { background: rgba(var(--danger-rgb), 0.7); }
+}
+
+.monthlyChart { height: 220px; }
+
+.monthlyEmpty {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-mut);
+}
+
+.monthlyFoot {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 14px;
+  @include p.well;
+  font-size: 13px;
+  color: var(--text-sec);
+
+  strong { color: var(--text); font-variant-numeric: tabular-nums; }
 }

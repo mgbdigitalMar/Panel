@@ -12,8 +12,9 @@ import styles from './Desk.module.scss';
 
 /** Context line above a page title: the section's mark and today's date (or `eyebrow`). Every
  * page heading starts with it, so each section carries its own icon beside the date. */
-export function DeskEyebrow({ icon: Icon, eyebrow }) {
-  const line = eyebrow ?? new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+export function DeskEyebrow({ icon: Icon, eyebrow, kicker }) {
+  const date = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  const line = eyebrow ?? (kicker ? `${kicker} · ${date}` : date);
   return (
     <p className={styles.eyebrow}>
       {Icon && <span className={styles.mark} aria-hidden="true"><Icon size={15} /></span>}
@@ -22,12 +23,13 @@ export function DeskEyebrow({ icon: Icon, eyebrow }) {
   );
 }
 
-/** Page heading: the context line, a large title, what the page is for, and its main actions. */
-export function DeskHeader({ icon, eyebrow, title, desc, actions }) {
+/** Page heading: the context line, a large title, what the page is for, and its main actions.
+ * `kicker` names the page's context before the date («Portal del empleado · martes, 3…»). */
+export function DeskHeader({ icon, eyebrow, kicker, title, desc, actions }) {
   return (
     <header className={styles.header}>
       <div className={styles.headText}>
-        <DeskEyebrow icon={icon} eyebrow={eyebrow} />
+        <DeskEyebrow icon={icon} eyebrow={eyebrow} kicker={kicker} />
         <h1 className={styles.title}>{title}</h1>
         {desc && <p className={styles.desc}>{desc}</p>}
       </div>
@@ -114,6 +116,76 @@ export function DeskMetrics({ items, label }) {
           <div key={it.label} className={styles.metric}>{body}</div>
         );
       })}
+    </div>
+  );
+}
+
+/**
+ * Horizontal tabs in a smoked pill track: the open one is a solid accent pill. Each tab may carry a
+ * count and an `alert` dot (something waits there). Used as a filter (aria-pressed).
+ */
+export function DeskTabs({ items, value, onChange, label }) {
+  return (
+    <div className={styles.tabs} role="group" aria-label={label}>
+      {items.map((it) => {
+        const Icon = it.icon;
+        const on = value === it.value;
+        return (
+          <button key={it.value} type="button" className={clsx(styles.tab, on && styles.tabOn)}
+            onClick={() => onChange(it.value)} aria-pressed={on}>
+            {Icon && <Icon size={15} aria-hidden="true" />}
+            <span>{it.label}</span>
+            {it.count != null && <em>{it.count}</em>}
+            {it.alert && <i className={styles.tabAlert} aria-label="con pendientes" />}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * KPI card with a progress track: an uppercase context line, a title, the icon in a tinted chip at
+ * the corner, the figure with its unit, a small badge and the track in the card's tone. Anything in
+ * `children` goes under the track (a week strip, a button). `onClick` turns it into a filter.
+ */
+export function DeskGauge({ icon: Icon, tone = 'accent', eyebrow, title, value, unit, badge, progress, children, onClick, active, label }) {
+  const Root = onClick ? 'button' : 'section';
+  const pct = progress == null ? null : Math.max(0, Math.min(100, progress));
+  return (
+    <Root type={onClick ? 'button' : undefined} onClick={onClick} aria-pressed={onClick ? !!active : undefined}
+      aria-label={label} className={clsx(styles.gauge, onClick && styles.gaugeBtn, active && styles.gaugeOn)} data-tone={tone}>
+      <div className={styles.gaugeHead}>
+        <div>
+          {eyebrow && <p className={styles.gaugeEyebrow}>{eyebrow}</p>}
+          {title && <p className={styles.gaugeTitle}>{title}</p>}
+        </div>
+        {Icon && <span className={styles.gaugeIcon} aria-hidden="true"><Icon size={20} /></span>}
+      </div>
+      <div className={styles.gaugeFigure}>
+        <strong>{value}</strong>
+        {unit && <span>{unit}</span>}
+        {badge && <em className={styles.gaugeBadge}>{badge}</em>}
+      </div>
+      {pct != null && (
+        <span className={styles.gaugeTrack} aria-hidden="true"><i style={{ width: `${pct}%` }} /></span>
+      )}
+      {children}
+    </Root>
+  );
+}
+
+/** Small filter pills with a label in front («Estado: Todas · Pendientes (2) · …»). */
+export function DeskChips({ label, value, onChange, options }) {
+  return (
+    <div className={styles.chips} role="group" aria-label={label}>
+      <span className={styles.chipsLabel} aria-hidden="true">{label}:</span>
+      {options.map((o) => (
+        <button key={o.value} type="button" aria-pressed={value === o.value}
+          className={clsx(styles.chip, value === o.value && styles.chipOn)} onClick={() => onChange(o.value)}>
+          {o.label}{o.count != null && o.count > 0 && <em> ({o.count})</em>}
+        </button>
+      ))}
     </div>
   );
 }
@@ -255,6 +327,9 @@ export function ShowMore({ shown, total, onMore, noun = 'elementos' }) {
 }
 
 export const srOnly = styles.srOnly;
+/** Grid for a row of DeskGauge cards (`style={{ '--n': 3 }}`) and the search + chips bar of a panel. */
+export const gaugeRow = styles.gauges;
+export const filterBar = styles.filterBar;
 /** A secondary column (head item `optional: true`, and this class on its cells) that a narrow table drops. */
 export const optionalCol = styles.optional;
 

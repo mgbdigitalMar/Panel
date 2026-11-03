@@ -15,17 +15,17 @@
   background: transparent;
 }
 
-/* Light theme: airy blue with the brand glows */
+/* Light theme: a pale blue mist, lit from the top-left in Margube blue with a teal bounce */
 .scene {
   position: absolute;
   inset: -6%;
   background:
-    radial-gradient(46% 42% at 12% 10%, rgba(47, 91, 234, 0.42), transparent 70%),
-    radial-gradient(40% 38% at 92% 18%, rgba(91, 124, 255, 0.34), transparent 70%),
-    radial-gradient(44% 40% at 84% 92%, rgba(14, 159, 154, 0.26), transparent 72%),
-    radial-gradient(50% 44% at 18% 96%, rgba(122, 162, 255, 0.3), transparent 72%),
-    radial-gradient(36% 30% at 52% 50%, rgba(255, 255, 255, 0.7), transparent 70%),
-    linear-gradient(160deg, #E4EBFB 0%, #F3F6FC 50%, #E2EEF3 100%);
+    radial-gradient(48% 44% at 10% 6%, rgba(47, 91, 234, 0.3), transparent 70%),
+    radial-gradient(40% 38% at 94% 14%, rgba(91, 124, 255, 0.22), transparent 70%),
+    radial-gradient(44% 40% at 86% 94%, rgba(14, 159, 154, 0.18), transparent 72%),
+    radial-gradient(50% 44% at 14% 98%, rgba(122, 162, 255, 0.22), transparent 72%),
+    radial-gradient(40% 34% at 52% 44%, rgba(255, 255, 255, 0.75), transparent 70%),
+    linear-gradient(160deg, #E4EBFB 0%, #F2F5FB 50%, #E3EDF2 100%);
 }
 
 /* The brand leaf, large and faint, bottom right */
@@ -63,21 +63,23 @@
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 45%);
 }
 
-/* Dark theme: Margube navy with blue and teal light */
+/* Dark theme: a dim room in smoked obsidian. Margube blue spills from the top-left and pools
+   softly behind the content; a teal bounce sits low on the right; the corners fall to black. */
 :global([data-theme='dark']) {
 
   .scene {
     background:
-      radial-gradient(46% 42% at 12% 8%, rgba(47, 91, 234, 0.55), transparent 70%),
-      radial-gradient(38% 36% at 92% 20%, rgba(91, 124, 255, 0.28), transparent 70%),
-      radial-gradient(44% 40% at 86% 94%, rgba(14, 159, 154, 0.3), transparent 72%),
-      radial-gradient(50% 44% at 16% 98%, rgba(45, 75, 216, 0.32), transparent 72%),
-      linear-gradient(160deg, #0E1426 0%, #0A0D16 55%, #08131A 100%);
+      radial-gradient(52% 46% at 10% 4%, rgba(47, 91, 234, 0.42), transparent 70%),
+      radial-gradient(60% 52% at 56% 40%, rgba(45, 75, 216, 0.12), transparent 72%),
+      radial-gradient(34% 32% at 94% 16%, rgba(91, 124, 255, 0.16), transparent 70%),
+      radial-gradient(42% 38% at 88% 96%, rgba(14, 159, 154, 0.2), transparent 72%),
+      radial-gradient(46% 40% at 12% 100%, rgba(45, 75, 216, 0.18), transparent 72%),
+      linear-gradient(160deg, #0C1120 0%, #080A11 52%, #070B10 100%);
   }
 
-  .leaf { color: #7AA2FF; opacity: 0.06; }
+  .leaf { color: #7AA2FF; opacity: 0.05; }
 
-  .dots { background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px); }
+  .dots { background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px); }
 
-  .veil { background: linear-gradient(180deg, rgba(5, 7, 12, 0.15), rgba(5, 7, 12, 0) 45%, rgba(5, 7, 12, 0.25)); }
+  .veil { background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(3, 5, 9, 0.55) 100%); }
 }

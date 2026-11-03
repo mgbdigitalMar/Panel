@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  LayoutDashboard, Calendar, Inbox, Newspaper, Settings, SlidersHorizontal,
+  LayoutDashboard, Calendar, Inbox, Newspaper, SlidersHorizontal,
   User, UsersRound, Timer, Search, ChevronRight, LogOut,
-  CalendarPlus, FilePlus2, SunMoon, Keyboard,
+  CalendarPlus, FilePlus2, SunMoon, Keyboard, ShieldCheck
 } from 'lucide-react';
 import { useAuth, useTheme } from '../context';
 import { useNavigate } from 'react-router-dom';
@@ -20,7 +20,7 @@ const PAGES = [
   { id: 'employees',    label: 'Equipo',             icon: UsersRound,      desc: 'Directorio de empleados',            keys: 'E' },
   { id: 'profile',      label: 'Mi perfil',          icon: User,            desc: 'Datos, documentos y contraseña',     keys: 'P' },
   { id: 'settings',     label: 'Ajustes',            icon: SlidersHorizontal, desc: 'Apariencia y notificaciones',     keys: 'A' },
-  { id: 'admin',        label: 'Administración',     icon: Settings,        desc: 'Panel de gestión',                   keys: 'M', adminOnly: true },
+  { id: 'admin',        label: 'Administración',     icon: ShieldCheck,        desc: 'Panel de gestión',                   keys: 'M', adminOnly: true },
 ];
 
 const normalize = (s = '') => s.toLocaleLowerCase('es').normalize('NFD').replace(/[̀-ͯ]/g, '');

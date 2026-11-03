@@ -3,8 +3,9 @@ import { useTheme, useAuth } from '../context';
 import { Card, Avatar } from '../components/ui';
 import {
   Sun, Moon, Monitor, BellRing, BellOff, Volume2, VolumeX,
-  Palette, Check, User, Building, Wifi,
+  Palette, Check, User, Building, Wifi, ShieldCheck, Timer, KeyRound, LogOut,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useTouch } from '../components/Touch';
 import styles from './SettingsPage.module.scss';
 import clsx from 'clsx';
@@ -47,7 +48,8 @@ function Toggle({ checked, onChange, id }) {
 
 export default function SettingsPage() {
   const { mode, setMode } = useTheme();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const [browserNotifs, setBrowserNotifs] = useState(() => getLS('margube-browser-notifs', false));
   const [notifPerm, setNotifPerm] = useState('default');
@@ -117,9 +119,12 @@ export default function SettingsPage() {
     { id: 'system', label: 'Sistema', icon: Monitor, desc: 'Sigue al SO' },
   ];
 
+  const MODE_LABEL = { Office: 'Oficina', remoto: 'Remoto', externo: 'Externo' };
+
   return (
     <div className={styles.page}>
       <motion.div className={styles.stack} variants={container} initial="hidden" animate="show">
+        <div className={styles.col}>
 
         {/* Apariencia */}
         <motion.div variants={item}>
@@ -144,6 +149,10 @@ export default function SettingsPage() {
                   onClick={() => setMode(id)}
                   className={clsx(styles.themeCard, { [styles.themeCardActive]: mode === id })}
                 >
+                  {/* A small preview of the theme: its canvas, a pane and the accent */}
+                  <span className={styles.themePreview} data-theme-preview={id} aria-hidden="true">
+                    <i /><b /><em />
+                  </span>
                   <div className={styles.themeCardIcon}>
                     <Icon size={20} />
                   </div>
@@ -217,6 +226,46 @@ export default function SettingsPage() {
           </div>
         </Card>
         </motion.div>
+        </div>
+
+        <div className={styles.col}>
+        {/* Sesión y seguridad: how the session protects the account, and the way out */}
+        <motion.div variants={item}>
+        <Card className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div className={clsx(styles.cardIcon, styles.iconDanger)}>
+              <ShieldCheck size={17} />
+            </div>
+            <div>
+              <h2 className={styles.cardTitle}>Sesión y seguridad</h2>
+              <p className={styles.cardSub}>Cómo se protege tu cuenta en este equipo</p>
+            </div>
+          </div>
+
+          <div className={styles.sessionBox}>
+            <span className={styles.sessionRing} aria-hidden="true">
+              <strong>1</strong>
+              <small>min</small>
+            </span>
+            <div>
+              <span className={styles.rowLabel}>Cierre automático por inactividad</span>
+              <span className={styles.rowDesc}>
+                Tras un minuto sin actividad la sesión se cierra sola. Quince segundos antes aparece un aviso para seguir conectado.
+              </span>
+            </div>
+          </div>
+
+          <div className={styles.sessionActions}>
+            <button type="button" className={styles.sessionBtn} onClick={() => navigate('/profile')}>
+              <KeyRound size={15} aria-hidden="true" /> Cambiar contraseña
+            </button>
+            <button type="button" className={clsx(styles.sessionBtn, styles.sessionDanger)} onClick={() => logout()}>
+              <LogOut size={15} aria-hidden="true" /> Cerrar sesión
+            </button>
+          </div>
+          <p className={styles.sessionNote}><Timer size={13} aria-hidden="true" /> El aviso no interrumpe lo que estés escribiendo.</p>
+        </Card>
+        </motion.div>
 
         {/* Cuenta */}
         {!touch && (
@@ -256,7 +305,7 @@ export default function SettingsPage() {
               <span className={styles.accountLabel}>Modo de trabajo</span>
               <span className={clsx(styles.accountValue, styles.accountOnline)}>
                 <Wifi size={12} style={{ flexShrink: 0 }} />
-                {user?.workMode || 'Oficina'}
+                {MODE_LABEL[user?.workMode] || user?.workMode || 'Oficina'}
               </span>
             </div>
           </div>
@@ -268,6 +317,7 @@ export default function SettingsPage() {
         </Card>
         </motion.div>
         )}
+        </div>
 
       </motion.div>
     </div>

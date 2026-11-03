@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 import clsx from 'clsx';
 import {
-  Settings, UsersRound, Building, Car, FileText, Timer, Plus, Send, Upload, Download, Pencil, Trash2,
-  Check, X, Clock, PenLine, ClipboardCheck, KeyRound, Layers,
+  UsersRound, Building, Car, FileText, Timer, Plus, Send, Upload, Download, Pencil, Trash2,
+  Check, X, Clock, PenLine, ClipboardCheck, KeyRound, Layers, ShieldCheck
 } from 'lucide-react';
 import { Avatar, Button } from '../components/ui';
 import {
-  DeskHeader, DeskLayout, DeskRail, DeskMetrics, DeskPanel, DeskSpotlight, DeskSearch, DeskSelect,
+  DeskHeader, DeskTabs, DeskMetrics, DeskPanel, DeskSearch, DeskSelect,
   DeskTable, CellStack, TypeTile, StatusPill, RowAction, RowActions, DeskEmpty, ShowMore, optionalCol,
 } from '../components/Desk';
 import { policyStatus, formatSignedAt } from '../../shared/services/policy.js';
@@ -54,7 +54,7 @@ const fold = (v) => String(v || '').toLocaleLowerCase('es');
  */
 export default function AdminDesk({
   tab, setTab, user, employees, rooms, vehicles, documents, hours, lastSignature, policyCounts, signaturesFailed,
-  onNewEmployee, onEditEmployee, onDeleteEmployee, onOpenPolicy, onExportSignatures,
+  onNewEmployee, onEditEmployee, onDeleteEmployee, onResetPassword, onOpenPolicy, onExportSignatures,
   onNewResource, onEditResource, onDeleteResource,
   onSendDocument, onUpdateOnboarding, onDeleteDocument,
   onApproveHours, onRejectHours, onDeleteHours, onExportHours, hoursBusy,
@@ -135,37 +135,35 @@ export default function AdminDesk({
 
   return (
     <div className={styles.page}>
-      <DeskHeader icon={Settings} title="Administración"
+      <DeskHeader icon={ShieldCheck} kicker="Gestión de RRHH" title="Administración"
         desc="Empleados, salas, vehículos, documentos y bolsa de horas: todo lo que gestiona RRHH, en un sitio."
         actions={actions} />
 
-      <DeskLayout
-        sideLabel="Secciones de administración"
-        side={(
-          <>
-            <DeskRail title="Secciones" value={tab} onChange={setTab} items={[
-              { value: 'employees', label: 'Empleados', hint: 'Altas, accesos y normas', icon: UsersRound, tone: 'accent', count: employees.length },
-              { value: 'rooms', label: 'Salas', hint: 'Espacios que se reservan', icon: Building, tone: 'info', count: rooms.length },
-              { value: 'vehicles', label: 'Vehículos', hint: 'Flota de empresa', icon: Car, tone: 'warning', count: vehicles.length },
-              { value: 'documents', label: 'Documentos', hint: 'Envíos y su estado', icon: FileText, tone: 'purple', count: documents.length },
-              { value: 'bolsahoras', label: 'Bolsa de horas', hint: pendingHours ? 'Esperan tu decisión' : 'Todo revisado', icon: Timer, tone: 'success', count: pendingHours, alert: pendingHours > 0 },
-            ]} />
-            <DeskSpotlight icon={ClipboardCheck} label="Para revisar">
-              <ul className={styles.todo}>
-                {todo.map((t) => (
-                  <li key={t.key}>
-                    <button type="button" onClick={t.go} data-zero={t.value === 0 || undefined}>
-                      <t.icon size={15} aria-hidden="true" />
-                      <span>{t.label}</span>
-                      <strong>{t.value}</strong>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </DeskSpotlight>
-          </>
-        )}
-      >
+      {/* Sections as tabs (a dot when hours wait for a decision) */}
+      <DeskTabs label="Secciones de administración" value={tab} onChange={setTab} items={[
+        { value: 'employees', label: 'Empleados', icon: UsersRound, count: employees.length },
+        { value: 'rooms', label: 'Salas', icon: Building, count: rooms.length },
+        { value: 'vehicles', label: 'Vehículos', icon: Car, count: vehicles.length },
+        { value: 'documents', label: 'Documentos', icon: FileText, count: documents.length },
+        { value: 'bolsahoras', label: 'Bolsa de horas', icon: Timer, count: pendingHours, alert: pendingHours > 0 },
+      ]} />
+
+      {/* What waits for RRHH, one click from any section */}
+      <section className={styles.todoBar} aria-label="Para revisar">
+        <span className={styles.todoTitle}><ClipboardCheck size={16} aria-hidden="true" /> Para revisar</span>
+        <ul className={styles.todo}>
+          {todo.map((t) => (
+            <li key={t.key}>
+              <button type="button" onClick={t.go} data-zero={t.value === 0 || undefined}>
+                <t.icon size={15} aria-hidden="true" />
+                <span>{t.label}</span>
+                <strong>{t.value}</strong>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
         {tab === 'employees' && (
           <>
             <DeskMetrics label="Normas internas y accesos (pulsa para filtrar)" items={[
@@ -237,6 +235,9 @@ export default function AdminDesk({
                           <td>
                             <RowActions>
                               <RowAction iconOnly icon={Pencil} onClick={() => onEditEmployee(emp)} label={`Editar a ${emp.name}`} />
+                              {emp.id !== user?.id && (
+                                <RowAction iconOnly icon={KeyRound} tone="accent" onClick={() => onResetPassword(emp)} label={`Restablecer la contraseña de ${emp.name}`} />
+                              )}
                               <RowAction iconOnly icon={Trash2} onClick={() => onDeleteEmployee(emp.id)} label={`Dar de baja a ${emp.name}`} />
                             </RowActions>
                           </td>
@@ -429,7 +430,6 @@ export default function AdminDesk({
             </DeskPanel>
           </>
         )}
-      </DeskLayout>
     </div>
   );
 }

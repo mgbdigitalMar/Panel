@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/ui';
 import {
-  DeskHeader, DeskLayout, DeskRail, DeskMetrics, DeskPanel, DeskSpotlight, SpotAction, DeskSearch, DeskSegmented, DeskSelect,
+  DeskHeader, DeskTabs, DeskMetrics, DeskPanel, DeskSpotlight, SpotAction, DeskSearch, DeskSegmented, DeskSelect,
   DeskTable, CellStack, TypeTile, StatusPill, RowAction, RowActions, DeskEmpty, ShowMore,
 } from '../components/Desk';
 import ReservationsCalendar from './ReservationsCalendar';
@@ -115,55 +115,117 @@ export default function ReservationsDesk({
   const go = (v) => { setView(v); setLimit(PAGE); };
   const clearFilters = () => { setKind('all'); setStatus('all'); setScope('all'); setQuery(''); };
 
-  const resourcePanel = (type) => {
+  // What a resource card says at its foot: in use, the next booking today, or free for the rest of the day
+  const nextLine = (x) => {
+    if (x.isActive === false) return { tone: 'neutral', text: 'Oculto al equipo' };
+    if (x.until) {
+      const cur = x.today.find((b) => minutes(b.timeStart) <= nowMins && minutes(b.timeEnd) > nowMins);
+      return { tone: 'warning', text: `En uso${cur?.employeeName ? `: ${cur.employeeName}` : ''}` };
+    }
+    const later = x.today.find((b) => minutes(b.timeStart) > nowMins);
+    return later
+      ? { tone: 'accent', text: `Próxima: ${later.timeStart}${later.purpose ? ` · ${later.purpose}` : ''}` }
+      : { tone: 'success', text: 'Libre el resto del día' };
+  };
+
+  const resourceCards = (type) => {
     const list = resources(type);
     const all = type === 'vehicle' ? vehicles : rooms;
+    const Icon = type === 'vehicle' ? Car : Building2;
     return (
-      <DeskPanel flush key={type}
-        title={type === 'vehicle' ? 'Vehículos de empresa' : 'Salas de reuniones'}
-        sub={type === 'vehicle'
-          ? `${freeVehicles} de ${bookableVehicles.length} libres ahora · coches y furgonetas para visitas y obras`
-          : `${freeRooms} de ${bookableRooms.length} libres ahora · pulsa «Reservar» o elige la hora en el formulario`}>
+      <section className={styles.cardSection} key={type} aria-labelledby={`res-${type}`}>
+        <div className={styles.sectionHead}>
+          <h2 id={`res-${type}`}>{type === 'vehicle' ? 'Vehículos de empresa' : 'Salas de reuniones'}</h2>
+          <p>{type === 'vehicle'
+            ? `${freeVehicles} de ${bookableVehicles.length} libres ahora · coches y furgonetas para visitas y obras`
+            : `${freeRooms} de ${bookableRooms.length} libres ahora · pulsa «Reservar» o elige la hora en el formulario`}</p>
+        </div>
         {list.length === 0 ? (
-          <DeskEmpty icon={type === 'vehicle' ? Car : Building2}
-            title={q ? 'Sin resultados' : type === 'vehicle' ? 'No hay vehículos' : 'No hay salas'}
-            text={q ? `Nada coincide con «${query.trim()}».` : all.length ? 'Ninguno disponible.' : 'Administración todavía no ha añadido ninguno.'} />
+          <DeskPanel>
+            <DeskEmpty icon={Icon}
+              title={q ? 'Sin resultados' : type === 'vehicle' ? 'No hay vehículos' : 'No hay salas'}
+              text={q ? `Nada coincide con «${query.trim()}».` : all.length ? 'Ninguno disponible.' : 'Administración todavía no ha añadido ninguno.'} />
+          </DeskPanel>
         ) : (
-          <>
-            <div className={styles.scale} aria-hidden="true">
-              <span />
-              <div>{TICKS.map((h) => <em key={h} style={{ left: `${pct(h * 60)}%` }}>{String(h).padStart(2, '0')}:00</em>)}</div>
-              <span />
-            </div>
-            <ul className={styles.resources}>
-              {list.map((x) => (
-                <li key={`${type}-${x.id}`} className={styles.resource}>
-                  <CellStack lead={<TypeTile icon={type === 'vehicle' ? Car : Building2} tone={type === 'vehicle' ? 'info' : 'accent'} />}
-                    title={x.name} sub={x.meta || (type === 'vehicle' ? 'Vehículo' : 'Sala')} />
-                  <DayLine bookings={x.today} nowMins={nowMins} name={x.name} />
-                  <div className={styles.resEnd}>
+          <ul className={styles.cards}>
+            {list.map((x) => {
+              const foot = nextLine(x);
+              return (
+                <li key={`${type}-${x.id}`} className={styles.card} data-hidden={x.isActive === false || undefined}>
+                  <div className={styles.cardHead}>
+                    <TypeTile icon={Icon} tone={type === 'vehicle' ? 'info' : 'accent'} size={44} />
+                    <div className={styles.cardName}>
+                      <strong>{x.name}</strong>
+                      <span>{x.meta || (type === 'vehicle' ? 'Vehículo' : 'Sala')}</span>
+                    </div>
                     {x.isActive === false
-                      ? <StatusPill tone="neutral">Oculto al equipo</StatusPill>
+                      ? <StatusPill tone="neutral">Oculto</StatusPill>
                       : x.until
-                        ? <StatusPill tone="warning">En uso hasta {x.until}</StatusPill>
-                        : <StatusPill tone="success">Libre ahora</StatusPill>}
+                        ? <StatusPill tone="warning">Hasta {x.until}</StatusPill>
+                        : <StatusPill tone="success">Libre</StatusPill>}
+                  </div>
+                  {x.tags.length > 0 && (
+                    <ul className={styles.tags} aria-label="Equipamiento">
+                      {x.tags.map((t) => <li key={t}>{t}</li>)}
+                    </ul>
+                  )}
+                  <DayLine bookings={x.today} nowMins={nowMins} name={x.name} />
+                  <div className={styles.cardFoot}>
+                    <span className={styles.cardNext} data-tone={foot.tone}><Clock size={13} aria-hidden="true" /> {foot.text}</span>
                     <RowAction icon={Plus} tone="accent" onClick={() => onBook(type, x.id)} aria-label={`Reservar ${x.name}`}>Reservar</RowAction>
                   </div>
                 </li>
-              ))}
-            </ul>
-          </>
+              );
+            })}
+          </ul>
         )}
-      </DeskPanel>
+      </section>
     );
   };
+
+  // Today's occupation of every room and vehicle on one 08:00–20:00 scale
+  const timeline = (() => {
+    const list = [...(kind !== 'vehicle' ? resources('room') : []), ...(kind !== 'room' ? resources('vehicle') : [])];
+    if (!list.length) return null;
+    return (
+      <DeskPanel flush title="Línea temporal de ocupación (hoy)" sub="Bloques reservados entre las 08:00 y las 20:00"
+        tools={(
+          <span className={styles.legend} aria-hidden="true">
+            <i data-status="confirmed" /> Confirmada <i data-status="pending" /> Pendiente <i data-now /> Ahora
+          </span>
+        )}>
+        <div className={styles.scale} aria-hidden="true">
+          <span />
+          <div>{TICKS.map((h) => <em key={h} style={{ left: `${pct(h * 60)}%` }}>{String(h).padStart(2, '0')}:00</em>)}</div>
+          <span />
+        </div>
+        <ul className={styles.resources}>
+          {list.map((x) => (
+            <li key={`${x.type}-${x.id}`} className={styles.resource}>
+              <CellStack lead={<TypeTile icon={x.type === 'vehicle' ? Car : Building2} tone={x.type === 'vehicle' ? 'info' : 'accent'} size={32} />}
+                title={x.name} sub={x.type === 'vehicle' ? 'Vehículo' : 'Sala'} />
+              <DayLine bookings={x.today} nowMins={nowMins} name={x.name} />
+              <div className={styles.resEnd}>
+                {x.isActive === false
+                  ? <StatusPill tone="neutral">Oculto al equipo</StatusPill>
+                  : x.until
+                    ? <StatusPill tone="warning">En uso hasta {x.until}</StatusPill>
+                    : <StatusPill tone="success">Libre ahora</StatusPill>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </DeskPanel>
+    );
+  })();
 
   return (
     <div className={styles.page}>
       <DeskHeader
         icon={CalendarDays}
-        title="Reservas"
-        desc="Salas y vehículos de empresa: mira de un vistazo qué está libre hoy y reserva en segundos."
+        kicker="Disponibilidad en directo"
+        title="Reservas de salas y vehículos"
+        desc="Mira de un vistazo qué está libre hoy, reserva en segundos y gestiona tus reservas."
         actions={(
           <>
             <Button variant="ghost" icon={Download} onClick={() => onExport(ordered)} disabled={!ordered.length || view === 'resources' || view === 'calendar'}
@@ -175,63 +237,57 @@ export default function ReservationsDesk({
         )}
       />
 
-      <DeskLayout
-        sideLabel="Tu próxima reserva y vistas"
-        side={(
-          <>
-            <DeskSpotlight icon={CalendarClock} label="Tu próxima reserva"
-              actions={next
-                ? <SpotAction primary icon={CalendarPlus} onClick={() => onAddToCalendar(next)}>Añadir a mi calendario</SpotAction>
-                : <SpotAction primary icon={Plus} onClick={onNew}>Reservar</SpotAction>}>
-              {next ? (
-                <div className={styles.next}>
-                  <strong>{next.resourceName}</strong>
-                  <span className={styles.nextWhen}>{next.date === today ? 'Hoy' : dayLabel(next.date)}</span>
-                  <span className={styles.nextTime}><Clock size={14} aria-hidden="true" /> {next.timeStart}–{next.timeEnd}</span>
-                  {next.purpose && <span className={styles.nextPurpose}>{next.purpose}</span>}
-                  <span className={styles.nextFoot}>
-                    <StatusPill tone={next.status === 'confirmed' ? 'success' : 'warning'}>{STATUS[next.status]?.label || 'Pendiente'}</StatusPill>
-                    {mineUpcoming.length > 1 && <span>y {mineUpcoming.length - 1} más</span>}
-                  </span>
-                </div>
-              ) : (
-                <p className={styles.nextEmpty}>No tienes reservas próximas. Elige una sala o un vehículo libre.</p>
-              )}
-            </DeskSpotlight>
+      <DeskTabs label="Vista" value={view} onChange={go} items={[
+        { value: 'resources', label: 'Disponibilidad hoy', icon: LayoutList },
+        { value: 'agenda', label: 'Agenda', icon: ListChecks, count: mineUpcoming.length || undefined },
+        ...(isAdmin ? [{ value: 'pending', label: 'Por revisar', icon: Users, count: toReview, alert: toReview > 0 }] : []),
+        { value: 'calendar', label: 'Calendario', icon: CalendarDays },
+      ]} />
 
-            <DeskRail title="Vista" value={view} onChange={go} items={[
-              { value: 'resources', label: 'Disponibilidad hoy', hint: 'Salas y vehículos', icon: LayoutList, tone: 'accent' },
-              { value: 'agenda', label: 'Agenda', hint: 'Todas las reservas', icon: ListChecks, tone: 'info', count: mineUpcoming.length || undefined },
-              ...(isAdmin ? [{ value: 'pending', label: 'Por revisar', hint: 'Confirma o rechaza', icon: Users, tone: 'warning', count: toReview, alert: toReview > 0 }] : []),
-              { value: 'calendar', label: 'Calendario', hint: 'Mes y semana', icon: CalendarDays, tone: 'purple' },
-            ]} />
-          </>
-        )}
-      >
-        {view !== 'calendar' && (
+      {view !== 'calendar' && (
+        <div className={styles.overview}>
+          <DeskSpotlight icon={CalendarClock} label="Tu próxima reserva"
+            actions={next
+              ? <SpotAction primary icon={CalendarPlus} onClick={() => onAddToCalendar(next)}>Añadir a mi calendario</SpotAction>
+              : <SpotAction primary icon={Plus} onClick={onNew}>Reservar</SpotAction>}>
+            {next ? (
+              <div className={styles.next}>
+                <strong>{next.resourceName}</strong>
+                <span className={styles.nextWhen}>{next.date === today ? 'Hoy' : dayLabel(next.date)}</span>
+                <span className={styles.nextTime}><Clock size={14} aria-hidden="true" /> {next.timeStart}–{next.timeEnd}</span>
+                {next.purpose && <span className={styles.nextPurpose}>{next.purpose}</span>}
+                <span className={styles.nextFoot}>
+                  <StatusPill tone={next.status === 'confirmed' ? 'success' : 'warning'}>{STATUS[next.status]?.label || 'Pendiente'}</StatusPill>
+                  {mineUpcoming.length > 1 && <span>y {mineUpcoming.length - 1} más</span>}
+                </span>
+              </div>
+            ) : (
+              <p className={styles.nextEmpty}>No tienes reservas próximas. Elige una sala o un vehículo libre.</p>
+            )}
+          </DeskSpotlight>
+
           <DeskMetrics label="Hoy" items={[
             { label: 'Salas libres ahora', value: `${freeRooms}/${bookableRooms.length}`, tone: 'accent', hint: 'Sin reserva en este momento' },
-            { label: 'Vehículos libres ahora', value: `${freeVehicles}/${bookableVehicles.length}`, tone: 'info', hint: 'Disponibles para salir' },
+            { label: 'Vehículos libres', value: `${freeVehicles}/${bookableVehicles.length}`, tone: 'info', hint: 'Disponibles para salir' },
             { label: 'Reservas hoy', value: todayCount, tone: 'success', hint: 'Salas y vehículos' },
             isAdmin
               ? { label: 'Por revisar', value: toReview, tone: 'warning', hint: toReview ? 'Esperan tu decisión' : 'Todo revisado', onClick: () => go(view === 'pending' ? 'agenda' : 'pending'), active: view === 'pending' }
               : { label: 'Tus próximas', value: mineUpcoming.length, tone: 'warning', hint: 'Reservas a tu nombre', onClick: () => { setScope('mine'); go('agenda'); }, active: view === 'agenda' && scope === 'mine' },
           ]} />
-        )}
+        </div>
+      )}
 
         {view === 'resources' && (
           <>
             <div className={styles.toolbar}>
-              <DeskSearch value={query} onChange={setQuery} label="Buscar salas y vehículos" placeholder="Sala, vehículo o matrícula" />
+              <DeskSearch value={query} onChange={setQuery} label="Buscar salas y vehículos" placeholder="Sala, vehículo, matrícula o equipamiento" />
               <DeskSegmented label="Tipo de recurso" value={kind} onChange={setKind} options={[
                 { value: 'all', label: 'Todo' }, { value: 'room', label: 'Salas', icon: Building2 }, { value: 'vehicle', label: 'Vehículos', icon: Car },
               ]} />
-              <span className={styles.legend} aria-hidden="true">
-                <i data-status="confirmed" /> Confirmada <i data-status="pending" /> Pendiente <i data-now /> Ahora
-              </span>
             </div>
-            {kind !== 'vehicle' && resourcePanel('room')}
-            {kind !== 'room' && resourcePanel('vehicle')}
+            {kind !== 'vehicle' && resourceCards('room')}
+            {kind !== 'room' && resourceCards('vehicle')}
+            {timeline}
           </>
         )}
 
@@ -325,7 +381,6 @@ export default function ReservationsDesk({
             <ReservationsCalendar />
           </DeskPanel>
         )}
-      </DeskLayout>
     </div>
   );
 }

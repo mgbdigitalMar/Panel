@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "surface-container-highest": "#383433",
+          "secondary-fixed-dim": "#3cddc7",
+          "outline": "#a28d7e",
+          "on-tertiary-fixed-variant": "#4f319c",
+          "border-glass-rim": "rgba(255, 255, 255, 0.08)",
+          "secondary-fixed": "#62fae3",
+          "surface": "#161312",
+          "surface-container": "#221f1e",
+          "inverse-primary": "#914c00",
+          "surface-glass-tint": "rgba(34, 28, 24, 0.65)",
+          "tertiary": "#cebdff",
+          "text-muted": "#A89F91",
+          "on-error": "#690005",
+          "terracotta": "#FF7A45",
+          "surface-container-high": "#2d2928",
+          "on-tertiary": "#381385",
+          "amber-bright": "#FFA959",
+          "on-surface": "#e9e1df",
+          "on-secondary-fixed-variant": "#005047",
+          "error-container": "#93000a",
+          "surface-container-low": "#1e1b1a",
+          "amber-soft": "#F5A65B",
+          "on-secondary-fixed": "#00201c",
+          "on-background": "#e9e1df",
+          "on-primary": "#4e2600",
+          "text-primary": "#FDFBF7",
+          "violet-accent": "#A78BFA",
+          "primary": "#ffb77f",
+          "surface-tint": "#ffb77f",
+          "tertiary-container": "#ab8ffe",
+          "mint-status": "#34D399",
+          "on-error-container": "#ffdad6",
+          "outline-variant": "#544337",
+          "on-secondary": "#003731",
+          "tertiary-fixed-dim": "#cebdff",
+          "secondary-container": "#03c6b2",
+          "tertiary-fixed": "#e8ddff",
+          "surface-bronze": "#221C18",
+          "error": "#ffb4ab",
+          "on-primary-container": "#582c00",
+          "mint-accent": "#2DD4BF",
+          "inverse-on-surface": "#33302e",
+          "surface-obsidian": "#141110",
+          "surface-variant": "#383433",
+          "primary-fixed": "#ffdcc4",
+          "on-tertiary-container": "#3f1e8c",
+          "border-amber-sheen": "rgba(245, 166, 91, 0.28)",
+          "on-secondary-container": "#004d44",
+          "on-primary-fixed-variant": "#6f3900",
+          "surface-glass-highlight": "rgba(245, 166, 91, 0.12)",
+          "surface-container-lowest": "#100e0d",
+          "surface-smoked": "#1A1512",
+          "on-surface-variant": "#dac2b2",
+          "primary-fixed-dim": "#ffb77f",
+          "on-primary-fixed": "#2f1500",
+          "surface-bright": "#3c3837",
+          "background": "#161312",
+          "on-tertiary-fixed": "#21005e",
+          "secondary": "#34d399",
+          "inverse-surface": "#e9e1df",
+          "amber-primary": "#E68A38",
+          "primary-container": "#e68a38",
+          "surface-dim": "#161312",
+          "surface-glass-card": "rgba(26, 21, 18, 0.58)"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "space-sm": "0.5rem",
+          "gutter-mobile": "0.75rem",
+          "margin-mobile": "1rem",
+          "space-md": "0.875rem",
+          "space-xl": "1.75rem",
+          "margin": "1.75rem",
+          "space-xs": "0.25rem",
+          "gutter": "1.25rem",
+          "space-lg": "1.25rem"
+        },
+        "fontFamily": {
+          "headline-xl-mobile": ["Space Grotesk"],
+          "headline-lg-mobile": ["Space Grotesk"],
+          "body-md": ["Inter"],
+          "body-lg": ["Inter"],
+          "body-sm": ["Inter"],
+          "label-md": ["Inter"],
+          "stat-metric-sm": ["Space Grotesk"],
+          "stat-metric": ["Space Grotesk"],
+          "headline-xl": ["Space Grotesk"],
+          "label-lg": ["Inter"],
+          "headline-md": ["Space Grotesk"],
+          "headline-sm": ["Space Grotesk"],
+          "label-sm": ["Inter"],
+          "headline-lg": ["Space Grotesk"]
+        },
+        "fontSize": {
+          "headline-xl-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+          "headline-lg-mobile": ["22px", {"lineHeight": "30px", "letterSpacing": "-0.015em", "fontWeight": "600"}],
+          "body-md": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+          "body-lg": ["15px", {"lineHeight": "24px", "fontWeight": "400"}],
+          "body-sm": ["12px", {"lineHeight": "17px", "fontWeight": "400"}],
+          "label-md": ["11px", {"lineHeight": "15px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+          "stat-metric-sm": ["20px", {"lineHeight": "26px", "letterSpacing": "-0.015em", "fontWeight": "600"}],
+          "stat-metric": ["26px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+          "headline-xl": ["38px", {"lineHeight": "46px", "letterSpacing": "-0.025em", "fontWeight": "600"}],
+          "label-lg": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+          "headline-md": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "500"}],
+          "headline-sm": ["17px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+          "label-sm": ["10px", {"lineHeight": "13px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+          "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+        }
+      }
+    }
+  }
+</script></head><body class="bg-[#161312] font-body-md text-on-surface min-h-screen relative selection:bg-primary-container selection:text-white overflow-x-hidden"><div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden"><div class="absolute -top-40 -left-20 w-[650px] h-[650px] rounded-full bg-[#E68A38]/12 blur-[130px]"></div><div class="absolute top-1/4 -right-20 w-[550px] h-[550px] rounded-full bg-[#221C18] border border-amber-primary/10 blur-[120px]"></div><div class="absolute top-1/2 left-1/3 w-[600px] h-[600px] rounded-full bg-[#34d399]/05 blur-[150px]"></div><div class="absolute -bottom-32 left-1/4 w-[700px] h-[700px] rounded-full bg-[#FF7A45]/08 blur-[140px]"></div><svg class="absolute right-[-80px] bottom-[-80px] w-[500px] h-[500px] opacity-[0.02] text-primary rotate-12 fill-current" viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M100 0 C160 30 190 90 180 150 C170 200 120 200 80 180 C40 160 10 110 20 60 C30 10 70 0 100 0 Z"></path></svg></div><header class="fixed top-0 left-0 right-0 z-50 bg-[#161312]/80 backdrop-blur-[32px] border-b border-white/[0.06] shadow-[0_16px_40px_-8px_rgba(0,0,0,0.7),0_0_24px_-2px_rgba(230,138,56,0.08)]"><div class="h-20 w-full px-margin flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-sm shrink-0"><img alt="Margube Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCyB7KzZ2TWk3DB2H9WWejkU9azoxruHxvvtu4A5CkF1rf2w_gI4jN6JCXqNZN62DvycfnEzZHGIcxELYmtkHIrfxotLY6_tczW0AojkK7uGX30lIFEoUv2DyqiP-xRHuK0LiFHlP9LIlQdtKAe6ucr8CAloe5GY33MX8OToQsd1_f6hUz3exGryGlbQo3MNAIVPnZvySgq60IqEvE5w-PCjAt9jX-dsF1Zfel5Tg"/><span class="font-headline-sm text-headline-sm text-text-primary font-semibold tracking-tight">Margube</span><span class="font-label-sm text-label-sm text-amber-bright uppercase tracking-widest px-space-xs py-0.5 rounded-full bg-surface-container-high/70 border border-amber-soft/20">Intranet</span></div><div class="hidden xl:flex items-center"><nav class="flex items-center gap-space-xs p-1 rounded-full bg-[#1e1b1a]/90 backdrop-blur-xl border border-white/[0.07] shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.08)]" data-active-classes="bg-primary-container text-white font-semibold shadow-[0_2px_14px_rgba(230,138,56,0.35)]"><a class="font-label-md text-label-md text-on-surface-variant hover:text-text-primary hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200" data-path="inicio" href="#">Inicio</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-text-primary hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200 inline-flex items-center gap-1.5" data-path="reservas" href="#">Reservas<span class="w-1.5 h-1.5 rounded-full bg-mint-status animate-pulse"></span></a><a class="font-label-md text-label-md text-on-surface-variant hover:text-text-primary hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200 inline-flex items-center gap-1.5" data-path="solicitudes" href="#">Solicitudes<span class="font-label-sm text-label-sm px-1.5 py-0.2 rounded-full bg-error text-on-error font-bold leading-none">2</span></a><a aria-current="page" class="px-3.5 py-2 rounded-full transition-all duration-200 bg-amber-primary text-white font-semibold shadow-[0_2px_14px_rgba(230,138,56,0.35)]" data-path="tiempo-a-compensar" href="#">Tiempo a compensar</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-text-primary hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200" data-path="noticias-y-eventos" href="#">Noticias y Eventos</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-text-primary hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200" data-path="equipo" href="#">Equipo</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-text-primary hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200" data-path="administracion" href="#">Administración</a></nav></div><div class="flex items-center gap-space-sm shrink-0"><button class="hidden sm:flex items-center gap-space-sm h-10 px-3.5 rounded-full bg-surface-container-high/50 hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/[0.06] backdrop-blur-md transition-all shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]" type="button"><span class="material-symbols-outlined text-[18px]">search</span><span class="font-body-sm text-body-sm">Buscar...</span><kbd class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest/80 text-on-surface-variant shadow-sm border border-white/[0.05]">Ctrl+K</kbd></button><button aria-label="Notificaciones" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-surface-container-high/50 hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/[0.06] transition-all" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-terracotta ring-2 ring-surface-container-lowest"></span></button><button aria-label="Cambiar tema" class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container-high/50 hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface border border-white/[0.06] transition-all" type="button"><span class="material-symbols-outlined text-[20px]">dark_mode</span></button><div class="flex items-center pl-space-xs"><div class="relative p-0.5 rounded-[60%_12%_60%_12%] bg-gradient-to-tr from-amber-primary to-mint-status shadow-[0_0_14px_rgba(230,138,56,0.3)]"><img alt="Profile" class="w-8 h-8 rounded-[60%_12%_60%_12%] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAY03SVGMPmKX_K9X4Ju--Fe7RscuUEC__ceo0r0Ud5ge_WVNQWSeCRF4ydn4mvs0CPqQK_qnjhkU2tpvtiOnKx5vAeK2im303TilUZHSR2OT5eYe8THb4kJaCGsoVw-FxK2clAxkqNKzheTlbHuz0HBGOsB3azsyTajlMYY53E_d1Ew0q7Ej2keQkpgU6vxBgCAEMxcIt9oi4d3Zc_7m7SJvBZfeLQ33oobCG7KMA"/></div></div></div></div></header><main class="w-full pt-20 px-margin"><div class="flex flex-col w-full pb-16">
+<!-- Top Ambient Glow Field (Contained) -->
+<div class="relative w-full max-w-7xl mx-auto space-y-8">
+<div class="absolute -top-12 left-1/4 w-96 h-96 bg-amber-primary/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="absolute top-48 right-10 w-80 h-80 bg-mint-status/08 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<!-- Panel de Marca Superior / Hero Bolsa de Horas (Smoked Glass & Amber Glow) -->
+<section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#221C18]/90 via-[#1E1B1A]/85 to-[#100E0D]/95 backdrop-blur-[32px] p-space-xl shadow-[0_24px_50px_-12px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.08)] border border-amber-soft/20">
+<!-- Top Specular Catchlight Rim & Watermark -->
+<div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-bright/40 to-transparent"></div>
+<div class="absolute -top-24 right-1/4 w-72 h-72 bg-amber-primary/15 rounded-full blur-3xl pointer-events-none"></div>
+<svg aria-hidden="true" class="absolute -bottom-10 -right-8 w-64 h-64 text-amber-soft/5 pointer-events-none fill-current rotate-12" viewbox="0 0 200 200">
+<path d="M100 0 C160 30 190 90 180 150 C170 200 120 200 80 180 C40 160 10 110 20 60 C30 10 70 0 100 0 Z"></path>
+</svg>
+<div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+<!-- Columna Izquierda: Información Saldo Central -->
+<div class="lg:col-span-7 flex flex-col gap-4">
+<div class="flex flex-wrap items-center gap-3">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-primary/15 text-amber-bright border border-amber-primary/25 font-label-sm text-label-sm tracking-widest uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-primary animate-pulse"></span>
+              Bolsa de Horas • Convenio 2025
+            </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-highest/60 text-on-surface-variant border border-white/[0.05] font-label-md text-label-md">
+<span class="material-symbols-outlined text-[15px] text-mint-status">verified_user</span>
+              Límite anual regulado: 80h max
+            </span>
+</div>
+<div>
+<h1 class="font-label-lg text-label-lg text-text-muted uppercase tracking-wider font-semibold">Saldo actual de la bolsa de horas</h1>
+<div class="flex flex-wrap items-baseline gap-4 mt-1">
+<span class="font-headline-xl text-[54px] leading-tight font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-text-primary via-amber-bright to-amber-primary drop-shadow-[0_4px_16px_rgba(230,138,56,0.3)]">
+                +14 h 30 min
+              </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-mint-status/15 text-mint-status border border-mint-status/20 font-label-md text-label-md font-medium">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                +4h 15m este trimestre
+              </span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl">
+            Tiempo devengado por guardias nocturnas, mantenimientos de infraestructura crítica y extensiones extraordinarias. Acumuladas antes del 31 de diciembre con opción a libranza remunerada.
+          </p>
+<div class="flex flex-wrap items-center gap-4 pt-2">
+<button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-primary to-amber-bright text-surface-container-lowest font-label-lg text-label-lg font-semibold shadow-[0_4px_20px_rgba(230,138,56,0.4)] hover:shadow-amber-primary/50 hover:scale-[1.02] active:scale-[0.98] transition-all" id="open-record-modal">
+<span class="material-symbols-outlined text-[20px]">more_time</span>
+              + Registrar horas extra / compensación
+            </button>
+<button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-surface-container-highest/70 hover:bg-surface-container-highest text-text-primary border border-white/[0.08] hover:border-amber-soft/30 font-label-lg text-label-lg transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-amber-soft">event_available</span>
+              Solicitar libranza
+            </button>
+</div>
+</div>
+<!-- Columna Derecha: Gráfico Compacto de Evolución Trimestral y Vencimiento -->
+<div class="lg:col-span-5 flex flex-col gap-4 bg-[#141110]/70 border border-white/[0.06] backdrop-blur-md rounded-xl p-5 shadow-inner">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant font-medium">Evolución Q1 – Q2 2025</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-mint-status/15 text-mint-status border border-mint-status/20">En regla (+18%)</span>
+</div>
+<!-- Mini Sparkline SVG Trimestral en Ámbar y Menta -->
+<div class="w-full h-24 relative flex items-end">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 320 80">
+<defs>
+<lineargradient id="sparkGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#E68A38" stop-opacity="0.45"></stop>
+<stop offset="100%" stop-color="#E68A38" stop-opacity="0.0"></stop>
+</lineargradient>
+<lineargradient id="strokeGradient" x1="0" x2="1" y1="0" y2="0">
+<stop offset="0%" stop-color="#F5A65B"></stop>
+<stop offset="70%" stop-color="#E68A38"></stop>
+<stop offset="100%" stop-color="#34D399"></stop>
+</lineargradient>
+</defs>
+<!-- Filled area -->
+<path d="M0,65 L50,55 L110,60 L170,40 L230,48 L280,25 L320,18 L320,80 L0,80 Z" fill="url(#sparkGradient)"></path>
+<!-- Stroke Line -->
+<path d="M0,65 L50,55 L110,60 L170,40 L230,48 L280,25 L320,18" fill="none" stroke="url(#strokeGradient)" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Key Data Dots -->
+<circle class="animate-pulse" cx="170" cy="40" fill="#34D399" r="3.5"></circle>
+<circle cx="320" cy="18" fill="#FDFBF7" r="4.5" stroke="#E68A38" stroke-width="2.5"></circle>
+</svg>
+</div>
+<div class="grid grid-cols-3 text-center gap-2 pt-1 font-body-sm text-body-sm text-on-surface-variant">
+<div class="flex flex-col">
+<span class="text-on-surface font-semibold font-stat-metric-sm text-label-lg">Ene-Feb</span>
+<span class="text-outline">6h 15m</span>
+</div>
+<div class="flex flex-col">
+<span class="text-on-surface font-semibold font-stat-metric-sm text-label-lg">Mar-Abr</span>
+<span class="text-outline">10h 30m</span>
+</div>
+<div class="flex flex-col">
+<span class="text-amber-bright font-semibold font-stat-metric-sm text-label-lg">May (Hoy)</span>
+<span class="text-amber-soft font-medium">+14h 30m</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2 text-on-surface-variant font-label-md text-label-md border-t border-white/[0.04]">
+<span class="flex items-center gap-1.5 text-error">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+              Vigencia bolsa: 31 dic 2025
+            </span>
+<span class="text-text-primary font-medium">81.8% cupo libre</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Fila de 3 Tarjetas KPI -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Tarjeta 1: Horas Generadas Mes -->
+<div class="relative overflow-hidden rounded-2xl bg-[#1E1B1A]/75 border border-white/[0.07] backdrop-blur-[24px] p-space-lg shadow-lg hover:shadow-xl transition-all group">
+<div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-soft/20 to-transparent"></div>
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-md text-label-md text-text-muted uppercase tracking-wider font-semibold">Generadas este mes</span>
+<div class="w-9 h-9 rounded-full bg-amber-primary/15 border border-amber-primary/20 flex items-center justify-center text-amber-bright group-hover:bg-amber-primary group-hover:text-surface-container-lowest transition-colors">
+<span class="material-symbols-outlined text-[20px]">add_alarm</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mb-2">
+<span class="font-stat-metric text-[32px] font-bold text-text-primary tracking-tight">8 h 15 min</span>
+</div>
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-mint-status/15 text-mint-status border border-mint-status/20 font-medium">
+<span class="material-symbols-outlined text-[14px]">north_east</span>
+            +2h vs abril
+          </span>
+<span class="text-outline">3 actuaciones</span>
+</div>
+</div>
+<!-- Tarjeta 2: Horas Disfrutadas -->
+<div class="relative overflow-hidden rounded-2xl bg-[#1E1B1A]/75 border border-white/[0.07] backdrop-blur-[24px] p-space-lg shadow-lg hover:shadow-xl transition-all group">
+<div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-mint-status/20 to-transparent"></div>
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-md text-label-md text-text-muted uppercase tracking-wider font-semibold">Disfrutadas / Compensadas</span>
+<div class="w-9 h-9 rounded-full bg-mint-status/15 border border-mint-status/20 flex items-center justify-center text-mint-status group-hover:bg-mint-status group-hover:text-surface-container-lowest transition-colors">
+<span class="material-symbols-outlined text-[20px]">beach_access</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mb-2">
+<span class="font-stat-metric text-[32px] font-bold text-text-primary tracking-tight">4 h 00 min</span>
+</div>
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-highest border border-white/[0.05] text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-[14px] text-mint-status">check_circle</span>
+            1 jornada librada
+          </span>
+<span class="text-outline">Planificado: 0h</span>
+</div>
+</div>
+<!-- Tarjeta 3: Saldo Neto Disponible -->
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#221C18]/90 to-[#2D2928]/85 border border-amber-primary/30 backdrop-blur-[24px] p-space-lg shadow-[0_8px_28px_rgba(230,138,56,0.12)] hover:shadow-xl transition-all group">
+<div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-bright/40 to-transparent"></div>
+<div class="flex items-center justify-between mb-3">
+<span class="font-label-md text-label-md text-amber-bright uppercase tracking-wider font-semibold">Saldo neto disponible</span>
+<div class="w-9 h-9 rounded-full bg-amber-primary/20 border border-amber-primary/30 flex items-center justify-center text-amber-bright group-hover:bg-amber-primary group-hover:text-surface-container-lowest transition-colors">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mb-2">
+<span class="font-stat-metric text-[32px] font-bold text-amber-bright tracking-tight">+14 h 30 min</span>
+</div>
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-primary/15 text-amber-bright border border-amber-primary/25 font-medium">
+            Equivale a ~1.8 días
+          </span>
+<span class="text-outline">Sin caducidad próx.</span>
+</div>
+</div>
+</section>
+<!-- Gráfico Interactivo de Balance Mensual + Paneles Laterales -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-stretch">
+<!-- Contenedor del Gráfico de Barras Dobles y Balance -->
+<div class="lg:col-span-8 rounded-2xl bg-[#1E1B1A]/80 border border-white/[0.07] backdrop-blur-[28px] p-space-lg shadow-xl flex flex-col justify-between">
+<div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-text-primary font-semibold">Balance Mensual Comparativo</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Generadas vs Compensadas acumuladas en 2025</p>
+</div>
+<!-- Leyenda Visual -->
+<div class="flex items-center gap-4 text-label-sm font-label-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm bg-gradient-to-t from-amber-primary to-amber-bright shadow-[0_0_8px_rgba(230,138,56,0.35)]"></span>
+<span class="text-on-surface-variant">Generadas (h)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm bg-mint-status shadow-[0_0_8px_rgba(52,211,153,0.3)]"></span>
+<span class="text-on-surface-variant">Compensadas (h)</span>
+</div>
+</div>
+</div>
+<!-- Renderizador Visual del Gráfico SVG con tooltips reactivos -->
+<div class="w-full h-64 relative flex items-end justify-between px-2 pt-6">
+<!-- Eje de fondo decorativo -->
+<div class="absolute inset-x-0 bottom-8 h-px bg-white/[0.06]"></div>
+<div class="absolute inset-x-0 bottom-24 h-px bg-white/[0.04]"></div>
+<div class="absolute inset-x-0 bottom-40 h-px bg-white/[0.02]"></div>
+<!-- Mes Enero -->
+<div class="flex-1 flex flex-col items-center group cursor-pointer relative z-10">
+<div class="flex items-end gap-1.5 h-44 mb-2">
+<div class="w-5 bg-amber-primary/70 group-hover:bg-amber-bright rounded-t transition-all" style="height: 48%;"></div>
+<div class="w-5 bg-mint-status/50 group-hover:bg-mint-status rounded-t transition-all" style="height: 20%;"></div>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant group-hover:text-text-primary">Ene</span>
+</div>
+<!-- Mes Febrero -->
+<div class="flex-1 flex flex-col items-center group cursor-pointer relative z-10">
+<div class="flex items-end gap-1.5 h-44 mb-2">
+<div class="w-5 bg-amber-primary/70 group-hover:bg-amber-bright rounded-t transition-all" style="height: 60%;"></div>
+<div class="w-5 bg-mint-status/50 group-hover:bg-mint-status rounded-t transition-all" style="height: 35%;"></div>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant group-hover:text-text-primary">Feb</span>
+</div>
+<!-- Mes Marzo -->
+<div class="flex-1 flex flex-col items-center group cursor-pointer relative z-10">
+<div class="flex items-end gap-1.5 h-44 mb-2">
+<div class="w-5 bg-amber-primary/70 group-hover:bg-amber-bright rounded-t transition-all" style="height: 75%;"></div>
+<div class="w-5 bg-mint-status/50 group-hover:bg-mint-status rounded-t transition-all" style="height: 40%;"></div>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant group-hover:text-text-primary">Mar</span>
+</div>
+<!-- Mes Abril -->
+<div class="flex-1 flex flex-col items-center group cursor-pointer relative z-10">
+<div class="flex items-end gap-1.5 h-44 mb-2">
+<div class="w-5 bg-amber-primary/70 group-hover:bg-amber-bright rounded-t transition-all" style="height: 55%;"></div>
+<div class="w-5 bg-mint-status/50 group-hover:bg-mint-status rounded-t transition-all" style="height: 50%;"></div>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant group-hover:text-text-primary">Abr</span>
+</div>
+<!-- Mes Mayo (Activo / Actual) -->
+<div class="flex-1 flex flex-col items-center group cursor-pointer relative z-10">
+<div class="flex items-end gap-1.5 h-44 mb-2">
+<div class="w-5 bg-gradient-to-t from-amber-primary to-amber-bright shadow-[0_0_14px_rgba(230,138,56,0.55)] rounded-t transition-all" style="height: 85%;"></div>
+<div class="w-5 bg-mint-status shadow-[0_0_14px_rgba(52,211,153,0.4)] rounded-t transition-all" style="height: 42%;"></div>
+</div>
+<span class="font-label-md text-label-md text-amber-bright font-semibold">May (Hoy)</span>
+</div>
+<!-- Mes Junio (Previsto) -->
+<div class="flex-1 flex flex-col items-center opacity-40 group cursor-pointer relative z-10">
+<div class="flex items-end gap-1.5 h-44 mb-2 border-b border-dashed border-outline">
+<div class="w-5 bg-amber-primary/40 rounded-t" style="height: 30%;"></div>
+<div class="w-5 bg-mint-status/30 rounded-t" style="height: 15%;"></div>
+</div>
+<span class="font-label-md text-label-md text-outline">Jun</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 mt-2 bg-[#141110]/60 border border-white/[0.04] rounded-xl px-4 py-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-mint-status">info</span>
+            Promedio mensual de generación: <strong class="text-text-primary">6.8 horas</strong>
+</span>
+<span class="text-amber-soft font-medium cursor-pointer hover:underline hover:text-amber-bright">Descargar informe fiscal (.CSV)</span>
+</div>
+</div>
+<!-- Resumen de Política & Guía Rápida -->
+<div class="lg:col-span-4 rounded-2xl bg-[#1E1B1A]/80 border border-white/[0.07] backdrop-blur-[28px] p-space-lg shadow-xl flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-amber-bright font-semibold">Normativa Margube</span>
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant">policy</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary font-semibold mb-2">Condiciones de disfrute</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">
+            Las horas en bolsa pueden recuperarse en medias jornadas o jornadas completas previo acuerdo con el líder de equipo.
+          </p>
+<div class="space-y-3">
+<div class="p-3 rounded-xl bg-surface-container-high/60 border border-white/[0.04] flex items-start gap-3">
+<span class="material-symbols-outlined text-[20px] text-amber-bright shrink-0 mt-0.5">rule</span>
+<div>
+<p class="font-label-md text-label-md text-text-primary font-semibold">Ratio 1:1 ordinario</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Horario fuera de turno semanal ordinario.</p>
+</div>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-high/60 border border-white/[0.04] flex items-start gap-3">
+<span class="material-symbols-outlined text-[20px] text-mint-status shrink-0 mt-0.5">wb_twilight</span>
+<div>
+<p class="font-label-md text-label-md text-text-primary font-semibold">Ratio 1:1.5 nocturnidad</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Actuaciones entre las 22:00h y las 06:00h o festivos.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-6">
+<div class="w-full bg-[#100E0D] rounded-full h-2 overflow-hidden mb-2 border border-white/[0.05]">
+<div class="bg-gradient-to-r from-amber-primary via-amber-bright to-mint-status h-full rounded-full" style="width: 18.1%"></div>
+</div>
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>14.5h utilizadas de 80h max</span>
+<span class="text-mint-status font-semibold">18.1% ocupado</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Contenedor Principal de Pestañas y Tablas -->
+<section class="rounded-2xl bg-[#1E1B1A]/80 border border-white/[0.07] backdrop-blur-[28px] shadow-2xl overflow-hidden p-space-lg">
+<!-- Barra Superior de Pestañas (Segmented Glass Pills) -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6">
+<div class="inline-flex p-1 rounded-full bg-[#141110]/80 border border-white/[0.05] backdrop-blur-md">
+<button class="tab-btn px-5 py-2 rounded-full font-label-md text-label-md transition-all duration-200 bg-surface-container-highest text-text-primary shadow-sm font-semibold inline-flex items-center gap-2 border border-white/[0.08]" id="tab-historial" onclick="switchTab('historial')">
+<span>Historial de registros</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-lowest text-amber-bright text-label-sm font-bold border border-amber-primary/20">12</span>
+</button>
+<button class="tab-btn px-5 py-2 rounded-full font-label-md text-label-md transition-all duration-200 text-on-surface-variant hover:text-text-primary hover:bg-surface-container-high/40 inline-flex items-center gap-2" id="tab-compensaciones" onclick="switchTab('compensaciones')">
+<span>Compensaciones solicitadas</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-lowest text-on-surface-variant text-label-sm font-medium">1</span>
+</button>
+<button class="tab-btn px-5 py-2 rounded-full font-label-md text-label-md transition-all duration-200 text-on-surface-variant hover:text-text-primary hover:bg-surface-container-high/40 inline-flex items-center gap-2" id="tab-normativa" onclick="switchTab('normativa')">
+<span>Normativa y límites</span>
+</button>
+</div>
+<!-- Filtros Rápidos y Buscador en Tabla -->
+<div class="flex items-center gap-3">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-outline">search</span>
+<input class="bg-[#141110]/80 border border-white/[0.06] text-text-primary placeholder:text-outline text-body-sm font-body-sm pl-9 pr-4 py-2 rounded-full outline-none focus:border-amber-primary/50 focus:bg-surface-container-high/80 transition-all w-52 sm:w-64" placeholder="Filtrar concepto o ticket..." type="text"/>
+</div>
+<button class="p-2 rounded-full bg-[#141110]/80 border border-white/[0.06] hover:bg-surface-container-high text-on-surface-variant hover:text-text-primary transition-all" title="Filtrar por fecha">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Contenido Pestaña 1: Historial de Registros -->
+<div class="tab-content block" id="content-historial">
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="text-text-muted font-label-sm text-label-sm uppercase tracking-wider bg-[#141110]/60 border border-white/[0.04] rounded-xl">
+<th class="py-3 px-4 rounded-l-xl">Fecha</th>
+<th class="py-3 px-4">Concepto / Proyecto</th>
+<th class="py-3 px-4">Horario realizado</th>
+<th class="py-3 px-4">Horas computadas</th>
+<th class="py-3 px-4">Tipo</th>
+<th class="py-3 px-4">Aprobación</th>
+<th class="py-3 px-4 text-right rounded-r-xl">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 space-y-2">
+<!-- Espaciador de fila -->
+<tr class="h-2"></tr>
+<!-- Fila 1 -->
+<tr class="bg-surface-container-low/50 hover:bg-surface-container-high/60 transition-colors rounded-xl group border border-white/[0.03]">
+<td class="py-4 px-4 font-stat-metric-sm text-text-primary font-medium whitespace-nowrap rounded-l-xl">
+                  21/05/2025
+                </td>
+<td class="py-4 px-4">
+<div class="font-body-md text-body-md text-text-primary font-medium">Despliegue nocturno release v2.4</div>
+<div class="text-outline text-body-sm">Proyecto Cloud Core • Ticket #INFRA-892</div>
+</td>
+<td class="py-4 px-4 text-on-surface-variant whitespace-nowrap">
+                  20:00 – 22:30
+                </td>
+<td class="py-4 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1 font-stat-metric-sm text-mint-status font-bold">
+                    +2h 30m
+                  </span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-primary/15 text-amber-bright border border-amber-primary/25 text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">arrow_circle_up</span>
+                    Generación
+                  </span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-mint-status">verified</span>
+<div>
+<div class="text-text-primary font-medium text-label-sm">David R.</div>
+<div class="text-outline text-[10px]">22/05/2025</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 text-right whitespace-nowrap rounded-r-xl">
+<div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded-full hover:bg-surface-container-highest text-on-surface-variant hover:text-text-primary transition-all" title="Ver detalle">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-full hover:bg-surface-container-highest text-on-surface-variant hover:text-text-primary transition-all" title="Descargar justificante">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 2 -->
+<tr class="bg-surface-container-low/50 hover:bg-surface-container-high/60 transition-colors rounded-xl group border border-white/[0.03]">
+<td class="py-4 px-4 font-stat-metric-sm text-text-primary font-medium whitespace-nowrap rounded-l-xl">
+                  16/05/2025
+                </td>
+<td class="py-4 px-4">
+<div class="font-body-md text-body-md text-text-primary font-medium">Soporte de guardia incidencia servidor</div>
+<div class="text-outline text-body-sm">Servicio 24/7 • Incidencia P1 Base Datos</div>
+</td>
+<td class="py-4 px-4 text-on-surface-variant whitespace-nowrap">
+                  19:00 – 21:00
+                </td>
+<td class="py-4 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1 font-stat-metric-sm text-mint-status font-bold">
+                    +2h 00m
+                  </span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-primary/15 text-amber-bright border border-amber-primary/25 text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">arrow_circle_up</span>
+                    Generación
+                  </span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-mint-status">verified</span>
+<div>
+<div class="text-text-primary font-medium text-label-sm">David R.</div>
+<div class="text-outline text-[10px]">17/05/2025</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 text-right whitespace-nowrap rounded-r-xl">
+<div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded-full hover:bg-surface-container-highest text-on-surface-variant hover:text-text-primary transition-all" title="Ver detalle">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-full hover:bg-surface-container-highest text-on-surface-variant hover:text-text-primary transition-all" title="Descargar justificante">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Fila 3 -->
+<tr class="bg-surface-container-low/50 hover:bg-surface-container-high/60 transition-colors rounded-xl group border border-white/[0.03]">
+<td class="py-4 px-4 font-stat-metric-sm text-text-primary font-medium whitespace-nowrap rounded-l-xl">
+                  09/05/2025
+                </td>
+<td class="py-4 px-4">
+<div class="font-body-md text-body-md text-text-primary font-medium">Tarde libre compensatoria</div>
+<div class="text-outline text-body-sm">Disfrute aprobado • Jornada continuada</div>
+</td>
+<td class="py-4 px-4 text-on-surface-variant whitespace-nowrap">
+                  15:00 – 19:00
+                </td>
+<td class="py-4 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1 font-stat-metric-sm text-error font-bold">
+                    -4h 00m
+                  </span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-error/15 text-error border border-error/25 text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">arrow_circle_down</span>
+                    Disfrute
+                  </span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-amber-bright">verified</span>
+<div>
+<div class="text-text-primary font-medium text-label-sm">RRHH Margube</div>
+<div class="text-outline text-[10px]">06/05/2025</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 text-right whitespace-nowrap rounded-r-xl">
+<div class="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded-full hover:bg-surface-container-highest text-on-surface-variant hover:text-text-primary transition-all" title="Ver detalle">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-full hover:bg-surface-container-highest text-on-surface-variant hover:text-text-primary transition-all" title="Descargar justificante">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Paginación Sutil -->
+<div class="flex items-center justify-between pt-6 text-on-surface-variant font-label-md text-label-md">
+<span>Mostrando 3 de 12 registros correspondientes a 2025</span>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1 rounded-full bg-surface-container-low hover:bg-surface-container-high transition-colors disabled:opacity-40 border border-white/[0.05]" disabled="">Anterior</button>
+<span class="px-2 py-0.5 rounded bg-amber-primary/20 text-amber-bright border border-amber-primary/30 font-semibold">1</span>
+<button class="px-3 py-1 rounded-full bg-surface-container-low hover:bg-surface-container-high transition-colors border border-white/[0.05]">Siguiente</button>
+</div>
+</div>
+</div>
+<!-- Contenido Pestaña 2: Compensaciones solicitadas -->
+<div class="tab-content hidden" id="content-compensaciones">
+<div class="bg-[#141110]/50 border border-white/[0.05] rounded-xl p-6 flex flex-col items-center justify-center text-center space-y-4">
+<div class="w-12 h-12 rounded-full bg-amber-primary/15 border border-amber-primary/25 flex items-center justify-center text-amber-bright">
+<span class="material-symbols-outlined text-[28px]">pending_actions</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm text-text-primary font-semibold">1 solicitud en curso de revisión</h4>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md mx-auto mt-1">
+              Viernes 30 de Mayo de 2025 (4h 00m) solicitada el 20/05/2025. Pendiente de ratificación por la jefatura de departamento.
+            </p>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 rounded-full bg-surface-container-highest hover:bg-surface-bright text-text-primary border border-white/[0.07] font-label-md text-label-md transition-all">Modificar petición</button>
+<button class="px-4 py-2 rounded-full bg-error/20 text-error hover:bg-error/30 border border-error/25 font-label-md text-label-md transition-all">Cancelar solicitud</button>
+</div>
+</div>
+</div>
+<!-- Contenido Pestaña 3: Normativa y Límites -->
+<div class="tab-content hidden" id="content-normativa">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+<div class="bg-[#141110]/50 border border-white/[0.05] rounded-xl p-5 space-y-3">
+<h4 class="font-headline-sm text-headline-sm text-text-primary font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-bright">gavel</span>
+              Reglas de Devengo
+            </h4>
+<ul class="space-y-2 text-on-surface-variant font-body-sm text-body-sm list-disc list-inside">
+<li>Mínimo registrable por intervención: 30 minutos continuos.</li>
+<li>Las guardias en fines de semana computan con recargo del 50% (+1.5x).</li>
+<li>Toda hora registrada debe ir vinculada a un número de incidencia o proyecto corporativo.</li>
+</ul>
+</div>
+<div class="bg-[#141110]/50 border border-white/[0.05] rounded-xl p-5 space-y-3">
+<h4 class="font-headline-sm text-headline-sm text-text-primary font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-mint-status">event_repeat</span>
+              Caducidad y Liquidación
+            </h4>
+<ul class="space-y-2 text-on-surface-variant font-body-sm text-body-sm list-disc list-inside">
+<li>El saldo vence de forma obligatoria el último día laborable del año natural.</li>
+<li>Las horas no disfrutadas por necesidades operativas se abonan en nómina de enero.</li>
+<li>Límite legal estipulado en estatuto Margube: 80 horas anuales totales.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Modal Diálogo Cristal: Registrar Horas Extra / Compensación -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#100E0D]/85 backdrop-blur-xl opacity-0 pointer-events-none transition-all duration-300" id="record-modal">
+<div class="relative w-full max-w-xl rounded-2xl bg-[#1E1B1A]/95 border border-amber-primary/30 backdrop-blur-[32px] p-6 shadow-2xl overflow-hidden scale-95 transition-transform duration-300" id="modal-box">
+<!-- Specular Rim -->
+<div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-bright/35 to-transparent"></div>
+<!-- Header Modal -->
+<div class="flex items-center justify-between pb-4 border-b border-white/[0.06]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-amber-primary/20 border border-amber-primary/30 text-amber-bright flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">history_toggle_off</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary font-semibold">Registrar Actuación</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Bolsa de horas y compensación horaria</p>
+</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-surface-container-highest hover:bg-surface-bright text-on-surface-variant hover:text-text-primary border border-white/[0.06] flex items-center justify-center transition-all" id="close-record-modal">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Formulario -->
+<form class="space-y-4 pt-4" onsubmit="event.preventDefault(); closeModal();">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div>
+<label class="block font-label-md text-label-md text-text-primary mb-1.5 font-medium">Fecha de realización</label>
+<input class="w-full bg-[#100E0D] border border-white/[0.08] text-text-primary rounded-xl px-3.5 py-2.5 font-body-sm text-body-sm outline-none focus:border-amber-primary transition-all" type="date" value="2025-05-24"/>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-text-primary mb-1.5 font-medium">Tipo de registro</label>
+<select class="w-full bg-[#100E0D] border border-white/[0.08] text-text-primary rounded-xl px-3.5 py-2.5 font-body-sm text-body-sm outline-none focus:border-amber-primary transition-all">
+<option>Generación (+ Sumar a bolsa)</option>
+<option>Compensación (- Disfrutar descanso)</option>
+</select>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block font-label-md text-label-md text-text-primary mb-1.5 font-medium">Hora inicio</label>
+<input class="w-full bg-[#100E0D] border border-white/[0.08] text-text-primary rounded-xl px-3.5 py-2.5 font-body-sm text-body-sm outline-none focus:border-amber-primary transition-all" type="time" value="19:00"/>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-text-primary mb-1.5 font-medium">Hora finalización</label>
+<input class="w-full bg-[#100E0D] border border-white/[0.08] text-text-primary rounded-xl px-3.5 py-2.5 font-body-sm text-body-sm outline-none focus:border-amber-primary transition-all" type="time" value="21:30"/>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-text-primary mb-1.5 font-medium">Concepto o Proyecto</label>
+<input class="w-full bg-[#100E0D] border border-white/[0.08] text-text-primary placeholder:text-outline rounded-xl px-3.5 py-2.5 font-body-sm text-body-sm outline-none focus:border-amber-primary transition-all" placeholder="Ej: Migración clúster BBDD o Guardias fin de semana" type="text"/>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-text-primary mb-1.5 font-medium">Responsable / Validador</label>
+<select class="w-full bg-[#100E0D] border border-white/[0.08] text-text-primary rounded-xl px-3.5 py-2.5 font-body-sm text-body-sm outline-none focus:border-amber-primary transition-all">
+<option>David R. (Responsable de Operaciones)</option>
+<option>Elena S. (Directora Técnica)</option>
+<option>RRHH Margube (General)</option>
+</select>
+</div>
+<!-- Footer Modal -->
+<div class="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.06]">
+<button class="px-5 py-2 rounded-full bg-surface-container-highest hover:bg-surface-bright text-text-primary border border-white/[0.06] font-label-md text-label-md transition-all" id="cancel-modal" type="button">
+            Cancelar
+          </button>
+<button class="px-5 py-2 rounded-full bg-gradient-to-r from-amber-primary to-amber-bright text-surface-container-lowest font-label-lg text-label-lg font-semibold hover:shadow-lg hover:shadow-amber-primary/30 transition-all" type="submit">
+            Guardar y Enviar para Aprobación
+          </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+<script>
+  function switchTab(tabId) {
+    const tabs = ['historial', 'compensaciones', 'normativa'];
+    tabs.forEach(id => {
+      const content = document.getElementById('content-' + id);
+      const btn = document.getElementById('tab-' + id);
+      if (id === tabId) {
+        content.classList.remove('hidden');
+        content.classList.add('block');
+        btn.classList.add('bg-surface-container-highest', 'text-text-primary', 'shadow-sm', 'font-semibold', 'border', 'border-white/[0.08]');
+        btn.classList.remove('text-on-surface-variant');
+      } else {
+        content.classList.add('hidden');
+        content.classList.remove('block');
+        btn.classList.remove('bg-surface-container-highest', 'text-text-primary', 'shadow-sm', 'font-semibold', 'border', 'border-white/[0.08]');
+        btn.classList.add('text-on-surface-variant');
+      }
+    });
+  }
+
+  const modal = document.getElementById('record-modal');
+  const modalBox = document.getElementById('modal-box');
+  const openBtn = document.getElementById('open-record-modal');
+  const closeBtn = document.getElementById('close-record-modal');
+  const cancelBtn = document.getElementById('cancel-modal');
+
+  function openModal() {
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+    modal.classList.add('opacity-100', 'pointer-events-auto');
+    modalBox.classList.remove('scale-95');
+    modalBox.classList.add('scale-100');
+  }
+
+  function closeModal() {
+    modal.classList.remove('opacity-100', 'pointer-events-auto');
+    modal.classList.add('opacity-0', 'pointer-events-none');
+    modalBox.classList.remove('scale-100');
+    modalBox.classList.add('scale-95');
+  }
+
+  if (openBtn) openBtn.addEventListener('click', openModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+</script></main><footer class="w-full mt-margin bg-[#100E0D]/90 border-t border-white/[0.06] backdrop-blur-xl shadow-[0_-1px_12px_rgba(0,0,0,0.5)]"><div class="w-full px-margin py-space-lg flex flex-col md:flex-row items-center justify-between gap-space-md font-body-sm text-body-sm text-on-surface-variant"><div class="flex items-center gap-space-sm"><span class="font-headline-sm text-headline-sm font-semibold text-amber-bright tracking-tight">Margube</span><span>© 2025 Red Corporativa Margube. Entorno Confidencial.</span></div><div class="flex items-center gap-space-lg"><a class="hover:text-text-primary transition-colors" href="#">Soporte IT</a><a class="hover:text-text-primary transition-colors" href="#">Política de Privacidad</a><a class="hover:text-text-primary transition-colors" href="#">Guía del Empleado</a></div></div></footer></body></html>

@@ -1,9 +1,9 @@
 // 21 · Gestión de usuarios (AdminPage > Empleados on the web)
 import { useEffect, useMemo, useState } from 'react';
-import { TextInput, View } from 'react-native';
+import { Share, TextInput, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as ExpoCrypto from 'expo-crypto';
-import { Search, UserPlus, Pencil, KeyRound, UserMinus, UsersRound, PenLine, RotateCcw, Check, ShieldCheck } from 'lucide-react-native';
+import { Search, UserPlus, Pencil, KeyRound, UserMinus, UsersRound, PenLine, RotateCcw, Check, ShieldCheck, Share2 } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
 import { fetchPolicySignatures, latestSignatureByUser, policyStatus, formatSignedAt, PLATFORM_LABELS, POLICY_TITLE } from '@shared/services/policy.js';
 import { supabase } from '../../lib/supabase';
@@ -41,7 +41,7 @@ export default function AdminUsersScreen() {
   const [q, setQ] = useState('');
   const [role, setRole] = useState('all');
   const [expanded, setExpanded] = useState(null);
-  const [reset, setReset] = useState(null); // { emp, password }
+  const [reset, setReset] = useState(null); // { emp, password, done }
   const [busy, setBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -100,8 +100,20 @@ export default function AdminUsersScreen() {
     if (error) toast.error(toUserMessage(error));
     else {
       toast.success('Contraseña temporal guardada', `${reset.emp.name.split(' ')[0]} deberá cambiarla al entrar.`);
-      setReset(null);
+      // Stay open on a confirmation that shows it once more, to copy or send it
+      setReset((r) => ({ ...r, done: true }));
     }
+  };
+
+  // The system share sheet: «Copiar» on iOS and Android, or straight to WhatsApp, SMS or mail
+  const shareReset = async () => {
+    if (!reset) return;
+    try {
+      await Share.share({
+        message: `Tu contraseña temporal de la intranet de Margube es: ${reset.password}
+Entra con tu email (${reset.emp.email}) y te pedirá crear una contraseña nueva.`,
+      });
+    } catch { /* dismissed */ }
   };
 
   return (
@@ -168,7 +180,10 @@ export default function AdminUsersScreen() {
               {open ? (
                 <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 12, paddingBottom: 12 }}>
                   <GlassButton title="Editar" icon={Pencil} variant="glass" size="sm" style={{ flex: 1 }} onPress={() => navigation.navigate('UserForm', { id: e.id })} />
-                  <GlassButton title="Clave" icon={KeyRound} variant="glass" size="sm" style={{ flex: 1 }} onPress={() => setReset({ emp: e, password: tempPassword() })} />
+                  {/* Your own password is changed from Mi perfil */}
+                  {e.id !== user?.id ? (
+                    <GlassButton title="Clave" icon={KeyRound} variant="glass" size="sm" style={{ flex: 1 }} onPress={() => setReset({ emp: e, password: tempPassword(), done: false })} />
+                  ) : null}
                   <GlassButton title="Baja" icon={UserMinus} variant="danger" size="sm" style={{ flex: 1 }} disabled={busy || e.id === user?.id} onPress={() => remove(e)} />
                 </View>
               ) : null}
@@ -229,9 +244,11 @@ export default function AdminUsersScreen() {
         })() : null}
       </Sheet>
 
-      <Sheet visible={!!reset} onClose={() => setReset(null)} title="Restablecer contraseña"
-        footer={<GlassButton title="Guardar contraseña temporal" size="lg" loading={busy} disabled={!reset || reset.password.length < MIN_PASSWORD} onPress={doReset} />}>
-        {reset ? (
+      <Sheet visible={!!reset} onClose={() => { if (!busy) setReset(null); }} title={reset?.done ? 'Contraseña restablecida' : 'Restablecer contraseña'}
+        footer={reset?.done
+          ? <GlassButton title="Hecho" size="lg" onPress={() => setReset(null)} />
+          : <GlassButton title="Guardar contraseña temporal" size="lg" loading={busy} disabled={!reset || reset.password.length < MIN_PASSWORD} onPress={doReset} />}>
+        {reset && !reset.done ? (
           <>
             <T size={15} color={colors.text2}>
               {reset.emp.name} entrará con esta contraseña y la app le pedirá crear una propia.
@@ -239,7 +256,20 @@ export default function AdminUsersScreen() {
             <GlassInput label="Contraseña temporal" value={reset.password} onChangeText={(v) => setReset((r) => ({ ...r, password: v }))}
               autoCapitalize="none" autoCorrect={false} inputStyle={{ fontFamily: FONTS.mono, letterSpacing: 1 }} selectTextOnFocus />
             <GlassButton title="Generar otra" variant="ghost" size="sm" onPress={() => setReset((r) => ({ ...r, password: tempPassword() }))} />
-            <Banner tone="amber">Comunícasela por un canal seguro. No se volverá a mostrar.</Banner>
+            <Banner tone="amber">Al guardarla podrás copiarla o enviarla. Después no se volverá a mostrar.</Banner>
+          </>
+        ) : null}
+        {reset?.done ? (
+          <>
+            <T size={15} color={colors.text2}>
+              Comunícasela a {reset.emp.name} ({reset.emp.email}) por un canal seguro. Cuando entre, se le pedirá crear una contraseña nueva.
+            </T>
+            {/* Long press selects it too */}
+            <View style={{ paddingVertical: 14, paddingHorizontal: 16, borderRadius: 16, borderWidth: 1, borderStyle: 'dashed', borderColor: colors.accent, backgroundColor: colors.glass }}>
+              <T size={20} weight="semibold" mono selectable style={{ letterSpacing: 1.5, textAlign: 'center' }}>{reset.password}</T>
+            </View>
+            <GlassButton title="Copiar o enviar" icon={Share2} variant="glass" onPress={shareReset} />
+            <Banner tone="amber">Al cerrar no se volverá a mostrar. Si se pierde, genera otra con «Clave».</Banner>
           </>
         ) : null}
       </Sheet>

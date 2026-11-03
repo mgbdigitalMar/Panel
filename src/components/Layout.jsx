@@ -4,13 +4,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import {
-  LayoutDashboard, Calendar, Inbox, Newspaper, Settings,
-  Bell, UsersRound, Timer, AlertTriangle, UserRound, SlidersHorizontal, LayoutGrid,
+  LayoutDashboard, Calendar, Inbox, Newspaper, Bell, UsersRound, Timer, AlertTriangle, UserRound, SlidersHorizontal, LayoutGrid, ShieldCheck
 } from 'lucide-react';
 
 import { Avatar, TopProgress, PageLoader } from './ui';
 import { Wallpaper } from './Wallpaper';
-import { GlassHeader, GlassTabBar } from './GlassChrome';
+import { GlassHeader, GlassTabBar, GlassRail } from './GlassChrome';
 import OnboardingModal from './OnboardingModal';
 import { NotificationsDropdown } from './NotificationsDropdown';
 import { PolicyModal } from './PolicyModal';
@@ -32,7 +31,7 @@ const navItems = [
   { id: 'employees',    label: 'Equipo',             icon: UsersRound },
 ];
 const adminItems = [
-  { id: 'admin', label: 'Administración', icon: Settings, badgeKey: 'admin' },
+  { id: 'admin', label: 'Administración', icon: ShieldCheck, badgeKey: 'admin' },
 ];
 
 /* Heading shown at the top of the content panel. The dashboard draws its own.
@@ -48,11 +47,11 @@ const PAGE_META = {
   requests:     { title: 'Solicitudes',        desc: 'Asuntos propios, trabajo en remoto o externo y compras.', touch: true, desk: true, icon: Inbox },
   horas:        { title: 'Tiempo a compensar', desc: 'Registra tus horas y consulta tu saldo con la empresa.', own: true, icon: Timer },
   mas:          { title: 'Más',                desc: 'Tu cuenta, el resto de secciones y tus preferencias.', own: true, icon: LayoutGrid },
-  news:         { title: 'Noticias y Eventos', desc: 'Comunicados, novedades y próximos eventos de Margube.', icon: Newspaper },
+  news:         { title: 'Noticias y Eventos', desc: 'Comunicados, novedades y próximos eventos de Margube.', icon: Newspaper, kicker: 'Comunicación interna' },
   employees:    { title: 'Equipo',             desc: 'Directorio del equipo y dónde trabaja cada persona, hoy y durante la semana.', touch: true, desk: true, icon: UsersRound },
-  profile:      { title: 'Mi perfil',          desc: 'Tus datos, modo de trabajo, contraseña y documentos.', width: 1180, coverOwn: true, icon: UserRound },
-  settings:     { title: 'Ajustes',            desc: 'Tema, notificaciones y preferencias de tu cuenta.', width: 680, icon: SlidersHorizontal },
-  admin:        { title: 'Administración',     desc: 'Empleados, salas, vehículos, documentos y bolsa de horas.', touch: true, desk: true, icon: Settings },
+  profile:      { title: 'Mi perfil',          desc: 'Tus datos, modo de trabajo, contraseña y documentos.', width: 1180, coverOwn: true, icon: UserRound, kicker: 'Tu ficha' },
+  settings:     { title: 'Ajustes',            desc: 'Tema, notificaciones, sesión y preferencias de tu cuenta.', width: 1180, icon: SlidersHorizontal, kicker: 'Preferencias y entorno' },
+  admin:        { title: 'Administración',     desc: 'Empleados, salas, vehículos, documentos y bolsa de horas.', touch: true, desk: true, icon: ShieldCheck },
 };
 
 // The clock shows hours and minutes: ticking on each minute (not every second) spares a
@@ -311,6 +310,15 @@ export default function Layout({ children }) {
       {/* The wallpaper the panels frost over */}
       <Wallpaper />
 
+      {/* Computers: the sections in a floating rail on the left */}
+      <GlassRail
+        items={user?.role === 'admin' ? [...navItems, ...adminItems] : navItems}
+        page={page}
+        badges={navBadges}
+        onNavigate={handleNavigate}
+        onLogout={() => logout()}
+      />
+
       <div className={styles.main}>
         <GlassHeader
           items={user?.role === 'admin' ? [...navItems, ...adminItems] : navItems}
@@ -318,6 +326,7 @@ export default function Layout({ children }) {
           badges={navBadges}
           onNavigate={handleNavigate}
           onSearch={() => setCmdOpen(true)}
+          section={page === 'dashboard' ? { label: 'Inicio', icon: LayoutDashboard } : meta && { label: meta.title, icon: meta.icon }}
           clockStr={clockStr}
           bell={bellNode}
           avatar={(
@@ -351,7 +360,7 @@ export default function Layout({ children }) {
                   {/* The section's mark beside today's date, as on every page (a masthead on phones and tablets) */}
                   <p className={styles.introEyebrow}>
                     {meta.icon && <span className={styles.introMark} aria-hidden="true"><meta.icon size={15} /></span>}
-                    <span>{now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                    <span>{meta.kicker ? `${meta.kicker} · ` : ''}{now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
                   </p>
                   <h1 className={styles.pageTitle}>{meta.title}</h1>
                   <p className={styles.pageDesc}>{meta.desc}</p>

@@ -63,6 +63,16 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+
+  /* Computers: two cards per row (a single card keeps the whole row) */
+  @media (min-width: 1024px) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 16px;
+
+    > :only-child { grid-column: 1 / -1; }
+  }
 }
 
 .emptyState {

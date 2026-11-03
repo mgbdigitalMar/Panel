@@ -10,31 +10,97 @@ $gap: 18px;
   gap: $gap;
 }
 
-/* Greeting ------------------------------------------------------------------ */
+/* Hero: the page's one highlight — greeting on the left, today's workday and the two create
+   buttons on the right, on a pane infused with Margube blue ------------------------------- */
 .hero {
+  @include p.spotlight;
+  overflow: hidden;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px 24px;
-  padding: 4px 2px 2px;
+  gap: 22px 32px;
+  padding: 28px 30px;
+  border-radius: 28px;
+}
+
+.heroLeaf {
+  position: absolute;
+  right: -40px;
+  top: -70px;
+  z-index: -1;
+  width: 260px;
+  height: 260px;
+  fill: none;
+  stroke: rgba(var(--accent-rgb), 0.16);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.heroMain {
+  min-width: 0;
+  flex: 1 1 360px;
+}
+
+.heroEyebrow {
+  @include p.eyebrow-pill;
+  margin: 0 0 16px;
 }
 
 .greeting {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: clamp(28px, 3vw, 40px);
+  font-size: clamp(30px, 3vw, 42px);
   font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
+  letter-spacing: -0.032em;
+  line-height: 1.06;
   color: var(--text);
 }
 
 .meta {
-  margin: 8px 0 0;
-  font-size: 14px;
+  margin: 10px 0 0;
+  max-width: 52ch;
+  font-size: 14.5px;
+  line-height: 1.5;
   color: var(--text-sec);
 }
+
+.heroSide {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* Today's workday, in a well of its own */
+.jornada {
+  @include p.well;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 22px 10px 10px;
+  border-radius: 22px;
+
+  .ringCenter strong { font-size: 18px; }
+}
+
+.jornadaText {
+  display: grid;
+  gap: 2px;
+
+  strong {
+    font-family: var(--font-heading);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--text);
+  }
+
+  > span:last-child { font-size: 12.5px; color: var(--text-sec); }
+}
+
+.jornadaLabel { @include p.micro-label; }
 
 .heroActions {
   display: flex;
@@ -42,57 +108,43 @@ $gap: 18px;
   gap: 10px;
 }
 
-/* Pinned news: the first thing after the greeting ---------------------------- */
-.pinned {
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
-  gap: $gap;
+/* Comunicados: the pinned news lead the column ------------------------------------------- */
+.titleIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+
+  svg { color: var(--accent); }
 }
 
-.pinnedOne { grid-template-columns: minmax(0, 1fr); }
+.countPill {
+  @include p.eyebrow-pill;
+  height: 24px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  font-size: 12px;
 
-/* Three: the lead on the left, the other two stacked on the right */
-.pinnedThree .pinLead { grid-row: span 2; }
+  &::before { display: none; }
+}
 
-/* Brand panel: Margube navy and blue, white text, in both themes */
+.pinList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .pinCard {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
+  @include p.well;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
-  padding: 20px 22px;
-  border-radius: 22px;
-  color: #FFFFFF;
-  background:
-    radial-gradient(80% 120% at 0% 100%, rgba(47, 91, 234, 0.75), transparent 70%),
-    radial-gradient(60% 80% at 100% 0%, rgba(14, 159, 154, 0.35), transparent 70%),
-    rgba(17, 20, 27, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 18px 40px -22px rgba(17, 20, 27, 0.6);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
-  backdrop-filter: blur(24px) saturate(150%);
-}
-
-.pinLead {
-  justify-content: flex-end;
-  min-height: 230px;
-  padding: 26px 28px;
-}
-
-.pinLeaf {
-  position: absolute;
-  right: -30px;
-  top: -24px;
-  z-index: -1;
-  width: 220px;
-  height: 220px;
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.12);
-  stroke-width: 0.9;
-  stroke-linecap: round;
+  padding: 16px 16px 14px;
+  border-radius: 18px;
+  border-color: rgba(var(--accent-rgb), 0.22);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.1), transparent 70%), var(--lg-well);
 }
 
 .pinTags {
@@ -104,84 +156,122 @@ $gap: 18px;
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 10px;
+    height: 22px;
+    padding: 0 9px;
     border-radius: var(--radius-full);
-    background: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.9);
+    background: rgba(var(--text-rgb), 0.07);
+    color: var(--text-sec);
     font-size: 11.5px;
     font-weight: 600;
   }
 }
 
 .pinTags .pinBadge {
-  background: #FFFFFF;
-  color: #1E40AF;
+  background: var(--accent);
+  color: var(--accent-fg);
 }
 
 .pinTitle {
   margin: 0;
-  color: #FFFFFF;
+  color: var(--text);
   font-family: var(--font-heading);
-  font-size: 18px;
+  font-size: 15.5px;
   font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.02em;
-
-  .pinLead & { font-size: clamp(22px, 2.2vw, 30px); max-width: 26ch; }
+  line-height: 1.3;
+  letter-spacing: -0.015em;
 }
 
 .pinText {
   margin: 0;
-  max-width: 62ch;
-  font-size: 13.5px;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-sec);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
-
-  .pinLead & { font-size: 14.5px; -webkit-line-clamp: 3; }
 }
 
 .pinFoot {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px 14px;
-  margin-top: auto;
-  padding-top: 4px;
-  font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.7);
+  gap: 6px 12px;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-mut);
 }
 
 .pinAuthor {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #FFFFFF;
-  font-weight: 600;
+  gap: 7px;
+  min-width: 0;
 }
 
 .pinMore {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 34px;
+  gap: 5px;
+  height: 30px;
   margin-left: auto;
-  padding: 0 14px;
+  padding: 0 12px;
   border: none;
   border-radius: var(--radius-full);
-  background: #FFFFFF;
-  color: #11141B;
+  background: none;
+  color: var(--accent);
   font: inherit;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.15s var(--ease-out);
+  transition: background-color 0.15s var(--ease-out);
 
-  &:active { transform: scale(0.96); }
-  &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5); }
+  &:hover { background: rgba(var(--accent-rgb), 0.1); }
+  &:focus-visible { outline: none; box-shadow: var(--accent-glow); }
+}
+
+/* Tiempo a compensar ----------------------------------------------------------------------- */
+.hoursPanel .panelHead { align-items: center; }
+
+.hoursIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  color: var(--teal);
+  background: rgba(var(--teal-rgb), 0.14);
+  border: 1px solid rgba(var(--teal-rgb), 0.26);
+}
+
+.hoursState {
+  @include p.eyebrow-pill(var(--success));
+  margin-left: auto;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-size: 12px;
+}
+
+.hoursStateNeg {
+  @include p.eyebrow-pill(var(--danger));
+  margin-left: auto;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-size: 12px;
+}
+
+/* Floating figure over the highlighted bar */
+.barLabel {
+  rect {
+    fill: var(--lg-popover, var(--bg-2));
+    stroke: rgba(var(--accent-rgb), 0.45);
+  }
+
+  text {
+    fill: var(--text);
+    font: 700 12px var(--font-body);
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 /* KPIs ----------------------------------------------------------------------- */
@@ -201,6 +291,7 @@ $gap: 18px;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: $gap;
   align-items: stretch;
+  grid-auto-flow: row dense;
 }
 
 .panel {
@@ -235,9 +326,10 @@ $gap: 18px;
 .chartPanel { grid-column: span 8; min-height: 380px; }
 .todayPanel { grid-column: span 4; }
 .third { grid-column: span 4; }
-.newsPanel { grid-column: span 6; }
-.resources, .help { grid-column: span 3; }
-.tablePanel { grid-column: span 12; }
+/* Comunicados runs down the right of the chart and the agenda */
+.newsPanel { grid-column: span 4; grid-row: span 2; }
+.resources, .help { grid-column: span 4; }
+.tablePanel { grid-column: span 8; }
 
 /* TodayPanel is its own card: let it fill the row */
 .teamPanel {
@@ -300,14 +392,14 @@ $gap: 18px;
 
 .segmented {
   display: inline-flex;
-  padding: 3px;
+  padding: 4px;
   border-radius: var(--radius-full);
-  background: rgba(var(--text-rgb), 0.07);
-  border: 1px solid var(--lg-edge);
+  background: var(--lg-well);
+  border: 1px solid var(--lg-well-edge);
 
   button {
-    height: 28px;
-    padding: 0 12px;
+    height: 30px;
+    padding: 0 14px;
     border: none;
     border-radius: var(--radius-full);
     background: transparent;
@@ -323,9 +415,11 @@ $gap: 18px;
   }
 
   .segOn {
-    background: var(--lg-active);
-    color: var(--text);
-    box-shadow: inset 0 1px 0 var(--lg-rim), 0 1px 4px rgba(0, 0, 0, 0.12);
+    background: var(--accent);
+    color: var(--accent-fg);
+    box-shadow: 0 8px 18px -10px rgba(var(--accent-rgb), 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+    &:hover { color: var(--accent-fg); }
   }
 }
 
@@ -790,18 +884,15 @@ $gap: 18px;
 }
 
 /* Responsive: same cards, fewer columns ------------------------------------- */
+/* Laptops (1024–1279 px beside the rail): the chart takes the row, everything else in halves */
 @media (max-width: 1279px) {
-  .chartPanel { grid-column: span 7; }
-  .todayPanel { grid-column: span 5; }
-  .third { grid-column: span 6; }
-  .birthdays { grid-column: span 12; }
-  .newsPanel { grid-column: span 12; }
-  .resources, .help { grid-column: span 6; }
+  .chartPanel, .tablePanel { grid-column: span 12; }
+  .newsPanel { grid-column: span 6; grid-row: auto; }
+  .todayPanel, .third, .birthdays, .resources, .help { grid-column: span 6; }
+  .jornada { padding-right: 16px; }
 }
 
 @media (max-width: 960px) {
-  .pinned { grid-template-columns: minmax(0, 1fr); }
-  .pinnedThree .pinLead { grid-row: auto; }
   .chartPanel, .todayPanel { grid-column: span 12; }
 }
 
@@ -812,7 +903,7 @@ $gap: 18px;
 /* Phones */
 @media (max-width: 640px) {
   .page { gap: 14px; }
-  .grid, .kpis, .pinned { gap: 14px; }
+  .grid, .kpis { gap: 14px; }
 
   .heroActions {
     width: 100%;
@@ -821,7 +912,7 @@ $gap: 18px;
   }
 
   /* Pinned news: a row that slides sideways, the next card peeking in */
-  .pinned:not(.pinnedOne) {
+  .pinList {
     display: flex;
     margin-inline: -14px;
     padding: 0 14px 2px;
@@ -839,8 +930,7 @@ $gap: 18px;
     }
   }
 
-  .pinCard, .pinLead { padding: 18px; min-height: 0; }
-  .pinMore { margin-left: 0; }
+  .pinCard { padding: 16px; }
 
   .kpis > * { min-height: 112px; }
 

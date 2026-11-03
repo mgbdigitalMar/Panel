@@ -1,80 +1,58 @@
 /* Solicitudes on a computer (RequestsDesk.jsx); the shared pieces live in components/Desk */
 
-.page { display: block; }
-
-/* Personal days on the brand panel */
-.days {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin: 0;
-
-  strong {
-    font-family: var(--font-heading);
-    font-size: 46px;
-    font-weight: 600;
-    line-height: 1;
-    letter-spacing: -0.03em;
-    font-variant-numeric: tabular-nums;
-  }
-
-  span {
-    max-width: 18ch;
-    font-size: 13px;
-    line-height: 1.35;
-    color: rgba(255, 255, 255, 0.75);
-  }
-}
-
-.pips {
-  display: flex;
-  gap: 6px;
-
-  i {
-    flex: 1;
-    height: 6px;
-    border-radius: 3px;
-    background: linear-gradient(90deg, #9DB4FF, #FFFFFF);
-  }
-
-  i[data-used] { background: rgba(255, 255, 255, 0.16); }
-}
-
-.week {
+/* Heading, tabs, the three gauges and the table, one under the other */
+.page {
   display: grid;
-  gap: 8px;
-  padding-top: 12px;
-  margin-top: 2px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  gap: 18px;
 
-  > span {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.7);
-  }
+  > header { margin-bottom: 4px; }
+}
 
-  ol {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
+/* «Pedir un día» under the personal-days track */
+.gaugeAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(var(--warning-rgb), 0.35);
+  background: rgba(var(--warning-rgb), 0.1);
+  color: var(--warning);
+  font: 600 13px/1 var(--font-body);
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover:not(:disabled) { background: rgba(var(--warning-rgb), 0.18); }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--warning-rgb), 0.35); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+/* This week, Monday to Friday: remote in teal, external in violet, today outlined */
+.weekStrip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 
   li {
     display: grid;
     place-items: center;
-    height: 30px;
-    border-radius: 9px;
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.75);
+    height: 32px;
+    border-radius: 10px;
+    background: var(--lg-well);
+    border: 1px solid var(--lg-well-edge);
+    color: var(--text-sec);
     font-size: 12px;
     font-weight: 700;
   }
 
-  li[data-away='remoto'] { background: rgba(56, 189, 248, 0.32); color: #FFFFFF; }
-  li[data-away='external'] { background: rgba(167, 139, 250, 0.38); color: #FFFFFF; }
-  li[data-today] { box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.85); }
+  li[data-away='remoto'] { background: rgba(var(--teal-rgb), 0.2); border-color: rgba(var(--teal-rgb), 0.4); color: var(--teal); }
+  li[data-away='external'] { background: rgba(var(--violet-rgb), 0.2); border-color: rgba(var(--violet-rgb), 0.4); color: var(--violet); }
+  li[data-today] { box-shadow: inset 0 0 0 1.5px var(--text); }
 }
 
 .person {

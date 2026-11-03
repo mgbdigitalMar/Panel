@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      "colors": {
+        "surface-container-highest": "#383433",
+        "secondary-fixed-dim": "#3cddc7",
+        "outline": "#a28d7e",
+        "on-tertiary-fixed-variant": "#4f319c",
+        "border-glass-rim": "rgba(255, 255, 255, 0.08)",
+        "secondary-fixed": "#62fae3",
+        "surface": "#161312",
+        "surface-container": "#221f1e",
+        "inverse-primary": "#914c00",
+        "surface-glass-tint": "rgba(34, 28, 24, 0.65)",
+        "tertiary": "#cebdff",
+        "text-muted": "#A89F91",
+        "on-error": "#690005",
+        "terracotta": "#FF7A45",
+        "surface-container-high": "#2d2928",
+        "on-tertiary": "#381385",
+        "amber-bright": "#FFA959",
+        "on-surface": "#e9e1df",
+        "on-secondary-fixed-variant": "#005047",
+        "error-container": "#93000a",
+        "surface-container-low": "#1e1b1a",
+        "amber-soft": "#F5A65B",
+        "on-secondary-fixed": "#00201c",
+        "on-background": "#e9e1df",
+        "on-primary": "#4e2600",
+        "text-primary": "#FDFBF7",
+        "violet-accent": "#A78BFA",
+        "primary": "#ffb77f",
+        "surface-tint": "#ffb77f",
+        "tertiary-container": "#ab8ffe",
+        "mint-status": "#34D399",
+        "on-error-container": "#ffdad6",
+        "outline-variant": "#544337",
+        "on-secondary": "#003731",
+        "tertiary-fixed-dim": "#cebdff",
+        "secondary-container": "#03c6b2",
+        "tertiary-fixed": "#e8ddff",
+        "surface-bronze": "#221C18",
+        "error": "#ffb4ab",
+        "on-primary-container": "#582c00",
+        "mint-accent": "#2DD4BF",
+        "inverse-on-surface": "#33302e",
+        "surface-obsidian": "#141110",
+        "surface-variant": "#383433",
+        "primary-fixed": "#ffdcc4",
+        "on-tertiary-container": "#3f1e8c",
+        "border-amber-sheen": "rgba(245, 166, 91, 0.28)",
+        "on-secondary-container": "#004d44",
+        "on-primary-fixed-variant": "#6f3900",
+        "surface-glass-highlight": "rgba(245, 166, 91, 0.12)",
+        "surface-container-lowest": "#100e0d",
+        "surface-smoked": "#1A1512",
+        "on-surface-variant": "#dac2b2",
+        "primary-fixed-dim": "#ffb77f",
+        "on-primary-fixed": "#2f1500",
+        "surface-bright": "#3c3837",
+        "background": "#161312",
+        "on-tertiary-fixed": "#21005e",
+        "secondary": "#44e2cd",
+        "inverse-surface": "#e9e1df",
+        "amber-primary": "#E68A38",
+        "primary-container": "#e68a38",
+        "surface-dim": "#161312",
+        "surface-glass-card": "rgba(26, 21, 18, 0.58)"
+      },
+      "borderRadius": {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "2xl": "1rem",
+        "3xl": "1.5rem",
+        "full": "9999px"
+      },
+      "spacing": {
+        "space-sm": "0.5rem",
+        "space-lg": "1.25rem",
+        "space-xl": "1.75rem",
+        "margin-mobile": "1rem",
+        "space-md": "0.875rem",
+        "gutter": "1.25rem",
+        "gutter-mobile": "0.75rem",
+        "space-xs": "0.25rem",
+        "margin": "1.75rem"
+      },
+      "fontFamily": {
+        "headline-xl-mobile": ["Space Grotesk"],
+        "label-lg": ["Inter"],
+        "body-md": ["Inter"],
+        "headline-sm": ["Space Grotesk"],
+        "label-md": ["Inter"],
+        "stat-metric": ["Space Grotesk"],
+        "stat-metric-sm": ["Space Grotesk"],
+        "body-lg": ["Inter"],
+        "headline-md": ["Space Grotesk"],
+        "headline-lg": ["Space Grotesk"],
+        "label-sm": ["Inter"],
+        "body-sm": ["Inter"],
+        "headline-lg-mobile": ["Space Grotesk"],
+        "headline-xl": ["Space Grotesk"]
+      },
+      "fontSize": {
+        "headline-xl-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+        "label-lg": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+        "body-md": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+        "headline-sm": ["17px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+        "label-md": ["11px", {"lineHeight": "15px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+        "stat-metric": ["26px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+        "stat-metric-sm": ["20px", {"lineHeight": "26px", "letterSpacing": "-0.015em", "fontWeight": "600"}],
+        "body-lg": ["15px", {"lineHeight": "24px", "fontWeight": "400"}],
+        "headline-md": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "500"}],
+        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+        "label-sm": ["10px", {"lineHeight": "13px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+        "body-sm": ["12px", {"lineHeight": "17px", "fontWeight": "400"}],
+        "headline-lg-mobile": ["22px", {"lineHeight": "30px", "letterSpacing": "-0.015em", "fontWeight": "600"}],
+        "headline-xl": ["38px", {"lineHeight": "46px", "letterSpacing": "-0.025em", "fontWeight": "600"}]
+      }
+    }
+  }
+}</script></head><body class="bg-background font-body-md text-on-surface min-h-screen relative selection:bg-amber-primary selection:text-white overflow-x-hidden"><div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden"><div class="absolute -top-40 -left-20 w-[650px] h-[650px] rounded-full bg-[#E68A38]/12 blur-[140px]"></div><div class="absolute top-1/4 -right-20 w-[550px] h-[550px] rounded-full bg-[#FF7A45]/10 blur-[130px]"></div><div class="absolute -bottom-32 left-1/3 w-[700px] h-[700px] rounded-full bg-[#FFA959]/08 blur-[150px]"></div><div class="absolute top-2/3 left-10 w-[450px] h-[450px] rounded-full bg-[#34D399]/05 blur-[120px]"></div><svg class="absolute right-[-80px] bottom-[-80px] w-[500px] h-[500px] opacity-[0.025] text-primary rotate-12 fill-current" viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M100 0 C160 30 190 90 180 150 C170 200 120 200 80 180 C40 160 10 110 20 60 C30 10 70 0 100 0 Z"></path></svg></div><header class="fixed top-0 left-0 right-0 z-50 bg-[#161312]/80 backdrop-blur-[32px] border-b border-white/[0.06] shadow-[0_16px_40px_-8px_rgba(0,0,0,0.6),0_0_24px_-2px_rgba(230,138,56,0.08)]"><div class="h-20 w-full px-margin flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-sm shrink-0"><img alt="Margube Logo" class="h-8 w-auto object-contain filter drop-shadow-[0_2px_8px_rgba(230,138,56,0.3)]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCyB7KzZ2TWk3DB2H9WWejkU9azoxruHxvvtu4A5CkF1rf2w_gI4jN6JCXqNZN62DvycfnEzZHGIcxELYmtkHIrfxotLY6_tczW0AojkK7uGX30lIFEoUv2DyqiP-xRHuK0LiFHlP9LIlQdtKAe6ucr8CAloe5GY33MX8OToQsd1_f6hUz3exGryGlbQo3MNAIVPnZvySgq60IqEvE5w-PCjAt9jX-dsF1Zfel5Tg"/><span class="font-headline-sm text-headline-sm text-text-primary font-semibold tracking-tight">Margube</span><span class="font-label-sm text-label-sm text-amber-bright uppercase tracking-widest px-space-xs py-0.5 rounded-full bg-surface-container-high/80 border border-border-amber-sheen">Intranet</span></div><div class="hidden xl:flex items-center"><nav class="flex items-center gap-space-xs p-1 rounded-full bg-[#1e1b1a]/85 backdrop-blur-xl border border-white/[0.08] shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.08)]"><a class="font-label-md text-label-md text-text-muted hover:text-text-primary hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200" data-path="inicio" href="#">Inicio</a><a aria-current="page" class="px-3.5 py-2 rounded-full transition-all duration-200 inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-primary to-amber-bright text-[#241203] font-semibold shadow-[0_2px_14px_rgba(230,138,56,0.35)]" data-path="reservas" href="#">Reservas<span class="w-1.5 h-1.5 rounded-full bg-[#241203] animate-pulse"></span></a><a class="font-label-md text-label-md text-text-muted hover:text-text-primary hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200 inline-flex items-center gap-1.5" data-path="solicitudes" href="#">Solicitudes<span class="font-label-sm text-label-sm px-1.5 py-0.2 rounded-full bg-error text-on-error font-bold leading-none">2</span></a><a class="font-label-md text-label-md text-text-muted hover:text-text-primary hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200" data-path="tiempo-a-compensar" href="#">Tiempo a compensar</a><a class="font-label-md text-label-md text-text-muted hover:text-text-primary hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200" data-path="noticias-y-eventos" href="#">Noticias y Eventos</a><a class="font-label-md text-label-md text-text-muted hover:text-text-primary hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200" data-path="equipo" href="#">Equipo</a><a class="font-label-md text-label-md text-text-muted hover:text-text-primary hover:bg-surface-container-high/60 px-3.5 py-2 rounded-full transition-all duration-200" data-path="administracion" href="#">Administración</a></nav></div><div class="flex items-center gap-space-sm shrink-0"><button class="hidden sm:flex items-center gap-space-sm h-10 px-3.5 rounded-full bg-surface-container-high/60 hover:bg-surface-bright text-text-muted hover:text-text-primary border border-white/[0.06] backdrop-blur-md transition-all shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]" type="button"><span class="material-symbols-outlined text-[18px]">search</span><span class="font-body-sm text-body-sm">Buscar...</span><kbd class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest/80 text-text-muted shadow-sm">Ctrl+K</kbd></button><button aria-label="Notificaciones" class="relative flex items-center justify-center w-10 h-10 rounded-full bg-surface-container-high/60 hover:bg-surface-bright text-text-muted hover:text-text-primary border border-white/[0.06] transition-all" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-amber-bright ring-2 ring-surface-container-lowest"></span></button><button aria-label="Cambiar tema" class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container-high/60 hover:bg-surface-bright text-text-muted hover:text-text-primary border border-white/[0.06] transition-all" type="button"><span class="material-symbols-outlined text-[20px]">dark_mode</span></button><div class="flex items-center pl-space-xs"><div class="relative p-0.5 rounded-[60%_12%_60%_12%] bg-gradient-to-tr from-amber-primary to-amber-bright shadow-[0_0_16px_rgba(230,138,56,0.35)]"><img alt="Profile" class="w-8 h-8 rounded-[60%_12%_60%_12%] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAY03SVGMPmKX_K9X4Ju--Fe7RscuUEC__ceo0r0Ud5ge_WVNQWSeCRF4ydn4mvs0CPqQK_qnjhkU2tpvtiOnKx5vAeK2im303TilUZHSR2OT5eYe8THb4kJaCGsoVw-FxK2clAxkqNKzheTlbHuz0HBGOsB3azsyTajlMYY53E_d1Ew0q7Ej2keQkpgU6vxBgCAEMxcIt9oi4d3Zc_7m7SJvBZfeLQ33oobCG7KMA"/></div></div></div></div></header><main class="w-full pt-20 px-margin"><div class="flex flex-col w-full">
+<!-- Dynamic Atmospheric Glow Emitted locally -->
+<div class="relative w-full max-w-[1440px] mx-auto pb-space-xl">
+<div class="absolute -top-12 left-1/4 w-96 h-96 rounded-full bg-amber-primary/10 blur-[110px] pointer-events-none -z-10"></div>
+<div class="absolute top-1/3 -right-16 w-80 h-80 rounded-full bg-terracotta/10 blur-[130px] pointer-events-none -z-10"></div>
+<!-- Top Section Header & Primary CTA -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg pt-space-lg mb-space-xl">
+<div class="flex flex-col gap-space-xs max-w-2xl">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#2a221b]/80 border border-border-amber-sheen w-fit backdrop-blur-md">
+<span class="w-2 h-2 rounded-full bg-mint-status animate-ping"></span>
+<span class="font-label-sm text-label-sm text-amber-bright uppercase tracking-widest font-semibold">Disponibilidad en directo</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-text-primary font-semibold tracking-tight">
+          Reservas de Salas y Vehículos
+        </h1>
+<p class="font-body-lg text-body-lg text-text-muted">
+          Consulta disponibilidad en tiempo real y gestiona tus peticiones de recursos corporativos.
+        </p>
+</div>
+<div class="flex items-center gap-space-md shrink-0">
+<button class="relative group overflow-hidden px-6 py-3 rounded-full bg-gradient-to-r from-amber-primary via-[#f29342] to-amber-bright text-[#261304] font-semibold shadow-[0_8px_24px_-4px_rgba(230,138,56,0.45),inset_0_1px_1px_rgba(255,255,255,0.4)] hover:shadow-[0_12px_28px_-2px_rgba(230,138,56,0.6)] transition-all duration-300 flex items-center gap-2 font-label-lg text-label-lg active:scale-95" id="open-new-res-btn">
+<span class="material-symbols-outlined text-[20px] transition-transform duration-300 group-hover:rotate-90">add</span>
+<span>Nueva reserva</span>
+<div class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+</button>
+</div>
+</div>
+<!-- Segmented Crystal Tabs Horizon -->
+<div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-md mb-space-lg">
+<div class="p-1.5 rounded-full bg-[#1f1a17]/75 backdrop-blur-[32px] border border-white/[0.08] shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.1),0_8px_32px_-4px_rgba(0,0,0,0.5)] flex items-center gap-1.5 overflow-x-auto">
+<button class="resource-tab active px-4 py-2 rounded-full font-label-md text-label-md text-[#221203] bg-gradient-to-r from-amber-primary to-amber-bright font-semibold backdrop-blur-md shadow-[0_2px_10px_rgba(230,138,56,0.35),inset_0_1px_1px_rgba(255,255,255,0.3)] flex items-center gap-2 transition-all">
+<span>Todas</span>
+<span class="px-2 py-0.5 rounded-full bg-[#201002]/25 text-[#241203] font-label-sm text-label-sm font-bold">12</span>
+</button>
+<button class="resource-tab px-4 py-2 rounded-full font-label-md text-label-md text-text-muted hover:text-text-primary hover:bg-surface-container-highest/50 flex items-center gap-2 transition-all">
+<span>Salas de reuniones</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest/60 text-text-muted font-label-sm text-label-sm font-semibold">8</span>
+</button>
+<button class="resource-tab px-4 py-2 rounded-full font-label-md text-label-md text-text-muted hover:text-text-primary hover:bg-surface-container-highest/50 flex items-center gap-2 transition-all">
+<span>Vehículos de flota</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest/60 text-text-muted font-label-sm text-label-sm font-semibold">4</span>
+</button>
+<button class="resource-tab px-4 py-2 rounded-full font-label-md text-label-md text-text-muted hover:text-text-primary hover:bg-surface-container-highest/50 flex items-center gap-2 transition-all">
+<span>Mis reservas activas</span>
+<span class="px-2 py-0.5 rounded-full bg-amber-primary/20 text-amber-bright font-label-sm text-label-sm font-bold border border-border-amber-sheen">2</span>
+</button>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-body-sm text-body-sm text-outline">Modo de vista:</span>
+<div class="p-1 rounded-full bg-[#1f1a17]/75 backdrop-blur-md border border-white/[0.08] flex items-center">
+<button class="w-8 h-8 rounded-full flex items-center justify-center bg-amber-primary/20 text-amber-bright shadow-sm border border-border-amber-sheen">
+<span class="material-symbols-outlined text-[18px]">grid_view</span>
+</button>
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">view_timeline</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Crystal Filter Lens Toolbar -->
+<div class="w-full p-4 rounded-3xl bg-[#1e1916]/75 backdrop-blur-[32px] border border-white/[0.08] shadow-[0_12px_36px_-6px_rgba(0,0,0,0.55),inset_0_1px_1px_0_rgba(255,255,255,0.12)] mb-space-xl flex flex-wrap items-center justify-between gap-4">
+<div class="flex flex-wrap items-center gap-3">
+<!-- Date Segment -->
+<div class="flex items-center p-1 rounded-2xl bg-[#14100e]/80 border border-white/[0.05] shadow-inner">
+<button class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-primary to-amber-bright text-[#241203] font-label-sm text-label-sm font-semibold shadow-sm transition-all">Hoy</button>
+<button class="px-3 py-1.5 rounded-xl text-text-muted hover:text-text-primary font-label-sm text-label-sm transition-all">Mañana</button>
+<button class="px-3 py-1.5 rounded-xl text-text-muted hover:text-text-primary font-label-sm text-label-sm transition-all">Esta semana</button>
+</div>
+<div class="h-6 w-px bg-white/[0.08]"></div>
+<!-- Time Range Selector -->
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#14100e]/60 border border-white/[0.05] text-text-muted hover:text-text-primary cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[18px] text-amber-bright">schedule</span>
+<span class="font-label-md text-label-md">Todo el día (08:00 - 20:00)</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</div>
+<!-- Capacity Pill -->
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#14100e]/60 border border-white/[0.05] text-text-muted hover:text-text-primary cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[18px] text-mint-status">group</span>
+<span class="font-label-md text-label-md">Cualquier aforo</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</div>
+</div>
+<!-- Quick Search inside filters -->
+<div class="flex items-center gap-2">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined text-[18px] absolute left-3 text-outline">tune</span>
+<input class="bg-[#14100e]/90 border border-white/[0.06] text-text-primary placeholder:text-outline font-body-sm text-body-sm pl-9 pr-4 py-1.5 rounded-full w-56 focus:outline-none focus:border-amber-primary/50 shadow-inner" placeholder="Filtrar por equipamiento..." type="text"/>
+</div>
+<button class="p-2 rounded-full bg-surface-container-high/60 hover:bg-surface-bright text-text-muted hover:text-text-primary border border-white/[0.06] transition-colors" title="Restablecer filtros">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+</button>
+</div>
+</div>
+<!-- Main Resource Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-space-lg mb-space-xl">
+<!-- Card 1: Sala Ágora -->
+<div class="group relative rounded-3xl bg-[#1d1815]/70 backdrop-blur-[32px] p-space-lg border border-white/[0.08] hover:border-amber-primary/40 shadow-[0_12px_36px_-6px_rgba(0,0,0,0.55),inset_0_1px_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_20px_48px_-8px_rgba(230,138,56,0.22),inset_0_1px_1px_0_rgba(255,255,255,0.25)] transition-all duration-300 flex flex-col justify-between overflow-hidden">
+<div class="absolute -right-16 -top-16 w-44 h-44 rounded-full bg-amber-primary/10 blur-3xl pointer-events-none transition-opacity group-hover:opacity-100 opacity-40"></div>
+<div>
+<!-- Header Card Info -->
+<div class="flex items-start justify-between gap-2 mb-space-md">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-2xl bg-[#261f1b]/90 border border-border-amber-sheen flex items-center justify-center text-amber-bright shadow-inner">
+<span class="material-symbols-outlined text-[26px]">meeting_room</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary font-semibold tracking-tight">Sala Ágora</h3>
+<span class="font-body-sm text-body-sm text-text-muted flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span> Planta 2 • Módulo Norte
+                </span>
+</div>
+</div>
+<!-- Status Badge Green -->
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-mint-status/15 border border-mint-status/30 text-mint-status font-label-sm text-label-sm font-semibold shadow-sm">
+<span class="w-2 h-2 rounded-full bg-mint-status"></span>
+              Libre hasta las 11:30
+            </span>
+</div>
+<!-- Photo Preview -->
+<div class="relative w-full h-40 rounded-2xl overflow-hidden mb-space-md bg-surface-container-lowest border border-white/[0.05]">
+<img class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" data-alt="High-end modern corporate board meeting room with sleek minimalist table, integrated smart microphones, massive 75-inch wall monitor glowing softly, diffused cool blue atmospheric lighting, clean architectural lines" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_QMPifmZG2DHaXwM5WgigZsHZiWJyJw5o_o8Zchxuu0Wgjpp7uRYAU8dTpr_MqvFsRZIEyAe2R9SwYfhPS4z74LHX1Gw0JP_FzfBMIo6iG_f_aEIdrkGFhoK5qjsms3f4gnKtFdOQDkiX6mWSTeg5Zig6g32s4hgusPeOi4T6_s4L3vmsk8l-n3-Jgk-vWx9XAgAudH9n7FbWJv9dOU2-Ae23ccjdTZhhyDQjo88"/>
+<div class="absolute bottom-2 left-2 px-2.5 py-1 rounded-xl bg-[#14100e]/85 backdrop-blur-md border border-white/[0.08] flex items-center gap-1.5 text-text-primary">
+<span class="material-symbols-outlined text-[16px] text-amber-bright">groups</span>
+<span class="font-label-sm text-label-sm font-semibold">12 personas máx.</span>
+</div>
+</div>
+<!-- Equipment Tags -->
+<div class="flex flex-wrap gap-2 mb-space-lg">
+<span class="px-2.5 py-1 rounded-xl bg-[#26201c]/80 border border-white/[0.05] text-text-muted font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-amber-bright">tv</span> TV 75"
+            </span>
+<span class="px-2.5 py-1 rounded-xl bg-[#26201c]/80 border border-white/[0.05] text-text-muted font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-amber-bright">videocam</span> Videoconf. 4K
+            </span>
+<span class="px-2.5 py-1 rounded-xl bg-[#26201c]/80 border border-white/[0.05] text-text-muted font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-amber-bright">draw</span> Pizarra Cristal
+            </span>
+</div>
+</div>
+<!-- Action Horizon -->
+<div class="pt-space-md flex items-center justify-between gap-3 border-t border-white/[0.06] bg-[#14100e]/60 -mx-space-lg -mb-space-lg px-space-lg py-3 rounded-b-3xl">
+<div class="flex items-center gap-1 text-text-muted">
+<span class="material-symbols-outlined text-[16px]">history</span>
+<span class="font-label-sm text-label-sm">Próxima: 11:30 - Comité</span>
+</div>
+<button class="open-reserve-item px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-primary to-amber-bright text-[#241203] font-label-md text-label-md font-semibold transition-all duration-200 shadow-[0_4px_12px_rgba(230,138,56,0.3)] hover:shadow-[0_6px_16px_rgba(230,138,56,0.45)] flex items-center gap-1.5" data-extra="Aforo: 12 pax | TV 75 | 4K" data-title="Sala Ágora" data-type="Sala de reunión">
+<span>Reservar</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 2: Sala Innovación -->
+<div class="group relative rounded-3xl bg-[#1d1815]/70 backdrop-blur-[32px] p-space-lg border border-white/[0.08] hover:border-amber-primary/40 shadow-[0_12px_36px_-6px_rgba(0,0,0,0.55),inset_0_1px_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_20px_48px_-8px_rgba(230,138,56,0.22),inset_0_1px_1px_0_rgba(255,255,255,0.25)] transition-all duration-300 flex flex-col justify-between overflow-hidden">
+<div class="absolute -right-16 -top-16 w-44 h-44 rounded-full bg-terracotta/10 blur-3xl pointer-events-none transition-opacity group-hover:opacity-100 opacity-40"></div>
+<div>
+<!-- Header Card Info -->
+<div class="flex items-start justify-between gap-2 mb-space-md">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-2xl bg-[#261f1b]/90 border border-border-amber-sheen flex items-center justify-center text-amber-bright shadow-inner">
+<span class="material-symbols-outlined text-[26px]">lightbulb</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary font-semibold tracking-tight">Sala Innovación</h3>
+<span class="font-body-sm text-body-sm text-text-muted flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span> Planta 1 • Creatividad
+                </span>
+</div>
+</div>
+<!-- Status Badge Warm Occupied -->
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-terracotta/15 border border-terracotta/35 text-terracotta font-label-sm text-label-sm font-semibold shadow-sm">
+<span class="w-2 h-2 rounded-full bg-terracotta"></span>
+              Ocupada hasta 14:00
+            </span>
+</div>
+<!-- Photo Preview -->
+<div class="relative w-full h-40 rounded-2xl overflow-hidden mb-space-md bg-surface-container-lowest border border-white/[0.05]">
+<img class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" data-alt="Dynamic corporate workshop and design thinking room with interactive touch screen digital display board, acoustic wall slats in dark walnut and cobalt highlights, clean spatial lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDep7xtueSdRqCqpCiBXpkF5wFWFFNBiIEqdhVJITMOt8Y0VGuXcKJchAy3cLeqVgTWg0XjachZzE4VmKLY2WaONR33B4H2F1Jcl9Vi25QamUWqL2cdJNPJgvCgyPTpyAS1_IQ9MSkVMkRZB95MVQtY34Lm45AOBILfy-XZ6fu0KNZee8tP3fNljT4jXU1aBuNGrk3ZSVMsbZhn3L42AeKMpg3d0oIMLq24d4CHYEE"/>
+<div class="absolute bottom-2 left-2 px-2.5 py-1 rounded-xl bg-[#14100e]/85 backdrop-blur-md border border-white/[0.08] flex items-center gap-1.5 text-text-primary">
+<span class="material-symbols-outlined text-[16px] text-amber-bright">groups</span>
+<span class="font-label-sm text-label-sm font-semibold">6 personas máx.</span>
+</div>
+</div>
+<!-- Equipment Tags -->
+<div class="flex flex-wrap gap-2 mb-space-lg">
+<span class="px-2.5 py-1 rounded-xl bg-[#26201c]/80 border border-white/[0.05] text-text-muted font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-amber-bright">touch_app</span> Pantalla interactiva
+            </span>
+<span class="px-2.5 py-1 rounded-xl bg-[#26201c]/80 border border-white/[0.05] text-text-muted font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-amber-bright">cast</span> Wireless Cast
+            </span>
+</div>
+</div>
+<!-- Action Horizon -->
+<div class="pt-space-md flex items-center justify-between gap-3 border-t border-white/[0.06] bg-[#14100e]/60 -mx-space-lg -mb-space-lg px-space-lg py-3 rounded-b-3xl">
+<div class="flex items-center gap-1 text-terracotta">
+<span class="material-symbols-outlined text-[16px]">lock_clock</span>
+<span class="font-label-sm text-label-sm">En uso: Dpto. Producto</span>
+</div>
+<button class="open-reserve-item px-4 py-1.5 rounded-full bg-surface-container-high/90 hover:bg-amber-primary hover:text-[#241203] text-text-primary font-label-md text-label-md font-semibold transition-all duration-200 border border-white/[0.08] shadow-sm flex items-center gap-1.5" data-extra="Aforo: 6 pax | Pantalla táctil interactiva" data-title="Sala Innovación" data-type="Sala de reunión">
+<span>Reservar tarde</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 3: Sala Silencio / Focus -->
+<div class="group relative rounded-3xl bg-[#1d1815]/70 backdrop-blur-[32px] p-space-lg border border-white/[0.08] hover:border-amber-primary/40 shadow-[0_12px_36px_-6px_rgba(0,0,0,0.55),inset_0_1px_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_20px_48px_-8px_rgba(230,138,56,0.22),inset_0_1px_1px_0_rgba(255,255,255,0.25)] transition-all duration-300 flex flex-col justify-between overflow-hidden">
+<div class="absolute -right-16 -top-16 w-44 h-44 rounded-full bg-mint-status/10 blur-3xl pointer-events-none transition-opacity group-hover:opacity-100 opacity-40"></div>
+<div>
+<!-- Header Card Info -->
+<div class="flex items-start justify-between gap-2 mb-space-md">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-2xl bg-[#261f1b]/90 border border-border-amber-sheen flex items-center justify-center text-amber-bright shadow-inner">
+<span class="material-symbols-outlined text-[26px]">headphones</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary font-semibold tracking-tight">Sala Focus / Silencio</h3>
+<span class="font-body-sm text-body-sm text-text-muted flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span> Planta 2 • Ala Tranquila
+                </span>
+</div>
+</div>
+<!-- Status Badge Green -->
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-mint-status/15 border border-mint-status/30 text-mint-status font-label-sm text-label-sm font-semibold shadow-sm">
+<span class="w-2 h-2 rounded-full bg-mint-status animate-pulse"></span>
+              Disponible
+            </span>
+</div>
+<!-- Photo Preview -->
+<div class="relative w-full h-40 rounded-2xl overflow-hidden mb-space-md bg-surface-container-lowest border border-white/[0.05]">
+<img class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" data-alt="Compact soundproof corporate acoustic phone booth and one-on-one focus pod, warm indirect task lamp lighting, comfortable ergonomic seating, ultra modern obsidian glass texture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYKSOlUBog5KL7YFLfhJPv4GrChKEv-RfgUzeRou07mdE6tF31ccsATWkbTSRtHjBTh6tpTNT-XE-Q08ofS3H93xFrzZF9E5RFoVT2sgnI2JtJqDJQ6_ysZjEuAyNF9uq1VI5w5S-xyJo1ARxlg0Omqb8zFdRc2lukLhKHUV5sxwSuAUxvorKYL8e51cw0QweY633BIZWfE5ExouARo8XRvb7-WNU1Yks7457od6Q"/>
+<div class="absolute bottom-2 left-2 px-2.5 py-1 rounded-xl bg-[#14100e]/85 backdrop-blur-md border border-white/[0.08] flex items-center gap-1.5 text-text-primary">
+<span class="material-symbols-outlined text-[16px] text-amber-bright">groups</span>
+<span class="font-label-sm text-label-sm font-semibold">2 personas máx.</span>
+</div>
+</div>
+<!-- Equipment Tags -->
+<div class="flex flex-wrap gap-2 mb-space-lg">
+<span class="px-2.5 py-1 rounded-xl bg-[#26201c]/80 border border-white/[0.05] text-text-muted font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-amber-bright">volume_off</span> Insonorización alta
+            </span>
+<span class="px-2.5 py-1 rounded-xl bg-[#26201c]/80 border border-white/[0.05] text-text-muted font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-amber-bright">desk</span> Mesa ajustable
+            </span>
+</div>
+</div>
+<!-- Action Horizon -->
+<div class="pt-space-md flex items-center justify-between gap-3 border-t border-white/[0.06] bg-[#14100e]/60 -mx-space-lg -mb-space-lg px-space-lg py-3 rounded-b-3xl">
+<div class="flex items-center gap-1 text-mint-status">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span class="font-label-sm text-label-sm">Libre todo el día</span>
+</div>
+<button class="open-reserve-item px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-primary to-amber-bright text-[#241203] font-label-md text-label-md font-semibold hover:shadow-[0_6px_18px_rgba(230,138,56,0.45)] transition-all duration-200 flex items-center gap-1.5 shadow-[0_4px_12px_rgba(230,138,56,0.3)]" data-extra="Aforo: 2 pax | Aislamiento acústico" data-title="Sala Focus / Silencio" data-type="Cabina individual/doble">
+<span>Reservar ahora</span>
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+</button>
+</div>
+</div>
+<!-- Card 4: Renault Megane E-Tech -->
+<div class="group relative rounded-3xl bg-[#1d1815]/70 backdrop-blur-[32px] p-space-lg border border-white/[0.08] hover:border-amber-primary/40 shadow-[0_12px_36px_-6px_rgba(0,0,0,0.55),inset_0_1px_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_20px_48px_-8px_rgba(230,138,56,0.22),inset_0_1px_1px_0_rgba(255,255,255,0.25)] transition-all duration-300 flex flex-col justify-between overflow-hidden">
+<div class="absolute -right-16 -top-16 w-44 h-44 rounded-full bg-amber-primary/10 blur-3xl pointer-events-none transition-opacity group-hover:opacity-100 opacity-40"></div>
+<div>
+<!-- Header Card Info -->
+<div class="flex items-start justify-between gap-2 mb-space-md">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-2xl bg-[#261f1b]/90 border border-border-amber-sheen flex items-center justify-center text-amber-bright shadow-inner">
+<span class="material-symbols-outlined text-[26px]">electric_car</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary font-semibold tracking-tight">Renault Megane E-Tech</h3>
+<span class="font-body-sm text-body-sm text-amber-bright flex items-center gap-1 font-mono">
+                  4821-LXZ • 100% Eléctrico
+                </span>
+</div>
+</div>
+<!-- Status Badge Green -->
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-mint-status/15 border border-mint-status/30 text-mint-status font-label-sm text-label-sm font-semibold shadow-sm">
+<span class="w-2 h-2 rounded-full bg-mint-status animate-pulse"></span>
+              Disponible
+            </span>
+</div>
+<!-- Photo Preview -->
+<div class="relative w-full h-40 rounded-2xl overflow-hidden mb-space-md bg-surface-container-lowest border border-white/[0.05]">
+<img class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" data-alt="High tech electric crossover vehicle in dark slate finish parked in ultra modern architectural underground concrete garage with neon teal LED accents, cinematic perspective" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdxTkKxFmQAdPEEyuKjy0dC0QqVFVgdgkhowsU5fCaTIUwtVnVGlWXigUxyuf9OXXFIuRDLBpx1SXL1CXWTlrEHorbrRN5MHROltX4z7W5XZ8-OZEjRrajVDdlm--QXdvEZtHoo7juXHIm0z_aSuW8ohv-3XfR5qSH7VHnnpJJtsBE28672Efr4pPR87shVHsSZtMKMB60Rkwx-B8Y4neJemxD82Pz9yWC58ICkA8"/>
+<div class="absolute bottom-2 left-2 px-2.5 py-1 rounded-xl bg-[#14100e]/85 backdrop-blur-md border border-white/[0.08] flex items-center gap-1.5 text-mint-status">
+<span class="material-symbols-outlined text-[16px]">battery_charging_90</span>
+<span class="font-label-sm text-label-sm font-semibold">92% (380 km)</span>
+</div>
+<div class="absolute bottom-2 right-2 px-2.5 py-1 rounded-xl bg-[#14100e]/85 backdrop-blur-md border border-white/[0.08] flex items-center gap-1.5 text-text-muted font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">local_parking</span> Plaza -1
+            </div>
+</div>
+<!-- Equipment / Specs -->
+<div class="grid grid-cols-2 gap-2 mb-space-lg">
+<div class="p-2.5 rounded-2xl bg-[#26201c]/80 border border-white/[0.05] flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-amber-bright">ev_station</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Cargador</span>
+<span class="font-body-sm text-body-sm text-text-primary font-semibold">Cable Tipo 2 inc.</span>
+</div>
+</div>
+<div class="p-2.5 rounded-2xl bg-[#26201c]/80 border border-white/[0.05] flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-amber-bright">airline_seat_recline_normal</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Plazas</span>
+<span class="font-body-sm text-body-sm text-text-primary font-semibold">5 Pasajeros</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Horizon -->
+<div class="pt-space-md flex items-center justify-between gap-3 border-t border-white/[0.06] bg-[#14100e]/60 -mx-space-lg -mb-space-lg px-space-lg py-3 rounded-b-3xl">
+<div class="flex items-center gap-1 text-text-muted">
+<span class="material-symbols-outlined text-[16px]">key</span>
+<span class="font-label-sm text-label-sm">Llave en Recepción</span>
+</div>
+<button class="open-reserve-item px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-primary to-amber-bright text-[#241203] font-label-md text-label-md font-semibold hover:shadow-[0_6px_18px_rgba(230,138,56,0.45)] transition-all duration-200 flex items-center gap-1.5 shadow-[0_4px_12px_rgba(230,138,56,0.3)]" data-extra="Batería 92% | Autonomía 380 km | Garaje -1" data-title="Renault Megane E-Tech" data-type="Vehículo Eléctrico (4821-LXZ)">
+<span>Solicitar vehículo</span>
+<span class="material-symbols-outlined text-[16px]">car_rental</span>
+</button>
+</div>
+</div>
+<!-- Card 5: Toyota Corolla Híbrido -->
+<div class="group relative rounded-3xl bg-[#1d1815]/70 backdrop-blur-[32px] p-space-lg border border-white/[0.08] hover:border-amber-primary/40 shadow-[0_12px_36px_-6px_rgba(0,0,0,0.55),inset_0_1px_1px_0_rgba(255,255,255,0.12)] hover:shadow-[0_20px_48px_-8px_rgba(230,138,56,0.22),inset_0_1px_1px_0_rgba(255,255,255,0.25)] transition-all duration-300 flex flex-col justify-between overflow-hidden">
+<div class="absolute -right-16 -top-16 w-44 h-44 rounded-full bg-terracotta/10 blur-3xl pointer-events-none transition-opacity group-hover:opacity-100 opacity-40"></div>
+<div>
+<!-- Header Card Info -->
+<div class="flex items-start justify-between gap-2 mb-space-md">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-2xl bg-[#261f1b]/90 border border-border-amber-sheen flex items-center justify-center text-amber-bright shadow-inner">
+<span class="material-symbols-outlined text-[26px]">directions_car</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary font-semibold tracking-tight">Toyota Corolla Híbrido</h3>
+<span class="font-body-sm text-body-sm text-amber-bright flex items-center gap-1 font-mono">
+                  1932-KMT • Híbrido ECO
+                </span>
+</div>
+</div>
+<!-- Status Badge Busy (Reserved) -->
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-terracotta/15 border border-terracotta/35 text-terracotta font-label-sm text-label-sm font-semibold shadow-sm">
+<span class="w-2 h-2 rounded-full bg-terracotta"></span>
+              Reservado 14:00 - 18:00
+            </span>
+</div>
+<!-- Photo Preview -->
+<div class="relative w-full h-40 rounded-2xl overflow-hidden mb-space-md bg-surface-container-lowest border border-white/[0.05]">
+<img class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" data-alt="Modern hybrid silver sedan car parked under clean modern architectural lighting in corporate parking basement level, refined clean geometry" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDre4x8YRbWKBXnOGKQ6Zm7BRCJ70ZJJubIakAO0MS0McEWf9iEo3qV_MqsO5zCzAf1j6ZgWxgTGG6ra2lAHp2c6-3EF2e9MtKKzvlJ8nZ0TLq8ncx1eRRdPO-27TKdnidgdmzsqillE_4ZAxkf9ZLpQ_yRq7cVWKJhYT2VScW6r95lNrktnarL7zrTsvvLOiiPc-9dpZg_DrYlZu7uzjdPHSnWDSUJSc3o420s9tQ"/>
+<div class="absolute bottom-2 left-2 px-2.5 py-1 rounded-xl bg-[#14100e]/85 backdrop-blur-md border border-white/[0.08] flex items-center gap-1.5 text-text-primary">
+<span class="material-symbols-outlined text-[16px] text-amber-bright">local_gas_station</span>
+<span class="font-label-sm text-label-sm font-semibold">Combustible: 85%</span>
+</div>
+<div class="absolute bottom-2 right-2 px-2.5 py-1 rounded-xl bg-[#14100e]/85 backdrop-blur-md border border-white/[0.08] flex items-center gap-1.5 text-text-muted font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">local_parking</span> Plaza -2
+            </div>
+</div>
+<!-- Equipment / Specs -->
+<div class="grid grid-cols-2 gap-2 mb-space-lg">
+<div class="p-2.5 rounded-2xl bg-[#26201c]/80 border border-white/[0.05] flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-mint-status">eco</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Distintivo</span>
+<span class="font-body-sm text-body-sm text-text-primary font-semibold">Etiqueta ECO</span>
+</div>
+</div>
+<div class="p-2.5 rounded-2xl bg-[#26201c]/80 border border-white/[0.05] flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-amber-bright">map</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Navegación</span>
+<span class="font-body-sm text-body-sm text-text-primary font-semibold">GPS Integrado</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Horizon -->
+<div class="pt-space-md flex items-center justify-between gap-3 border-t border-white/[0.06] bg-[#14100e]/60 -mx-space-lg -mb-space-lg px-space-lg py-3 rounded-b-3xl">
+<div class="flex items-center gap-1 text-text-muted">
+<span class="material-symbols-outlined text-[16px]">person</span>
+<span class="font-label-sm text-label-sm truncate max-w-[140px]">Elena V. (Comercial)</span>
+</div>
+<button class="open-reserve-item px-4 py-1.5 rounded-full bg-surface-container-high/90 hover:bg-amber-primary hover:text-[#241203] text-text-primary font-label-md text-label-md font-semibold transition-all duration-200 border border-white/[0.08] shadow-sm flex items-center gap-1.5" data-extra="Combustible: 85% | Plaza -2 | Libre hasta 14:00" data-title="Toyota Corolla Híbrido" data-type="Vehículo Flota (1932-KMT)">
+<span>Hueco Mañana</span>
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+</button>
+</div>
+</div>
+<!-- Card 6 (Bento Insight Quick Card) -->
+<div class="rounded-3xl bg-gradient-to-br from-[#241c18]/80 via-[#1d1714]/75 to-[#130f0d]/85 backdrop-blur-[32px] p-space-lg border border-white/[0.08] shadow-[0_12px_36px_-6px_rgba(0,0,0,0.55),inset_0_1px_1px_0_rgba(255,255,255,0.12)] flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-sm text-label-sm text-amber-bright uppercase tracking-wider font-semibold">Protocolo de Uso</span>
+<span class="material-symbols-outlined text-[20px] text-amber-bright">verified_user</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary font-semibold mb-2">Normativa Margube</h3>
+<p class="font-body-sm text-body-sm text-text-muted mb-4">
+            Recuerda liberar la sala con 5 minutos de antelación si concluyes antes de tiempo. Para desplazamientos interurbanos con flota, registra el kilometraje en la tablet de cabina.
+          </p>
+<div class="p-3.5 rounded-2xl bg-[#14100e]/80 border border-white/[0.05] space-y-2">
+<div class="flex items-center justify-between text-body-sm">
+<span class="text-text-muted flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-amber-bright">ev_charger</span>
+                Puntos de recarga garaje
+              </span>
+<span class="text-mint-status font-semibold font-mono">3 / 4 Libres</span>
+</div>
+<div class="w-full bg-[#2a2420] rounded-full h-1.5 overflow-hidden">
+<div class="bg-gradient-to-r from-mint-status to-secondary h-1.5 rounded-full w-3/4"></div>
+</div>
+</div>
+</div>
+<div class="pt-4 flex items-center justify-between border-t border-white/[0.06] mt-4">
+<a class="font-label-md text-label-md text-amber-bright hover:text-text-primary inline-flex items-center gap-1 transition-colors" href="#">
+            Descargar guía del usuario PDF
+            <span class="material-symbols-outlined text-[16px]">north_east</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Horizontal Timeline / Hourly Occupancy Bar -->
+<div class="w-full p-space-lg rounded-3xl bg-[#1d1815]/75 backdrop-blur-[32px] border border-white/[0.08] shadow-[0_12px_36px_-6px_rgba(0,0,0,0.55),inset_0_1px_1px_0_rgba(255,255,255,0.12)] mb-space-xl">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-text-primary font-semibold tracking-tight flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-bright text-[22px]">calendar_view_day</span>
+            Línea Temporal de Ocupación (Hoy)
+          </h2>
+<p class="font-body-sm text-body-sm text-text-muted">Bloques de uso programados entre 08:00 y 19:00.</p>
+</div>
+<!-- Legend -->
+<div class="flex items-center gap-4 font-label-sm text-label-sm">
+<div class="flex items-center gap-1.5 text-text-muted">
+<span class="w-2.5 h-2.5 rounded-full bg-mint-status"></span>
+<span>Libre</span>
+</div>
+<div class="flex items-center gap-1.5 text-text-muted">
+<span class="w-2.5 h-2.5 rounded-full bg-amber-primary"></span>
+<span>Ocupado</span>
+</div>
+<div class="flex items-center gap-1.5 text-text-muted">
+<span class="w-2.5 h-2.5 rounded-full bg-surface-bright"></span>
+<span>Mi Reserva</span>
+</div>
+</div>
+</div>
+<!-- Timeline Chart Grid -->
+<div class="overflow-x-auto pb-2">
+<div class="min-w-[760px] space-y-4">
+<!-- Time Header Row -->
+<div class="grid grid-cols-12 text-center font-mono font-label-sm text-label-sm text-outline pl-48 pr-2">
+<span>08:00</span>
+<span>09:00</span>
+<span>10:00</span>
+<span>11:00</span>
+<span>12:00</span>
+<span>13:00</span>
+<span>14:00</span>
+<span>15:00</span>
+<span>16:00</span>
+<span>17:00</span>
+<span>18:00</span>
+<span>19:00</span>
+</div>
+<!-- Timeline Row 1: Sala Ágora -->
+<div class="flex items-center gap-4">
+<div class="w-44 shrink-0 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-amber-bright">meeting_room</span>
+<span class="font-label-md text-label-md text-text-primary font-semibold truncate">Sala Ágora</span>
+</div>
+<div class="flex-1 grid grid-cols-12 gap-1 h-9 p-1 rounded-2xl bg-[#14100e]/80 border border-white/[0.05] relative shadow-inner">
+<!-- Available block 8-11 -->
+<div class="col-span-3 rounded-xl bg-mint-status/15 border border-mint-status/25 flex items-center justify-center text-mint-status font-label-sm text-label-sm">Disponible</div>
+<!-- Booked block 11-13 (Comité) -->
+<div class="col-span-2 rounded-xl bg-gradient-to-r from-amber-primary to-amber-bright text-[#241203] flex items-center justify-center font-label-sm text-label-sm font-semibold truncate px-1 shadow-[0_2px_8px_rgba(230,138,56,0.35)]">11:30 Comité</div>
+<!-- Available block 13-16 -->
+<div class="col-span-3 rounded-xl bg-mint-status/15 border border-mint-status/25 flex items-center justify-center text-mint-status font-label-sm text-label-sm">Libre</div>
+<!-- Booked block 16-18 -->
+<div class="col-span-2 rounded-xl bg-surface-container-high/90 border border-white/[0.08] flex items-center justify-center text-text-muted font-label-sm text-label-sm truncate px-1">Reunión IT</div>
+<!-- Available block 18-19 -->
+<div class="col-span-2 rounded-xl bg-mint-status/15 border border-mint-status/25 flex items-center justify-center text-mint-status font-label-sm text-label-sm">Libre</div>
+</div>
+</div>
+<!-- Timeline Row 2: Sala Innovación -->
+<div class="flex items-center gap-4">
+<div class="w-44 shrink-0 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-amber-bright">lightbulb</span>
+<span class="font-label-md text-label-md text-text-primary font-semibold truncate">Sala Innovación</span>
+</div>
+<div class="flex-1 grid grid-cols-12 gap-1 h-9 p-1 rounded-2xl bg-[#14100e]/80 border border-white/[0.05] relative shadow-inner">
+<!-- Booked block 8-14 -->
+<div class="col-span-6 rounded-xl bg-terracotta/20 border border-terracotta/35 flex items-center justify-center text-terracotta font-label-sm text-label-sm font-semibold truncate px-2">Design Sprint (09:00 - 14:00)</div>
+<!-- Free afternoon -->
+<div class="col-span-6 rounded-xl bg-mint-status/15 border border-mint-status/25 flex items-center justify-center text-mint-status font-label-sm text-label-sm">Disponible toda la tarde</div>
+</div>
+</div>
+<!-- Timeline Row 3: Renault Megane E-Tech -->
+<div class="flex items-center gap-4">
+<div class="w-44 shrink-0 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-amber-bright">electric_car</span>
+<span class="font-label-md text-label-md text-text-primary font-semibold truncate">Megane E-Tech</span>
+</div>
+<div class="flex-1 grid grid-cols-12 gap-1 h-9 p-1 rounded-2xl bg-[#14100e]/80 border border-white/[0.05] relative shadow-inner">
+<div class="col-span-12 rounded-xl bg-mint-status/15 border border-mint-status/25 flex items-center justify-center text-mint-status font-label-sm text-label-sm font-semibold">
+                Sin reservas hoy • Disponible para salida inmediata
+              </div>
+</div>
+</div>
+<!-- Timeline Row 4: Toyota Corolla -->
+<div class="flex items-center gap-4">
+<div class="w-44 shrink-0 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-amber-bright">directions_car</span>
+<span class="font-label-md text-label-md text-text-primary font-semibold truncate">Toyota Corolla</span>
+</div>
+<div class="flex-1 grid grid-cols-12 gap-1 h-9 p-1 rounded-2xl bg-[#14100e]/80 border border-white/[0.05] relative shadow-inner">
+<div class="col-span-6 rounded-xl bg-mint-status/15 border border-mint-status/25 flex items-center justify-center text-mint-status font-label-sm text-label-sm">Disponible hasta 14h</div>
+<div class="col-span-4 rounded-xl bg-gradient-to-r from-amber-primary to-amber-bright text-[#241203] flex items-center justify-center font-label-sm text-label-sm font-semibold truncate px-2 shadow-[0_2px_8px_rgba(230,138,56,0.35)]">14:00 - 18:00 (Elena V.)</div>
+<div class="col-span-2 rounded-xl bg-mint-status/15 border border-mint-status/25 flex items-center justify-center text-mint-status font-label-sm text-label-sm">Libre</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Crystal Modal Dialog / Booking Confirmation Panel -->
+<div class="fixed inset-0 z-50 flex items-center justify-center px-4 bg-[#100e0d]/80 backdrop-blur-2xl opacity-0 pointer-events-none transition-all duration-300" id="booking-modal">
+<div class="relative w-full max-w-xl p-space-lg md:p-space-xl rounded-3xl bg-[#1e1916]/95 backdrop-blur-[36px] border border-white/[0.12] shadow-[0_24px_64px_-12px_rgba(0,0,0,0.85),inset_0_1px_2px_rgba(255,255,255,0.25)] transform scale-95 transition-all duration-300 text-text-primary" id="modal-container">
+<!-- Ambient light bubble in dialog -->
+<div class="absolute -top-20 -left-20 w-52 h-52 bg-amber-primary/20 rounded-full blur-3xl pointer-events-none"></div>
+<!-- Close Button -->
+<button aria-label="Cerrar modal" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-surface-container-high/60 hover:bg-surface-bright border border-white/[0.08] flex items-center justify-center text-text-muted hover:text-text-primary transition-colors" id="close-modal-btn">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+<!-- Modal Header -->
+<div class="flex items-center gap-3 mb-space-md">
+<div class="w-12 h-12 rounded-2xl bg-amber-primary/15 border border-border-amber-sheen text-amber-bright flex items-center justify-center">
+<span class="material-symbols-outlined text-[26px]">event_available</span>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-amber-bright uppercase tracking-widest font-semibold">Solicitud Directa</span>
+<h3 class="font-headline-md text-headline-md text-text-primary font-semibold tracking-tight" id="modal-resource-name">Sala Ágora</h3>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-text-muted mb-space-lg" id="modal-resource-extra">
+        Capacidad: 12 personas • Equipamiento completo de videoconferencia y presentación.
+      </p>
+<!-- Booking Form -->
+<div class="space-y-4 mb-space-lg">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<div>
+<label class="block font-label-sm text-label-sm text-outline mb-1">Fecha</label>
+<div class="flex items-center gap-2 px-3 py-2 rounded-2xl bg-[#14100e]/80 border border-white/[0.06] text-text-primary shadow-inner">
+<span class="material-symbols-outlined text-[18px] text-amber-bright">calendar_today</span>
+<span class="font-body-md text-body-md font-medium">Hoy, 24 Octubre</span>
+</div>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-outline mb-1">Franja Horaria</label>
+<div class="flex items-center gap-2 px-3 py-2 rounded-2xl bg-[#14100e]/80 border border-white/[0.06] text-text-primary shadow-inner">
+<span class="material-symbols-outlined text-[18px] text-amber-bright">schedule</span>
+<span class="font-body-md text-body-md font-medium">09:30 — 11:00</span>
+</div>
+</div>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-outline mb-1">Motivo o Proyecto</label>
+<input class="w-full px-3.5 py-2.5 rounded-2xl bg-[#14100e]/80 border border-white/[0.06] text-text-primary placeholder:text-outline font-body-md text-body-md shadow-inner focus:outline-none focus:border-amber-primary/50" placeholder="Ej. Presentación Balance Q3 a Dirección" type="text"/>
+</div>
+<!-- Corporate Policy Warning Callout -->
+<div class="p-3.5 rounded-2xl bg-[#161210]/90 border border-white/[0.06] backdrop-blur-md flex items-start gap-3">
+<span class="material-symbols-outlined text-[20px] text-amber-bright shrink-0 mt-0.5">info</span>
+<div class="text-text-muted font-body-sm text-body-sm leading-relaxed">
+<span class="font-semibold text-text-primary">Aviso de Política Interna:</span>
+            Las cancelaciones deben efectuarse con un mínimo de 1 hora de margen. Las reservas de flota requieren confirmación de seguro de viaje vigente en el perfil del conductor.
+          </div>
+</div>
+</div>
+<!-- Modal Actions -->
+<div class="flex items-center justify-end gap-3 pt-2">
+<button class="px-5 py-2.5 rounded-full text-text-muted hover:text-text-primary hover:bg-surface-container-high/50 font-label-md text-label-md transition-all" id="cancel-modal-btn">
+          Cancelar
+        </button>
+<button class="px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-primary to-amber-bright text-[#241203] font-label-md text-label-md font-semibold shadow-[0_8px_20px_-4px_rgba(230,138,56,0.5)] hover:shadow-[0_12px_24px_-2px_rgba(230,138,56,0.65)] transition-all active:scale-95 flex items-center gap-2" id="confirm-booking-btn">
+<span>Confirmar reserva</span>
+<span class="material-symbols-outlined text-[18px]">check</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Notification Toast feedback -->
+<div class="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#221c18]/95 backdrop-blur-xl border border-white/[0.12] shadow-[0_12px_32px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.2)] text-text-primary translate-y-20 opacity-0 transition-all duration-300 pointer-events-none" id="toast-notify">
+<div class="w-8 h-8 rounded-full bg-mint-status/20 border border-mint-status/30 text-mint-status flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">done_all</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold">Reserva procesada con éxito</span>
+<span class="font-body-sm text-body-sm text-text-muted">Se ha sincronizado con tu calendario Margube.</span>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const modal = document.getElementById('booking-modal');
+    const modalContainer = document.getElementById('modal-container');
+    const openNewBtn = document.getElementById('open-new-res-btn');
+    const closeBtn = document.getElementById('close-modal-btn');
+    const cancelBtn = document.getElementById('cancel-modal-btn');
+    const confirmBtn = document.getElementById('confirm-booking-btn');
+    const modalTitle = document.getElementById('modal-resource-name');
+    const modalExtra = document.getElementById('modal-resource-extra');
+    const toast = document.getElementById('toast-notify');
+    const reserveButtons = document.querySelectorAll('.open-reserve-item');
+    const tabs = document.querySelectorAll('.resource-tab');
+
+    function showModal(title, extra) {
+      if (title) modalTitle.textContent = title;
+      if (extra) modalExtra.textContent = extra;
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      modalContainer.classList.remove('scale-95');
+      modalContainer.classList.add('scale-100');
+    }
+
+    function hideModal() {
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      modalContainer.classList.add('scale-95');
+      modalContainer.classList.remove('scale-100');
+    }
+
+    function triggerToast() {
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3500);
+    }
+
+    if (openNewBtn) {
+      openNewBtn.addEventListener('click', () => {
+        showModal('Nueva Reserva Personalizada', 'Selecciona el recurso de la intranet y ajusta los detalles según disponibilidad.');
+      });
+    }
+
+    reserveButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const item = e.currentTarget;
+        const title = item.getAttribute('data-title') || 'Recurso Margube';
+        const extra = item.getAttribute('data-extra') || 'Disponibilidad sujeta a verificación de calendario.';
+        showModal(title, extra);
+      });
+    });
+
+    if (closeBtn) closeBtn.addEventListener('click', hideModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', hideModal);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) hideModal();
+    });
+
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => {
+        hideModal();
+        triggerToast();
+      });
+    }
+
+    // Segmented tab active state switch
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => {
+          t.classList.remove('active', 'bg-gradient-to-r', 'from-amber-primary', 'to-amber-bright', 'text-[#221203]', 'font-semibold', 'shadow-[0_2px_10px_rgba(230,138,56,0.35)]');
+          t.classList.add('text-text-muted');
+        });
+        tab.classList.add('active', 'bg-gradient-to-r', 'from-amber-primary', 'to-amber-bright', 'text-[#221203]', 'font-semibold', 'shadow-[0_2px_10px_rgba(230,138,56,0.35)]');
+        tab.classList.remove('text-text-muted');
+      });
+    });
+  })();
+</script></main><footer class="w-full mt-margin bg-[#100e0d]/90 backdrop-blur-xl border-t border-white/[0.06] shadow-[0_-1px_12px_rgba(0,0,0,0.4)]"><div class="w-full px-margin py-space-lg flex flex-col md:flex-row items-center justify-between gap-space-md font-body-sm text-body-sm text-text-muted"><div class="flex items-center gap-space-sm"><span class="font-headline-sm text-headline-sm font-semibold text-amber-bright tracking-tight">Margube</span><span>© 2025 Red Corporativa Margube. Entorno Confidencial.</span></div><div class="flex items-center gap-space-lg"><a class="hover:text-text-primary transition-colors" href="#">Soporte IT</a><a class="hover:text-text-primary transition-colors" href="#">Política de Privacidad</a><a class="hover:text-text-primary transition-colors" href="#">Guía del Empleado</a></div></div></footer></body></html>

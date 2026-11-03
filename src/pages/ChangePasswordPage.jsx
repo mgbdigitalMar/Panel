@@ -123,6 +123,7 @@ export default function ChangePasswordPage() {
       <main className={styles.card}>
         <img src={theme === 'dark' ? logoWhite : logoColor} alt="Margube" className={styles.logo} />
 
+        <p className={styles.eyebrow}>Seguridad de tu cuenta</p>
         <h1 className={styles.title}>Primer acceso</h1>
         <p className={styles.subtitle}>
           Hola <strong>{user?.name?.split(' ')[0]}</strong>, crea tu contraseña personal para entrar en la intranet.

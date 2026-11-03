@@ -3,11 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import {
   Search, UserRound, SlidersHorizontal, Sun, Moon, LogOut, Clock, LayoutGrid, Plus, Calendar, Inbox,
+  Timer, ChevronDown,
 } from 'lucide-react';
 import logoIcon from '../assets/logos/logo-icon.png';
 import logoColor from '../assets/logos/logo-color.png';
 import logoWhite from '../assets/logos/logo-white.png';
+import { LEAF_PATH, VEIN_PATH } from './ui/Loader/Loader';
 import { useScrolling } from '../hooks/useScrolling';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 import styles from './GlassChrome.module.scss';
 
 // Short labels for the top pill; the full name stays in the tooltip and for screen readers
@@ -16,24 +19,55 @@ const SHORT = {
   news: 'Noticias', employees: 'Equipo', admin: 'Admin',
 };
 
-/** Top bar of the glass appearance: logo + search, section pill, clock + theme + bell + profile menu. */
+/** Hook for the small dropdowns of the bar: closes on an outside click and on Escape. */
+function usePopover() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
+  }, [open]);
+  return { open, setOpen, ref };
+}
+
+/**
+ * Top bar of the glass appearance.
+ * Computers (1024 px and up): the logo with the open section, a wide search capsule, «Nuevo», the
+ * clock, theme, bell and profile. The sections live in the floating rail (GlassRail).
+ * Tablets: logo, search button, the section pill in the middle and the same tools.
+ * Phones: logo, search and bell; the sections go to the bottom dock.
+ */
 export function GlassHeader({
-  items, page, badges, onNavigate, onSearch, clockStr, bell, avatar,
+  items, page, badges, onNavigate, onSearch, clockStr, bell, avatar, section,
   user, workday, upcomingCount = 0, openRequests = 0, onLogout, isDark, onToggleTheme, children,
 }) {
+  const SectionIcon = section?.icon;
   return (
     <header className={styles.header} role="banner">
       <div className={styles.left}>
         {/* Computer: the logo with the name · phones and tablets: just the leaf. Both go home. */}
-        <button type="button" className={styles.brand} onClick={() => onNavigate('dashboard')} aria-label="Margube, ir al inicio" title="Inicio">
-          <img src={isDark ? logoWhite : logoColor} alt="" className={styles.brandFull} />
-          <img src={logoIcon} alt="" className={styles.brandIcon} />
-        </button>
-        <button type="button" className={clsx(styles.round, styles.liquid)} onClick={onSearch} aria-label="Buscar (Ctrl+K)" aria-haspopup="dialog" title="Buscar · Ctrl K">
+        <div className={styles.crumbs}>
+          <button type="button" className={styles.brand} onClick={() => onNavigate('dashboard')} aria-label="Margube, ir al inicio" title="Inicio">
+            <img src={isDark ? logoWhite : logoColor} alt="" className={styles.brandFull} />
+            <img src={logoIcon} alt="" className={styles.brandIcon} />
+          </button>
+          {section?.label && (
+            <span className={styles.crumb}>
+              {SectionIcon && <SectionIcon size={15} aria-hidden="true" />}
+              {section.label}
+            </span>
+          )}
+        </div>
+        <button type="button" className={clsx(styles.round, styles.liquid, styles.searchRound)} onClick={onSearch} aria-label="Buscar (Ctrl+K)" aria-haspopup="dialog" title="Buscar · Ctrl K">
           <Search size={17} aria-hidden="true" />
         </button>
       </div>
 
+      {/* Tablets: the sections in a pill (computers have the rail, phones the dock) */}
       <nav className={styles.nav} aria-label="Navegación principal">
         {items.map((item) => {
           const Icon = item.icon;
@@ -65,7 +99,15 @@ export function GlassHeader({
         })}
       </nav>
 
+      {/* Computers: one wide capsule opens the command palette */}
+      <button type="button" className={styles.searchBar} onClick={onSearch} aria-haspopup="dialog" aria-label="Buscar (Ctrl+K)">
+        <Search size={17} aria-hidden="true" />
+        <span className={styles.searchText}>Buscar personas, salas, solicitudes…</span>
+        <kbd className={styles.keycap} aria-hidden="true">Ctrl K</kbd>
+      </button>
+
       <div className={styles.right}>
+        <NewMenu onNavigate={onNavigate} />
         <span className={styles.clock} aria-label={`Hora actual ${clockStr}`}>
           <Clock size={14} aria-hidden="true" />{clockStr}
         </span>
@@ -105,38 +147,69 @@ export function GlassHeader({
   );
 }
 
+const NEW_ITEMS = [
+  { to: 'reservations?nueva=1', label: 'Nueva reserva', hint: 'Sala o vehículo', icon: Calendar, tone: 'accent' },
+  { to: 'requests?nueva=1', label: 'Nueva solicitud', hint: 'Asuntos propios, remoto, externo o compra', icon: Inbox, tone: 'teal' },
+  { to: 'horas?nueva=1', label: 'Registrar horas', hint: 'Tiempo a compensar', icon: Timer, tone: 'violet' },
+];
+
+/** «Nuevo»: the three things people create every day, one click from any page (computers). */
+function NewMenu({ onNavigate }) {
+  const { open, setOpen, ref } = usePopover();
+  const go = (to) => { setOpen(false); onNavigate(to); };
+  return (
+    <div className={styles.newWrap} ref={ref}>
+      <button type="button" className={styles.newBtn} onClick={() => setOpen((o) => !o)} aria-haspopup="true" aria-expanded={open}>
+        <Plus size={17} aria-hidden="true" />
+        <span>Nuevo</span>
+        <ChevronDown size={15} aria-hidden="true" className={clsx(styles.newChevron, open && styles.newChevronOpen)} />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className={clsx(styles.menu, styles.newMenu)}
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98, transition: { duration: 0.12 } }}
+            transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+          >
+            {NEW_ITEMS.map(({ to, label, hint, icon: Icon, tone }) => (
+              <button key={to} type="button" className={styles.newItem} onClick={() => go(to)}>
+                <span className={styles.newIcon} data-tone={tone} aria-hidden="true"><Icon size={17} /></span>
+                <span className={styles.newText}><strong>{label}</strong><small>{hint}</small></span>
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 /** The avatar (its ring is the workday) opens the account menu: the person's
  * figures (workday, own upcoming reservations and pending requests) and the account links. */
 function ProfileMenu({ avatar, user, workday, upcomingCount, openRequests, onNavigate, onLogout }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    if (!open) return undefined;
-    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
-  }, [open]);
-
+  const { open, setOpen, ref } = usePopover();
   const go = (id) => { setOpen(false); onNavigate(id); };
+  // Computers: the avatar only opens Mi perfil (settings and logout are in the rail).
+  // Tablets keep the account menu, as they have no rail.
+  const desk = useMediaQuery('(min-width: 1024px)');
 
   return (
     <div className={styles.profile} ref={ref}>
       <button
         type="button"
         className={styles.avatarBtn}
-        onClick={() => setOpen((o) => !o)}
-        aria-haspopup="true"
-        aria-expanded={open}
-        aria-label={`${user?.name || 'Mi cuenta'}. Jornada al ${workday}%`}
-        title={`Jornada: ${workday}%`}
+        onClick={() => (desk ? onNavigate('profile') : setOpen((o) => !o))}
+        aria-haspopup={desk ? undefined : 'true'}
+        aria-expanded={desk ? undefined : open}
+        aria-label={desk ? `Mi perfil: ${user?.name || 'tu cuenta'}. Jornada al ${workday}%` : `${user?.name || 'Mi cuenta'}. Jornada al ${workday}%`}
+        title={desk ? 'Mi perfil' : `Jornada: ${workday}%`}
       >
         {avatar}
       </button>
       <AnimatePresence>
-        {open && (
+        {open && !desk && (
           <motion.div
             className={styles.menu}
             initial={{ opacity: 0, y: -6, scale: 0.97 }}
@@ -168,6 +241,64 @@ function ProfileMenu({ avatar, user, workday, upcomingCount, openRequests, onNav
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+/**
+ * Computers (1024 px and up): the sections in a floating rail of smoked glass on the left. The leaf
+ * on top goes home; each section is an icon with its name in a tooltip (and for screen readers);
+ * the open one is a lit disc. Pending counts ride on the icon. At the foot: Administración (admins),
+ * Ajustes and Cerrar sesión. The keyboard shortcuts stay on «?» and in the search.
+ */
+export function GlassRail({ items, page, badges, onNavigate, onLogout }) {
+  const main = items.filter((i) => i.id !== 'admin');
+  const foot = [
+    ...items.filter((i) => i.id === 'admin'),
+    { id: 'settings', label: 'Ajustes', icon: SlidersHorizontal },
+  ];
+  const renderItem = (item) => {
+    const Icon = item.icon;
+    const active = page === item.id;
+    const badge = item.badgeKey ? badges[item.badgeKey] || 0 : 0;
+    return (
+      <li key={item.id}>
+        <button
+          type="button"
+          className={clsx(styles.railItem, active && styles.railItemActive)}
+          onClick={() => onNavigate(item.id)}
+          aria-current={active ? 'page' : undefined}
+          aria-label={badge ? `${item.label}, ${badge} pendientes` : item.label}
+        >
+          {active && (
+            <motion.span layoutId="glass-rail-disc" className={styles.railDisc} transition={{ type: 'spring', stiffness: 520, damping: 40, mass: 0.9 }} aria-hidden="true" />
+          )}
+          <Icon size={19} aria-hidden="true" />
+          {badge > 0 && <span className={styles.railBadge} aria-hidden="true">{badge > 9 ? '9+' : badge}</span>}
+          <span className={styles.railTip} aria-hidden="true">{item.label}</span>
+        </button>
+      </li>
+    );
+  };
+
+  return (
+    <nav className={styles.rail} aria-label="Navegación principal">
+      <button type="button" className={styles.railBrand} onClick={() => onNavigate('dashboard')} aria-label="Margube, ir al inicio">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d={LEAF_PATH} />
+          <path d={VEIN_PATH} />
+        </svg>
+      </button>
+      <ul className={styles.railList}>{main.map(renderItem)}</ul>
+      <ul className={clsx(styles.railList, styles.railFoot)}>
+        {foot.map(renderItem)}
+        <li>
+          <button type="button" className={clsx(styles.railItem, styles.railLogout)} onClick={onLogout} aria-label="Cerrar sesión">
+            <LogOut size={19} aria-hidden="true" />
+            <span className={styles.railTip} aria-hidden="true">Cerrar sesión</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
   );
 }
 

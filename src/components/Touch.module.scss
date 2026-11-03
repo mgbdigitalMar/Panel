@@ -132,28 +132,40 @@
 
 .mastText { min-width: 0; }
 
+/* Context line: the same pill as the computer headings (the section's mark, then the date) */
 .mastEyebrow {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  max-width: 100%;
+  height: 28px;
   margin: 0 0 14px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-sec);
+  padding: 0 12px 0 5px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
 
-  > span:last-child::first-letter { text-transform: uppercase; }
+  > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 }
 
 .mastMark {
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  border-radius: var(--shape-leaf);
-  background: var(--gradient-cta);
-  color: #FFFFFF;
-  box-shadow: 0 8px 18px -10px rgba(47, 91, 234, 0.9);
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-fg);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.55);
+
+  svg { width: 12px; height: 12px; }
 }
 
 .mastTitle {
@@ -184,7 +196,7 @@
   display: grid;
   grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
   margin: 0;
-  border-radius: 22px;
+  border-radius: 24px;
   overflow: hidden;
 
   &[data-n='1'] { --cols: 1; }

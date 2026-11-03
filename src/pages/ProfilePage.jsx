@@ -36,6 +36,11 @@ const WORK_MODES = {
   externo: { label: "Externo", icon: MapPin, tone: "warning" },
 };
 const DEFAULT_WORK_MODE = "Office";
+const MODE_DESC = {
+  Office: "En la sede de Margube",
+  remoto: "Trabajo desde casa",
+  externo: "Visitas y trabajo fuera de la oficina",
+};
 
 function getViewerUrl(url) {
   if (!url) return null;
@@ -173,18 +178,60 @@ export default function ProfilePage() {
     <div className={styles.container}>
       {/* Identity: the brand panel with the person's leaf avatar */}
       <section className={styles.hero} aria-label="Tu identidad">
-        <Avatar initials={user?.avatar || '??'} src={user?.avatarUrl} size={88} className={styles.heroAvatar} />
+        <Avatar initials={user?.avatar || '??'} src={user?.avatarUrl} size={phone ? 88 : 108} className={styles.heroAvatar} />
         <div className={styles.heroText}>
+          {!phone && (
+            <div className={styles.heroBadges}>
+              <span className={styles.heroEyebrow}>Ficha de empleado</span>
+              <span className={styles.heroStatus} data-mode={workMode}>
+                <i aria-hidden="true" /> Hoy: {WORK_MODES[workMode]?.label || 'Oficina'}
+              </span>
+            </div>
+          )}
           <h2 className={styles.heroName}>{user?.name}</h2>
           <p className={styles.heroRole}>{[user?.position, user?.dept].filter(Boolean).join(' · ') || 'Margube'}</p>
           <div className={styles.heroTags}>
             <span className={styles.heroTag}><Shield size={12} aria-hidden="true" /> {user?.role === 'admin' ? 'Administrador' : 'Empleado'}</span>
-            {/* Phones and tablets show the mode once, in its own card below */}
-            {!phone && <span className={styles.heroTag}><MapPin size={12} aria-hidden="true" /> {WORK_MODES[workMode]?.label || 'Oficina'}</span>}
             {user?.email && <span className={styles.heroTag}><Mail size={12} aria-hidden="true" /> {user.email}</span>}
           </div>
         </div>
       </section>
+
+      {/* Computers: today's work mode as three choices (phones and tablets keep their card below) */}
+      {!phone && (
+        <section className={styles.modeRow} aria-labelledby="profile-mode">
+          <div className={styles.modeHead}>
+            <h2 id="profile-mode"><Shield size={18} aria-hidden="true" /> Modo de trabajo de hoy</h2>
+            <p>
+              {user?.teleworkDays?.length > 0 && `Teletrabajas los ${formatTeleworkDays(user.teleworkDays)}. `}
+              {workMode === DEFAULT_WORK_MODE
+                ? "Remoto y externo se activan solos cuando administración aprueba tu solicitud para hoy."
+                : "Si vuelves antes a la oficina, elige Oficina: se avisará a administración."}
+            </p>
+          </div>
+          <div className={styles.modeCards} role="radiogroup" aria-label="Modo de trabajo">
+            {Object.entries(WORK_MODES).map(([k, m]) => {
+              const on = workMode === k;
+              const locked = !on && !allowedModes.has(k);
+              const Icon = m.icon;
+              return (
+                <button key={k} type="button" role="radio" aria-checked={on} data-tone={m.tone}
+                  className={clsx(styles.modeCard, on && styles.modeCardOn)}
+                  disabled={workModeLoading || locked}
+                  title={locked ? "Necesitas una solicitud aprobada para hoy" : undefined}
+                  onClick={() => handleWorkModeChange(k)}>
+                  <span className={styles.modeTop}>
+                    <span className={styles.modeIcon} aria-hidden="true"><Icon size={20} /></span>
+                    <span className={styles.modeState}>{on ? 'Activo hoy' : locked ? 'Bajo solicitud' : 'Disponible'}</span>
+                  </span>
+                  <strong>{m.label}</strong>
+                  <span className={styles.modeDesc}>{MODE_DESC[k]}</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Wide screens: information and documents on the left, mode and password on the right.
           Narrower: one column (mode and password side by side when they fit). */}
@@ -416,7 +463,8 @@ export default function ProfilePage() {
           </div>
         </div>
         <div className={styles.column}>
-          {/* Work Mode */}
+          {/* Work Mode (phones and tablets; computers have the three choices above) */}
+          {phone && (
           <div className={styles.slotMode}>
           <Card className={styles.card}>
             <div className={styles.cardHeader}>
@@ -461,6 +509,7 @@ export default function ProfilePage() {
             </p>
           </Card>
           </div>
+          )}
 
           {/* Password */}
           <div className={styles.slotPass}>

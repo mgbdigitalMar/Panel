@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth, useReservations, useDocuments, useHours, useDataSync, useRequests, useNotifs } from '../context';
 import { toUserMessage } from '../../shared/utils/errors.js';
 import { Avatar, Modal, Input, Select, Button, ConfirmModal } from '../components/ui';
-import { FileText, Send, Clock, Check, Upload, X, PenLine, RotateCcw } from 'lucide-react';
+import { FileText, Send, Clock, Check, Upload, X, PenLine, RotateCcw, KeyRound, Copy, ShieldCheck } from 'lucide-react';
 import { SignatureView } from '../components/SignaturePad';
 import { fetchPolicySignatures, latestSignatureByUser, policyStatus, formatSignedAt, PLATFORM_LABELS, POLICY_TITLE } from '../../shared/services/policy.js';
 import styles from './AdminPage.module.scss';
@@ -14,6 +14,15 @@ import { TELEWORK_WEEKDAYS, teleworkScheduleUpdate, formatTeleworkDays, localISO
 import { useTouch } from '../components/Touch';
 import AdminTouch from './AdminTouch';
 import AdminDesk from './AdminDesk';
+
+// Temporary password: 12 characters from an alphabet without look-alikes (0/O, 1/l/I), random from the browser's CSPRNG
+const TEMP_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+function tempPassword() {
+  const bytes = new Uint32Array(12);
+  crypto.getRandomValues(bytes);
+  const raw = Array.from(bytes, (n) => TEMP_ALPHABET[n % TEMP_ALPHABET.length]).join('');
+  return `${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8)}`;
+}
 
 const DEPARTMENTS = [
   { value: 'Administración - RRHH', label: 'Administración - RRHH' },
@@ -37,6 +46,41 @@ export default function AdminPage() {
   // Errors go to the app's toasts instead of a blocking browser alert
   const { announce } = useNotifs();
   const fail = (msg) => announce('❌', msg, 7000);
+
+  // Restablecer contraseña: passwords are stored hashed, so RRHH cannot read them — it sets a
+  // temporary one (admin_set_password, admins only) and the person must change it on next login.
+  const [resetEmp, setResetEmp] = useState(null);
+  const [resetPass, setResetPass] = useState('');
+  const [resetBusy, setResetBusy] = useState(false);
+  const [resetDone, setResetDone] = useState(false);
+  const [resetError, setResetError] = useState('');
+  const [resetCopied, setResetCopied] = useState(false);
+  const openResetPassword = (emp) => {
+    setResetEmp(emp); setResetPass(tempPassword()); setResetDone(false); setResetError(''); setResetCopied(false);
+  };
+  const closeReset = () => { if (!resetBusy) { setResetEmp(null); setResetPass(''); } };
+  const confirmReset = async () => {
+    if (resetBusy || !resetEmp) return;
+    if (resetPass.trim().length < 8) { setResetError('La contraseña temporal debe tener al menos 8 caracteres.'); return; }
+    setResetBusy(true);
+    setResetError('');
+    const { error } = await setEmployeePassword(supabase, resetEmp.id, resetPass.trim());
+    setResetBusy(false);
+    if (error) {
+      // The database's own checks are written in Spanish for the person; anything technical gets a plain message
+      const own = /administrador|contraseña|empleado no encontrado/i.test(error);
+      setResetError(own ? error : toUserMessage({ message: error }, 'No se ha podido restablecer la contraseña. Inténtalo de nuevo.'));
+      return;
+    }
+    setResetDone(true);
+    // The account is back to "first access": it must choose its own password when it signs in
+    setEmployees(prev => prev.map(e => (e.id === resetEmp.id ? { ...e, firstLogin: true } : e)));
+    announce('🔑', `Contraseña de ${resetEmp.name} restablecida.`);
+  };
+  const copyReset = async () => {
+    try { await navigator.clipboard.writeText(resetPass.trim()); setResetCopied(true); }
+    catch { setResetCopied(false); }
+  };
 
   const exportHoursCSV = (rows) => {
     const headers = ['Empleado', 'Fecha', 'Motivo', 'Horas', 'Estado', 'Revisado por', 'Fecha solicitud'];
@@ -502,7 +546,7 @@ export default function AdminPage() {
           employees={employees} rooms={rooms} vehicles={vehicles} reservations={reservations}
           documents={sentDocs} hours={bolsaHours}
           lastSignature={lastSignature} policyCounts={policyCounts} signaturesFailed={signatures === null}
-          onNewEmployee={openNewEmployee} onEditEmployee={handleEdit} onDeleteEmployee={handleDelete}
+          onNewEmployee={openNewEmployee} onEditEmployee={handleEdit} onDeleteEmployee={handleDelete} onResetPassword={openResetPassword}
           onOpenPolicy={setPolicyEmpId} onExportSignatures={exportSignaturesCSV}
           onNewResource={openNewResource} onEditResource={openEditResource} onDeleteResource={confirmDeleteResource}
           onSendDocument={() => setShowDocModal(true)} onUpdateOnboarding={() => setShowOnboardingModal(true)} onDeleteDocument={confirmDeleteDocument}
@@ -515,7 +559,7 @@ export default function AdminPage() {
           employees={employees} rooms={rooms} vehicles={vehicles}
           documents={sentDocs} hours={bolsaHours}
           lastSignature={lastSignature} policyCounts={policyCounts} signaturesFailed={signatures === null}
-          onNewEmployee={openNewEmployee} onEditEmployee={handleEdit} onDeleteEmployee={handleDelete}
+          onNewEmployee={openNewEmployee} onEditEmployee={handleEdit} onDeleteEmployee={handleDelete} onResetPassword={openResetPassword}
           onOpenPolicy={setPolicyEmpId} onExportSignatures={exportSignaturesCSV}
           onNewResource={openNewResource} onEditResource={openEditResource} onDeleteResource={confirmDeleteResource}
           onSendDocument={() => setShowDocModal(true)} onUpdateOnboarding={() => setShowOnboardingModal(true)} onDeleteDocument={confirmDeleteDocument}
@@ -523,6 +567,44 @@ export default function AdminPage() {
           onExportHours={exportHoursCSV} hoursBusy={hoursBusy}
         />
       )}
+
+      <Modal open={!!resetEmp} onClose={closeReset} title="Restablecer contraseña">
+        {resetEmp && !resetDone && (
+          <div className={styles.resetBody}>
+            <p className={styles.resetLead}>
+              <KeyRound size={16} aria-hidden="true" />
+              <span>
+                Las contraseñas se guardan cifradas y nadie puede verlas. Pon una <strong>contraseña temporal</strong> a{' '}
+                <strong>{resetEmp.name}</strong>: al entrar con ella tendrá que crear la suya.
+              </span>
+            </p>
+            <div className={styles.resetField}>
+              <Input label="Contraseña temporal" value={resetPass} onChange={(v) => { setResetPass(v); setResetError(''); }} required autoComplete="off" />
+              <Button variant="secondary" icon={RotateCcw} onClick={() => setResetPass(tempPassword())} disabled={resetBusy}>Generar otra</Button>
+            </div>
+            {resetError && <p className={styles.resetError} role="alert">{resetError}</p>}
+            <div className={styles.resetActions}>
+              <Button variant="ghost" onClick={closeReset} disabled={resetBusy}>Cancelar</Button>
+              <Button icon={KeyRound} onClick={confirmReset} loading={resetBusy}>Restablecer contraseña</Button>
+            </div>
+          </div>
+        )}
+        {resetEmp && resetDone && (
+          <div className={styles.resetBody}>
+            <p className={styles.resetOk}><ShieldCheck size={18} aria-hidden="true" /> Contraseña restablecida</p>
+            <p className={styles.resetHint}>
+              Comunícasela a <strong>{resetEmp.name}</strong> ({resetEmp.email}) por un canal seguro. Cuando entre, se le pedirá crear una contraseña nueva.
+            </p>
+            <div className={styles.resetShow}>
+              <code>{resetPass.trim()}</code>
+              <Button variant="secondary" icon={resetCopied ? Check : Copy} onClick={copyReset}>{resetCopied ? 'Copiada' : 'Copiar'}</Button>
+            </div>
+            <div className={styles.resetActions}>
+              <Button onClick={closeReset}>Hecho</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <Modal open={showModal} onClose={() => { setShowModal(false); setEditEmp(null); }} title={editEmp ? 'Editar empleado' : 'Nuevo empleado'}>
         <div className={styles.modalGrid}>
