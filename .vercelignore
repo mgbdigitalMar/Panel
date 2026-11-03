@@ -8,8 +8,6 @@
 # 1. Aplicación móvil (React Native / Expo)
 mobile
 mobile/**
-mobile-standalone
-mobile-standalone/**
 
 # 2. Backend Supabase & Edge Functions (gestionados independientemente)
 supabase
@@ -22,7 +20,6 @@ tests/**
 # 4. Documentación y archivos estáticos pesados fuera de /public
 docs
 docs/**
-Margube · App móvil y Web.html
 *.md
 LICENSE
 
@@ -35,9 +32,6 @@ LICENSE
 skills-lock.json
 
 # 6. Scripts locales de mantenimiento
-delete_mock_docs.js
-list_docs.js
-
 # 7. Dependencias y temporales
 node_modules
 .expo
