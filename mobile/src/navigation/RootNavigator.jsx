@@ -6,7 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { supabase } from '../lib/supabase';
-import { Notifications, notificationIdFromResponse } from '../services/pushNotifications';
+import { Notifications, notificationIdFromResponse, acknowledgeResponse, listenForForegroundPushes } from '../services/pushNotifications';
 import { openNotificationTarget } from './notificationTarget';
 import BottomTabs from './BottomTabs';
 
@@ -65,6 +65,7 @@ function usePushRouting(ready) {
       const key = response?.notification?.request?.identifier || id;
       if (!id || handled.current.has(key)) return;
       handled.current.add(key);
+      acknowledgeResponse(response);
       const { data } = await supabase.from('notifications').select('*').eq('id', id).maybeSingle();
       if (!data || data.user_id !== user.id) {
         navigationRef.navigate('Notifications');
@@ -77,7 +78,11 @@ function usePushRouting(ready) {
     const last = Notifications.getLastNotificationResponse();
     if (last) handle(last);
     const sub = Notifications.addNotificationResponseReceivedListener(handle);
-    return () => sub.remove();
+    const stopForeground = listenForForegroundPushes();
+    return () => {
+      sub.remove();
+      stopForeground();
+    };
   }, [ready, user, markNotifRead]);
 }
 

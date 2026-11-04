@@ -124,7 +124,7 @@ export default function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const page = location.pathname.replace('/', '') || 'dashboard';
-  const { liveNotifs = [], notifications = [], markNotifRead, markAllNotifsRead } = useNotifs();
+  const { liveNotifs = [], notifications = [], unreadCount = 0, notifHasMore, loadMoreNotifications, markNotifRead, markAllNotifsRead } = useNotifs();
   const { onboardingDocUrl } = useDocuments();
   const { requests = [] } = useRequests();
   const { reservations = [] } = useReservations();
@@ -251,7 +251,6 @@ export default function Layout({ children }) {
     return () => { window.removeEventListener('keydown', onKey); clearTimeout(gTimer); };
   }, [handleNavigate, user?.role]);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
   const handleMarkAllRead = () => markAllNotifsRead?.(user?.id);
   const meta = PAGE_META[page];
   const docTitle = meta?.title || (page === 'dashboard' ? 'Inicio' : null);
@@ -297,6 +296,8 @@ export default function Layout({ children }) {
                 setNotiMenu={setNotiMenu}
                 unreadCount={unreadCount}
                 notifications={notifications}
+                hasMore={notifHasMore}
+                loadMore={loadMoreNotifications}
                 handleMarkAllRead={handleMarkAllRead}
                 markNotifRead={markNotifRead}
                 navigate={navigate}

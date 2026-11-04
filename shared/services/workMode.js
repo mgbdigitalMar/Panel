@@ -7,7 +7,6 @@
  * (`telework_applied_on`), so a manual change later that day sticks; an approved request wins.
  * Until the returned_at migration runs, rows carry `returnedAt: undefined` and only approval applies.
  */
-import { notifyAdmins } from './notifications.js';
 
 export const OFFICE_MODE = 'Office';
 
@@ -120,7 +119,7 @@ export function workModeFromRequests(requests, user, today = localISODate()) {
 }
 
 /** Going back to the office during a request ends it early; done by the employee, it notifies the admins. */
-export async function changeWorkMode(supabase, employees, { employee, mode, requests, actorId }) {
+export async function changeWorkMode(supabase, { employee, mode, requests, actorId }) {
   const previous = employee.workMode || OFFICE_MODE;
   const { error } = await supabase.from('profiles').update({ work_mode: mode }).eq('id', employee.id);
   if (error) {
@@ -148,15 +147,12 @@ export async function changeWorkMode(supabase, employees, { employee, mode, requ
 
   if (mode === OFFICE_MODE && isRemoteMode(previous) && actorId === employee.id) {
     const req = active.find((r) => REQUEST_WORK_MODE[r.type] === previous);
-    const [y, m, d] = (req?.endDate || '').split('-');
-    const until = req ? ` Su periodo de trabajo ${previous === 'remoto' ? 'remoto' : 'externo'} terminaba el ${d}/${m}/${y}.` : '';
-    await notifyAdmins(supabase, employees.filter((e) => e.id !== employee.id), {
-      title: '🏢 Vuelta a la oficina',
-      body: `${employee.name || 'Un empleado'} ha vuelto a la oficina (antes: ${WORK_MODE_LABELS[previous]}).${until}`,
-      type: 'info',
-      entityType: req ? 'request' : null,
-      entityId: req?.id ?? null,
+    // The daily schedule sync also writes work_mode, so a database trigger could not tell them apart
+    const { error: notifyErr } = await supabase.rpc('notify_office_return', {
+      p_previous: previous,
+      p_request_id: req?.id != null ? String(req.id) : null,
     });
+    if (notifyErr) console.warn('changeWorkMode (notify_office_return):', notifyErr.message);
   }
 
   return { error: null };

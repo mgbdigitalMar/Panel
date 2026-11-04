@@ -1,7 +1,3 @@
-import { notifyAdmins, createNotification } from './notifications.js';
-
-const isoToDmy = (iso) => (iso ? String(iso).slice(0, 10).split('-').reverse().join('/') : '');
-
 /** The base table, not the `reservations_full` view: clients need employee_id, room_id and
  * vehicle_id to know who owns a reservation and to detect overlaps. */
 export async function fetchReservations(supabase) {
@@ -61,16 +57,7 @@ export async function fetchVehicles(supabase) {
   }));
 }
 
-export async function createReservation(supabase, employees, rooms, vehicles, employeeId, payload) {
-  let rName = payload.resourceName;
-  if (!rName) {
-    if (payload.type === 'room') {
-      rName = rooms.find(r => String(r.id) === String(payload.room_id))?.name || 'Sala';
-    } else {
-      rName = vehicles.find(v => String(v.id) === String(payload.vehicle_id))?.model || 'Vehículo';
-    }
-  }
-
+export async function createReservation(supabase, employeeId, payload) {
   const roomId = payload.type === 'room' && payload.room_id ? parseInt(payload.room_id, 10) : null;
   const vehicleId = payload.type === 'vehicle' && payload.vehicle_id ? parseInt(payload.vehicle_id, 10) : null;
   const purpose = payload.purpose?.trim() || (payload.type === 'room' ? 'Reserva de sala' : 'Uso de vehículo');
@@ -92,21 +79,10 @@ export async function createReservation(supabase, employees, rooms, vehicles, em
     return { error };
   }
 
-  const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado';
-  await notifyAdmins(supabase, employees, {
-    title: `📅 Nueva reserva: ${rName}`,
-    body: `${empName} ha realizado una reserva de ${payload.type === 'room' ? 'sala' : 'vehículo'}.`,
-    type: 'info',
-    entityType: 'reservation',
-    entityId: data?.id ? String(data.id) : null,
-  });
-
   return { data };
 }
 
-/** `reservation` (optional, as returned by fetchReservations) lets the owner know the
- * decision, like requests, personal days and hours already do. */
-export async function updateReservationStatus(supabase, id, status, reviewedBy, reservation) {
+export async function updateReservationStatus(supabase, id, status, reviewedBy) {
   const { error } = await supabase.from('reservations').update({
     status,
     reviewed_by: reviewedBy,
@@ -115,25 +91,6 @@ export async function updateReservationStatus(supabase, id, status, reviewedBy, 
   if (error) {
     console.error('updateReservationStatus:', error);
     return { error };
-  }
-
-  const ownerId = reservation?.employeeId;
-  if (ownerId && ownerId !== reviewedBy && (status === 'confirmed' || status === 'cancelled')) {
-    const what = [
-      reservation.resourceName,
-      isoToDmy(reservation.date),
-      reservation.timeStart && reservation.timeEnd ? `${reservation.timeStart}–${reservation.timeEnd}` : null,
-    ].filter(Boolean).join(' · ');
-    await createNotification(supabase, {
-      userId: ownerId,
-      title: status === 'confirmed' ? '✅ Reserva confirmada' : '❌ Reserva cancelada',
-      body: status === 'confirmed'
-        ? `Tu reserva (${what}) ha sido confirmada.`
-        : `Tu reserva (${what}) ha sido cancelada por un administrador.`,
-      type: status === 'confirmed' ? 'success' : 'error',
-      entityType: 'reservation',
-      entityId: String(id),
-    });
   }
   return { error: null };
 }

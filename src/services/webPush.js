@@ -1,7 +1,7 @@
 /**
  * Both layers go through public/push-sw.js: with a tab open the page shows the notification
- * through the worker registration; with every tab closed the `send-push` Edge Function delivers
- * a Web Push to the subscription stored in web_push_subscriptions.
+ * through the worker registration; with every tab closed the `notifications-worker` Edge Function
+ * delivers a Web Push to the subscription stored in web_push_subscriptions.
  */
 import { supabase } from '../utils/supabase';
 import { notificationWebPath } from '../../shared/config/constants.js';
@@ -23,6 +23,13 @@ export const notificationsSupported = () =>
 
 export const pushSupported = () =>
   notificationsSupported() && 'PushManager' in window && Boolean(VAPID_PUBLIC_KEY);
+
+// iOS only offers Web Push to a web app installed on the home screen, never to a Safari tab.
+const isIos = () =>
+  /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isInstalled = () =>
+  window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone === true;
+export const needsIosInstall = () => typeof window !== 'undefined' && isIos() && !isInstalled();
 
 let registrationPromise = null;
 
@@ -63,12 +70,13 @@ export function notificationsEnabled() {
 
 /**
  * Shows a system notification for a row of `notifications` (or any alert).
- * Same tag as the Web Push path, so it never shows twice.
+ * Same tag as the Web Push path, so it never shows twice. Defaults to the same generic text as
+ * the push: it can end up on a locked screen.
  */
 export async function showSystemNotification({ id, title, body, entityType, entityId, type }) {
   if (!notificationsEnabled()) return;
   const options = {
-    body: body || '',
+    body: body || 'Tienes una nueva notificación.',
     icon: '/pwa-192x192.png',
     badge: '/pwa-192x192.png',
     tag: id ? `margube-${id}` : `margube-${Date.now()}`,
@@ -77,12 +85,12 @@ export async function showSystemNotification({ id, title, body, entityType, enti
   };
   const reg = await getRegistration();
   if (reg) {
-    await reg.showNotification(title || 'Margube Intranet', options).catch(() => {});
+    await reg.showNotification(title || 'Margube', options).catch(() => {});
     return;
   }
   // Very old browsers without service workers
   try {
-    const n = new Notification(title || 'Margube Intranet', options);
+    const n = new Notification(title || 'Margube', options);
     n.onclick = () => { window.focus(); n.close(); };
   } catch { /* Android Chrome forbids the constructor */ }
 }
@@ -109,17 +117,31 @@ function urlBase64ToUint8Array(base64) {
  * Returns 'push' when closed-tab delivery is active, 'local' when only the
  * open-tab layer works (no VAPID key or server not set up yet).
  */
-export async function enablePush(userId) {
+export function enablePush(userId) {
+  // The Settings switch and the page effects can ask at the same time. Two simultaneous subscribe()
+  // calls create two endpoints, of which the browser only keeps the last: the other one looks
+  // valid to the push service but never reaches this browser.
+  if (!enablingPush) enablingPush = subscribeBrowser(userId).finally(() => { enablingPush = null; });
+  return enablingPush;
+}
+
+let enablingPush = null;
+
+async function subscribeBrowser(userId) {
   if (!userId || !pushSupported()) return 'local';
   const reg = await getRegistration();
   if (!reg) return 'local';
   try {
+    const serverKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
     let sub = await reg.pushManager.getSubscription();
+    // Made with an earlier VAPID key: the push service would reject every message
+    const currentKey = sub?.options?.applicationServerKey && new Uint8Array(sub.options.applicationServerKey);
+    if (currentKey && (currentKey.length !== serverKey.length || currentKey.some((b, i) => b !== serverKey[i]))) {
+      await sub.unsubscribe();
+      sub = null;
+    }
     if (!sub) {
-      sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-      });
+      sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: serverKey });
     }
     const { endpoint, keys } = sub.toJSON();
     const { error } = await supabase.rpc('register_web_push', {

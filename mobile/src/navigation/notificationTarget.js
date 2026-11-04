@@ -26,6 +26,9 @@ export function openNotificationTarget(navigation, notif, user) {
     case 'profile':
       navigation.navigate('Documents');
       return;
+    case 'news':
+      navigation.navigate('News');
+      return;
     case 'requests':
       navigation.navigate('Main', { screen: 'Requests' });
       return;

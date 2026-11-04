@@ -41,29 +41,14 @@ export async function runEnterpriseQualityTests() {
   console.error = () => {};
   console.warn = () => {};
 
-  // 1. Reservas: el empleado recibe aviso (y push) de la decisión, como en solicitudes y horas
-  const reservation = { id: 7, employeeId: 'emp', resourceName: 'Sala Azul', date: '2026-11-03', timeStart: '09:00', timeEnd: '10:00' };
+  // 1. Reservas: los avisos los crea la base de datos (ver 14_notification_system y tests/notifications)
   let sb = recorder();
-  await updateReservationStatus(sb, 7, 'confirmed', 'admin', reservation);
-  const notif = sb.calls.find((c) => c.table === 'notifications');
-  assert('Reserva confirmada: se crea un aviso para su dueño', notif && notif.payload[0].user_id === 'emp' && notif.payload[0].entity_type === 'reservation');
-  assert('El aviso dice qué, cuándo y el resultado', /Sala Azul/.test(notif?.payload[0].body) && /03\/11\/2026/.test(notif?.payload[0].body) && /confirmada/.test(notif?.payload[0].title));
-
-  sb = recorder();
-  await updateReservationStatus(sb, 7, 'cancelled', 'admin', reservation);
-  assert('Reserva cancelada por un admin: aviso de cancelación', /cancelada/.test(sb.calls.find((c) => c.table === 'notifications')?.payload[0].title || ''));
-
-  sb = recorder();
-  await updateReservationStatus(sb, 7, 'confirmed', 'emp', reservation);
-  assert('Quien revisa su propia reserva no se avisa a sí mismo', !sb.calls.some((c) => c.table === 'notifications'));
+  await updateReservationStatus(sb, 7, 'confirmed', 'admin');
+  assert('Reserva confirmada: el cliente solo cambia el estado, no crea el aviso', sb.calls.some((c) => c.table === 'reservations') && !sb.calls.some((c) => c.table === 'notifications'));
 
   sb = recorder({ 'reservations.update': { message: 'denied', code: '42501' } });
-  const denied = await updateReservationStatus(sb, 7, 'confirmed', 'admin', reservation);
-  assert('Si el cambio falla no se envía aviso y se devuelve el error', denied.error && !sb.calls.some((c) => c.table === 'notifications'));
-
-  sb = recorder();
-  await updateReservationStatus(sb, 7, 'confirmed', 'admin');
-  assert('Sin la reserva (llamada antigua) sigue funcionando, sin aviso', !sb.calls.some((c) => c.table === 'notifications'));
+  const denied = await updateReservationStatus(sb, 7, 'confirmed', 'admin');
+  assert('Si el cambio falla se devuelve el error', denied.error);
 
   // 2. Borrar sala / vehículo: si no se pueden borrar sus reservas, la sala no se toca
   sb = recorder({ 'reservations.delete': { message: 'Failed to fetch' } });
@@ -81,8 +66,8 @@ export async function runEnterpriseQualityTests() {
   const ctx = read('src/context/index.jsx');
   const mobileData = read('mobile/src/context/DataContext.js');
   const admin = read('src/pages/AdminPage.jsx');
-  assert('Web: el cambio de estado de una reserva usa el servicio compartido (con aviso)', /updateReservationStatusSvc\(supabase, id, status, reviewedBy, reservation\)/.test(ctx));
-  assert('App: el cambio de estado de una reserva pasa la reserva para avisar', /svc\.updateReservationStatus\(supabase, id, status, uid\(\), reservation\)/.test(mobileData));
+  assert('Web: el cambio de estado de una reserva usa el servicio compartido', /updateReservationStatusSvc\(supabase, id, status, reviewedBy\)/.test(ctx));
+  assert('App: el cambio de estado de una reserva usa el servicio compartido', /svc\.updateReservationStatus\(supabase, id, status, uid\(\)\)/.test(mobileData));
   assert('Web y app: borrar sala o vehículo con el servicio compartido', /deleteResourceSvc\(supabase, type, id\)/.test(ctx) && /svc\.deleteResource\(supabase, 'room', id\)/.test(mobileData)
     && /svc\.deleteResource\(supabase, 'vehicle', id\)/.test(mobileData) && !/from\('reservations'\)\.delete\(\)\.eq\('room_id'/.test(admin));
   assert('Admin web: el aviso de borrado dice cuántas reservas se van con el recurso', /linked === 1 \? 'reserva' : 'reservas'/.test(admin));

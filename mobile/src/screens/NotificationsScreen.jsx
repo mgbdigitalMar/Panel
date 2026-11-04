@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { CalendarDays, ShoppingCart, FileText, Clock, Bell, CheckCheck, BellOff } from 'lucide-react-native';
+import { CalendarDays, ShoppingCart, FileText, Clock, Bell, CheckCheck, BellOff, Newspaper, TriangleAlert } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -21,6 +21,8 @@ const ENTITY_ICON = {
   personal_day: CalendarDays,
   document: FileText,
   hour_compensation: Clock,
+  news: Newspaper,
+  system: TriangleAlert,
 };
 
 // Titles come with a leading emoji from the web ("✅ Solicitud aprobada"); the icon tile replaces it.
@@ -31,7 +33,7 @@ export default function NotificationsScreen() {
   const navigation = useNavigation();
   const { params } = useRoute();
   const { user } = useAuth();
-  const { notifications, unreadCount, markNotifRead, markAllNotifsRead, refresh } = useData();
+  const { notifications, unreadCount, notifHasMore, loadMoreNotifications, markNotifRead, markAllNotifsRead, refresh } = useData();
   const [filter, setFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
 
@@ -103,6 +105,9 @@ export default function NotificationsScreen() {
           })}
         </View>
       ))}
+      {notifHasMore ? (
+        <GlassButton title="Ver avisos anteriores" variant="glass" size="sm" onPress={loadMoreNotifications} />
+      ) : null}
     </Screen>
   );
 }

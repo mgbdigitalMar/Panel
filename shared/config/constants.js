@@ -33,6 +33,8 @@ export const ENTITY_NAV_MAP = {
   hour_compensation: 'horas',
   reservation: 'reservations',
   personal_day: 'requests',
+  news: 'news',
+  system: 'settings',
 };
 
 export const ENTITY_NAV_MAP_ADMIN = {
@@ -42,7 +44,7 @@ export const ENTITY_NAV_MAP_ADMIN = {
 
 /**
  * Web path a notification opens.
- * Keep in sync with public/push-sw.js and supabase/functions/send-push.
+ * Keep in sync with notif_private.web_path() in the notification_system migration.
  */
 export function notificationWebPath(notif, isAdmin = false) {
   return '/' + ((isAdmin ? ENTITY_NAV_MAP_ADMIN : ENTITY_NAV_MAP)[notif?.entity_type] || 'dashboard');
@@ -64,7 +66,6 @@ export const REALTIME_CHANNELS = {
   hours: 'realtime-hours',
   personalDays: 'realtime-personal-days',
   news: 'realtime-news',
-  notifications: 'realtime-notifications',
   profiles: 'realtime-profiles',
 };
 

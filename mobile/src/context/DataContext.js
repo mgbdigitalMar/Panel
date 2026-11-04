@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { AppState } from 'react-native';
 import * as svc from '@shared/services/index.js';
 import { REALTIME_CHANNELS } from '@shared/config/constants.js';
+import { NOTIFICATIONS_PAGE_SIZE } from '@shared/services/notifications.js';
 import { logError } from '@shared/utils/errors.js';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
@@ -28,6 +29,8 @@ export function DataProvider({ children }) {
   const [personalDays, setPersonalDays] = useState([]);
   const [news, setNews] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [unreadTotal, setUnreadTotal] = useState(0); // all of them, not only the loaded page
+  const [notifHasMore, setNotifHasMore] = useState(false);
   const [loadedFor, setLoadedFor] = useState(null); // user id whose data is loaded
   const [lastSync, setLastSync] = useState(null);
   // The shared fetchers return null when a request fails (offline, server down): the
@@ -42,9 +45,11 @@ export function DataProvider({ children }) {
   const employeesRef = useRef(employees);
   const requestsRef = useRef(requests);
   const reservationsRef = useRef(reservations);
+  const notificationsRef = useRef(notifications);
   useEffect(() => { userRef.current = user; employeesRef.current = employees; }, [user, employees]);
   useEffect(() => { requestsRef.current = requests; }, [requests]);
   useEffect(() => { reservationsRef.current = reservations; }, [reservations]);
+  useEffect(() => { notificationsRef.current = notifications; }, [notifications]);
 
   // Employees load only their own requests and personal days; admins load everyone's.
   const ownScope = () => {
@@ -65,9 +70,24 @@ export function DataProvider({ children }) {
     keep(setPersonalDays)(await svc.fetchPersonalDays(supabase, ownScope()));
   }, []);
   const loadNews = useCallback(async () => keep(setNews)(await svc.fetchNews(supabase)), []);
+  // The database is the source of truth: runs on sync, on reconnecting and back from background.
+  // Older pages opened in the history stay until the next login.
   const loadNotifications = useCallback(async () => {
     const id = userRef.current?.id;
-    keep(setNotifications)(id ? await svc.fetchNotifications(supabase, id) : []);
+    if (!id) {
+      setNotifications([]);
+      setUnreadTotal(0);
+      return;
+    }
+    const [rows, unread] = await Promise.all([svc.fetchNotifications(supabase, id), svc.fetchUnreadCount(supabase, id)]);
+    if (unread !== null) setUnreadTotal(unread);
+    keep((data) => setNotifications((prev) => {
+      const fresh = new Set(data.map((n) => n.id));
+      const oldest = data[data.length - 1]?.created_at;
+      const older = oldest ? prev.filter((n) => !fresh.has(n.id) && n.user_id === id && n.created_at < oldest) : [];
+      return [...data, ...older];
+    }))(rows);
+    if (rows) setNotifHasMore((current) => current || rows.length === NOTIFICATIONS_PAGE_SIZE);
   }, []);
 
   /** true when every list loaded; lastSync only moves on a complete sync */
@@ -87,8 +107,6 @@ export function DataProvider({ children }) {
     const loadingId = user.id;
     refetchAll().finally(() => setLoadedFor(loadingId));
 
-    const me = () => userRef.current;
-    const isAdmin = () => me()?.role === 'admin';
     const notify = (title, tone = 'info') => toast.show({ title, tone });
     const ch = (name, table, handler, event = '*') => supabase
       .channel(name)
@@ -96,58 +114,32 @@ export function DataProvider({ children }) {
       .subscribe();
 
     const channels = [
-      ch(REALTIME_CHANNELS.requests, 'requests', (p) => {
+      ch(REALTIME_CHANNELS.requests, 'requests', () => {
         loadRequests();
-        if (p.eventType === 'INSERT' && p.new.employee_id !== me()?.id && isAdmin()) notify('📋 Nueva solicitud recibida');
-        if (p.eventType === 'UPDATE' && p.new.employee_id === me()?.id) {
-          if (p.new.status === 'approved') notify('Una solicitud ha sido aprobada', 'success');
-          if (p.new.status === 'rejected') notify('Una solicitud ha sido rechazada', 'error');
-        }
       }),
-      ch(REALTIME_CHANNELS.reservations, 'reservations', (p) => {
-        loadReservations();
-        if (p.eventType === 'INSERT' && p.new.employee_id !== me()?.id && isAdmin()) notify('📅 Nueva reserva pendiente de revisión');
-        if (p.eventType === 'UPDATE' && p.new.employee_id === me()?.id) {
-          if (p.new.status === 'confirmed') notify('Tu reserva ha sido confirmada', 'success');
-          if (p.new.status === 'cancelled') notify('Tu reserva ha sido cancelada', 'error');
-        }
-      }),
+      ch(REALTIME_CHANNELS.reservations, 'reservations', () => loadReservations()),
       ch(REALTIME_CHANNELS.rooms, 'rooms', () => loadRooms()),
       ch(REALTIME_CHANNELS.vehicles, 'vehicles', () => loadVehicles()),
-      ch(REALTIME_CHANNELS.documents, 'documents', (p) => {
-        loadDocuments();
-        if (p.eventType === 'INSERT' && p.new.sender_id !== me()?.id && p.new.recipient_id === me()?.id) {
-          notify(`📄 Nuevo documento: ${p.new.title || ''}`);
-        }
-      }),
-      ch(REALTIME_CHANNELS.hours, 'hour_compensations', (p) => {
-        loadHours();
-        if (p.eventType === 'UPDATE' && p.new.employee_id === me()?.id) {
-          if (p.new.status === 'approved') notify('Tu bolsa de horas ha sido aprobada', 'success');
-          if (p.new.status === 'rejected') notify('Tu bolsa de horas ha sido rechazada', 'error');
-        }
-      }),
-      ch(REALTIME_CHANNELS.personalDays, 'personal_days', (p) => {
-        loadPersonalDays();
-        if (p.eventType === 'INSERT' && p.new.employee_id !== me()?.id && isAdmin()) notify('📝 Nueva solicitud de asuntos propios');
-        if (p.eventType === 'UPDATE' && p.new.employee_id === me()?.id) {
-          if (p.new.status === 'approved') notify('Asuntos propios aprobados', 'success');
-          if (p.new.status === 'rejected') notify('Asuntos propios rechazados', 'error');
-        }
-      }),
+      ch(REALTIME_CHANNELS.documents, 'documents', () => loadDocuments()),
+      ch(REALTIME_CHANNELS.hours, 'hour_compensations', () => loadHours()),
+      ch(REALTIME_CHANNELS.personalDays, 'personal_days', () => loadPersonalDays()),
       ch(REALTIME_CHANNELS.news, 'news', () => loadNews()),
-      supabase
-        .channel(REALTIME_CHANNELS.notifications)
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (p) => {
-          if (p.new.user_id !== me()?.id) return;
-          setNotifications((prev) => [p.new, ...prev.filter((n) => n.id !== p.new.id)].slice(0, 50));
-        })
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifications' }, (p) => {
-          if (p.new.user_id !== me()?.id) return;
-          setNotifications((prev) => prev.map((n) => (n.id === p.new.id ? p.new : n)));
-        })
-        .subscribe(),
     ];
+
+    // Each event reaches the person once, as a row of `notifications` (the table channels above
+    // only refresh lists). Same private channel as the web; joining (again) re-reads the table.
+    const closeNotifChannel = svc.subscribeToNotifications(supabase, user.id, {
+      onCreated: (row, unread) => {
+        setNotifications((prev) => svc.mergeNotification(prev, row));
+        if (typeof unread === 'number') setUnreadTotal(unread);
+        notify(String(row.title || ''), row.type === 'success' ? 'success' : row.type === 'error' ? 'error' : 'info');
+      },
+      onUpdated: ({ id, read, unread }) => {
+        setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read } : n)));
+        if (typeof unread === 'number') setUnreadTotal(unread);
+      },
+      onSync: () => loadNotifications(),
+    });
 
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') refetchAll();
@@ -156,6 +148,7 @@ export function DataProvider({ children }) {
     return () => {
       sub.remove();
       channels.forEach((c) => supabase.removeChannel(c));
+      closeNotifChannel();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
@@ -164,7 +157,7 @@ export function DataProvider({ children }) {
 
   // App icon badge: only this user's rows (a previous session's list may linger until the refetch lands)
   const myNotifications = useMemo(() => notifications.filter((n) => n.user_id === user?.id), [notifications, user?.id]);
-  const unreadCount = useMemo(() => myNotifications.filter((n) => !n.read).length, [myNotifications]);
+  const unreadCount = unreadTotal;
   useEffect(() => { if (user?.id) setBadgeCount(unreadCount); }, [unreadCount, user?.id]);
 
   const syncingMode = useRef(null);
@@ -192,28 +185,44 @@ export function DataProvider({ children }) {
 
   const actions = useMemo(() => ({
     markNotifRead: async (id) => {
-      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+      let wasUnread = false;
+      setNotifications((prev) => prev.map((n) => {
+        if (n.id !== id) return n;
+        wasUnread = !n.read;
+        return { ...n, read: true };
+      }));
+      if (wasUnread) setUnreadTotal((c) => Math.max(0, c - 1));
       await svc.markNotifRead(supabase, id);
     },
     markAllNotifsRead: async () => {
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setUnreadTotal(0);
       await svc.markAllNotifsRead(supabase, uid());
+    },
+    // Historial: the next page after the oldest one on screen
+    loadMoreNotifications: async () => {
+      const oldest = notificationsRef.current[notificationsRef.current.length - 1]?.created_at;
+      if (!oldest) return;
+      const rows = await svc.fetchNotifications(supabase, uid(), { before: oldest });
+      if (!rows) return;
+      setNotifications((prev) => [...prev, ...rows.filter((r) => !prev.some((n) => n.id === r.id))]);
+      setNotifHasMore(rows.length === NOTIFICATIONS_PAGE_SIZE);
     },
 
     createRequest: async (payload) => {
-      const res = await svc.createRequest(supabase, emps(), uid(), payload);
+      const res = await svc.createRequest(supabase, uid(), payload);
       if (!res.error) await loadRequests();
       return res;
     },
     createPersonalDay: async ({ date, reason, fileUrl }) => {
-      const res = await svc.createPersonalDay(supabase, emps(), { employeeId: uid(), date, reason, fileUrl });
+      const res = await svc.createPersonalDay(supabase, { employeeId: uid(), date, reason, fileUrl });
       if (!res.error) await loadPersonalDays();
       return res;
     },
     setRequestStatus: async (item, status) => {
       const res = item.type === 'asuntos_propios'
-        ? await svc.updatePersonalDayStatus(supabase, item.id, status, uid(), item.employeeId)
-        : await svc.updateRequestStatus(supabase, emps(), item.id, status, uid(), item.employeeId);
+        ? await svc.updatePersonalDayStatus(supabase, item.id, status, uid())
+        : await svc.updateRequestStatus(supabase, item.id, status, uid(), item.employeeId);
       await (item.type === 'asuntos_propios' ? loadPersonalDays() : loadRequests());
       return res || { error: null };
     },
@@ -226,14 +235,12 @@ export function DataProvider({ children }) {
     },
 
     createReservation: async (payload) => {
-      const res = await svc.createReservation(supabase, emps(), rooms, vehicles, uid(), payload);
+      const res = await svc.createReservation(supabase, uid(), payload);
       if (!res.error) await loadReservations();
       return res;
     },
     setReservationStatus: async (id, status) => {
-      // The reservation lets the service tell its owner about the decision
-      const reservation = reservationsRef.current.find((r) => String(r.id) === String(id));
-      const res = await svc.updateReservationStatus(supabase, id, status, uid(), reservation);
+      const res = await svc.updateReservationStatus(supabase, id, status, uid());
       await loadReservations();
       return res;
     },
@@ -244,12 +251,12 @@ export function DataProvider({ children }) {
     },
 
     createHourCompensation: async ({ date, reason, hours, type }) => {
-      const res = await svc.createHourCompensation(supabase, emps(), { employeeId: uid(), date, reason, hours, type });
+      const res = await svc.createHourCompensation(supabase, { employeeId: uid(), date, reason, hours, type });
       if (!res.error) await loadHours();
       return res;
     },
     setHourStatus: async (entry, status) => {
-      const res = await svc.updateHourCompensationStatus(supabase, entry.id, status, uid(), entry.employeeId);
+      const res = await svc.updateHourCompensationStatus(supabase, entry.id, status, uid());
       await loadHours();
       return res;
     },
@@ -304,7 +311,7 @@ export function DataProvider({ children }) {
     setWorkMode: async (employeeId, mode) => {
       const employee = emps().find((e) => e.id === employeeId)
         || (userRef.current?.id === employeeId ? userRef.current : { id: employeeId });
-      const res = await svc.changeWorkMode(supabase, emps(), { employee, mode, requests: requestsRef.current, actorId: uid() });
+      const res = await svc.changeWorkMode(supabase, { employee, mode, requests: requestsRef.current, actorId: uid() });
       if (!res.error && employeeId === uid()) setUser((prev) => (prev ? { ...prev, workMode: mode } : prev));
       await Promise.all([refreshEmployees(), loadRequests()]);
       return res;
@@ -427,7 +434,7 @@ export function DataProvider({ children }) {
       await Promise.all([loadVehicles(), loadReservations()]);
       return { error };
     },
-  }), [rooms, vehicles, documents, personalDays, loadRequests, loadPersonalDays, loadReservations, loadHours,
+  }), [documents, personalDays, loadRequests, loadPersonalDays, loadReservations, loadHours,
     loadDocuments, loadNews, loadRooms, loadVehicles, refreshEmployees, refetchAll, setUser]);
 
   // Pull to refresh: say so when it could not update instead of silently showing old data
@@ -447,9 +454,9 @@ export function DataProvider({ children }) {
 
   const value = useMemo(() => ({
     requests, reservations, rooms, vehicles, documents, hourCompensations, personalDays, news, notifications: myNotifications,
-    unreadCount, loadingData, lastSync, onboardingDocUrl, refresh, ...actions,
+    unreadCount, notifHasMore, loadingData, lastSync, onboardingDocUrl, refresh, ...actions,
   }), [requests, reservations, rooms, vehicles, documents, hourCompensations, personalDays, news, myNotifications,
-    unreadCount, loadingData, lastSync, onboardingDocUrl, refresh, actions]);
+    unreadCount, notifHasMore, loadingData, lastSync, onboardingDocUrl, refresh, actions]);
 
   return <DataCtx.Provider value={value}>{children}</DataCtx.Provider>;
 }

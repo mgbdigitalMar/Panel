@@ -1,4 +1,3 @@
-import { createNotification } from './notifications.js';
 import { MAX_FILE_SIZE_BYTES } from '../config/constants.js';
 import { safeFileUrl } from '../utils/urls.js';
 
@@ -45,17 +44,6 @@ export async function sendDocument(supabase, { title, description, fileUrl, send
   if (error) {
     console.error('sendDocument:', error);
     return { error };
-  }
-
-  if (recipientId) {
-    await createNotification(supabase, {
-      userId: recipientId,
-      title: `📄 Nuevo documento: ${title}`,
-      body: description || 'Tienes un nuevo documento disponible en tu perfil.',
-      type: 'info',
-      entityType: 'document',
-      entityId: data?.id,
-    });
   }
   return { data };
 }

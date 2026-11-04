@@ -1,13 +1,15 @@
-// The backend (functions/send-push) pushes every new row of `notifications`; this module
-// registers the device token and turns taps into navigation.
+// The backend (functions/notifications-worker) pushes every new row of `notifications`; this
+// module registers the device token, reports what arrived and turns taps into navigation.
 import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { isRunningInExpoGo } from 'expo';
 import { supabase } from '../lib/supabase';
+import { acknowledgeDelivery } from '@shared/services/notifications.js';
 import { getItem, setItem, removeItem, KEYS } from './storage';
 
-// Must match channelId in supabase/functions/send-push.
+// Must match ANDROID_CHANNEL_ID in supabase/functions/notifications-worker. It stays 'default':
+// a push to a channel the device doesn't have is not shown, and installed builds only have this one.
 export const ANDROID_CHANNEL_ID = 'default';
 
 export const isExpoGo = isRunningInExpoGo();
@@ -66,6 +68,7 @@ const mockNotifications = {
   getLastNotificationResponseAsync: async () => null,
   addNotificationResponseReceivedListener: () => ({ remove: () => {} }),
   addNotificationReceivedListener: () => ({ remove: () => {} }),
+  addPushTokenListener: () => ({ remove: () => {} }),
   removeNotificationSubscription: () => {},
   dismissNotificationAsync: async () => {},
   dismissAllNotificationsAsync: async () => {},
@@ -82,8 +85,8 @@ const fallbackNotifications = new Proxy(mockNotifications, {
 
 export const Notifications = NativeNotifications || fallbackNotifications;
 
-// While the app is open, realtime + in-app toasts already show the event,
-// so the OS banner is suppressed to avoid duplicates (see ARQUITECTURA §10).
+// While the app is open, the private realtime channel + in-app toasts already show the event,
+// so the OS banner is suppressed to avoid duplicates (see docs/NOTIFICACIONES.md).
 if (NativeNotifications) {
   NativeNotifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -110,6 +113,7 @@ async function ensureChannel() {
  * @returns {Promise<{ ok: boolean, reason?: string }>} */
 export async function registerForPushNotificationsAsync(userId) {
   lastPushRegistration = await registerDevice(userId);
+  if (lastPushRegistration.ok) watchTokenChanges(userId);
   if (!lastPushRegistration.ok && __DEV__) console.warn('[pushNotifications] not registered:', lastPushRegistration.reason);
   return lastPushRegistration;
 }
@@ -157,8 +161,33 @@ async function registerDevice(userId) {
   }
 }
 
+let tokenListener = null;
+
+/** FCM can renew the device token at any time: re-register it while the app runs. */
+function watchTokenChanges(userId) {
+  tokenListener?.remove();
+  tokenListener = NativeNotifications?.addPushTokenListener?.(() => {
+    registerDevice(userId).then((result) => { lastPushRegistration = result; });
+  }) ?? null;
+}
+
+/** Foreground delivery is the only one the app can confirm by itself. */
+export function listenForForegroundPushes() {
+  const sub = Notifications.addNotificationReceivedListener((notification) => {
+    acknowledgeDelivery(supabase, notification?.request?.content?.data?.deliveryId);
+  });
+  return () => sub.remove();
+}
+
+/** Tapping a push proves it reached the device, even when it arrived with the app closed. */
+export function acknowledgeResponse(response) {
+  return acknowledgeDelivery(supabase, response?.notification?.request?.content?.data?.deliveryId);
+}
+
 /** Called on logout so this device stops receiving the user's pushes. */
 export async function unregisterPushNotificationsAsync() {
+  tokenListener?.remove();
+  tokenListener = null;
   const token = await getItem(KEYS.pushToken);
   if (!token) return;
   try {

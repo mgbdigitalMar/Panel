@@ -1,4 +1,3 @@
-import { createNotification, notifyAdmins } from './notifications.js';
 import { removeStorageFile } from './documents.js';
 import { safeFileUrl } from '../utils/urls.js';
 
@@ -35,7 +34,7 @@ export async function fetchPersonalDays(supabase, { employeeId } = {}) {
   }));
 }
 
-export async function createPersonalDay(supabase, employees, { employeeId, date, reason, fileUrl }) {
+export async function createPersonalDay(supabase, { employeeId, date, reason, fileUrl }) {
   const { data, error } = await supabase.from('personal_days').insert([{
     employee_id: employeeId,
     date,
@@ -48,19 +47,10 @@ export async function createPersonalDay(supabase, employees, { employeeId, date,
     return { error };
   }
 
-  const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado';
-  await notifyAdmins(supabase, employees, {
-    title: `📝 Día de asuntos propios`,
-    body: `${empName} ha solicitado un día de asuntos propios.`,
-    type: 'info',
-    entityType: 'personal_day',
-    entityId: data?.id,
-  });
-
   return { data };
 }
 
-export async function updatePersonalDayStatus(supabase, id, status, reviewedBy, employeeId) {
+export async function updatePersonalDayStatus(supabase, id, status, reviewedBy) {
   const { error } = await supabase.from('personal_days').update({
     status,
     reviewed_by: reviewedBy,
@@ -69,19 +59,6 @@ export async function updatePersonalDayStatus(supabase, id, status, reviewedBy, 
   if (error) {
     console.error('updatePersonalDayStatus:', error);
     return { error };
-  }
-
-  if (employeeId) {
-    await createNotification(supabase, {
-      userId: employeeId,
-      title: status === 'approved' ? '✅ Asuntos propios aprobados' : '❌ Asuntos propios rechazados',
-      body: status === 'approved'
-        ? 'Tu solicitud de día de asuntos propios ha sido aprobada.'
-        : 'Tu solicitud ha sido rechazada.',
-      type: status === 'approved' ? 'success' : 'error',
-      entityType: 'personal_day',
-      entityId: id,
-    });
   }
   return { error: null };
 }

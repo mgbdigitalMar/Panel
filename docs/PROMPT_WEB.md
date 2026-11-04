@@ -29,7 +29,7 @@ Funciones comunes a todas las secciones:
 - **Estilos**: SCSS Modules, un `.module.scss` por componente. Los tokens están en `src/styles/variables.scss` y los mixins compartidos en `src/styles/_patterns.scss` (`@use '../styles/patterns' as p;`). Tailwind está instalado pero no se usa: no lo introduzcas.
 - Framer Motion para animar (`MotionConfig reducedMotion="user"`), lucide-react para los iconos, recharts para las gráficas, TanStack Query y clsx.
 - El estado y los datos viven en `src/context`. Los componentes de interfaz propios están en `src/components/ui`: Button, Card, Modal, ConfirmModal, Input, Select, Textarea, Badge, Avatar, StatCard, EmptyState, ErrorState, Skeleton, Loader y LeafField. Reutilízalos antes de crear otros.
-- **Supabase**: Auth, Postgres con RLS, Realtime, Storage y la Edge Function `send-push`. Los cambios de base de datos van como migraciones en `supabase/migrations`. El cliente solo usa la clave pública (publishable); nunca la service role.
+- **Supabase**: Auth, Postgres con RLS, Realtime, Storage y la Edge Function `notifications-worker` (ver `docs/NOTIFICACIONES.md`: los avisos los crea la base de datos, nunca el cliente). Los cambios de base de datos van como migraciones en `supabase/migrations`. El cliente solo usa la clave pública (publishable); nunca la service role.
 - La lógica de negocio que también usa la app móvil va en `shared/services`, no dentro de una página.
 - Tests en `tests/` (`npm test`). Muchos comprueban reglas de diseño y UX, así que ejecútalos después de cada cambio.
 

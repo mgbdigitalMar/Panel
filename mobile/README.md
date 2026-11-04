@@ -75,7 +75,7 @@ El perfil `preview` genera una APK autónoma: lleva el JS dentro, no necesita `e
 
 Para descartar el backend, se puede enviar un push directo al token (copiarlo de `push_tokens`) desde <https://expo.dev/notifications>.
 
-Requisitos del backend: migración `supabase/migrations/20261006120000_push_notifications.sql` aplicada y `supabase functions deploy send-push --no-verify-jwt`.
+Requisitos del backend: `node scripts/deploy-notifications.mjs` (ver `docs/NOTIFICACIONES.md`). Los avisos llegan siempre con un texto genérico; el detalle se ve dentro de la app.
 
 ## Comprobaciones
 

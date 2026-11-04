@@ -1,0 +1,10 @@
+# Solo lo que este repositorio necesita fijar; el resto son los valores por defecto de la CLI.
+project_id = "margube"
+
+[db]
+major_version = 17
+
+# La autenticación la hace la propia función con NOTIFICATIONS_WORKER_SECRET:
+# quien la llama es la base de datos, no un usuario con JWT.
+[functions.notifications-worker]
+verify_jwt = false

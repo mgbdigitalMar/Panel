@@ -302,3 +302,10 @@
   color: var(--text-mut);
   flex-shrink: 0;
 }
+
+.loadMoreBtn {
+  display: flex;
+  margin: 6px auto 8px;
+  font-size: 12px !important;
+  color: var(--text-mut) !important;
+}

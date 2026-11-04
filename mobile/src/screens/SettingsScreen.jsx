@@ -21,6 +21,8 @@ import { BrandPanel, ON_BRAND } from '../components/common/Brand';
 import { usePendingApprovals } from '../hooks/usePendingApprovals';
 import { biometricSupport, authenticate } from '../services/biometrics';
 import { Notifications, isAndroidExpoGo, lastPushRegistration } from '../services/pushNotifications';
+import { supabase } from '../lib/supabase';
+import { NOTIFICATION_CATEGORIES, fetchNotificationPreferences, setNotificationPreference } from '@shared/services/notifications.js';
 
 function MenuRow({ icon, tone = 'accent', label, value, valueColor, badge, onPress, last, children }) {
   const { colors } = useTheme();
@@ -66,6 +68,22 @@ export default function SettingsScreen() {
     biometricSupport().then(setBio);
     Notifications.getPermissionsAsync().then((p) => setPushStatus(p.status)).catch(() => {});
   }, []);
+
+  // null while loading or if it could not be read: the switches stay hidden rather than lying
+  const [notifPrefs, setNotifPrefs] = useState(null);
+  useEffect(() => {
+    if (user?.id) fetchNotificationPreferences(supabase, user.id).then(setNotifPrefs);
+  }, [user?.id]);
+
+  const toggleCategory = async (category, enabled) => {
+    const previous = notifPrefs;
+    setNotifPrefs({ ...notifPrefs, [category]: enabled });
+    const { error } = await setNotificationPreference(supabase, user.id, category, enabled);
+    if (error) {
+      setNotifPrefs(previous);
+      toast.error('No se ha podido guardar', 'Revisa tu conexión e inténtalo de nuevo.');
+    }
+  };
 
   const toggleBio = async (on) => {
     if (on) {
@@ -164,6 +182,12 @@ export default function SettingsScreen() {
           ) : null}
           <MenuRow icon={BellRing} tone="neutral" label="Notificaciones push" value={pushLabel}
             valueColor={pushStatus === 'denied' ? colors.dangerFg : undefined} onPress={handlePushPress} />
+          {notifPrefs ? NOTIFICATION_CATEGORIES.map((c) => (
+            <View key={c.id} style={{ borderBottomWidth: 1, borderBottomColor: colors.divider }}>
+              <SwitchRow title={c.label} subtitle={c.desc}
+                value={notifPrefs[c.id] !== false} onValueChange={(on) => toggleCategory(c.id, on)} />
+            </View>
+          )) : null}
           <MenuRow icon={Lock} tone="neutral" label="Pausar sesión por inactividad" last>
             <T mono weight="semibold" size={14} color={colors.text2}>30 min</T>
           </MenuRow>

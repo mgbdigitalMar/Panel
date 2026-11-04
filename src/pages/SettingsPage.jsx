@@ -11,9 +11,13 @@ import styles from './SettingsPage.module.scss';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import {
-  PREF_NOTIFS, notificationsSupported, notificationsEnabled,
+  PREF_NOTIFS, notificationsSupported, notificationsEnabled, needsIosInstall,
   enablePush, disablePush, showSystemNotification,
 } from '../services/webPush';
+import { supabase } from '../utils/supabase';
+import {
+  NOTIFICATION_CATEGORIES, fetchNotificationPreferences, setNotificationPreference, fetchNotificationHealth,
+} from '../../shared/services/notifications.js';
 
 const container = {
   hidden: {},
@@ -45,6 +49,20 @@ function Toggle({ checked, onChange, id }) {
     </button>
   );
 }
+
+const HEALTH_ALERT_LABELS = {
+  worker_not_configured: 'procesador sin configurar',
+  queue_stalled: 'cola detenida',
+  worker_silent: 'procesador sin actividad',
+  dead_letters: 'avisos sin poder enviar',
+  high_failure_rate: 'muchos envíos fallidos',
+  provider_config: 'credenciales de un proveedor',
+  emit_failed: 'avisos que no se pudieron crear',
+};
+
+const formatHealthTime = (iso) => (iso
+  ? new Date(iso).toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+  : 'Todavía no');
 
 export default function SettingsPage() {
   const { mode, setMode } = useTheme();
@@ -92,6 +110,25 @@ export default function SettingsPage() {
       setNotifBusy(false);
     }
   };
+
+  // null while loading or if it could not be read: the switches stay hidden rather than lying
+  const [notifPrefs, setNotifPrefs] = useState(null);
+  useEffect(() => {
+    if (user?.id) fetchNotificationPreferences(supabase, user.id).then(setNotifPrefs);
+  }, [user?.id]);
+
+  const handleCategory = async (category, enabled) => {
+    const previous = notifPrefs;
+    setNotifPrefs({ ...notifPrefs, [category]: enabled });
+    const { error } = await setNotificationPreference(supabase, user.id, category, enabled);
+    if (error) setNotifPrefs(previous);
+  };
+
+  // RRHH sees whether the notification system itself is healthy
+  const [notifHealth, setNotifHealth] = useState(null);
+  useEffect(() => {
+    if (user?.role === 'admin') fetchNotificationHealth(supabase).then(setNotifHealth);
+  }, [user?.role]);
 
   const [soundsOn, setSoundsOn] = useState(() => getLS('margube-sounds', true));
   const handleSounds = (val) => {
@@ -191,7 +228,9 @@ export default function SettingsPage() {
               <div>
                 <span className={styles.rowLabel}>Alertas de escritorio</span>
                 <span className={styles.rowDesc}>
-                  {!notificationsSupported()
+                  {needsIosInstall()
+                    ? 'En iPhone, abre Margube en Safari y elige Compartir → Añadir a pantalla de inicio. Después, activa aquí los avisos desde la app instalada.'
+                    : !notificationsSupported()
                     ? 'Este navegador no admite notificaciones.'
                     : notifPerm === 'denied'
                     ? 'Bloqueadas por el navegador. Permítelas desde el candado de la barra de direcciones.'
@@ -224,6 +263,49 @@ export default function SettingsPage() {
             </div>
             <Toggle checked={soundsOn} onChange={handleSounds} id="sounds-toggle" />
           </div>
+
+          {notifPrefs && (
+            <>
+              <div className={styles.sep} />
+              <p className={styles.groupLabel}>Avisos en tus dispositivos</p>
+              <p className={styles.groupHint}>Lo que desactives seguirá apareciendo en la campana.</p>
+              {NOTIFICATION_CATEGORIES.map((c) => (
+                <div className={styles.row} key={c.id}>
+                  <div className={styles.rowInfo}>
+                    <div>
+                      <span className={styles.rowLabel}>{c.label}</span>
+                      <span className={styles.rowDesc}>{c.desc}</span>
+                    </div>
+                  </div>
+                  <Toggle
+                    checked={notifPrefs[c.id] !== false}
+                    onChange={(val) => handleCategory(c.id, val)}
+                    id={`notif-category-${c.id}`}
+                  />
+                </div>
+              ))}
+            </>
+          )}
+
+          {notifHealth && (
+            <>
+              <div className={styles.sep} />
+              <p className={styles.groupLabel}>Estado del sistema de avisos</p>
+              <dl className={styles.healthList}>
+                <div><dt>Pendientes de enviar</dt><dd>{notifHealth.queue?.ready ?? 0}</dd></div>
+                <div><dt>A la espera de reintento</dt><dd>{notifHealth.queue?.in_flight_or_waiting ?? 0}</dd></div>
+                <div><dt>Sin poder enviar</dt><dd>{notifHealth.dead_letters ?? 0}</dd></div>
+                <div><dt>Dispositivos activos</dt><dd>{(notifHealth.devices?.expo_active ?? 0) + (notifHealth.devices?.web_active ?? 0)}</dd></div>
+                <div><dt>Último envío procesado</dt><dd>{formatHealthTime(notifHealth.last_worker_run)}</dd></div>
+                <div><dt>Última comprobación automática</dt><dd>{formatHealthTime(notifHealth.last_recovery_run)}</dd></div>
+              </dl>
+              {notifHealth.open_alerts?.length > 0 && (
+                <p className={styles.healthAlert} role="status">
+                  {notifHealth.open_alerts.length === 1 ? 'Hay 1 alerta abierta' : `Hay ${notifHealth.open_alerts.length} alertas abiertas`}: {notifHealth.open_alerts.map((a) => HEALTH_ALERT_LABELS[a.key] || a.key).join(', ')}.
+                </p>
+              )}
+            </>
+          )}
         </Card>
         </motion.div>
         </div>

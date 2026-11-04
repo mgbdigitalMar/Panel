@@ -1,4 +1,3 @@
-import { createNotification, notifyAdmins } from './notifications.js';
 import { REQUEST_WORK_MODE, localISODate } from './workMode.js';
 
 /** Pass `employeeId` for an employee: they only get their own (admins get all). */
@@ -40,7 +39,7 @@ export async function fetchRequests(supabase, { employeeId } = {}) {
   }));
 }
 
-export async function createRequest(supabase, employees, employeeId, payload) {
+export async function createRequest(supabase, employeeId, payload) {
   const { data, error } = await supabase
     .from('requests')
     .insert([{ employee_id: employeeId, ...payload }])
@@ -51,22 +50,10 @@ export async function createRequest(supabase, employees, employeeId, payload) {
     return { error };
   }
 
-  const typeLabel = payload.type === 'remoto' ? 'Remoto'
-    : payload.type === 'external' ? 'Trabajo Externo'
-    : 'Compra';
-  const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado';
-  await notifyAdmins(supabase, employees, {
-    title: `📋 Nueva solicitud: ${typeLabel}`,
-    body: `${empName} ha enviado una solicitud de ${typeLabel.toLowerCase()} que requiere revisión.`,
-    type: 'info',
-    entityType: 'request',
-    entityId: data?.id,
-  });
-
   return { data };
 }
 
-export async function updateRequestStatus(supabase, employees, id, status, reviewedBy, employeeId) {
+export async function updateRequestStatus(supabase, id, status, reviewedBy, employeeId) {
   const { data: reqData } = await supabase
     .from('requests')
     .select('type, start_date, end_date')
@@ -92,22 +79,6 @@ export async function updateRequestStatus(supabase, employees, id, status, revie
     if (today >= reqData.start_date && today <= reqData.end_date) {
       await supabase.from('profiles').update({ work_mode: REQUEST_WORK_MODE[reqData.type] }).eq('id', employeeId);
     }
-  }
-
-  if (employeeId) {
-    const typeLabel = reqData?.type === 'external' ? 'trabajo externo'
-      : reqData?.type === 'remoto' ? 'remoto'
-      : 'compra';
-    await createNotification(supabase, {
-      userId: employeeId,
-      title: status === 'approved' ? '✅ Solicitud aprobada' : '❌ Solicitud rechazada',
-      body: status === 'approved'
-        ? `Tu solicitud de ${typeLabel} ha sido aprobada.`
-        : `Tu solicitud de ${typeLabel} ha sido rechazada.`,
-      type: status === 'approved' ? 'success' : 'error',
-      entityType: 'request',
-      entityId: id,
-    });
   }
   return { error: null };
 }

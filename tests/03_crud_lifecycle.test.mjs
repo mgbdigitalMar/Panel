@@ -159,21 +159,9 @@ export async function runCrudLifecycleTests() {
     type: 'info',
     read: false,
   };
-  const { data: createdNotif, error: cNotifErr } = await supabase.from('notifications').insert(notifPayload).select().single();
-  assert('CREATE: Inserción de notificación exitosa', !cNotifErr && createdNotif?.id);
-
-  if (createdNotif?.id) {
-    const { data: updNotif, error: uNotifErr } = await supabase
-      .from('notifications')
-      .update({ read: true })
-      .eq('id', createdNotif.id)
-      .select()
-      .single();
-    assert('UPDATE: Marcado de notificación como leída exitoso', !uNotifErr && updNotif?.read === true);
-
-    const { error: dNotifErr } = await supabase.from('notifications').delete().eq('id', createdNotif.id);
-    assert('DELETE: Limpieza de notificación de prueba exitosa', !dNotifErr);
-  }
+  // Solo la base de datos crea avisos: el recorrido completo está en tests/notifications/e2e.test.mjs
+  const { error: cNotifErr } = await supabase.from('notifications').insert(notifPayload);
+  assert('CREATE: Un cliente no puede insertar notificaciones', Boolean(cNotifErr));
 
   return { passed, failed };
 }

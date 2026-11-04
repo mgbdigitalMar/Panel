@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { flushSync } from 'react-dom'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
 import {
   showSystemNotification, playNotificationSound, notificationsEnabled,
@@ -16,6 +16,11 @@ import {
   updateReservationStatus as updateReservationStatusSvc, deleteResource as deleteResourceSvc,
 } from '../../shared/services/reservations.js'
 import { fetchRequests as fetchRequestsSvc } from '../../shared/services/requests.js'
+import {
+  fetchNotifications as fetchNotificationsSvc, fetchUnreadCount, markNotifRead as markNotifReadSvc,
+  markAllNotifsRead as markAllNotifsReadSvc, mergeNotification, subscribeToNotifications,
+  NOTIFICATIONS_PAGE_SIZE,
+} from '../../shared/services/notifications.js'
 import { safeFileUrl } from '../../shared/utils/urls.js'
 import { toUserMessage } from '../../shared/utils/errors.js'
 
@@ -113,6 +118,8 @@ export function DataProvider({ children }) {
   const [news, setNews]                      = useState([])
   const [personalDays, setPersonalDays]      = useState([])
   const [notifications, setNotifications]    = useState([]) // Persistent DB notifications
+  const [unreadCount, setUnreadCount]        = useState(0)  // All of them, not only the loaded page
+  const [notifHasMore, setNotifHasMore]      = useState(false)
   const [loadingData, setLoadingData]        = useState(true)
   // A list could not be loaded: Layout offers to retry instead of showing it as empty
   const [loadFailed, setLoadFailed]          = useState(false)
@@ -145,42 +152,51 @@ const [readIds, setReadIds] = useState(() => {
     }
   }
 
+  // The database is the source of truth: this runs on login, on reconnecting and on sync events.
+  // Older pages the person opened in the history stay until the next login.
   const fetchNotifications = async (userId) => {
     if (!userId) return
-    const { data, error } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(50)
-    if (error) { console.warn('Notifications table check:', error.message); return }
-    setNotifications(data || [])
+    const [rows, unread] = await Promise.all([
+      fetchNotificationsSvc(supabase, userId),
+      fetchUnreadCount(supabase, userId),
+    ])
+    if (unread !== null) setUnreadCount(unread)
+    if (!rows) return
+    setNotifications(prev => {
+      const fresh = new Set(rows.map(n => n.id))
+      const oldest = rows[rows.length - 1]?.created_at
+      const older = oldest ? prev.filter(n => !fresh.has(n.id) && n.created_at < oldest) : []
+      return [...rows, ...older]
+    })
+    setNotifHasMore(current => current || rows.length === NOTIFICATIONS_PAGE_SIZE)
+  }
+
+  // Historial: the next page after the oldest one on screen
+  const loadMoreNotifications = async () => {
+    const oldest = notifications[notifications.length - 1]?.created_at
+    if (!user?.id || !oldest) return
+    const rows = await fetchNotificationsSvc(supabase, user.id, { before: oldest })
+    if (!rows) return
+    setNotifications(prev => [...prev, ...rows.filter(r => !prev.some(n => n.id === r.id))])
+    setNotifHasMore(rows.length === NOTIFICATIONS_PAGE_SIZE)
   }
 
   const markNotifRead = async (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
-    await supabase.from('notifications').update({ read: true }).eq('id', id)
+    let wasUnread = false
+    setNotifications(prev => prev.map(n => {
+      if (String(n.id) !== String(id)) return n
+      wasUnread = !n.read
+      return { ...n, read: true }
+    }))
+    if (wasUnread) setUnreadCount(c => Math.max(0, c - 1))
+    await markNotifReadSvc(supabase, id)
   }
 
   const markAllNotifsRead = async (userId) => {
     if (!userId) return
     setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-    await supabase.from('notifications').update({ read: true }).eq('user_id', userId).eq('read', false)
-  }
-
-  const createNotification = async ({ userId, title, body, type = 'info', entityType, entityId }) => {
-    const { error } = await supabase.from('notifications').insert([{
-      user_id: userId,
-      title,
-      body: body || null,
-      type,
-      entity_type: entityType || null,
-      entity_id: entityId || null,
-      read: false,
-    }])
-    if (error) {
-      console.warn('Could not insert notification:', error.message)
-    }
+    setUnreadCount(0)
+    await markAllNotifsReadSvc(supabase, userId)
   }
 
   // Employees load only their own requests and personal days; admins load everyone's.
@@ -330,34 +346,34 @@ const [readIds, setReadIds] = useState(() => {
   const user = auth?.user
   const employees = auth?.employees || []
 
-  const notifyAdmins = async ({ title, body, type = 'info', entityType, entityId }) => {
-    const admins = employees.filter(e => e.role === 'admin')
-    const adminIds = admins.map(e => e.id)
-    if (adminIds.length === 0) return
-    
-    const notifs = adminIds.map(adminId => ({
-      user_id: adminId,
-      title,
-      body: body || null,
-      type,
-      entity_type: entityType || null,
-      entity_id: entityId || null,
-      read: false,
-    }))
-    
-    const { error } = await supabase.from('notifications').insert(notifs)
-    if (error) {
-      console.warn('Could not notify admins:', error.message)
-    }
-  }
-
   useEffect(() => {
-    if (user?.id) {
-      fetchNotifications(user.id)
-    } else {
+    if (!user?.id) {
       setNotifications([])
+      setUnreadCount(0)
+      setNotifHasMore(false)
     }
   }, [user?.id])
+
+  // Icon badge of the installed PWA (the service worker sets it when a push arrives)
+  useEffect(() => {
+    if (!('setAppBadge' in navigator)) return
+    if (unreadCount > 0) navigator.setAppBadge(unreadCount).catch(() => {})
+    else navigator.clearAppBadge().catch(() => {})
+  }, [unreadCount])
+
+  // A tapped push opens /ruta?notif=<id>: mark it read and leave a clean URL
+  const location = useLocation()
+  const navigateInApp = useNavigate()
+  useEffect(() => {
+    if (!user?.id) return
+    const params = new URLSearchParams(location.search)
+    const id = params.get('notif')
+    if (!id) return
+    markNotifRead(id)
+    params.delete('notif')
+    const search = params.toString()
+    navigateInApp(`${location.pathname}${search ? `?${search}` : ''}`, { replace: true })
+  }, [user?.id, location.search])
 
   const refetchAll = () => {
     setLoadFailed(false)
@@ -379,6 +395,8 @@ const [readIds, setReadIds] = useState(() => {
     }
     setLoadingData(true)
     refetchAll().finally(() => setLoadingData(false))
+    // Not left to the channel's first sync: the inbox must load even if the socket can't connect
+    fetchNotifications(user.id)
 
     // One table change often produces two events (e.g. the request UPDATE and
     // its row in `notifications`): the blip plays once per burst.
@@ -394,12 +412,12 @@ const [readIds, setReadIds] = useState(() => {
       }
     }
 
-    // System notification while the intranet is not in front of the person.
-    // Only rows of `notifications` trigger it: they are the per-person feed and
-    // share the `margube-<id>` tag with Web Push, so nothing shows twice.
+    // System notification while the intranet is not in front of the person. It shares the
+    // `margube-<id>` tag with Web Push, so nothing shows twice, and it is just as generic:
+    // the screen may be locked. The detail is the toast and the inbox.
     const notifyInBackground = (row) => {
       if (document.visibilityState === 'visible' && document.hasFocus()) return
-      showSystemNotification({ id: row.id, title: row.title, body: row.body, entityType: row.entity_type, entityId: row.entity_id, type: row.type })
+      showSystemNotification({ id: row.id, entityType: row.entity_type, entityId: row.entity_id, type: row.type })
     }
 
     // New requests, reviews and documents for one person already arrive as a row of
@@ -474,22 +492,21 @@ const [readIds, setReadIds] = useState(() => {
       })
       .subscribe()
 
-    const notifChannel = supabase
-      .channel('realtime-notifications')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
-        if (payload.new.user_id === user?.id) {
-          setNotifications(prev => [payload.new, ...prev.slice(0, 49)])
-          const icon = payload.new.type === 'success' ? '✅' : payload.new.type === 'error' ? '❌' : '🔔'
-          pushNotif(icon, payload.new.title)
-          notifyInBackground(payload.new)
-        }
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifications' }, (payload) => {
-        if (payload.new.user_id === user?.id) {
-          setNotifications(prev => prev.map(n => n.id === payload.new.id ? payload.new : n))
-        }
-      })
-      .subscribe()
+    // Private Broadcast channel of this person; joining (again) re-reads the table
+    const closeNotifChannel = subscribeToNotifications(supabase, user.id, {
+      onCreated: (row, unread) => {
+        setNotifications(prev => mergeNotification(prev, row))
+        if (typeof unread === 'number') setUnreadCount(unread)
+        const icon = row.type === 'success' ? '✅' : row.type === 'error' ? '❌' : '🔔'
+        pushNotif(icon, row.title)
+        notifyInBackground(row)
+      },
+      onUpdated: ({ id, read, unread }) => {
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, read } : n))
+        if (typeof unread === 'number') setUnreadCount(unread)
+      },
+      onSync: () => fetchNotifications(user.id),
+    })
 
     // Back in the foreground: refetch what the socket may have missed
     const handleVisibility = () => {
@@ -519,7 +536,7 @@ const [readIds, setReadIds] = useState(() => {
       supabase.removeChannel(hoursChannel)
       supabase.removeChannel(personalDaysChannel)
       supabase.removeChannel(newsChannel)
-      supabase.removeChannel(notifChannel)
+      closeNotifChannel()
     }
   }, [user?.id])
 
@@ -543,7 +560,7 @@ const [readIds, setReadIds] = useState(() => {
   // Employee (own profile) or admin (directory) changes a work mode
   const changeWorkMode = async (employeeId, mode) => {
     const employee = employees.find(e => e.id === employeeId) || (user?.id === employeeId ? user : { id: employeeId })
-    const res = await changeWorkModeSvc(supabase, employees, { employee, mode, requests, actorId: user?.id })
+    const res = await changeWorkModeSvc(supabase, { employee, mode, requests, actorId: user?.id })
     if (!res.error && employeeId === user?.id) auth?.patchUser?.({ workMode: mode })
     await Promise.all([fetchRequests(), auth?.refreshEmployees?.()])
     return res
@@ -558,17 +575,6 @@ const [readIds, setReadIds] = useState(() => {
     }]).select().single()
     if (error) { console.error('createRequest:', error); return { error: toUserMessage(error) } }
     await fetchRequests()
-    
-    const typeLabel = payload.type === 'remoto' ? 'Remoto' : payload.type === 'external' ? 'Trabajo Externo' : 'Compra'
-    const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado'
-    await notifyAdmins({
-      title: `📋 Nueva solicitud: ${typeLabel}`,
-      body: `${empName} ha enviado una solicitud de ${typeLabel.toLowerCase()} que requiere revisión.`,
-      type: 'info',
-      entityType: 'request',
-      entityId: data?.id
-    })
-
     return { data }
   }
 
@@ -589,19 +595,6 @@ const [readIds, setReadIds] = useState(() => {
     }
 
     await fetchRequests()
-    
-    if (employeeId) {
-      const typeLabel = reqData?.type === 'external' ? 'trabajo externo' : reqData?.type === 'remoto' ? 'remoto' : 'compra';
-      await createNotification({
-        userId: employeeId,
-        title: status === 'approved' ? '✅ Solicitud aprobada' : '❌ Solicitud rechazada',
-        body: status === 'approved' 
-          ? `Tu solicitud de ${typeLabel} ha sido aprobada.` 
-          : `Tu solicitud de ${typeLabel} ha sido rechazada.`,
-        type: status === 'approved' ? 'success' : 'error',
-        entityType: 'request', entityId: id
-      })
-    }
     return { error: null }
   }
 
@@ -630,19 +623,10 @@ const [readIds, setReadIds] = useState(() => {
     }]).select().single()
     if (error) { console.error('createPersonalDay:', error); return { error: toUserMessage(error) } }
     await fetchPersonalDays()
-
-    const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado'
-    await notifyAdmins({
-      title: `📝 Día de asuntos propios`,
-      body: `${empName} ha solicitado un día de asuntos propios.`,
-      type: 'info',
-      entityType: 'personal_day',
-      entityId: data?.id
-    })
     return { data }
   }
 
-  const updatePersonalDayStatus = async (id, status, reviewedBy, employeeId) => {
+  const updatePersonalDayStatus = async (id, status, reviewedBy) => {
     const { error } = await supabase.from('personal_days').update({
       status,
       reviewed_by: reviewedBy,
@@ -650,28 +634,14 @@ const [readIds, setReadIds] = useState(() => {
     }).eq('id', id)
     if (error) { console.error('updatePersonalDayStatus:', error); return reportError(error) }
     await fetchPersonalDays()
-
-    if (employeeId) {
-      await createNotification({
-        userId: employeeId,
-        title: status === 'approved' ? '✅ Asuntos propios aprobados' : '❌ Asuntos propios rechazados',
-        body: status === 'approved' ? 'Tu solicitud de día de asuntos propios ha sido aprobada.' : 'Tu solicitud ha sido rechazada.',
-        type: status === 'approved' ? 'success' : 'error',
-        entityType: 'personal_day', entityId: id
-      })
-    }
     return { error: null }
   }
 
   const createReservation = async (employeeId, payload) => {
-    let rName = payload.resourceName;
-    if (!rName) {
-      if (payload.type === 'room') {
-        rName = rooms.find(r => String(r.id) === String(payload.room_id))?.name || 'Sala';
-      } else {
-        rName = vehicles.find(v => String(v.id) === String(payload.vehicle_id))?.model || 'Vehículo';
-      }
-    }
+    const rName = payload.resourceName
+      || (payload.type === 'room'
+        ? rooms.find(r => String(r.id) === String(payload.room_id))?.name || 'Sala'
+        : vehicles.find(v => String(v.id) === String(payload.vehicle_id))?.model || 'Vehículo')
 
     const roomId = payload.type === 'room' && payload.room_id ? parseInt(payload.room_id, 10) : null;
     const vehicleId = payload.type === 'vehicle' && payload.vehicle_id ? parseInt(payload.vehicle_id, 10) : null;
@@ -713,23 +683,12 @@ const [readIds, setReadIds] = useState(() => {
       return { error: toUserMessage(error, 'Error al crear la reserva') }
     }
     await fetchReservations()
-    
-    const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado'
-    await notifyAdmins({
-      title: `📅 Nueva reserva: ${rName}`,
-      body: `${empName} ha realizado una reserva de ${payload.type === 'room' ? 'sala' : 'vehículo'}.`,
-      type: 'info',
-      entityType: 'reservation',
-      entityId: data?.id ? String(data.id) : null
-    })
-    
     return { data }
   }
 
-  // Shared with the app: the owner gets a notification (and push) with the decision
+  // Shared with the app
   const updateReservationStatus = async (id, status, reviewedBy) => {
-    const reservation = reservations.find(r => String(r.id) === String(id))
-    const { error } = await updateReservationStatusSvc(supabase, id, status, reviewedBy, reservation)
+    const { error } = await updateReservationStatusSvc(supabase, id, status, reviewedBy)
     if (error) return reportError(error)
     await fetchReservations()
     return { error: null }
@@ -766,16 +725,6 @@ const [readIds, setReadIds] = useState(() => {
     }
     
     await fetchDocuments()
-
-    if (recipientId) {
-      await createNotification({
-        userId: recipientId,
-        title: `📄 Nuevo documento: ${title}`,
-        body: description || 'Tienes un nuevo documento disponible en tu perfil.',
-        type: 'info',
-        entityType: 'document', entityId: data?.id
-      })
-    }
     return { data }
   }
 
@@ -853,22 +802,10 @@ const [readIds, setReadIds] = useState(() => {
     }]).select().single()
     if (error) { console.error('createHourCompensation:', error); return { error: toUserMessage(error) } }
     await fetchHourCompensations()
-
-    if (type === 'bolsa') {
-      const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado'
-      await notifyAdmins({
-        title: `⌛ Nueva bolsa de horas`,
-        body: `${empName} solicita compensar ${hours}h en su bolsa.`,
-        type: 'info',
-        entityType: 'hour_compensation',
-        entityId: data?.id
-      })
-    }
-
     return { data }
   }
 
-  const updateHourCompensationStatus = async (id, status, reviewedBy, employeeId) => {
+  const updateHourCompensationStatus = async (id, status, reviewedBy) => {
     const { error } = await supabase.from('hour_compensations').update({
       status,
       reviewed_by: reviewedBy,
@@ -876,16 +813,6 @@ const [readIds, setReadIds] = useState(() => {
     }).eq('id', id)
     if (error) { console.error('updateHourCompensationStatus:', error); return reportError(error) }
     await fetchHourCompensations()
-
-    if (employeeId) {
-      await createNotification({
-        userId: employeeId,
-        title: status === 'approved' ? '✅ Horas aprobadas' : '❌ Horas rechazadas',
-        body: status === 'approved' ? 'Tu solicitud de bolsa de horas ha sido aprobada.' : 'Tu solicitud ha sido rechazada.',
-        type: status === 'approved' ? 'success' : 'error',
-        entityType: 'hour_compensation', entityId: id
-      })
-    }
     return { error: null }
   }
 
@@ -966,7 +893,7 @@ const [readIds, setReadIds] = useState(() => {
   const hourValue = useMemo(() => ({ hourCompensations, createHourCompensation, updateHourCompensationStatus, deleteHourCompensation }), [hourCompensations, employees]);
   const pdValue = useMemo(() => ({ personalDays, createPersonalDay, updatePersonalDayStatus }), [personalDays, employees]);
   const newsValue = useMemo(() => ({ news, createNews, updateNews, deleteNews }), [news]);
-  const notifValue = useMemo(() => ({ notifications, markNotifRead, markAllNotifsRead, readIds, markRead, markAllRead, liveNotifs, announce }), [notifications, readIds, liveNotifs]);
+  const notifValue = useMemo(() => ({ notifications, unreadCount, notifHasMore, loadMoreNotifications, markNotifRead, markAllNotifsRead, readIds, markRead, markAllRead, liveNotifs, announce }), [notifications, unreadCount, notifHasMore, readIds, liveNotifs, user?.id]);
   const syncValue = useMemo(() => ({ loadingData, loadFailed, refresh: refetchAll }), [loadingData, loadFailed]);
 
   const contextValue = useMemo(() => ({
@@ -1020,6 +947,11 @@ export function AuthProvider({ children }) {
   // A ref, not state: activity events fire on every mouse move and must not re-render the app
   const lastActivityRef = useRef(Date.now())
   const markerWrittenRef = useRef(0)
+  // Restoring the session lands on /dashboard: a tapped push (/ruta?notif=<id>) is kept to open it
+  // afterwards, also when the person has to sign in first
+  const pendingPathRef = useRef(
+    new URLSearchParams(window.location.search).has('notif') ? window.location.pathname + window.location.search : null
+  )
   const setLastActivity = useCallback((t = Date.now()) => { lastActivityRef.current = t }, [])
   const [idleLeft, setIdleLeft] = useState(null) // seconds shown in the warning; null = hidden
 
@@ -1041,7 +973,9 @@ export function AuthProvider({ children }) {
     const tabId = sessionStorage.getItem('margube_tabId') || 'tab_main'
     localStorage.setItem('margube_session', JSON.stringify({ id: profile.id, tabId, lastActivity: Date.now() }))
     await loadAllEmployees()
-    navigate(isFirstAccess(profile) ? '/changePassword' : '/dashboard')
+    const pending = pendingPathRef.current
+    pendingPathRef.current = null
+    navigate(isFirstAccess(profile) ? '/changePassword' : pending || '/dashboard')
   }
 
   async function loadAllEmployees() {
@@ -1184,7 +1118,8 @@ export function AuthProvider({ children }) {
       }
       const last = lastActivityRef.current
       const left = IDLE_TIMEOUT - (Date.now() - last)
-      if (left <= 0) { setIdleLeft(null); logout(); return }
+      // Automatic logout: this is still the person's device, and pushes must keep arriving
+      if (left <= 0) { setIdleLeft(null); logout({ keepDevice: true }); return }
       setIdleLeft(left <= IDLE_WARNING ? Math.ceil(left / 1000) : null)
 
       // restoreSession treats a marker older than IDLE_TIMEOUT as stale: without this,
@@ -1233,9 +1168,9 @@ export function AuthProvider({ children }) {
     return { ok: true }
   }
 
-  const logout = async () => {
+  const logout = async ({ keepDevice = false } = {}) => {
     // Unregister this browser's pushes first: the call needs the session
-    await disablePush({ keepBrowserSubscription: true }).catch(() => {})
+    if (!keepDevice) await disablePush({ keepBrowserSubscription: true }).catch(() => {})
     supabase.auth.signOut({ scope: 'local' })
     localStorage.removeItem('margube_session')
     localStorage.removeItem('margube_tabId')

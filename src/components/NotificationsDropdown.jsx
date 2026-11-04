@@ -10,6 +10,8 @@ export function NotificationsDropdown({
   setNotiMenu,
   unreadCount,
   notifications,
+  hasMore,
+  loadMore,
   handleMarkAllRead,
   markNotifRead,
   navigate,
@@ -105,6 +107,11 @@ export function NotificationsDropdown({
                   </div>
                 );
               })
+            )}
+            {hasMore && (
+              <Button variant="ghost" size="sm" onClick={loadMore} className={styles.loadMoreBtn}>
+                Ver avisos anteriores
+              </Button>
             )}
           </div>
         </motion.div>

@@ -1,5 +1,3 @@
-import { createNotification, notifyAdmins } from './notifications.js';
-
 export async function fetchHourCompensations(supabase) {
   const { data, error } = await supabase
     .from('hour_compensations')
@@ -31,7 +29,7 @@ export async function fetchHourCompensations(supabase) {
   }));
 }
 
-export async function createHourCompensation(supabase, employees, { employeeId, date, reason, hours, type }) {
+export async function createHourCompensation(supabase, { employeeId, date, reason, hours, type }) {
   const status = type === 'bolsa' ? 'pending' : 'approved';
   const { data, error } = await supabase.from('hour_compensations').insert([{
     employee_id: employeeId,
@@ -47,21 +45,10 @@ export async function createHourCompensation(supabase, employees, { employeeId, 
     return { error };
   }
 
-  if (type === 'bolsa') {
-    const empName = employees.find(e => e.id === employeeId)?.name || 'Un empleado';
-    await notifyAdmins(supabase, employees, {
-      title: `⌛ Nueva bolsa de horas`,
-      body: `${empName} solicita compensar ${hours}h en su bolsa.`,
-      type: 'info',
-      entityType: 'hour_compensation',
-      entityId: data?.id,
-    });
-  }
-
   return { data };
 }
 
-export async function updateHourCompensationStatus(supabase, id, status, reviewedBy, employeeId) {
+export async function updateHourCompensationStatus(supabase, id, status, reviewedBy) {
   const { error } = await supabase.from('hour_compensations').update({
     status,
     reviewed_by: reviewedBy,
@@ -70,19 +57,6 @@ export async function updateHourCompensationStatus(supabase, id, status, reviewe
   if (error) {
     console.error('updateHourCompensationStatus:', error);
     return { error };
-  }
-
-  if (employeeId) {
-    await createNotification(supabase, {
-      userId: employeeId,
-      title: status === 'approved' ? '✅ Horas aprobadas' : '❌ Horas rechazadas',
-      body: status === 'approved'
-        ? 'Tu solicitud de bolsa de horas ha sido aprobada.'
-        : 'Tu solicitud ha sido rechazada.',
-      type: status === 'approved' ? 'success' : 'error',
-      entityType: 'hour_compensation',
-      entityId: id,
-    });
   }
   return { error: null };
 }
