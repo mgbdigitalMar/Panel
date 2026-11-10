@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Margube · Boceto app</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="boceto.css">
+<style>
+body{display:flex;justify-content:center;gap:36px;padding:28px;flex-wrap:wrap;align-items:flex-start;background:none}
+.ph-frame{width:390px;height:844px;border-radius:44px;overflow:hidden;position:relative;border:8px solid #06070B;box-shadow:0 26px 60px rgba(0,0,0,.5);isolation:isolate;flex:none}
+.scr{position:absolute;inset:0;overflow:hidden;padding:54px 18px 0}
+.pbg{position:absolute;inset:0;z-index:-2;background:url(room.jpg) 62% center/cover;filter:var(--photo)}
+.pveil{position:absolute;inset:0;z-index:-1;background:var(--veil)}
+.bar{display:flex;align-items:center;gap:8px;margin-bottom:16px}.bar img{width:44px;height:44px;border-radius:13px}.bar .sp{flex:1}
+h1{font-size:30px;line-height:1.1}.sub{color:var(--tx2);margin:5px 0 14px}
+.tile{padding:15px 16px;display:flex;flex-direction:column}
+.tile h2{font:600 15px/1.3 var(--font);letter-spacing:0}.tt{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.val{font:600 44px/1 var(--head);letter-spacing:-.03em;margin-top:12px}.val small{font-size:20px;font-weight:500}
+.vl{font-size:14px;color:var(--tx2);margin-top:6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.two .val{font-size:34px}.two .tile{min-height:128px}.two .val{margin-top:auto}
+.list{margin-top:10px;padding:6px 15px}
+.it{display:flex;align-items:center;gap:11px;padding:11px 0;border-top:1px solid var(--line);min-height:60px}.it:first-child{border:0}
+.it>div{flex:1;min-width:0}.it strong{font-weight:600;display:block;line-height:1.3}.it small{font-size:13.5px;color:var(--tx2)}.tm{font-weight:700;font-size:15px;width:48px}
+.ic{width:42px;height:42px;border-radius:13px;background:var(--wash);display:grid;place-items:center;flex:none}
+.tabs{position:absolute;left:10px;right:10px;bottom:14px;height:72px;border-radius:26px;display:grid;grid-template-columns:repeat(5,1fr);padding:6px;background:var(--glass-strong)}
+.tabs button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:500;color:var(--tx2);border-radius:20px;position:relative}
+.tabs button[aria-current]{background:var(--chip-on);color:var(--chip-on-tx);font-weight:700}
+.tabs .count{top:3px;right:9px}
+.fab{position:absolute;right:18px;bottom:98px;width:58px;height:58px;border-radius:20px;background:var(--brand);color:#fff;display:grid;place-items:center;box-shadow:0 10px 24px rgba(23,50,160,.5)}
+.fab svg{width:26px;height:26px}
+.seg{width:100%;margin-bottom:12px}.seg button{flex:1;justify-content:center;height:40px;padding:0 6px}
+.res{padding:14px 15px;margin-bottom:10px}.res .rt{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.res strong{font:600 17px/1.2 var(--head);letter-spacing:-.01em;display:block}.res small{color:var(--tx2);font-size:13.5px}
+.tr{height:22px;border-radius:7px;background:repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 16.666%),var(--wash);position:relative;margin:11px 0 10px}
+.bk{position:absolute;top:2px;bottom:2px;left:calc((var(--s) - 8)/12*100%);width:calc((var(--e) - var(--s))/12*100%);border-radius:5px;background:var(--bar-hi)}
+.nw{position:absolute;top:-2px;bottom:-2px;width:2px;background:#FF6B7F;left:52.08%}
+.acts{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;color:var(--tx2)}
+.bs{height:44px;padding:0 15px;border-radius:999px;background:var(--brand);color:#fff;font-weight:600;font-size:14.5px;display:inline-flex;align-items:center;gap:6px;flex:none}.bs svg{width:16px;height:16px}
+.field{margin-bottom:13px}.field label{display:block;font-weight:600;font-size:14.5px;margin-bottom:6px}.input{height:50px;border-radius:14px;background:var(--wash);border:1px solid var(--line);display:flex;align-items:center;padding:0 14px;gap:9px;justify-content:space-between}
+.sheet{position:absolute;left:0;right:0;bottom:0;top:128px;border-radius:28px 28px 0 0;padding:12px 18px 22px;background:var(--glass-strong)}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--wash2);margin:0 auto 14px}
+.sheet h2{font-size:22px;margin-bottom:14px}
+.type{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}.ty{height:56px;border-radius:14px;background:var(--wash);border:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 12px;font-weight:600;font-size:14.5px}.ty.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.full{width:100%;justify-content:center;height:52px}
+.slip{display:flex;gap:9px;align-items:center;font-size:14px;color:var(--tx2);padding:11px 13px;border-radius:13px;background:var(--wash);margin-bottom:14px}
+.cap{width:100%;text-align:center;color:#fff;font:600 15px var(--font);margin-top:10px;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+.col{width:406px}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></symbol>
+<symbol id="cal" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="3"/><path d="M3 10h18M8 2.5v4M16 2.5v4"/></symbol>
+<symbol id="inbox" viewBox="0 0 24 24"><path d="M3 13h5l2 3h4l2-3h5"/><path d="M5.5 5h13L21 13v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5z"/></symbol>
+<symbol id="timer" viewBox="0 0 24 24"><circle cx="12" cy="14" r="8"/><path d="M12 10v4l2.5 2M9.5 2h5"/></symbol>
+<symbol id="grid" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></symbol>
+<symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4.4-4.4"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 8 2.5 8h-17S6 15 6 9zM10 21h4"/></symbol>
+<symbol id="ne" viewBox="0 0 24 24"><path d="M7 17 17 7M8.5 7H17v8.5"/></symbol>
+<symbol id="room" viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16M2 21h20M9 7h1.5M13.5 7H15M9 11.5h1.5M13.5 11.5H15M10 21v-4.5h4V21"/></symbol>
+<symbol id="car" viewBox="0 0 24 24"><path d="M3 16v-3.5l2.2-5.2A2 2 0 0 1 7 6h10a2 2 0 0 1 1.8 1.3l2.2 5.2V16a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16zM3.5 12.5h17"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="16.5" cy="17.5" r="1.6"/></symbol>
+<symbol id="down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="file" viewBox="0 0 24 24"><path d="M6 2.5h8.5L19 7v13.5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-17a1 1 0 0 1 1-1z"/><path d="M9 12h6M9 16h6"/></symbol>
+<symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.5"/></symbol>
+</defs></svg>
+<div class="bg"></div><div class="veil"></div>
+
+<div class="col"><div class="ph-frame"><div class="pbg"></div><div class="pveil"></div><div class="scr">
+  <div class="bar"><img src="logo-icon.png" alt="Margube"><span class="sp"></span><button class="round btn-g" aria-label="Buscar"><svg class="i"><use href="#search"/></svg></button><button class="round btn-g" aria-label="Avisos, 3 sin leer"><svg class="i"><use href="#bell"/></svg><span class="count">3</span></button><span class="av leaf" style="width:44px;height:44px">LM</span></div>
+  <h1>Buenas tardes, Laura</h1><p class="sub">Jueves, 5 de noviembre</p>
+  <a class="tile glass blue" href="#"><div class="tt"><h2>Tiempo a compensar</h2><span class="arrow on"><svg class="i"><use href="#ne"/></svg></span></div><div class="val">+9,5 <small>h</small></div><div class="vl">A tu favor · 2 h por aprobar</div></a>
+  <div class="two"><a class="tile glass" href="#"><div class="tt"><h2>Reservar sala</h2><svg class="i"><use href="#room"/></svg></div><div class="val">2<small>/3</small></div><div class="vl">Libres ahora</div></a>
+  <a class="tile glass" href="#"><div class="tt"><h2>Reservar vehículo</h2><svg class="i"><use href="#car"/></svg></div><div class="val">2<small>/3</small></div><div class="vl">Libres ahora</div></a></div>
+  <section class="list glass"><div class="it"><span class="tm">15:44</span><div><strong>Sala Olivo</strong><small>Sesión de formación</small></div><span class="pill ok">Confirmada</span></div><div class="it"><span class="tm">16:54</span><div><strong>Sala Roble</strong><small>Llamada de seguimiento</small></div><span class="pill pend">Pendiente</span></div></section>
+</div>
+<button class="fab" aria-label="Nueva reserva, solicitud u horas"><svg class="i"><use href="#plus"/></svg></button>
+<nav class="tabs glass" aria-label="Secciones"><button aria-current="page"><svg class="i"><use href="#home"/></svg>Inicio</button><button><svg class="i"><use href="#cal"/></svg>Reservas<span class="count">2</span></button><button><svg class="i"><use href="#inbox"/></svg>Solicitudes<span class="count">2</span></button><button><svg class="i"><use href="#timer"/></svg>Horas</button><button><svg class="i"><use href="#grid"/></svg>Más</button></nav>
+</div><p class="cap">Inicio</p></div>
+
+<div class="col"><div class="ph-frame"><div class="pbg"></div><div class="pveil"></div><div class="scr">
+  <h1 style="margin-bottom:12px">Reservas</h1>
+  <div class="seg" role="tablist"><button role="tab" aria-selected="true">Hoy</button><button role="tab" aria-selected="false">Agenda · 3</button><button role="tab" aria-selected="false">Calendario</button></div>
+  <section class="res glass"><div class="rt"><div><strong>Sala Olivo</strong><small>Planta 1 · 8 personas</small></div><span class="pill ok">Libre</span></div><div class="tr"><i class="bk" style="--s:15.73;--e:16.23"></i><i class="nw"></i></div><div class="acts"><span>Próxima: 15:44</span><button class="bs"><svg class="i"><use href="#plus"/></svg>Reservar</button></div></section>
+  <section class="res glass"><div class="rt"><div><strong>Sala Encina</strong><small>Planta 2 · 14 personas</small></div><span class="pill wa">Hasta 15:29</span></div><div class="tr"><i class="bk" style="--s:13.5;--e:15.48"></i><i class="nw"></i></div><div class="acts"><span>En uso: Diego Ramos</span><button class="bs"><svg class="i"><use href="#plus"/></svg>Reservar</button></div></section>
+  <section class="res glass"><div class="rt"><div><strong>Dacia Jogger</strong><small>0002 DMB · Turismo</small></div><span class="pill ok">Libre</span></div><div class="tr"><i class="nw"></i></div><div class="acts"><span>Libre el resto del día</span><button class="bs"><svg class="i"><use href="#plus"/></svg>Reservar</button></div></section>
+</div>
+<nav class="tabs glass" aria-label="Secciones"><button><svg class="i"><use href="#home"/></svg>Inicio</button><button aria-current="page"><svg class="i"><use href="#cal"/></svg>Reservas<span class="count">2</span></button><button><svg class="i"><use href="#inbox"/></svg>Solicitudes<span class="count">2</span></button><button><svg class="i"><use href="#timer"/></svg>Horas</button><button><svg class="i"><use href="#grid"/></svg>Más</button></nav>
+</div><p class="cap">Reservas</p></div>
+
+<div class="col"><div class="ph-frame"><div class="pbg"></div><div class="pveil"></div><div class="scr"><h1>Solicitudes</h1><p class="sub">2 pendientes de revisión</p></div>
+<section class="sheet glass" role="dialog" aria-label="Nueva solicitud"><div class="grab"></div><h2>Nueva solicitud</h2>
+  <div class="type"><div class="ty on"><svg class="i"><use href="#file"/></svg>Asuntos propios</div><div class="ty">Trabajo en remoto</div><div class="ty">Trabajo externo</div><div class="ty">Compra</div></div>
+  <div class="field"><label>Fecha de inicio</label><div class="input">12 de noviembre de 2026<svg class="i"><use href="#cal"/></svg></div></div>
+  <div class="field"><label>Fecha de fin</label><div class="input">13 de noviembre de 2026<svg class="i"><use href="#cal"/></svg></div></div>
+  <div class="field"><label>Motivo</label><div class="input" style="height:64px;align-items:flex-start;padding-top:12px">Gestión personal</div></div>
+  <div class="slip"><svg class="i"><use href="#info"/></svg>Te quedan 4 días de asuntos propios este año.</div>
+  <button class="btn btn-p full">Enviar solicitud</button></section>
+</div><p class="cap">Formulario</p></div>
+<script>const p=new URLSearchParams(location.search);if(p.get('t'))document.documentElement.dataset.theme=p.get('t');</script>
+</body></html>

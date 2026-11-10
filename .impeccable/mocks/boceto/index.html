@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="es" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Margube · Boceto web</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="boceto.css">
+<style>
+body{padding:16px 24px 28px 124px}
+.rail{position:fixed;left:16px;top:16px;bottom:16px;width:88px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:28px;background:var(--glass-strong);z-index:5}
+.rail img{width:44px;height:44px;margin-bottom:10px;border-radius:13px}
+.rail button{width:76px;min-height:58px;padding:7px 0 6px;border-radius:16px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;font-weight:500;color:var(--tx2);position:relative;transition:background .16s}
+.rail button .count{top:1px;right:9px}
+[data-theme=dark] .ico-moon,[data-theme=light] .ico-sun{display:none}
+.rail button[aria-current]{background:var(--chip-on);color:var(--chip-on-tx);font-weight:700}
+@media(hover:hover){.rail button:not([aria-current]):hover{background:var(--wash)}}
+.rail .sp{flex:1}.rail hr{width:44px;border:0;border-top:1px solid var(--line);margin:6px 0}
+
+.top{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.crumb{display:flex;align-items:center;gap:12px;height:52px;padding:0 18px;border-radius:999px;background:var(--glass-strong)}
+.crumb img{height:22px;display:block}.crumb span{padding-left:12px;border-left:1px solid var(--line);font-weight:600;display:flex;gap:7px;align-items:center}
+.crumb svg{width:17px;height:17px}
+[data-theme=dark] .lg-light,[data-theme=light] .lg-dark{display:none}
+.search{flex:1;max-width:520px;margin:0 auto;height:52px;padding:0 10px 0 18px;display:flex;align-items:center;gap:10px;border-radius:999px;color:var(--tx2);text-align:left}
+.search kbd{margin-left:auto;font:600 12px var(--font);padding:4px 9px;border-radius:9px;background:var(--wash)}
+.top .btn,.top .round{height:48px}.top .round{width:48px}
+.clock{display:flex;gap:7px;align-items:center;font-weight:600}
+.me{width:48px;height:48px;font-size:15px;background:linear-gradient(135deg,#5B7CFF,#2F5BEA)}
+
+.head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.head>div:first-child{flex:1;min-width:0}
+h1{font-size:clamp(26px,2.5vw,36px)}.head p{color:var(--tx2);margin-top:3px}
+
+.view{display:none}.view.on{display:block}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(4,1fr);margin-bottom:14px}
+.tile{padding:16px 18px;display:flex;flex-direction:column;min-height:136px}
+.tile h2{font:600 15px/1.3 var(--font);letter-spacing:0}
+.tt{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.val{font:600 40px/1 var(--head);letter-spacing:-.03em;margin-top:auto}.val small{font-size:20px;font-weight:500;letter-spacing:-.01em}
+.vl{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:14px;color:var(--tx2);flex-wrap:wrap}
+
+.main{grid-template-columns:minmax(0,1.62fr) minmax(0,1fr)}
+.panel{padding:18px 20px}
+.ph{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}.ph>div:first-child{flex:1;min-width:150px}
+.ph h2{font-size:18px}.ph p{color:var(--tx2);font-size:14px;margin-top:2px}
+
+.chart{display:grid;grid-template-columns:34px 1fr;height:318px;margin-top:10px;position:relative}
+.yax{position:relative;font-size:13px;color:var(--tx3);margin:34px 0 28px}.yax span{position:absolute;left:0;transform:translateY(50%)}
+.plot{position:relative;border-bottom:1px solid var(--line);margin:34px 0 28px}
+.plot i.gr{position:absolute;left:0;right:0;border-top:1px dashed var(--line)}
+.bars{position:absolute;inset:0;display:flex}
+.bb{flex:1;display:flex;justify-content:center;align-items:flex-end;position:relative;height:100%;outline-offset:-2px;border-radius:8px;cursor:default}
+.bb b{display:block;width:clamp(20px,2.2vw,30px);min-height:4px;border-radius:9px 9px 3px 3px;background:var(--bar);transition:height .45s cubic-bezier(.16,1,.3,1),background .16s}
+.bb.hi b{background:var(--bar-hi);box-shadow:0 6px 18px rgba(47,91,234,.4)}
+@media(hover:hover){.bb:hover b{background:var(--tx)}.bb.hi:hover b{background:var(--bar-hi)}}
+.bb em{position:absolute;bottom:-26px;font-style:normal;font-size:13px;color:var(--tx2)}.bb.hi em{color:var(--tx);font-weight:700}
+.bb .tip{position:absolute;padding:4px 10px;border-radius:9px;background:#fff;color:#11141B;font-size:13px;font-weight:700;white-space:nowrap;transform:translateY(-8px);pointer-events:none;opacity:0;transition:opacity .12s;z-index:2}
+.bb.hi .tip,.bb:hover .tip,.bb:focus-visible .tip{opacity:1}
+.bars:hover .bb.hi:not(:hover) .tip{opacity:0}
+
+.side{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:start}
+.side .tile{min-height:164px}
+.gauge{position:relative;width:128px;margin:8px auto 0}.gauge svg{display:block;width:100%}
+.gauge b{position:absolute;left:0;right:0;bottom:2px;text-align:center;font:600 26px var(--head);letter-spacing:-.02em}
+.mini{text-align:center;font-size:13.5px;color:var(--tx2);margin-top:4px}
+.stack{display:flex;margin-top:auto}.stack .av{margin-right:-7px;border:2px solid rgba(20,22,32,.7);width:38px;height:38px}
+.c2{background:#E8588C}.c3{background:#117A6E}.c4{background:#A052DF}.c5{background:#B36A0C}
+.span2{grid-column:span 2}
+.pie{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin-top:12px}
+.dn{position:relative;width:128px;height:128px}.dn svg{transform:rotate(-90deg);width:100%;height:100%}.dn b{position:absolute;inset:0;display:grid;place-content:center;text-align:center;font:600 28px/1 var(--head)}.dn small{display:block;font:500 13px var(--font);color:var(--tx2);margin-top:3px}
+.leg{display:grid;gap:9px}.leg div{display:flex;align-items:center;gap:9px}.leg i{width:12px;height:12px;border-radius:4px;flex:none}.leg b{margin-left:auto;font-weight:600}
+
+.more{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:14px}
+.it{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line)}.it:first-of-type{margin-top:8px;border:0}
+.it .tm{width:56px;font-weight:600;font-size:14px;flex:none}.it>div{flex:1;min-width:0}.it strong{font-weight:600;display:block;line-height:1.3}.it small{font-size:13.5px;color:var(--tx2)}
+.date{width:46px;height:50px;border-radius:12px;background:var(--wash);display:grid;place-content:center;text-align:center;font:600 19px/1 var(--head);flex:none}.date small{display:block;font:600 11.5px var(--font);margin-top:2px;color:var(--tx2)}
+.lnk{font-weight:600;color:var(--accent);display:inline-flex;align-items:center;gap:6px;margin-top:6px;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+
+/* Reservas */
+.tabs{margin-bottom:14px}
+.rmain{grid-template-columns:minmax(280px,.72fr) minmax(0,2fr);margin-bottom:14px}
+.next{padding:20px;display:flex;flex-direction:column}
+.next h2{font-size:15px;font-family:var(--font);font-weight:600;letter-spacing:0}
+.next h3{font-size:30px;margin-top:14px}.next .when{font:600 34px/1.1 var(--head);letter-spacing:-.03em;margin-top:6px}
+.next p{margin-top:6px;color:var(--tx2)}.next .btn{margin-top:auto;justify-content:center}
+.rows{margin-top:14px;display:grid;gap:9px;--lab:124px}
+.tk,.rw{display:grid;grid-template-columns:var(--lab) 1fr;align-items:center;gap:0 12px}
+.tk .t{display:grid;grid-template-columns:repeat(6,1fr);font-size:13px;color:var(--tx3)}
+.rw strong{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr{height:30px;border-radius:9px;background:repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 8.3333%),var(--wash);position:relative}
+.bk{position:absolute;top:3px;bottom:3px;left:calc((var(--s) - 8)/12*100%);width:calc((var(--e) - var(--s))/12*100%);border-radius:7px;background:var(--bar-hi);color:#fff}
+[data-theme=dark] .bk{background:#3E67F0}
+.bk.p{background:repeating-linear-gradient(-45deg,var(--wa-bg) 0 5px,transparent 5px 10px);border:1.5px dashed var(--wa)}
+[data-theme=dark] .bk.p{background:repeating-linear-gradient(-45deg,var(--wa-bg) 0 5px,transparent 5px 10px)}
+.nowwrap{position:relative}.nowl{position:absolute;top:26px;bottom:0;left:calc(var(--lab) + 12px + (100% - var(--lab) - 12px)*.5208);width:2px;background:#FF6B7F;z-index:2;pointer-events:none}
+.keys{display:flex;gap:14px;font-size:13px;color:var(--tx2);align-items:center}.keys i{display:inline-block;width:20px;height:10px;border-radius:3px;margin-right:6px;vertical-align:0}
+.rtiles{grid-template-columns:repeat(4,1fr);margin-bottom:14px}.rtiles .tile{min-height:112px}.rtiles .val{font-size:32px}
+.tb{padding:18px 20px 8px}
+.filter{height:44px;padding:0 14px;border-radius:999px;background:var(--wash);display:flex;align-items:center;gap:8px;color:var(--tx2);min-width:280px}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14.5px}
+th{text-align:left;font-weight:600;font-size:13px;color:var(--tx3);padding:9px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}tr:last-child td{border-bottom:0}
+tbody tr{transition:background .12s}@media(hover:hover){tbody tr:hover{background:var(--wash)}}
+.nm{display:flex;align-items:center;gap:11px}.nm strong{font-weight:600;display:block;line-height:1.25}.nm small{color:var(--tx2);font-size:13px}
+.ic{width:38px;height:38px;border-radius:12px;background:var(--wash);display:grid;place-items:center;flex:none}
+.bs{height:36px;padding:0 13px;border-radius:999px;border:1px solid var(--line);background:var(--wash);font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.bs svg{width:15px;height:15px}
+@media(hover:hover){.bs:hover{background:var(--wash2)}}
+.eq{display:flex;gap:5px;flex-wrap:wrap}
+@media(max-width:1180px){.kpis,.rtiles{grid-template-columns:repeat(2,1fr)}.main,.rmain,.more{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></symbol>
+<symbol id="cal" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="3"/><path d="M3 10h18M8 2.5v4M16 2.5v4"/></symbol>
+<symbol id="inbox" viewBox="0 0 24 24"><path d="M3 13h5l2 3h4l2-3h5"/><path d="M5.5 5h13L21 13v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5z"/></symbol>
+<symbol id="timer" viewBox="0 0 24 24"><circle cx="12" cy="14" r="8"/><path d="M12 10v4l2.5 2M9.5 2h5"/></symbol>
+<symbol id="news" viewBox="0 0 24 24"><path d="M4 4h13v16H6a2 2 0 0 1-2-2zM17 9h3v9a2 2 0 0 1-2 2"/><path d="M8 8.5h5M8 12.5h5M8 16h3"/></symbol>
+<symbol id="team" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-3.9 3.1-6 7-6s7 2.1 7 6M16 4.3a4 4 0 0 1 0 7.4M18 15.2c2.4.7 4 2.7 4 5.8"/></symbol>
+<symbol id="shield" viewBox="0 0 24 24"><path d="M12 2.5 20 5.5v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></symbol>
+<symbol id="sliders" viewBox="0 0 24 24"><path d="M4 7h9M18 7h2M4 17h2M11 17h9"/><circle cx="15.5" cy="7" r="2.5"/><circle cx="8.5" cy="17" r="2.5"/></symbol>
+<symbol id="out" viewBox="0 0 24 24"><path d="M14 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5M4 12h11M10.5 7.5 15 12l-4.5 4.5"/></symbol>
+<symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4.4-4.4"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3 7 7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7"/></symbol>
+<symbol id="moon" viewBox="0 0 24 24"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></symbol>
+<symbol id="bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 8 2.5 8h-17S6 15 6 9zM10 21h4"/></symbol>
+<symbol id="ne" viewBox="0 0 24 24"><path d="M7 17 17 7M8.5 7H17v8.5"/></symbol>
+<symbol id="up" viewBox="0 0 24 24"><path d="m3 17 6-6 4 4 8-8M15 7h6v6"/></symbol>
+<symbol id="file" viewBox="0 0 24 24"><path d="M6 2.5h8.5L19 7v13.5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-17a1 1 0 0 1 1-1z"/><path d="M12 11v6M9 14h6"/></symbol>
+<symbol id="room" viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16M2 21h20M9 7h1.5M13.5 7H15M9 11.5h1.5M13.5 11.5H15M10 21v-4.5h4V21"/></symbol>
+<symbol id="car" viewBox="0 0 24 24"><path d="M3 16v-3.5l2.2-5.2A2 2 0 0 1 7 6h10a2 2 0 0 1 1.8 1.3l2.2 5.2V16a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16zM3.5 12.5h17"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="16.5" cy="17.5" r="1.6"/></symbol>
+<symbol id="dl" viewBox="0 0 24 24"><path d="M12 3v12M7.5 11 12 15.5 16.5 11M4 20.5h16"/></symbol>
+<symbol id="list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></symbol>
+</defs></svg>
+<div class="bg"></div><div class="veil"></div>
+
+<nav class="rail glass" aria-label="Secciones">
+  <img src="logo-icon.png" alt="Margube, ir al inicio">
+  <button data-v="inicio" aria-current="page"><svg class="i"><use href="#home"/></svg>Inicio</button>
+  <button data-v="reservas"><svg class="i"><use href="#cal"/></svg>Reservas<span class="count">2</span></button>
+  <button><svg class="i"><use href="#inbox"/></svg>Solicitudes<span class="count">2</span></button>
+  <button><svg class="i"><use href="#timer"/></svg>Horas</button>
+  <button><svg class="i"><use href="#news"/></svg>Noticias</button>
+  <button><svg class="i"><use href="#team"/></svg>Equipo</button>
+  <span class="sp"></span><hr>
+  <button><svg class="i"><use href="#shield"/></svg>Admin<span class="count">3</span></button>
+  <button><svg class="i"><use href="#sliders"/></svg>Ajustes</button>
+  <button><svg class="i"><use href="#out"/></svg>Salir</button>
+</nav>
+
+<header class="top">
+  <div class="crumb glass"><img class="lg-dark" src="logo-white.png" alt="Margube"><img class="lg-light" src="logo-color.png" alt="Margube"><span id="crumb"><svg class="i"><use href="#home"/></svg>Inicio</span></div>
+  <button class="search glass"><svg class="i"><use href="#search"/></svg>Buscar personas, salas, solicitudes…<kbd>Ctrl K</kbd></button>
+  <button class="btn btn-p"><svg class="i"><use href="#plus"/></svg>Nuevo</button>
+  <div class="btn btn-g clock"><svg class="i"><use href="#clock"/></svg>14:15</div>
+  <button class="round btn-g" id="theme" aria-label="Cambiar tema claro u oscuro"><svg class="i ico-sun"><use href="#sun"/></svg><svg class="i ico-moon"><use href="#moon"/></svg></button>
+  <button class="round btn-g" aria-label="Avisos, 3 sin leer"><svg class="i"><use href="#bell"/></svg><span class="count">3</span></button>
+  <button class="av leaf me" aria-label="Mi perfil, Laura Martín">LM</button>
+</header>
+
+<main>
+<section class="view on" id="inicio">
+  <div class="head"><div><h1>Buenas tardes, Laura</h1><p>Jueves, 5 de noviembre. Esto es lo que pasa hoy en Margube.</p></div>
+    <button class="btn btn-g"><svg class="i"><use href="#file"/></svg>Nueva solicitud</button>
+    <button class="btn btn-p"><svg class="i"><use href="#cal"/></svg>Nueva reserva</button></div>
+
+  <div class="grid kpis">
+    <a class="tile glass blue" href="#"><div class="tt"><h2>Reservas hoy</h2><span class="arrow on"><svg class="i"><use href="#ne"/></svg></span></div><div class="val">4</div><div class="vl"><span class="pill"><svg class="i"><use href="#up"/></svg>+7 esta semana</span>Salas y vehículos</div></a>
+    <a class="tile glass" href="#"><div class="tt"><h2>Solicitudes pendientes</h2><span class="arrow"><svg class="i"><use href="#ne"/></svg></span></div><div class="val">2</div><div class="vl"><span class="pill wa">Por revisar</span>La más antigua, ayer</div></a>
+    <a class="tile glass" href="#"><div class="tt"><h2>Tiempo a compensar</h2><span class="arrow"><svg class="i"><use href="#ne"/></svg></span></div><div class="val">+9,5 <small>h</small></div><div class="vl"><span class="pill ok">A tu favor</span>2 h por aprobar</div></a>
+    <a class="tile glass" href="#"><div class="tt"><h2>Empleados activos</h2><span class="arrow"><svg class="i"><use href="#ne"/></svg></span></div><div class="val">10</div><div class="vl"><span class="pill">7 en oficina</span>3 fuera hoy</div></a>
+  </div>
+
+  <div class="grid main">
+    <section class="panel glass" aria-labelledby="t-chart">
+      <div class="ph"><div><h2 id="t-chart">Reservas de la semana</h2><p id="ch-sub">10 reservas esta semana</p></div>
+        <span class="pill ok" id="ch-delta"><svg class="i"><use href="#up"/></svg>+7 frente a la anterior</span>
+        <div class="seg" role="group" aria-label="Periodo"><button aria-pressed="true" data-r="week">Semana</button><button aria-pressed="false" data-r="month">Mes</button><button aria-pressed="false" data-r="year">Año</button></div></div>
+      <div class="chart"><div class="yax" id="yax"></div><div class="plot" id="plot"></div></div>
+    </section>
+    <div class="side">
+      <section class="tile glass"><div class="tt"><h2>Tu jornada</h2><span class="pill ok">En curso</span></div>
+        <div class="gauge" role="img" aria-label="69 % de la jornada completado"><svg viewBox="0 0 120 66"><path d="M10 60a50 50 0 0 1 100 0" fill="none" stroke="var(--wash2)" stroke-width="10" stroke-linecap="round"/><path d="M10 60a50 50 0 0 1 100 0" fill="none" stroke="var(--bar-hi)" stroke-width="10" stroke-linecap="round" pathLength="100" stroke-dasharray="69 100"/></svg><b>69 %</b></div>
+        <p class="mini">Termina a las 17:00</p></section>
+      <a class="tile glass" href="#"><div class="tt"><h2>Fuera de la oficina</h2><span class="arrow"><svg class="i"><use href="#ne"/></svg></span></div>
+        <div class="val" style="margin-top:12px">3</div>
+        <div class="stack" style="margin-top:10px"><span class="av leaf c2">AM</span><span class="av leaf c3">HC</span><span class="av leaf c4">IN</span></div>
+        <p class="mini" style="text-align:left;margin-top:8px">Álvaro, Hugo e Inés</p></a>
+      <section class="tile glass span2"><div class="tt"><h2>Uso de recursos este mes</h2><span class="arrow"><svg class="i"><use href="#ne"/></svg></span></div>
+        <div class="pie"><div class="dn" role="img" aria-label="38 reservas: 24 de salas y 14 de vehículos"><svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--s1)" stroke-width="5" pathLength="100" stroke-dasharray="61 39" stroke-linecap="round"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--s2)" stroke-width="5" pathLength="100" stroke-dasharray="33 67" stroke-dashoffset="-64" stroke-linecap="round"/></svg><b>38<small>reservas</small></b></div>
+        <div class="leg"><div><i style="background:var(--s1)"></i>Salas<b>24</b></div><div><i style="background:var(--s2)"></i>Vehículos<b>14</b></div></div></div></section>
+    </div>
+  </div>
+
+  <div class="grid more">
+    <section class="panel glass"><h2 style="font-size:18px">Hoy</h2>
+      <div class="it"><span class="tm">15:44</span><div><strong>Sala Olivo</strong><small>Sesión de formación</small></div><span class="pill ok">Confirmada</span></div>
+      <div class="it"><span class="tm">16:54</span><div><strong>Sala Roble</strong><small>Llamada de seguimiento</small></div><span class="pill pend">Pendiente</span></div>
+      <a class="lnk" href="#">Ver mis reservas</a></section>
+    <section class="panel glass"><h2 style="font-size:18px">Comunicados</h2>
+      <div class="it"><span class="date">3<small>NOV</small></span><div><strong>Bienvenidos a la intranet</strong><small>Fijada · Carlos Vega Ortiz</small></div></div>
+      <div class="it"><span class="date">16<small>NOV</small></span><div><strong>Jornada de puertas abiertas</strong><small>Evento · Inés Navarro Rey</small></div></div>
+      <a class="lnk" href="#">Ver todas las noticias</a></section>
+    <section class="panel glass"><h2 style="font-size:18px">Mis solicitudes</h2>
+      <div class="it"><span class="ic"><svg class="i"><use href="#inbox"/></svg></span><div><strong>Asuntos propios</strong><small>12–13 nov · Carlos Vega, 5 nov</small></div><span class="pill ok">Aprobada</span></div>
+      <div class="it"><span class="ic"><svg class="i"><use href="#inbox"/></svg></span><div><strong>Trabajo en remoto</strong><small>20 nov · Enviada ayer</small></div><span class="pill pend">Pendiente</span></div>
+      <a class="lnk" href="#">Ver mis solicitudes</a></section>
+  </div>
+</section>
+
+<section class="view" id="reservas">
+  <div class="head"><div><h1>Reservas de salas y vehículos</h1><p>Mira qué está libre hoy, reserva en segundos y gestiona tus reservas.</p></div>
+    <button class="btn btn-g"><svg class="i"><use href="#dl"/></svg>Descargar Excel</button>
+    <button class="btn btn-p"><svg class="i"><use href="#plus"/></svg>Nueva reserva</button></div>
+  <div class="seg tabs" role="tablist"><button role="tab" aria-selected="true"><svg class="i"><use href="#list"/></svg>Disponibilidad hoy</button><button role="tab" aria-selected="false"><svg class="i"><use href="#cal"/></svg>Agenda <span class="pill" style="height:20px;padding:0 7px">3</span></button><button role="tab" aria-selected="false"><svg class="i"><use href="#cal"/></svg>Calendario</button></div>
+
+  <div class="grid rmain">
+    <section class="next glass blue"><div class="tt"><h2>Tu próxima reserva</h2><span class="pill pend">Pendiente</span></div>
+      <h3>Sala Roble</h3><div class="when">16:54–17:24</div><p>Hoy · Planta 0 · Llamada de seguimiento</p><p>Y 2 reservas más esta semana</p>
+      <button class="btn btn-w"><svg class="i"><use href="#cal"/></svg>Añadir a mi calendario</button></section>
+    <section class="panel glass"><div class="ph"><div><h2>Ocupación de hoy</h2><p>Bloques reservados entre las 08:00 y las 20:00</p></div>
+      <div class="keys"><span><i style="background:var(--bar-hi)"></i>Confirmada</span><span><i style="border:1.5px dashed var(--wa)"></i>Pendiente</span><span><i style="background:#FF6B7F;width:3px"></i>Ahora, 14:15</span></div></div>
+      <div class="rows nowwrap" style="margin-top:18px"><span class="nowl"></span>
+        <div class="tk"><span></span><div class="t"><span>08:00</span><span>10:00</span><span>12:00</span><span>14:00</span><span>16:00</span><span>18:00</span></div></div>
+        <div class="rw"><strong>Sala Olivo</strong><div class="tr"><i class="bk" style="--s:15.73;--e:16.23" title="15:44–16:14, Sesión de formación"></i></div></div>
+        <div class="rw"><strong>Sala Encina</strong><div class="tr"><i class="bk" style="--s:13.5;--e:15.48" title="En uso por Diego Ramos Gil"></i></div></div>
+        <div class="rw"><strong>Sala Roble</strong><div class="tr"><i class="bk p" style="--s:16.9;--e:17.4" title="16:54–17:24, pendiente"></i></div></div>
+        <div class="rw"><strong>Renault Clio</strong><div class="tr"><i class="bk" style="--s:11.25;--e:16.23" title="En uso por Álvaro Molina Sanz"></i></div></div>
+        <div class="rw"><strong>Dacia Jogger</strong><div class="tr"></div></div>
+        <div class="rw"><strong>Citroën Berlingo</strong><div class="tr"></div></div>
+      </div></section>
+  </div>
+
+  <div class="grid rtiles">
+    <div class="tile glass"><h2>Salas libres ahora</h2><div class="val">2<small>/3</small></div></div>
+    <div class="tile glass"><h2>Vehículos libres</h2><div class="val">2<small>/3</small></div></div>
+    <div class="tile glass"><h2>Reservas hoy</h2><div class="val">4</div></div>
+    <div class="tile glass"><h2>Tus próximas</h2><div class="val">3</div></div>
+  </div>
+
+  <section class="tb glass"><div class="ph"><div><h2>Salas y vehículos</h2><p id="tb-sub">6 recursos · 4 libres ahora</p></div>
+      <label class="filter"><svg class="i"><use href="#search"/></svg><input id="q" aria-label="Buscar recurso" placeholder="Sala, vehículo, matrícula o equipamiento" style="flex:1;min-width:0;width:290px;background:none;border:0;outline:0;font:inherit;color:var(--tx)"></label>
+      <div class="seg" role="group" aria-label="Filtrar por tipo"><button aria-pressed="true" data-f="all">Todo</button><button aria-pressed="false" data-f="room">Salas</button><button aria-pressed="false" data-f="car">Vehículos</button></div></div>
+    <table><thead><tr><th>Recurso</th><th>Detalle</th><th>Estado</th><th>Próximo</th><th></th></tr></thead><tbody id="tbody">
+      <tr data-t="room"><td><div class="nm"><span class="ic"><svg class="i"><use href="#room"/></svg></span><div><strong>Sala Olivo</strong><small>Planta 1 · 8 personas</small></div></div></td><td><div class="eq"><span class="pill">Pantalla</span><span class="pill">Videoconferencia</span><span class="pill">Pizarra</span></div></td><td><span class="pill ok">Libre</span></td><td>15:44 · Sesión de formación</td><td><button class="bs"><svg class="i"><use href="#plus"/></svg>Reservar</button></td></tr>
+      <tr data-t="room"><td><div class="nm"><span class="ic"><svg class="i"><use href="#room"/></svg></span><div><strong>Sala Encina</strong><small>Planta 2 · 14 personas</small></div></div></td><td><div class="eq"><span class="pill">Proyector</span><span class="pill">Videoconferencia</span></div></td><td><span class="pill wa">Hasta 15:29</span></td><td>En uso: Diego Ramos Gil</td><td><button class="bs"><svg class="i"><use href="#plus"/></svg>Reservar</button></td></tr>
+      <tr data-t="car"><td><div class="nm"><span class="ic"><svg class="i"><use href="#car"/></svg></span><div><strong>Renault Clio</strong><small>0001 DMB · Turismo · 2023</small></div></div></td><td>—</td><td><span class="pill wa">Hasta 16:14</span></td><td>En uso: Álvaro Molina Sanz</td><td><button class="bs"><svg class="i"><use href="#plus"/></svg>Reservar</button></td></tr>
+      <tr data-t="car"><td><div class="nm"><span class="ic"><svg class="i"><use href="#car"/></svg></span><div><strong>Dacia Jogger</strong><small>0002 DMB · Turismo · 2024</small></div></div></td><td>—</td><td><span class="pill ok">Libre</span></td><td>Libre el resto del día</td><td><button class="bs"><svg class="i"><use href="#plus"/></svg>Reservar</button></td></tr>
+    </tbody></table></section>
+</section>
+</main>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const DATA={week:{sub:'10 reservas esta semana',delta:'+7 frente a la anterior',unit:'reserva',hi:3,d:[['Lun',1],['Mar',1],['Mié',1],['Jue',4],['Vie',3],['Sáb',0],['Dom',0]]},
+month:{sub:'38 reservas en noviembre',delta:'+5 frente a octubre',unit:'reserva',hi:0,d:[['Sem 45',10],['Sem 46',12],['Sem 47',9],['Sem 48',7]]},
+year:{sub:'412 reservas en 2026',delta:'+18 % frente a 2025',unit:'reserva',hi:10,d:[['Ene',28],['Feb',31],['Mar',36],['Abr',30],['May',42],['Jun',38],['Jul',24],['Ago',12],['Sep',44],['Oct',49],['Nov',38],['Dic',0]]}};
+function chart(k){const c=DATA[k],max=Math.max(...c.d.map(x=>x[1]),1),top=Math.ceil(max/ (max>20?10:1))*(max>20?10:1),st=top<=4?1:top/4;
+$('#ch-sub').textContent=c.sub;$('#ch-delta').lastChild.textContent=c.delta;
+let g='',y='';for(let v=0;v<=top;v+=st){const p=v/top*100;if(v)g+=`<i class="gr" style="bottom:${p}%"></i>`;y+=`<span style="bottom:${p}%">${Math.round(v)}</span>`}
+$('#yax').innerHTML=y;$('#plot').innerHTML=g+`<div class="bars">`+c.d.map(([l,v],i)=>{const p=v/top*100;return `<div class="bb${i===c.hi?' hi':''}" tabindex="0" role="img" aria-label="${l}: ${v} reservas"><span class="tip" style="bottom:${p}%">${v} ${v===1?'reserva':'reservas'}</span><b style="height:0" data-h="${v?p:0}"></b><em>${l}</em></div>`}).join('')+`</div>`;
+requestAnimationFrame(()=>$$('.bb b').forEach(b=>b.style.height=b.dataset.h+'%'))}
+chart('week');
+$$('[data-r]').forEach(b=>b.onclick=()=>{$$('[data-r]').forEach(o=>o.setAttribute('aria-pressed',o===b));chart(b.dataset.r)});
+$$('[data-f]').forEach(b=>b.onclick=()=>{$$('[data-f]').forEach(o=>o.setAttribute('aria-pressed',o===b));$$('#tbody tr').forEach(r=>r.hidden=b.dataset.f!=='all'&&r.dataset.t!==b.dataset.f)});
+$('#q').oninput=e=>{const q=e.target.value.toLowerCase();$$('#tbody tr').forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(q))};
+$('#theme').onclick=()=>{const h=document.documentElement;h.dataset.theme=h.dataset.theme==='dark'?'light':'dark'};
+const crumbs={inicio:['home','Inicio'],reservas:['cal','Reservas']};
+function go(v){$$('.view').forEach(s=>s.classList.toggle('on',s.id===v));$$('.rail [data-v]').forEach(b=>b.dataset.v===v?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));$('#crumb').innerHTML=`<svg class="i"><use href="#${crumbs[v][0]}"/></svg>${crumbs[v][1]}`;if(v==='inicio')chart('week');scrollTo(0,0)}
+$$('.rail [data-v]').forEach(b=>b.onclick=()=>{location.hash=b.dataset.v;go(b.dataset.v)});
+const p=new URLSearchParams(location.search);if(p.get('t'))document.documentElement.dataset.theme=p.get('t');
+if(location.hash==='#reservas')go('reservas');
+</script>
+</body></html>

@@ -124,6 +124,25 @@ export async function setNotificationPreference(supabase, userId, category, push
   return { error };
 }
 
+export function allNotificationsEnabled(preferences) {
+  return preferences != null && NOTIFICATION_CATEGORIES.every(({ id }) => preferences[id] !== false);
+}
+
+export async function setAllNotificationPreferences(supabase, userId, enabled) {
+  if (!userId) return { error: new Error('No hay una sesión activa.') };
+  const updated_at = new Date().toISOString();
+  try {
+    return await supabase.from('notification_preferences').upsert(
+      NOTIFICATION_CATEGORIES.map(({ id }) => ({
+        user_id: userId, category: id, push_enabled: enabled, updated_at,
+      })),
+      { onConflict: 'user_id,category' },
+    );
+  } catch (error) {
+    return { error };
+  }
+}
+
 /** Estado del sistema de avisos; solo responde a administradores. */
 export async function fetchNotificationHealth(supabase) {
   const { data, error } = await supabase.rpc('notification_system_health');

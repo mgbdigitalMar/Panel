@@ -1,0 +1,50 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Margube · Bloque y regla</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}html,body{width:1440px;height:900px;overflow:hidden}
+:root{--b:#2F5BEA;--i:#0E1A3D;--y:#FFC93C;--g:#F3F5FA;--l:#D5DBEA;--m:#4A5578}
+body{font:400 16px/1.45 'Atkinson Hyperlegible Next',sans-serif;color:var(--i);background:var(--g);display:grid;grid-template-columns:244px 1fr;font-variant-numeric:tabular-nums}
+nav{background:var(--b);color:#fff;padding:24px 14px;display:flex;flex-direction:column;gap:2px}
+.brand{font-size:27px;font-weight:800;letter-spacing:-.03em;padding:0 12px 26px;display:flex;align-items:center;gap:9px}.leaf{width:18px;height:18px;background:#fff;border-radius:60% 10% 60% 10%}
+nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;font-weight:600;border-radius:8px}nav a svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2}
+nav a.on{background:#fff;color:var(--i)}nav a em{margin-left:auto;font-style:normal;background:var(--y);color:var(--i);font-weight:700;font-size:14px;min-width:24px;text-align:center;border-radius:12px}.sp{flex:1}
+main{padding:20px 32px;display:grid;grid-template-rows:auto auto 1fr;gap:18px;min-width:0}
+.top{display:flex;align-items:center;gap:10px}.ttl{flex:1}h1{font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-.025em}.ttl p{color:var(--m);font-size:16px}
+.s{width:300px;height:46px;background:#fff;border:1.5px solid var(--l);border-radius:8px;padding:10px 14px;color:var(--m)}
+.btn{height:46px;display:flex;align-items:center;padding:0 18px;border-radius:8px;font-weight:700;background:#fff;border:1.5px solid var(--l)}.pr{background:var(--b);color:#fff;border-color:var(--b)}
+.rule{background:#fff;border:1.5px solid var(--l);border-radius:12px;padding:16px 20px 18px}
+.rh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}.rh b{font-size:20px;font-weight:800;letter-spacing:-.01em}.key{display:flex;gap:18px;font-size:14px;color:var(--m);align-items:center}.key i{display:inline-block;width:22px;height:10px;border-radius:2px;margin-right:6px;vertical-align:1px}
+.grid{display:grid;grid-template-columns:150px 1fr;row-gap:7px;position:relative}
+.ticks{grid-column:2;display:grid;grid-template-columns:repeat(12,1fr);font-size:13px;color:var(--m);font-weight:600;height:20px}.ticks span{border-left:1.5px solid var(--l);padding-left:5px}
+.lab{font-weight:600;align-self:center;font-size:15px}.tr{position:relative;height:34px;background:repeating-linear-gradient(90deg,#EDF0F7 0 1.5px,transparent 1.5px calc(100%/12));border-radius:3px}
+.bar{position:absolute;top:0;bottom:0;border-radius:4px;display:flex;align-items:center;padding:0 9px;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden}
+.c{background:var(--b);color:#fff}.p{background:#FFF4CF;border:2px dashed #8A5A00;color:#5E3D00}.j{background:#DDE5FB;color:var(--i)}
+.now{position:absolute;top:0;bottom:-4px;width:3px;background:var(--i);left:calc(150px + (100% - 150px)*.5208);z-index:2}.now b{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--i);color:#fff;font-size:13px;padding:0 6px;border-radius:3px}
+.blocks{display:grid;grid-template-columns:1.25fr 1fr 1fr 1.25fr;gap:14px;min-height:0}
+.bk{border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;background:#fff;border:1.5px solid var(--l)}
+.bk h2{font-size:16px;font-weight:700}.num{font-size:74px;line-height:1;font-weight:800;letter-spacing:-.04em;margin-top:auto}.num small{font-size:30px;letter-spacing:-.01em}.bk p{margin-top:6px}
+.blu{background:var(--i);color:#fff;border-color:var(--i)}.yel{background:var(--y);border-color:var(--y)}
+.lnk{font-weight:700;text-decoration:underline;text-underline-offset:3px;margin-top:10px}
+.pp{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1.5px solid #E8EBF3}.pp:first-of-type{border:0;margin-top:6px}.av{width:30px;height:30px;background:#DDE5FB;border-radius:60% 10% 60% 10%;display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--i)}.pp span{margin-left:auto;font-size:14px;color:var(--m)}
+</style></head><body>
+<nav><div class="brand"><i class="leaf"></i>Margube</div>
+<a class="on"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></svg>Inicio</a>
+<a><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Reservas<em>2</em></a>
+<a><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/></svg>Solicitudes<em>2</em></a>
+<a><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>Tiempo a compensar</a>
+<a><svg viewBox="0 0 24 24"><path d="M4 5h13v15H6a2 2 0 01-2-2zM17 9h3v9a2 2 0 01-2 2"/><path d="M8 9h5M8 13h5"/></svg>Noticias</a>
+<a><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M16 4a4 4 0 010 8M18 15c2 1 4 3 4 6"/></svg>Equipo</a>
+<div class="sp"></div>
+<a><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3 8-8 9-5-1-8-4-8-9V6z"/></svg>Administración<em>3</em></a>
+<a><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Ajustes</a>
+<a><svg viewBox="0 0 24 24"><path d="M14 4h6v16h-6M4 12h11M11 8l4 4-4 4"/></svg>Cerrar sesión</a></nav>
+<main><div class="top"><div class="ttl"><h1>Buenas tardes, Laura</h1><p>Jueves, 5 de noviembre · Tu jornada termina a las 17:00</p></div><div class="s">Buscar personas, salas…&nbsp;&nbsp;Ctrl K</div><div class="btn pr">+ Nuevo</div><div class="btn">Avisos · 3</div><div class="btn">LM</div></div>
+<section class="rule"><div class="rh"><b>Tu día</b><div class="key"><span><i style="background:var(--b)"></i>Confirmada</span><span><i style="background:#FFF4CF;border:1.5px dashed #8A5A00"></i>Pendiente</span><span>▌ Ahora, 14:15</span></div></div>
+<div class="grid"><span class="now"><b>14:15</b></span><span></span><div class="ticks"><span>08</span><span>09</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span></div>
+<span class="lab">Jornada</span><div class="tr"><div class="bar j" style="left:0;width:75%">08:00–17:00 · En curso, 69 %</div></div>
+<span class="lab">Salas</span><div class="tr"><div class="bar c" style="left:64.5%;width:14%">15:44 Olivo</div><div class="bar p" style="left:74.5%;width:14%">16:54 Roble</div></div>
+<span class="lab">Vehículos</span><div class="tr"><div class="bar c" style="left:8%;width:37%">09:00–12:30 Renault Clio · Visita a cliente</div></div></div></section>
+<section class="blocks"><div class="bk blu"><h2>Saldo de horas</h2><div class="num">+9,5<small> h</small></div><p>A tu favor · 2 h por aprobar</p><span class="lnk">Registrar horas</span></div>
+<div class="bk yel"><h2>Por revisar</h2><div class="num">2</div><p>Solicitudes esperan tu respuesta</p><span class="lnk">Revisar ahora</span></div>
+<div class="bk"><h2>Libres ahora</h2><div class="num">2<small>/3</small></div><p>Salas · Olivo y Roble</p><span class="lnk">Reservar sala</span></div>
+<div class="bk"><h2>Fuera de la oficina hoy · 3</h2><div class="pp"><i class="av" style="font-style:normal">AM</i>Álvaro Molina<span>Externo</span></div><div class="pp"><i class="av" style="font-style:normal">HC</i>Hugo Castro<span>Externo</span></div><div class="pp"><i class="av" style="font-style:normal">IN</i>Inés Navarro<span>Remoto</span></div></div></section></main></body></html>

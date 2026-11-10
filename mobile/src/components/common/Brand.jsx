@@ -66,7 +66,8 @@ export const GradientFill = memo(function GradientFill({ radius = 0, colors = BR
   );
 });
 
-/** Static art behind a brand panel: blue glow bottom-left, two hairline rings, a hairline leaf. */
+/** Static art inside a brand panel: light from the top, a deeper blue pooled bottom-left, two
+ * hairline rings and a hairline leaf. */
 const PanelArt = memo(function PanelArt({ width, height, leaf, rings }) {
   const leafSize = Math.min(width * 0.46, 220);
   const s = leafSize / 48;
@@ -78,8 +79,13 @@ const PanelArt = memo(function PanelArt({ width, height, leaf, rings }) {
           <Stop offset="0.55" stopColor={BRAND.glow} stopOpacity={0.16} />
           <Stop offset="1" stopColor={BRAND.glow} stopOpacity={0} />
         </RadialGradient>
+        <SvgLinearGradient id="panelSheen" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.16} />
+          <Stop offset="0.5" stopColor="#FFFFFF" stopOpacity={0} />
+        </SvgLinearGradient>
       </Defs>
       <Rect x="0" y="0" width={width} height={height} fill="url(#panelGlow)" />
+      <Rect x="0" y="0" width={width} height={height} fill="url(#panelSheen)" />
       {rings ? (
         <>
           <Circle cx={width * 0.88} cy={height * 0.18} r={96} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={1} />
@@ -99,8 +105,8 @@ const PanelArt = memo(function PanelArt({ width, height, leaf, rings }) {
 });
 
 /**
- * The login's dark brand panel in miniature (web: @mixin brand-panel).
- * Navy in both themes — use it for the single highlight on a screen.
+ * The brand highlight: a pane of Margube blue glass, lit from above (web: @mixin brand-panel).
+ * The same blue in both themes — use it for the single highlight on a screen.
  * Text inside should be white; use BrandTag / brandText helpers.
  */
 export function BrandPanel({ children, style, padding = 20, radius = 26, leaf = true, rings = true }) {
@@ -118,6 +124,7 @@ export function BrandPanel({ children, style, padding = 20, radius = 26, leaf = 
         backgroundColor: colors.brandBg,
         borderWidth: 1,
         borderColor: colors.brandBorder,
+        borderBottomColor: 'rgba(255,255,255,0.12)',
         overflow: 'hidden',
       }, style]}
     >
@@ -130,18 +137,18 @@ export function BrandPanel({ children, style, padding = 20, radius = 26, leaf = 
 /** Text colours on a brand panel. */
 export const ON_BRAND = {
   text: '#FFFFFF',
-  text2: 'rgba(255,255,255,0.72)',
-  text3: 'rgba(255,255,255,0.56)',
-  track: 'rgba(255,255,255,0.14)',
-  accent: '#9DB4FF',
+  text2: 'rgba(255,255,255,0.88)',
+  text3: 'rgba(255,255,255,0.74)',
+  track: 'rgba(255,255,255,0.2)',
+  accent: '#FFFFFF',
 };
 
 /** Translucent chip on a brand panel (web: @mixin brand-tag). */
 export function BrandTag({ label, icon: Icon }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, height: 26, paddingHorizontal: 11, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.12)' }}>
-      {Icon ? <Icon size={12} color="rgba(255,255,255,0.88)" /> : null}
-      <T size={12} weight="semibold" color="rgba(255,255,255,0.88)" numberOfLines={1}>{label}</T>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, height: 26, paddingHorizontal: 11, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.18)' }}>
+      {Icon ? <Icon size={12} color="#FFFFFF" /> : null}
+      <T size={12} weight="semibold" color="#FFFFFF" numberOfLines={1}>{label}</T>
     </View>
   );
 }
@@ -181,7 +188,7 @@ const HeroArt = memo(function HeroArt({ width, height }) {
   );
 });
 
-/** Brand blue running into navy with a dark fade at the bottom so white text stays legible.
+/** Brand blue running into a deeper blue, with a fade at the bottom so white text stays legible.
  * Same colours in both themes, like the brand panel. */
 export function HeroCard({ children, style, padding = 22, radius = 32, minHeight = 230 }) {
   const [size, setSize] = useState(null);
@@ -191,12 +198,12 @@ export function HeroCard({ children, style, padding = 22, radius = 32, minHeight
         const { width, height } = e.nativeEvent.layout;
         if (!size || Math.abs(size.width - width) > 1 || Math.abs(size.height - height) > 1) setSize({ width, height });
       }}
-      style={[{ borderRadius: radius, padding, minHeight, overflow: 'hidden', backgroundColor: BRAND.blue }, style]}
+      style={[{ borderRadius: radius, padding, minHeight, overflow: 'hidden', backgroundColor: BRAND.blue, borderWidth: 1, borderColor: 'rgba(255,255,255,0.28)', borderBottomColor: 'rgba(255,255,255,0.1)' }, style]}
     >
-      <LinearGradient pointerEvents="none" colors={['#7AA2FF', BRAND.blue, '#1B2C6E', BRAND.navy]} locations={[0, 0.38, 0.78, 1]}
+      <LinearGradient pointerEvents="none" colors={['#6F97FF', BRAND.blue, '#2146C4', BRAND.blueDeep]} locations={[0, 0.36, 0.76, 1]}
         start={{ x: 0.15, y: 0 }} end={{ x: 0.85, y: 1 }} style={FILL} />
       {size ? <HeroArt width={size.width} height={size.height} /> : null}
-      <LinearGradient pointerEvents="none" colors={['rgba(17,20,27,0)', 'rgba(17,20,27,0.5)']} locations={[0.35, 1]} style={FILL} />
+      <LinearGradient pointerEvents="none" colors={['rgba(10,18,60,0)', 'rgba(10,18,60,0.42)']} locations={[0.35, 1]} style={FILL} />
       {children}
     </View>
   );

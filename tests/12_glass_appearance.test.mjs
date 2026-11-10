@@ -149,7 +149,7 @@ export async function runGlassAppearanceTests() {
   const globalCss = read('src', 'styles', 'global.scss');
   const indexHtml = read('index.html');
   assert('Safari: el lienzo del documento usa el color del fondo Cristal en cada tema',
-    globalCss.includes("html { background: var(--canvas, var(--bg)); }") && globalCss.includes("[data-appearance='glass'][data-theme='dark'] { --canvas: #0A1321; --canvas-top-rgb: 16, 25, 54; }"));
+    globalCss.includes("html { background: var(--canvas, var(--bg)); }") && globalCss.includes("[data-appearance='glass'][data-theme='dark'] { --canvas: #101116; --canvas-top-rgb: 14, 15, 20; }"));
   assert('Móvil y tablet: cabecera transparente; solo la franja de la barra de estado lleva velo (Safari)',
     chromeStyles.includes('background: transparent;') && chromeStyles.includes('height: env(safe-area-inset-top);')
     && chromeStyles.includes('background: rgba(var(--canvas-top-rgb), 0.82);') && chromeStyles.includes('backdrop-filter: blur(18px) saturate(160%);'));
@@ -168,7 +168,7 @@ export async function runGlassAppearanceTests() {
   assert('Safari: el fondo Cristal llega bajo la barra de estado y la barra inferior',
     /\.wallpaper \{[\s\S]*?top: -120px;[\s\S]*?bottom: -120px;/.test(read('src', 'components', 'Wallpaper.module.scss')));
   assert('Safari: tema y apariencia aplicados antes del primer pintado (sin destello)',
-    indexHtml.includes("localStorage.getItem('app-theme-mode')") && indexHtml.includes("html { background: #0A1321; }") && indexHtml.includes("html[data-theme='light'] { background: #DEEBF6; }"));
+    indexHtml.includes("localStorage.getItem('app-theme-mode')") && indexHtml.includes("html { background: #101116; }") && indexHtml.includes("html[data-theme='light'] { background: #E3E6EC; }"));
   assert('Safari: bajo las barras se ve el degradado del fondo, no una franja gris plana',
     globalCss.includes("html[data-appearance='glass'] {") && globalCss.includes('background-size: 100% 100lvh;')
     && read('src', 'components', 'Wallpaper.module.scss').includes('background: transparent;'));
@@ -192,6 +192,28 @@ export async function runGlassAppearanceTests() {
   assert('El desenfoque de tarjetas solo existe en Cristal', read('src', 'styles', '_patterns.scss').includes('backdrop-filter: var(--lg-card-blur, none);'));
   assert('Fondo de pantalla, con foto opcional en public/wallpaper.jpg', read('src', 'components', 'Wallpaper.jsx').includes("const PHOTO_URL = '/wallpaper.jpg'"));
   assert('Equipo: el selector de vista no se sale de la página', read('src', 'pages', 'EmployeesPage.module.scss').includes('min-width: min(430px, 100%);'));
+
+  // 6. Margube Adaptive Glass: cristal gris ahumado sobre la sala, con el desenfoque medido
+  const patterns = read('src', 'styles', '_patterns.scss');
+  assert('Adaptive Glass: la sala de fondo viene con la web y el lienzo de Safari usa sus tonos',
+    fs.existsSync(path.join(root, 'public', 'wallpaper.jpg')) && globalCss.includes("[data-appearance='glass'] { --canvas: #E3E6EC; --canvas-top-rgb: 232, 235, 242; }")
+    && read('vite.config.js').includes("background_color: '#101116'") && ctx.includes("resolved === 'dark' ? '#0E0F14' : '#E8EBF2'"));
+  assert('Adaptive Glass: solo desenfocan los paneles y las barras; el resto de la interfaz no',
+    globalCss.includes(":where(.app-shell) :where(*:not([data-scrim])) {") && patterns.includes('@mixin pane-blur {')
+    && /@mixin surface \{\s*@include glass;\s*@include pane-blur;/.test(patterns)
+    && read('src', 'components', 'ui', 'Card', 'Card.module.scss').includes('@include p.pane-blur;'));
+  assert('Adaptive Glass: en móvil y tablet se desenfoca la sala una vez, no cada tarjeta',
+    /@media \(max-width: 1023px\) \{\s*\[data-appearance='glass'\] :is\(\.app-shell, \.glass-scope\) \{\s*--lg-card-blur: none;/.test(globalCss)
+    && /@media \(max-width: 1023px\) \{\s*\.photo \{ filter: blur\(22px\)/.test(wp));
+  assert('Adaptive Glass: con «reducir transparencia» los paneles son sólidos',
+    globalCss.includes('@media (prefers-reduced-transparency: reduce) {') && patterns.includes('@media (prefers-reduced-transparency: reduce) {'));
+  assert('Adaptive Glass: la pestaña abierta es una ficha sólida y el destacado es cristal azul Margube, en los dos temas',
+    (vars.match(/--chip-on:/g) || []).length >= 2 && vars.includes('--glass-blue:') && patterns.includes('background: var(--chip-on) !important;')
+    && patterns.includes('var(--glass-blue, rgba(47, 91, 234, 0.86))'));
+  assert('Inicio de ordenador: bento con la cifra destacada, la jornada en un medidor y las cifras animadas hacia su valor real',
+    glass.includes('<StatCard featured') && glass.includes('<Gauge value={progress} />') && glass.includes('<AnimatedNumber value={hours.balance}')
+    && read('src', 'components', 'ui', 'AnimatedNumber', 'AnimatedNumber.jsx').includes('useReducedMotion')
+    && read('src', 'components', 'ui', 'StatCard', 'StatCard.jsx').includes('<AnimatedNumber value={value}'));
 
   return { passed, failed };
 }

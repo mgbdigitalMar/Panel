@@ -1,0 +1,39 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Margube · Mosaico</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}html,body{width:1440px;height:900px;overflow:hidden}
+:root{--b:#2F5BEA;--l:#C8F31D;--k:#0A0C14;--s:#171A24;--t:#F5F6FA;--m:#AEB5C7}
+body{font:400 16px/1.35 'Atkinson Hyperlegible Next',sans-serif;background:var(--k);color:var(--t);display:grid;grid-template-columns:252px 1fr;font-variant-numeric:tabular-nums}
+nav{padding:30px 22px;display:flex;flex-direction:column;gap:3px}
+.brand{display:flex;gap:10px;align-items:center;font-size:27px;font-weight:800;letter-spacing:-.035em;margin-bottom:32px}.leaf{width:22px;height:22px;background:var(--b);border-radius:60% 12% 60% 12%}
+nav a{font-size:24px;font-weight:400;letter-spacing:-.02em;padding:7px 10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;color:var(--m)}
+nav a.on{color:var(--k);background:var(--t);font-weight:700}nav a em{font-style:normal;font-size:15px;font-weight:800;background:var(--l);color:var(--k);min-width:26px;text-align:center;border-radius:13px}.sp{flex:1}nav a.sm{font-size:18px}
+main{padding:22px 28px 22px 4px;display:flex;flex-direction:column;min-width:0}
+.top{display:flex;justify-content:flex-end;gap:10px;height:46px}.q{flex:1;max-width:520px;margin-right:auto;background:var(--s);border-radius:10px;padding:11px 16px;color:var(--m)}.bt{background:var(--s);border-radius:10px;padding:11px 16px;font-weight:600}.pr{background:var(--t);color:var(--k);font-weight:800}
+h1{font-size:112px;font-weight:300;letter-spacing:-.055em;line-height:1;white-space:nowrap;margin:12px 0 18px}h1 b{font-weight:700}
+.g{flex:1;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:10px;min-height:0}
+.t{border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;position:relative;overflow:hidden;background:var(--s)}
+.t h2{font-size:22px;font-weight:600;letter-spacing:-.02em}.t p{color:inherit;opacity:.92}.big{font-size:84px;line-height:.95;font-weight:700;letter-spacing:-.05em;margin-top:auto}.big small{font-size:34px;font-weight:500;letter-spacing:-.02em}
+.arr{position:absolute;right:18px;top:16px;font-size:24px}
+.blu{background:var(--b);color:#fff;grid-row:span 2;grid-column:span 2}.blu h2{font-size:40px;font-weight:700;letter-spacing:-.035em}.blu .big{font-size:150px}.blu .big small{font-size:42px}
+.lim{background:var(--l);color:var(--k);grid-column:span 2}.lim .big{font-size:72px}.row{display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto}
+.wht{background:var(--t);color:var(--k)}.tm{font-size:46px;font-weight:700;letter-spacing:-.04em;margin-top:auto;line-height:1}
+.pend{align-self:flex-start;border:2px dashed currentColor;border-radius:6px;padding:1px 8px;font-weight:700;font-size:14px;margin-top:6px}
+.res{display:grid;grid-template-columns:1fr auto;gap:0 14px;margin-top:14px;font-size:18px;font-weight:600}.res span:nth-child(even){font-weight:400}
+.avs{display:flex;margin-top:auto}.av{width:42px;height:42px;background:var(--l);color:var(--k);font-weight:800;font-size:14px;display:grid;place-items:center;border-radius:60% 12% 60% 12%;margin-right:5px}
+.bar{height:12px;background:#2B3040;border-radius:6px;margin-top:8px}.bar i{display:block;width:69%;height:100%;background:var(--l);border-radius:6px}
+</style></head><body>
+<nav><div class="brand"><i class="leaf"></i>Margube</div>
+<a class="on">inicio</a><a>reservas<em>2</em></a><a>solicitudes<em>2</em></a><a>horas</a><a>noticias</a><a>equipo</a><div class="sp"></div><a class="sm">administración<em>3</em></a><a class="sm">ajustes</a><a class="sm">cerrar sesión</a></nav>
+<main><div class="top"><div class="q">buscar personas, salas, solicitudes…</div><div class="bt pr">+ nuevo</div><div class="bt">avisos 3</div><div class="bt">Laura Martín</div></div>
+<h1>buenas tardes, <b>laura</b></h1>
+<section class="g">
+<div class="t blu"><span class="arr">↗</span><h2>reservar sala</h2><div class="res"><span>Sala Olivo</span><span>libre hasta 15:44</span><span>Sala Roble</span><span>libre hasta 16:54</span><span style="opacity:.75">Sala Encina</span><span style="opacity:.75">en uso hasta 15:29</span></div><div class="big">2<small> de 3 libres ahora</small></div></div>
+<div class="t lim"><span class="arr">↗</span><h2>tiempo a compensar</h2><div class="row"><div class="big" style="margin:0">+9,5<small> h</small></div><p style="max-width:170px;font-weight:600">a tu favor · 2 h por aprobar</p></div></div>
+<div class="t wht"><span class="arr">↗</span><h2>próxima reserva</h2><div class="tm">16:54</div><p style="font-weight:600">Sala Roble</p><span class="pend">Pendiente</span></div>
+<div class="t"><span class="arr">↗</span><h2>por revisar</h2><div class="big">2</div><p>solicitudes</p></div>
+<div class="t"><h2>tu jornada</h2><div class="tm" style="margin-top:auto">69 %</div><div class="bar"><i></i></div><p style="margin-top:6px;color:var(--m)">termina a las 17:00</p></div>
+<div class="t"><span class="arr">↗</span><h2>reservar vehículo</h2><div class="big">2<small>/3</small></div><p>libres ahora</p></div>
+<div class="t"><span class="arr">↗</span><h2>fuera hoy</h2><div class="avs"><i class="av" style="font-style:normal">AM</i><i class="av" style="font-style:normal">HC</i><i class="av" style="font-style:normal">IN</i></div><p style="margin-top:8px;color:var(--m)">Álvaro, Hugo e Inés</p></div>
+<div class="t"><span class="arr">↗</span><h2>comunicado fijado</h2><p style="margin-top:auto;font-size:21px;font-weight:600;line-height:1.2">Bienvenidos a la intranet</p><p style="color:var(--m);margin-top:4px">Carlos Vega · 3 nov</p></div>
+</section></main></body></html>

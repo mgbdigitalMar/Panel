@@ -5,7 +5,7 @@ import path from 'node:path';
 import {
   classifyExpoError, classifyExpoHttp, classifyWebPush, parseRetryAfter,
 } from '../supabase/functions/notifications-worker/classify.ts';
-import { mergeNotification, fetchNotifications, NOTIFICATION_CATEGORIES } from '../shared/services/notifications.js';
+import { mergeNotification, fetchNotifications, NOTIFICATION_CATEGORIES, allNotificationsEnabled, setAllNotificationPreferences } from '../shared/services/notifications.js';
 import { ENTITY_NAV_MAP, ENTITY_NAV_MAP_ADMIN, notificationWebPath } from '../shared/config/constants.js';
 
 export async function runNotificationSystemTests() {
@@ -101,5 +101,26 @@ export async function runNotificationSystemTests() {
   // Encontrado con Chrome real: dos subscribe() simultáneos dejan un endpoint muerto que parece válido
   assert('Suscribirse no se solapa', /if \(!enablingPush\) enablingPush = subscribeBrowser\(userId\)/.test(read('src/services/webPush.js')));
 
+  assert('Sin preferencias cargadas no se muestra activado', !allNotificationsEnabled(null));
+  assert('Sin preferencias guardadas todas están activadas', allNotificationsEnabled({}));
+  assert('Preferencias mixtas no se presentan como todas activadas', !allNotificationsEnabled({ news: false }));
+  for (const enabled of [true, false]) {
+    let calls = 0;
+    let rows;
+    let conflict;
+    const client = { from: () => ({ upsert: async (values, options) => {
+      calls++;
+      rows = values;
+      conflict = options.onConflict;
+      return { error: null };
+    } }) };
+    const result = await setAllNotificationPreferences(client, 'user-test', enabled);
+    assert(`Control global ${enabled}: guarda todas las categorías juntas`, !result.error && calls === 1 && rows.length === NOTIFICATION_CATEGORIES.length && rows.every((r) => r.user_id === 'user-test' && r.push_enabled === enabled) && conflict === 'user_id,category');
+  }
+  const failure = new Error('sin conexión');
+  const failedSave = await setAllNotificationPreferences({ from: () => ({ upsert: async () => { throw failure; } }) }, 'user-test', false);
+  assert('El fallo de conexión vuelve a la interfaz para mantener el estado anterior', failedSave.error === failure);
+  const noSession = await setAllNotificationPreferences({}, null, false);
+  assert('Sin sesión no se intenta guardar', !!noSession.error);
   return { passed, failed };
 }

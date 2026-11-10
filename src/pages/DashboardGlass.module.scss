@@ -1,8 +1,9 @@
 @use '../styles/patterns' as p;
 
-/* Glass dashboard: pinned news, KPIs, then a 12-column grid whose rows stretch so cards
-   in the same row always end at the same line (no gaps under short cards). */
-$gap: 18px;
+/* Inicio on computers: a bento over the room. The greeting on the wallpaper, the figures, then a
+   12-column grid whose rows stretch so cards in the same row always end at the same line
+   (no gaps under short cards). */
+$gap: 16px;
 
 .page {
   display: flex;
@@ -10,102 +11,48 @@ $gap: 18px;
   gap: $gap;
 }
 
-/* Hero: the page's one highlight — greeting on the left, today's workday and the two create
-   buttons on the right, on a pane infused with Margube blue ------------------------------- */
-.hero {
-  @include p.spotlight;
-  overflow: hidden;
+/* Head: the greeting sits on the room itself, the two create buttons beside it ------------- */
+.head {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 22px 32px;
-  padding: 28px 30px;
-  border-radius: 28px;
+  gap: 14px 24px;
+  padding: 2px 2px 4px;
 }
 
-.heroLeaf {
-  position: absolute;
-  right: -40px;
-  top: -70px;
-  z-index: -1;
-  width: 260px;
-  height: 260px;
-  fill: none;
-  stroke: rgba(var(--accent-rgb), 0.16);
-  stroke-width: 0.8;
-  stroke-linecap: round;
-  pointer-events: none;
-}
-
-.heroMain {
-  min-width: 0;
-  flex: 1 1 360px;
-}
-
-.heroEyebrow {
-  @include p.eyebrow-pill;
-  margin: 0 0 16px;
-}
+.headMain { min-width: 0; flex: 1 1 360px; }
 
 .greeting {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: clamp(30px, 3vw, 42px);
+  font-size: clamp(28px, 2.6vw, 38px);
   font-weight: 600;
-  letter-spacing: -0.032em;
-  line-height: 1.06;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
   color: var(--text);
 }
 
 .meta {
-  margin: 10px 0 0;
-  max-width: 52ch;
-  font-size: 14.5px;
-  line-height: 1.5;
+  margin: 6px 0 0;
+  max-width: 64ch;
+  font-size: 15px;
+  line-height: 1.45;
   color: var(--text-sec);
 }
 
-.heroSide {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
+.metaDate {
+  display: inline-block;
+
+  &::first-letter { text-transform: uppercase; }
 }
-
-/* Today's workday, in a well of its own */
-.jornada {
-  @include p.well;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 10px 22px 10px 10px;
-  border-radius: 22px;
-
-  .ringCenter strong { font-size: 18px; }
-}
-
-.jornadaText {
-  display: grid;
-  gap: 2px;
-
-  strong {
-    font-family: var(--font-heading);
-    font-size: 17px;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-    color: var(--text);
-  }
-
-  > span:last-child { font-size: 12.5px; color: var(--text-sec); }
-}
-
-.jornadaLabel { @include p.micro-label; }
 
 .heroActions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+
+  > * { min-height: 46px; }
 }
 
 /* Comunicados: the pinned news lead the column ------------------------------------------- */
@@ -230,45 +177,98 @@ $gap: 18px;
   &:focus-visible { outline: none; box-shadow: var(--accent-glow); }
 }
 
-/* Tiempo a compensar ----------------------------------------------------------------------- */
-.hoursPanel .panelHead { align-items: center; }
-
-.hoursIcon {
+/* Small tiles beside the chart: a title, one figure, one line -------------------------------- */
+.side {
+  grid-column: span 5;
   display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 13px;
-  color: var(--teal);
-  background: rgba(var(--teal-rgb), 0.14);
-  border: 1px solid rgba(var(--teal-rgb), 0.26);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: auto 1fr;
+  gap: $gap;
+  min-width: 0;
 }
 
-.hoursState {
-  @include p.eyebrow-pill(var(--success));
-  margin-left: auto;
-  letter-spacing: 0.02em;
-  text-transform: none;
-  font-size: 12px;
+.tile {
+  min-height: 176px;
 }
 
-.hoursStateNeg {
-  @include p.eyebrow-pill(var(--danger));
-  margin-left: auto;
-  letter-spacing: 0.02em;
-  text-transform: none;
-  font-size: 12px;
+.tileTitle {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0;
+  color: var(--text);
 }
+
+.tileHint {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-sec);
+}
+
+.tileFoot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin-top: auto;
+}
+
+/* State in words: «En curso», «A tu favor» */
+.statePill {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--radius-full);
+  background: var(--lg-well);
+  color: var(--text-sec);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &[data-on] { background: var(--success-bg); color: var(--success); }
+}
+
+.statePillNeg[data-on] { background: var(--danger-bg); color: var(--danger); }
+
+/* Workday gauge */
+.gauge {
+  position: relative;
+  width: min(100%, 148px);
+  margin: auto auto 0;
+
+  svg { display: block; width: 100%; overflow: visible; }
+
+  path { fill: none; stroke-width: 10; stroke-linecap: round; }
+
+  strong {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    text-align: center;
+    font-family: var(--font-heading);
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--text);
+  }
+}
+
+.gaugeTrack { stroke: rgba(var(--text-rgb), 0.14); }
+.gaugeValue { stroke: var(--accent); }
 
 /* Floating figure over the highlighted bar */
 .barLabel {
-  rect {
-    fill: var(--lg-popover, var(--bg-2));
-    stroke: rgba(var(--accent-rgb), 0.45);
-  }
+  rect { fill: var(--chip-on); }
 
   text {
-    fill: var(--text);
+    fill: var(--chip-on-fg);
     font: 700 12px var(--font-body);
     font-variant-numeric: tabular-nums;
   }
@@ -280,7 +280,7 @@ $gap: 18px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: $gap;
 
-  > * { min-height: 124px; }
+  > * { min-height: 136px; }
 
   @media (max-width: 1100px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -295,7 +295,7 @@ $gap: 18px;
 }
 
 .panel {
-  padding: 20px 22px;
+  padding: 18px 20px;
   gap: 14px;
   min-width: 0;
 }
@@ -309,27 +309,45 @@ $gap: 18px;
 
 .panelTitle {
   margin: 0;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   color: var(--text);
 }
 
 .panelSub {
   margin: 3px 0 0;
-  font-size: 12.5px;
+  font-size: 13.5px;
   color: var(--text-sec);
 }
 
 .headIcon { color: var(--text-sec); }
 
-.chartPanel { grid-column: span 8; min-height: 380px; }
-.todayPanel { grid-column: span 4; }
+.chartPanel { grid-column: span 7; min-height: 400px; }
+.todayPanel, .newsPanel { grid-column: span 4; }
 .third { grid-column: span 4; }
-/* Comunicados runs down the right of the chart and the agenda */
-.newsPanel { grid-column: span 4; grid-row: span 2; }
-.resources, .help { grid-column: span 4; }
-.tablePanel { grid-column: span 8; }
+
+/* The team column: away today above, birthdays below, sharing the row's height */
+.stack {
+  grid-column: span 4;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: $gap;
+  min-width: 0;
+}
+
+/* Help: a slim band across the page — the text on the left, the two links on the right */
+.help {
+  grid-column: span 12;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+
+.helpText { flex: 1 1 320px; min-width: 0; }
+.resources { grid-column: 1 / -1; }
+.tablePanel { grid-column: span 12; }
 
 /* TodayPanel is its own card: let it fill the row */
 .teamPanel {
@@ -408,18 +426,20 @@ $gap: 18px;
     font-size: 12.5px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+    transition: background-color 0.18s var(--ease-out), color 0.18s var(--ease-out), transform 0.14s var(--ease-out);
 
+    &:active { transform: scale(0.97); }
     &:hover { color: var(--text); }
     &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.45); }
   }
 
+  /* The selected period: a solid chip (white on smoked glass, ink on light) */
   .segOn {
-    background: var(--accent);
-    color: var(--accent-fg);
-    box-shadow: 0 8px 18px -10px rgba(var(--accent-rgb), 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    background: var(--chip-on);
+    color: var(--chip-on-fg);
+    box-shadow: var(--chip-on-shadow);
 
-    &:hover { color: var(--accent-fg); }
+    &:hover { color: var(--chip-on-fg); }
   }
 }
 
@@ -453,13 +473,13 @@ $gap: 18px;
   p { margin: 0; font-size: 13.5px; color: var(--text-sec); }
 }
 
-.barGlow { filter: drop-shadow(0 0 14px rgba(var(--accent-rgb), 0.65)); }
+.barGlow { filter: drop-shadow(0 6px 14px rgba(47, 91, 234, 0.45)); }
 
 .tip {
   padding: 8px 12px;
   border-radius: 12px;
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--lg-popover, var(--card));
+  border: 1px solid var(--lg-edge, var(--border));
   box-shadow: var(--shadow-md);
   font-size: 12px;
   color: var(--text);
@@ -658,58 +678,26 @@ $gap: 18px;
   svg { flex-shrink: 0; color: var(--text-mut); }
 }
 
-/* Workday -------------------------------------------------------------------- */
-.goalsBody {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  flex: 1;
-}
-
-.ring {
-  position: relative;
-  flex-shrink: 0;
-
-  svg { display: block; }
-}
-
-.ringTrack { stroke: rgba(var(--text-rgb), 0.12); }
-
-.ringCenter {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  strong { font-size: 22px; color: var(--text); letter-spacing: -0.02em; }
-  span { font-size: 11px; color: var(--text-sec); }
-}
-
-.goalsText {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.goalsLabel { font-size: 12.5px; color: var(--text-sec); }
-
+/* Hours balance ------------------------------------------------------------------ */
 .balance {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--success);
+  margin: auto 0 0;
+  font-family: var(--font-heading);
+  font-size: clamp(30px, 2.6vw, 40px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+
+  small { font-size: 0.5em; font-weight: 500; letter-spacing: -0.01em; color: var(--text-sec); }
 }
 
 .balanceNeg { color: var(--danger); }
 
-.goalsHint { font-size: 12px; color: var(--text-sec); }
+.goalsHint { font-size: 13px; color: var(--text-sec); }
 
 .goalsPending {
-  margin-top: 4px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--warning);
 }
@@ -794,10 +782,33 @@ $gap: 18px;
 .donut {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 20px;
+  margin-top: auto;
 
-  /* The chart keeps its 120 px; the legend takes what is left */
+  /* The chart keeps its size; the legend takes what is left */
   > :first-child { flex-shrink: 0; }
+}
+
+.donutChart { position: relative; }
+
+.donutTotal {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-sec);
+  pointer-events: none;
+
+  strong {
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
 }
 
 .donutLegend {
@@ -825,7 +836,6 @@ $gap: 18px;
 }
 
 .helpActions {
-  margin-top: auto;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -883,33 +893,50 @@ $gap: 18px;
   color: var(--text-sec);
 }
 
-/* Responsive: same cards, fewer columns ------------------------------------- */
-/* Laptops (1024–1279 px beside the rail): the chart takes the row, everything else in halves */
+/* Responsive: same cards, fewer columns -------------------------------------
+   Laptops (1024–1279 px beside the rail): the chart takes the row, its tiles line up under it,
+   and everything else goes in halves */
 @media (max-width: 1279px) {
-  .chartPanel, .tablePanel { grid-column: span 12; }
-  .newsPanel { grid-column: span 6; grid-row: auto; }
-  .todayPanel, .third, .birthdays, .resources, .help { grid-column: span 6; }
-  .jornada { padding-right: 16px; }
+  .chartPanel, .tablePanel { grid-column: span 12; min-height: 360px; }
+
+  .side {
+    grid-column: span 12;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: auto;
+  }
+
+  .resources { grid-column: span 2; }
+  .newsPanel, .todayPanel { grid-column: span 6; }
+
+  .stack {
+    grid-column: span 12;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto;
+  }
 }
 
+/* Below 1024 px Inicio renders its touch composition (DashboardTouch); these keep the page whole
+   if this one is ever shown narrow (a split-screen window on a computer) */
 @media (max-width: 960px) {
-  .chartPanel, .todayPanel { grid-column: span 12; }
+  .side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .resources { grid-column: 1 / -1; }
+  .todayPanel, .newsPanel { grid-column: span 12; }
 }
 
 @media (max-width: 720px) {
-  .third, .birthdays, .resources, .help { grid-column: span 12; }
+  .stack { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* Phones */
 @media (max-width: 640px) {
   .page { gap: 14px; }
-  .grid, .kpis { gap: 14px; }
-
-  .heroActions {
-    width: 100%;
-
-    > * { flex: 1; justify-content: center; }
-  }
+  .grid, .kpis { gap: 12px; }
+  .heroActions { width: 100%; > * { flex: 1; justify-content: center; } }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .panel { padding: 16px; }
+  .chartPanel { min-height: 0; }
+  .chartBody { min-height: 190px; }
+  .panelHead { flex-wrap: wrap; }
+  .chartTools { justify-content: space-between; width: 100%; }
 
   /* Pinned news: a row that slides sideways, the next card peeking in */
   .pinList {
@@ -924,84 +951,6 @@ $gap: 18px;
 
     &::-webkit-scrollbar { display: none; }
 
-    > * {
-      flex: 0 0 86%;
-      scroll-snap-align: start;
-    }
-  }
-
-  .pinCard { padding: 16px; }
-
-  .kpis > * { min-height: 112px; }
-
-  .panel { padding: 16px; }
-  .chartPanel { min-height: 0; }
-  .chartBody { min-height: 190px; }
-  .panelHead { flex-wrap: wrap; }
-  .chartTools {
-    justify-content: space-between;
-    width: 100%;
-  }
-  .goalsBody { gap: 14px; }
-}
-
-/* Phones and tablets ------------------------------------------------------------
-   The greeting is the screen's cover (brand panel, white type, the two create buttons inside)
-   and the figures slide sideways on phones. */
-@media (max-width: 1023px) {
-  .hero {
-    @include p.cover;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 18px;
-  }
-
-  .greeting {
-    @include p.cover-title;
-    font-size: clamp(30px, 6vw, 40px);
-  }
-
-  .meta { @include p.cover-desc; }
-
-  .heroActions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-
-    > * { width: 100%; justify-content: center; }
-
-    /* "Nueva solicitud": frosted white on the navy */
-    > :first-child {
-      background: rgba(255, 255, 255, 0.1) !important;
-      border-color: rgba(255, 255, 255, 0.18) !important;
-      color: #FFFFFF !important;
-      box-shadow: none !important;
-    }
-
-    /* "Nueva reserva": white with Margube blue text */
-    > :last-child {
-      background: #FFFFFF !important;
-      border-color: transparent !important;
-      color: #1E40AF !important;
-    }
-  }
-}
-
-@media (max-width: 767px) {
-  .kpis {
-    display: flex;
-    gap: 10px;
-    margin: 0 -14px;
-    padding: 2px 14px 6px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar { display: none; }
-
-    > * {
-      flex: 0 0 72%;
-      scroll-snap-align: start;
-    }
+    > * { flex: 0 0 86%; scroll-snap-align: start; }
   }
 }

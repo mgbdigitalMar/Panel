@@ -1,6 +1,6 @@
 // Smaller building blocks, styled after the web's components (src/components/ui, styles/_patterns.scss).
-import { useState } from 'react';
-import { ActivityIndicator, Image, Modal, Pressable, ScrollView, Switch, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Animated, Image, Modal, Pressable, ScrollView, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, Inbox, X, Info, AlertTriangle, ArrowRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
@@ -13,9 +13,11 @@ import { PressScale } from './Pressable';
 import { T } from './Text';
 import { GradientFill, leafRadii } from './Brand';
 import { GlassFill } from './LiquidGlass';
+import { useReduceMotion } from './AuthBackdrop';
 
 /**
- * Segmented tabs: a liquid-glass pill track; the active option is a lighter glass pill.
+ * Segmented tabs: a liquid-glass pill track; the active option is a solid chip (white on smoked
+ * glass, ink on light glass), the same as the web's tabs.
  * options: [{ value, label, color?, disabled? }] — `color` recolours that option's active label.
  */
 export function Segmented({ options, value, onChange, height = 44, style }) {
@@ -39,11 +41,10 @@ export function Segmented({ options, value, onChange, height = 44, style }) {
             style={({ pressed }) => ({
               opacity: o.disabled && !on ? 0.4 : 1,
               flex: 1, minWidth: 0, height: height - 8, borderRadius: (height - 8) / 2, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8,
-              backgroundColor: on ? colors.segOn : pressed ? colors.neutralSoft : 'transparent',
-              borderWidth: on ? 1 : 0, borderColor: colors.glassBorder,
+              backgroundColor: on ? colors.tabOn : pressed ? colors.neutralSoft : 'transparent',
             })}
           >
-            <T size={14} weight={on ? 'semibold' : 'medium'} color={on ? (o.color || colors.segOnText) : colors.text3} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{o.label}</T>
+            <T size={14} weight={on ? 'semibold' : 'medium'} color={on ? colors.tabOnText : colors.text2} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{o.label}</T>
           </Pressable>
         );
       })}
@@ -67,13 +68,13 @@ export function ChipRail({ options, value, onChange, style }) {
             onPress={() => { if (!on) { Haptics.selectionAsync().catch(() => {}); onChange(o.value); } }}
             style={{
               height: 36, paddingHorizontal: 14, borderRadius: 18, flexDirection: 'row', alignItems: 'center', gap: 6,
-              ...(on ? { backgroundColor: colors.chipOnBg, borderWidth: 1, borderColor: colors.chipOnBg } : glassSurface(colors)),
+              ...(on ? { backgroundColor: colors.tabOn, borderWidth: 1, borderColor: colors.tabOn } : glassSurface(colors)),
             }}
           >
-            <T size={13} weight="semibold" color={on ? colors.chipOnText : colors.text2}>{o.label}</T>
+            <T size={13} weight="semibold" color={on ? colors.tabOnText : colors.text2}>{o.label}</T>
             {o.count != null ? (
-              <View style={{ minWidth: 20, height: 20, paddingHorizontal: 6, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? 'rgba(255,255,255,0.24)' : colors.neutralSoft }}>
-                <T size={11} weight="bold" color={on ? colors.chipOnText : colors.text2} style={{ lineHeight: 13, fontVariant: ['tabular-nums'] }}>{o.count}</T>
+              <View style={{ minWidth: 20, height: 20, paddingHorizontal: 6, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? 'rgba(128,128,128,0.22)' : colors.neutralSoft }}>
+                <T size={11} weight="bold" color={on ? colors.tabOnText : colors.text2} style={{ lineHeight: 13, fontVariant: ['tabular-nums'] }}>{o.count}</T>
               </View>
             ) : null}
           </Pressable>
@@ -331,20 +332,41 @@ export function SectionHead({ title, action, onAction, icon: Icon, count, style 
 }
 
 /** Thin progress bar; `gradient` paints the fill with the CTA gradient (web: workday bar). */
+/** A bar that fills to its real value: once from empty when it first shows, then from where it
+ * was. The fill is a full-width bar slid into place (a transform, on the native thread), so its
+ * round end keeps its shape. With "reduce motion" it simply shows the value. */
 export function ProgressBar({ value = 0, color, track, height = 6, gradient, accessibilityLabel }) {
   const { colors } = useTheme();
+  const reduce = useReduceMotion();
   const pct = Math.max(0, Math.min(100, Number(value) || 0));
+  const [width, setWidth] = useState(0);
+  const [fill] = useState(() => new Animated.Value(0));
+
+  useEffect(() => {
+    if (!width) return;
+    if (reduce) { fill.setValue(pct / 100); return; }
+    const animation = Animated.timing(fill, { toValue: pct / 100, duration: 350, useNativeDriver: true });
+    animation.start();
+    return () => animation.stop();
+  }, [pct, width, reduce, fill]);
+
   return (
     <View
       accessibilityRole="progressbar"
       accessibilityLabel={accessibilityLabel}
       accessibilityValue={{ min: 0, max: 100, now: Math.round(pct) }}
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
       style={{ height, borderRadius: height / 2, backgroundColor: track || colors.segTrack, overflow: 'hidden' }}
     >
-      {pct > 0 ? (
-        <View style={{ width: `${pct}%`, height, borderRadius: height / 2, backgroundColor: gradient ? 'transparent' : (color || colors.accent), overflow: 'hidden' }}>
+      {pct > 0 && width > 0 ? (
+        <Animated.View
+          style={{
+            width, height, borderRadius: height / 2, backgroundColor: gradient ? 'transparent' : (color || colors.accent), overflow: 'hidden',
+            transform: [{ translateX: fill.interpolate({ inputRange: [0, 1], outputRange: [-width, 0] }) }],
+          }}
+        >
           {gradient ? <GradientFill radius={height / 2} colors={[BRAND.blue, '#5B7CFF', '#7AA2FF']} /> : null}
-        </View>
+        </Animated.View>
       ) : null}
     </View>
   );

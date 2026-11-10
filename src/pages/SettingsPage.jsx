@@ -16,7 +16,7 @@ import {
 } from '../services/webPush';
 import { supabase } from '../utils/supabase';
 import {
-  NOTIFICATION_CATEGORIES, fetchNotificationPreferences, setNotificationPreference, fetchNotificationHealth,
+  NOTIFICATION_CATEGORIES, allNotificationsEnabled, fetchNotificationPreferences, setAllNotificationPreferences, fetchNotificationHealth,
 } from '../../shared/services/notifications.js';
 
 const container = {
@@ -36,10 +36,13 @@ function setLS(key, val) {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
 }
 
-function Toggle({ checked, onChange, id }) {
+function Toggle({ checked, onChange, id, disabled, label }) {
   return (
     <button
       id={id}
+      type="button"
+      aria-label={label || (id === 'sounds-toggle' ? 'Sonidos' : 'Alertas de escritorio')}
+      disabled={disabled}
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
@@ -86,26 +89,38 @@ export default function SettingsPage() {
     }
   }, [browserNotifs, user?.id]);
 
-  const handleBrowserNotifs = async (val) => {
-    if (!notificationsSupported()) return;
+  const handleAllNotifications = async (val) => {
+    if (notifBusy || !notifPrefs || !user?.id) return;
     setNotifBusy(true);
+    setPrefsError('');
     try {
       if (val) {
+        if (!notificationsSupported() || needsIosInstall()) return;
         let perm = Notification.permission;
         if (perm === 'default') perm = await Notification.requestPermission();
         setNotifPerm(perm);
         if (perm !== 'granted') { setBrowserNotifs(false); setLS(PREF_NOTIFS, false); return; }
+        const mode = await enablePush(user.id);
+        if (!mode) throw new Error('No se pudo registrar este navegador.');
+        const { error } = await setAllNotificationPreferences(supabase, user.id, true);
+        if (error) throw error;
+        setNotifPrefs(Object.fromEntries(NOTIFICATION_CATEGORIES.map(({ id }) => [id, true])));
         setLS(PREF_NOTIFS, true);
         setBrowserNotifs(true);
-        setPushMode(await enablePush(user?.id));
+        setPushMode(mode);
         // Confirmation the person can see right away
         showSystemNotification({ id: 'test', title: 'Notificaciones activadas', body: 'Así verás los avisos de la intranet.' });
       } else {
+        const { error } = await setAllNotificationPreferences(supabase, user.id, false);
+        if (error) throw error;
+        setNotifPrefs(Object.fromEntries(NOTIFICATION_CATEGORIES.map(({ id }) => [id, false])));
         setLS(PREF_NOTIFS, false);
         setBrowserNotifs(false);
         setPushMode(null);
         await disablePush();
       }
+    } catch {
+      setPrefsError('No se ha completado el cambio. Revisa tu conexión e inténtalo de nuevo.');
     } finally {
       setNotifBusy(false);
     }
@@ -113,16 +128,19 @@ export default function SettingsPage() {
 
   // null while loading or if it could not be read: the switches stay hidden rather than lying
   const [notifPrefs, setNotifPrefs] = useState(null);
+  const [prefsError, setPrefsError] = useState('');
   useEffect(() => {
-    if (user?.id) fetchNotificationPreferences(supabase, user.id).then(setNotifPrefs);
+    let active = true;
+    if (user?.id) fetchNotificationPreferences(supabase, user.id).then((prefs) => {
+      if (active) {
+        setNotifPrefs(prefs);
+        setPrefsError(prefs === null ? 'No se pudieron cargar las preferencias. Vuelve a abrir Ajustes para reintentarlo.' : '');
+      }
+    });
+    return () => { active = false; };
   }, [user?.id]);
 
-  const handleCategory = async (category, enabled) => {
-    const previous = notifPrefs;
-    setNotifPrefs({ ...notifPrefs, [category]: enabled });
-    const { error } = await setNotificationPreference(supabase, user.id, category, enabled);
-    if (error) setNotifPrefs(previous);
-  };
+  const allNotifsOn = browserNotifs && notifPerm === 'granted' && allNotificationsEnabled(notifPrefs);
 
   // RRHH sees whether the notification system itself is healthy
   const [notifHealth, setNotifHealth] = useState(null);
@@ -222,11 +240,12 @@ export default function SettingsPage() {
 
           <div className={styles.row}>
             <div className={styles.rowInfo}>
-              <div className={clsx(styles.rowIcon, browserNotifs && notifPerm === 'granted' ? styles.iconSuccess : styles.iconNeutral)}>
-                {browserNotifs && notifPerm === 'granted' ? <BellRing size={15} /> : <BellOff size={15} />}
+              <div className={clsx(styles.rowIcon, allNotifsOn ? styles.iconSuccess : styles.iconNeutral)}>
+                {allNotifsOn ? <BellRing size={15} /> : <BellOff size={15} />}
               </div>
               <div>
-                <span className={styles.rowLabel}>Alertas de escritorio</span>
+                <span className={styles.rowLabel}>Todas las notificaciones</span>
+                <span className={styles.rowDesc}>Solicitudes, reservas, bolsa de horas, documentos, noticias y eventos.</span>
                 <span className={styles.rowDesc}>
                   {needsIosInstall()
                     ? 'En iPhone, abre Margube en Safari y elige Compartir → Añadir a pantalla de inicio. Después, activa aquí los avisos desde la app instalada.'
@@ -234,18 +253,21 @@ export default function SettingsPage() {
                     ? 'Este navegador no admite notificaciones.'
                     : notifPerm === 'denied'
                     ? 'Bloqueadas por el navegador. Permítelas desde el candado de la barra de direcciones.'
-                    : browserNotifs && pushMode === 'push'
+                    : allNotifsOn && pushMode === 'push'
                     ? 'Activas, también con la intranet cerrada.'
-                    : browserNotifs && pushMode === 'local'
+                    : allNotifsOn && pushMode === 'local'
                     ? 'Activas mientras tengas la intranet abierta, aunque esté en otra pestaña o minimizada.'
                     : 'Recibe avisos del sistema aunque estés en otra pestaña o con la intranet cerrada.'}
                 </span>
+                <span className={styles.rowDesc}>Al desactivarlas, los avisos seguirán apareciendo en la campana.</span>
               </div>
             </div>
             <Toggle
-              checked={browserNotifs && notifPerm === 'granted'}
-              onChange={notifBusy ? () => {} : handleBrowserNotifs}
-              id="notifs-toggle"
+              checked={allNotifsOn}
+              onChange={handleAllNotifications}
+              id="all-notifications-toggle"
+              label="Todas las notificaciones"
+              disabled={notifBusy || !notifPrefs || (!allNotifsOn && (!notificationsSupported() || needsIosInstall()))}
             />
           </div>
 
@@ -264,28 +286,7 @@ export default function SettingsPage() {
             <Toggle checked={soundsOn} onChange={handleSounds} id="sounds-toggle" />
           </div>
 
-          {notifPrefs && (
-            <>
-              <div className={styles.sep} />
-              <p className={styles.groupLabel}>Avisos en tus dispositivos</p>
-              <p className={styles.groupHint}>Lo que desactives seguirá apareciendo en la campana.</p>
-              {NOTIFICATION_CATEGORIES.map((c) => (
-                <div className={styles.row} key={c.id}>
-                  <div className={styles.rowInfo}>
-                    <div>
-                      <span className={styles.rowLabel}>{c.label}</span>
-                      <span className={styles.rowDesc}>{c.desc}</span>
-                    </div>
-                  </div>
-                  <Toggle
-                    checked={notifPrefs[c.id] !== false}
-                    onChange={(val) => handleCategory(c.id, val)}
-                    id={`notif-category-${c.id}`}
-                  />
-                </div>
-              ))}
-            </>
-          )}
+          <p className={styles.groupHint} role="status">{notifBusy ? 'Guardando preferencias…' : prefsError || (!notifPrefs ? 'Cargando preferencias…' : '')}</p>
 
           {notifHealth && (
             <>

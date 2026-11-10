@@ -2,13 +2,12 @@ import { useMemo, useState } from 'react';
 import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, LabelList } from 'recharts';
 import {
   Users, Calendar, Inbox, Newspaper, Pin, Car, DoorOpen, Building, ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight,
-  PartyPopper, CalendarPlus, FilePlus2, Mail, FileText, TrendingUp, TrendingDown, Clock, BarChart3, Megaphone, Timer,
+  PartyPopper, CalendarPlus, FilePlus2, Mail, FileText, TrendingUp, TrendingDown, Clock, BarChart3, Megaphone,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
-import { Avatar, Badge, StatCard, Card, Button } from '../components/ui';
+import { Avatar, Badge, StatCard, Card, Button, AnimatedNumber } from '../components/ui';
 import { TodayPanel } from '../components/TodayPanel';
-import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
 import { fmtDate, fmtDayShort, fmtRange } from '../utils/format';
 import { localISODate } from '../../shared/services/workMode.js';
 import styles from './DashboardGlass.module.scss';
@@ -55,38 +54,33 @@ function ChartTip({ active, payload, label }) {
   );
 }
 
-/** Workday ring (the "goals" ring of the design). */
-function Ring({ value, size = 108, children }) {
-  const r = size / 2 - 8;
-  const c = 2 * Math.PI * r;
+const GAUGE_ARC = 'M10 60a50 50 0 0 1 100 0';
+
+/** Workday gauge: a half dial that fills once when the page opens and then follows the clock. */
+function Gauge({ value }) {
+  const pct = Math.max(0, Math.min(100, value));
   return (
-    <div className={styles.ring} style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
-        <circle cx={size / 2} cy={size / 2} r={r} className={styles.ringTrack} strokeWidth="9" fill="none" />
-        <motion.circle
-          cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth="9" strokeLinecap="round"
-          stroke="url(#glassRing)" strokeDasharray={c}
-          initial={{ strokeDashoffset: c }}
-          animate={{ strokeDashoffset: c * (1 - value / 100) }}
-          transition={{ duration: 1, ease: [0.23, 1, 0.32, 1], delay: 0.2 }}
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+    <div className={styles.gauge} role="img" aria-label={`${Math.round(pct)} % de la jornada completado`}>
+      <svg viewBox="0 0 120 66" aria-hidden="true">
+        <path d={GAUGE_ARC} className={styles.gaugeTrack} />
+        <motion.path
+          d={GAUGE_ARC}
+          className={styles.gaugeValue}
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: pct / 100 }}
+          transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1], delay: 0.15 }}
         />
-        <defs>
-          <linearGradient id="glassRing" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="var(--teal)" />
-            <stop offset="1" stopColor="var(--accent-light)" />
-          </linearGradient>
-        </defs>
       </svg>
-      <div className={styles.ringCenter}>{children}</div>
+      <strong><AnimatedNumber value={Math.round(pct)} /> %</strong>
     </div>
   );
 }
 
 /**
- * Dashboard of the glass appearance: greeting, pinned news in front, KPIs with trend lines, a large
- * activity chart with Semana / Mes / Año, a "Hoy" column, workday, team, birthdays and the rest. The data comes from
- * DashboardPage, which computes it and passes it in `d`.
+ * Inicio on computers: a bento over the room. The greeting sits on the wallpaper with the two things
+ * people create; the figure in front is blue glass; then the activity chart (Semana / Mes / Año) beside
+ * the workday, the hours balance and the use of resources; today, the news and the team; birthdays,
+ * help and the latest reservations. The data comes from DashboardPage, which computes it and passes it in `d`.
  */
 export default function DashboardGlass({ d }) {
   const {
@@ -180,42 +174,26 @@ export default function DashboardGlass({ d }) {
 
   return (
     <div className={styles.page}>
-      {/* The page's one highlight: the greeting and today's workday, with the two things people create */}
-      <section className={styles.hero} aria-label="Resumen de hoy">
-        <svg className={styles.heroLeaf} viewBox="0 0 48 48" aria-hidden="true">
-          <path d={LEAF_PATH} />
-          <path d={VEIN_PATH} />
-        </svg>
-        <div className={styles.heroMain}>
-          <p className={styles.heroEyebrow}>Panel de control · {dateLine}</p>
+      {/* The greeting sits on the room itself, with the two things people create */}
+      <header className={styles.head} aria-label="Resumen de hoy">
+        <div className={styles.headMain}>
           <h1 className={styles.greeting}>{greeting}, {firstName}</h1>
-          <p className={styles.meta}>{motivation}</p>
+          <p className={styles.meta}><span className={styles.metaDate}>{dateLine}.</span> {motivation}</p>
         </div>
-        <div className={styles.heroSide}>
-          <div className={styles.jornada}>
-            <Ring value={progress} size={86}>
-              <strong>{Math.round(progress)}%</strong>
-            </Ring>
-            <div className={styles.jornadaText}>
-              <span className={styles.jornadaLabel}>Jornada laboral</span>
-              <strong>{jornada.state}</strong>
-              <span>{jornada.hint}</span>
-            </div>
-          </div>
-          <div className={styles.heroActions}>
-            <Button variant="secondary" icon={FilePlus2} onClick={() => navigate('/requests?nueva=1')}>Nueva solicitud</Button>
-            <Button variant="primary" icon={CalendarPlus} onClick={() => navigate('/reservations?nueva=1')}>Nueva reserva</Button>
-          </div>
+        <div className={styles.heroActions}>
+          <Button variant="secondary" icon={FilePlus2} onClick={() => navigate('/requests?nueva=1')}>Nueva solicitud</Button>
+          <Button variant="primary" icon={CalendarPlus} onClick={() => navigate('/reservations?nueva=1')}>Nueva reserva</Button>
         </div>
-      </section>
+      </header>
 
+      {/* Figures: today's reservations in front, on blue glass */}
       <div className={clsx(styles.kpis, 'stagger-quick')}>
-        <StatCard label="Empleados activos" value={employees.length} icon={Users} color="var(--accent)" sub="Total en plantilla"
-          onClick={() => navigate('/employees')} actionLabel={`${employees.length} empleados activos. Ver equipo`} />
-        <StatCard label="Reservas hoy" value={todayResCount} icon={Calendar} color="var(--success)" sub="Salas y vehículos" spark={sparks.reservations}
+        <StatCard featured label="Reservas hoy" value={todayResCount} icon={Calendar} color="var(--success)" sub="Salas y vehículos" spark={sparks.reservations}
           onClick={() => navigate('/reservations')} actionLabel={`${todayResCount} reservas hoy. Ver reservas`} />
         <StatCard label="Solicitudes pendientes" value={pendingCount} icon={Inbox} color="var(--warning)" sub={pendingCount === 0 ? 'Todo revisado' : 'Requieren revisión'} spark={sparks.requests}
           onClick={() => navigate('/requests')} actionLabel={`${pendingCount} solicitudes pendientes. Ver solicitudes`} />
+        <StatCard label="Empleados activos" value={employees.length} icon={Users} color="var(--accent)" sub="Total en plantilla"
+          onClick={() => navigate('/employees')} actionLabel={`${employees.length} empleados activos. Ver equipo`} />
         <StatCard label="Noticias publicadas" value={news.length} icon={Newspaper} color="var(--info)" sub={newsThisMonth === 0 ? 'Ninguna este mes' : `${newsThisMonth} este mes`} spark={sparks.news}
           onClick={() => navigate('/news')} actionLabel={`${news.length} noticias publicadas. Ver noticias`} />
       </div>
@@ -232,7 +210,7 @@ export default function DashboardGlass({ d }) {
               {range === 'week' && (week.thisWeek > 0 || week.lastWeek > 0) && (
                 <span className={clsx(styles.delta, delta < 0 && styles.deltaDown)}>
                   {delta >= 0 ? <TrendingUp size={13} aria-hidden="true" /> : <TrendingDown size={13} aria-hidden="true" />}
-                  {delta >= 0 ? '+' : ''}{delta} vs semana pasada
+                  {delta >= 0 ? '+' : ''}{delta} frente a la anterior
                 </span>
               )}
               {chart.nav && (
@@ -301,6 +279,75 @@ export default function DashboardGlass({ d }) {
           </div>
         </Card>
 
+        {/* Beside the chart: the workday, the hours balance and the use of resources */}
+        <div className={styles.side}>
+          <Card className={clsx(styles.panel, styles.tile, styles.jornadaPanel)}>
+            <div className={styles.panelHead}>
+              <h2 className={styles.tileTitle}>Tu jornada</h2>
+              <span className={styles.statePill} data-on={progress > 0 && progress < 100 ? '' : undefined}>{jornada.state}</span>
+            </div>
+            <Gauge value={progress} />
+            <p className={styles.tileHint}>{jornada.hint}</p>
+          </Card>
+
+          <Card className={clsx(styles.panel, styles.tile, styles.hoursPanel)}>
+            <div className={styles.panelHead}>
+              <h2 className={styles.tileTitle}>Tiempo a compensar</h2>
+              <button type="button" className={styles.iconLink} onClick={() => navigate('/horas')} aria-label="Ver tiempo a compensar">
+                <ArrowUpRight size={16} aria-hidden="true" />
+              </button>
+            </div>
+            <p className={clsx(styles.balance, hours.balance < 0 && styles.balanceNeg)}>
+              <AnimatedNumber value={hours.balance} signed decimals={1} /> <small>h</small>
+            </p>
+            <div className={styles.tileFoot}>
+              <span className={clsx(styles.statePill, hours.balance < 0 && styles.statePillNeg)} data-on="">
+                {hours.balance >= 0 ? 'A tu favor' : 'A deber'}
+              </span>
+              {hours.pending > 0
+                ? <span className={styles.goalsPending}>{hours.pending.toLocaleString('es-ES', { maximumFractionDigits: 1 })} h por aprobar</span>
+                : <span className={styles.goalsHint}>Todo aprobado</span>}
+            </div>
+          </Card>
+
+          <Card className={clsx(styles.panel, styles.resources)}>
+            <div className={styles.panelHead}>
+              <div>
+                <h2 className={styles.tileTitle}>Uso de recursos</h2>
+                <p className={styles.panelSub}>Salas y vehículos reservados</p>
+              </div>
+              <button type="button" className={styles.iconLink} onClick={() => navigate('/reservations')} aria-label="Ver reservas">
+                <ArrowUpRight size={16} aria-hidden="true" />
+              </button>
+            </div>
+            <div className={styles.donut}>
+              {/* Fixed size: a ResponsiveContainer measures 0 in a narrow flex row and draws nothing */}
+              <div className={styles.donutChart}>
+                <PieChart width={124} height={124}>
+                  <Pie data={resourceTypePie} cx="50%" cy="50%" innerRadius={42} outerRadius={58} paddingAngle={4} cornerRadius={6} dataKey="value" stroke="none">
+                    {resourceTypePie.map((p) => <Cell key={p.name} fill={p.fill} />)}
+                  </Pie>
+                  <Tooltip content={<ChartTip />} />
+                </PieChart>
+                <span className={styles.donutTotal} aria-hidden="true">
+                  <strong>{resourceTypePie.reduce((s, p) => s + (p.value || 0), 0)}</strong>
+                  reservas
+                </span>
+              </div>
+              <ul className={styles.donutLegend}>
+                {resourceTypePie.map((p) => (
+                  <li key={p.name}>
+                    <i style={{ background: p.fill }} />
+                    {p.name === 'Salas' ? <Building size={14} aria-hidden="true" /> : <Car size={14} aria-hidden="true" />}
+                    <span>{p.name}</span>
+                    <strong>{p.value}</strong>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Card>
+        </div>
+
         {/* Comunicados: the pinned news lead, the rest follow (nothing shows twice) */}
         <Card className={clsx(styles.panel, styles.newsPanel)}>
           <div className={styles.panelHead}>
@@ -363,7 +410,7 @@ export default function DashboardGlass({ d }) {
           )}
         </Card>
 
-        {/* Today: own reservations and requests (the hero already has the date and the create buttons) */}
+        {/* Today: own reservations and requests (the header already has the date and the create buttons) */}
         <Card className={clsx(styles.panel, styles.todayPanel)}>
           <div className={styles.panelHead}>
             <div>
@@ -412,35 +459,14 @@ export default function DashboardGlass({ d }) {
           )}
         </Card>
 
-        {/* Team: who is away today */}
-        <div className={clsx(styles.third, styles.teamPanel)}>
+        {/* The team column: who is away today, and the next birthdays */}
+        <div className={styles.stack}>
+        <div className={styles.teamPanel}>
           <TodayPanel />
         </div>
 
-        {/* Hours balance (the workday itself is in the hero) */}
-        <Card className={clsx(styles.panel, styles.third, styles.hoursPanel)}>
-          <div className={styles.panelHead}>
-            <span className={styles.hoursIcon} aria-hidden="true"><Timer size={18} /></span>
-            <span className={clsx(styles.hoursState, hours.balance < 0 && styles.hoursStateNeg)}>
-              {hours.balance >= 0 ? 'Saldo a favor' : 'Saldo deudor'}
-            </span>
-            <button type="button" className={styles.iconLink} onClick={() => navigate('/horas')} aria-label="Ver tiempo a compensar">
-              <ArrowUpRight size={16} aria-hidden="true" />
-            </button>
-          </div>
-          <div className={styles.goalsText}>
-            <span className={styles.goalsLabel}>Tiempo a compensar</span>
-            <span className={clsx(styles.balance, hours.balance < 0 && styles.balanceNeg)}>
-              {hours.balance >= 0 ? '+' : ''}{hours.balance.toLocaleString('es-ES', { maximumFractionDigits: 1 })} h
-            </span>
-            {hours.pending > 0
-              ? <span className={styles.goalsPending}>{hours.pending.toLocaleString('es-ES', { maximumFractionDigits: 1 })} h pendientes de aprobar</span>
-              : <span className={styles.goalsHint}>Todo aprobado</span>}
-          </div>
-        </Card>
-
         {/* Birthdays */}
-        <Card className={clsx(styles.panel, styles.third, styles.birthdays)}>
+        <Card className={clsx(styles.panel, styles.birthdays)}>
           <div className={styles.panelHead}>
             <h2 className={styles.panelTitle}>Cumpleaños</h2>
             <PartyPopper size={17} className={styles.headIcon} aria-hidden="true" />
@@ -465,39 +491,14 @@ export default function DashboardGlass({ d }) {
           )}
         </Card>
 
-        {/* Resource usage */}
-        <Card className={clsx(styles.panel, styles.resources)}>
-          <div className={styles.panelHead}>
-            <div>
-              <h2 className={styles.panelTitle}>Uso de recursos</h2>
-              <p className={styles.panelSub}>Salas vs vehículos</p>
-            </div>
-          </div>
-          <div className={styles.donut}>
-            {/* Fixed size: a ResponsiveContainer measures 0 in a narrow flex row and draws nothing */}
-            <PieChart width={120} height={120}>
-              <Pie data={resourceTypePie} cx="50%" cy="50%" innerRadius={38} outerRadius={56} paddingAngle={4} dataKey="value" stroke="none">
-                {resourceTypePie.map((p) => <Cell key={p.name} fill={p.fill} />)}
-              </Pie>
-              <Tooltip content={<ChartTip />} />
-            </PieChart>
-            <ul className={styles.donutLegend}>
-              {resourceTypePie.map((p) => (
-                <li key={p.name}>
-                  <i style={{ background: p.fill }} />
-                  {p.name === 'Salas' ? <Building size={14} aria-hidden="true" /> : <Car size={14} aria-hidden="true" />}
-                  <span>{p.name}</span>
-                  <strong>{p.value}</strong>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Card>
+        </div>
 
-        {/* Help */}
+        {/* Help: a slim band across the page */}
         <Card className={clsx(styles.panel, styles.help)}>
-          <h2 className={styles.panelTitle}>¿Necesitas ayuda?</h2>
-          <p className={styles.panelSub}>RRHH resuelve dudas de acceso, nóminas, permisos y documentos.</p>
+          <div className={styles.helpText}>
+            <h2 className={styles.panelTitle}>¿Necesitas ayuda?</h2>
+            <p className={styles.panelSub}>RRHH resuelve dudas de acceso, nóminas, permisos y documentos.</p>
+          </div>
           <div className={styles.helpActions}>
             <a className={styles.helpPrimary} href="mailto:rrhh@margube.com?subject=Consulta%20desde%20la%20intranet">
               <Mail size={16} aria-hidden="true" /> Contactar con RRHH

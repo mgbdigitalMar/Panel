@@ -1,11 +1,10 @@
-import { useEffect } from 'react';
 import clsx from 'clsx';
 import styles from './StatCard.module.scss';
 import {
   ArrowUpRight, Building, Calendar, Car, CheckCircle, Clock, HelpCircle, Home, Inbox,
   MapPin, Newspaper, TrendingDown, TrendingUp, Users, XCircle,
 } from 'lucide-react';
-import { motion, useMotionValue, useTransform, animate, useReducedMotion } from 'framer-motion';
+import { AnimatedNumber } from '../AnimatedNumber/AnimatedNumber';
 
 // Explicit map: `import * as Icons` pulled the whole icon set into the bundle
 const ICONS = { Building, Calendar, Car, CheckCircle, Clock, Home, Inbox, MapPin, Newspaper, TrendingDown, TrendingUp, Users, XCircle };
@@ -23,21 +22,10 @@ function Sparkline({ values }) {
 }
 
 /** `icon` takes a lucide component or one of the names above; `onClick` makes the tile a button.
- * `trend` must only ever carry a computed value; `spark` is an optional series drawn as a trend line. */
-export function StatCard({ label, value, icon, color = 'var(--accent)', sub, trend, trendUp, loading, onClick, actionLabel, className, spark }) {
+ * `trend` must only ever carry a computed value; `spark` is an optional series drawn as a trend line.
+ * `featured`: the page's figure in front, on blue glass with white type (one per page). */
+export function StatCard({ label, value, icon, color = 'var(--accent)', sub, trend, trendUp, loading, onClick, actionLabel, className, spark, featured }) {
   const IconComponent = typeof icon === 'string' ? (ICONS[icon] || HelpCircle) : (icon || HelpCircle);
-  const reduce = useReducedMotion();
-
-  const count = useMotionValue(typeof value === 'number' ? value : 0);
-  const rounded = useTransform(count, v => Math.round(v).toLocaleString('es-ES'));
-
-  useEffect(() => {
-    if (typeof value !== 'number') return undefined;
-    if (reduce) { count.set(value); return undefined; }
-    const controls = animate(count, value, { duration: 0.6, ease: [0.23, 1, 0.32, 1] });
-    return () => controls.stop();
-  }, [value, count, reduce]);
-
   const Root = onClick ? 'button' : 'div';
 
   return (
@@ -45,8 +33,8 @@ export function StatCard({ label, value, icon, color = 'var(--accent)', sub, tre
       type={onClick ? 'button' : undefined}
       onClick={onClick}
       aria-label={onClick ? (actionLabel || `${label}: ${value}. Ver detalle`) : undefined}
-      className={clsx(styles.statCard, onClick && styles.interactive, className)}
-      style={{ '--stat-color': color }}
+      className={clsx(styles.statCard, onClick && styles.interactive, featured && styles.featured, className)}
+      style={{ '--stat-color': featured ? '#FFFFFF' : color }}
     >
       <div className={styles.head}>
         <span className={styles.icon} aria-hidden="true">
@@ -64,7 +52,8 @@ export function StatCard({ label, value, icon, color = 'var(--accent)', sub, tre
       ) : (
         <>
           <p className={styles.value} aria-hidden={onClick ? true : undefined}>
-            {typeof value === 'number' ? <motion.span>{rounded}</motion.span> : value}
+            {/* Counts up from zero the first time; later changes count from the figure already shown */}
+            {typeof value === 'number' ? <AnimatedNumber value={value} duration={0.6} /> : value}
             {trend && (
               <span className={clsx(styles.trend, trendUp === false ? styles.trendDown : styles.trendUp)}>
                 {trendUp === false ? <TrendingDown size={12} aria-hidden="true" /> : <TrendingUp size={12} aria-hidden="true" />}

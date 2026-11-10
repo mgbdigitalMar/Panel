@@ -4,8 +4,27 @@ import { useEffect, useRef } from 'react';
 import styles from './Modal.module.scss';
 import clsx from 'clsx';
 import { Portal, useInertApp } from '../Portal/Portal';
+import { useMediaQuery, PHONE_QUERY } from '../../../hooks/useMediaQuery';
 
 const EASE_OUT = [0.16, 1, 0.3, 1];
+
+// Computers and tablets: the panel rises out of focus in the middle of the screen
+const DIALOG_MOTION = {
+  initial: { opacity: 0, scale: 0.96, y: 14, filter: 'blur(8px)' },
+  animate: {
+    opacity: 1, scale: 1, y: 0, filter: 'blur(0px)',
+    transition: { type: 'spring', stiffness: 420, damping: 34, mass: 0.9, opacity: { duration: 0.2 }, filter: { duration: 0.22 } },
+    transitionEnd: { filter: 'none' },
+  },
+  exit: { opacity: 0, scale: 0.97, y: 8, filter: 'blur(4px)', transition: { duration: 0.15, ease: [0.4, 0, 1, 1] } },
+};
+
+// Phones: a sheet that slides up from the bottom edge, where the thumb is, and leaves the same way
+const SHEET_MOTION = {
+  initial: { y: '100%' },
+  animate: { y: 0, transition: { type: 'spring', duration: 0.42, bounce: 0 } },
+  exit: { y: '100%', transition: { duration: 0.2, ease: [0.4, 0, 1, 1] } },
+};
 
 // Open dialogs, newest last: Escape closes only the one on top (a confirm over an edit form)
 const openStack = [];
@@ -14,6 +33,7 @@ export function Modal({ open, onClose, title, ariaLabel, children, className, ba
   // The app behind (sidebar included) can't be clicked, focused or scrolled
   useInertApp(open);
 
+  const sheet = useMediaQuery(PHONE_QUERY);
   const panelRef = useRef(null);
   const tokenRef = useRef(null);
   if (!tokenRef.current) tokenRef.current = {};
@@ -65,20 +85,13 @@ export function Modal({ open, onClose, title, ariaLabel, children, className, ba
             data-scrim
             onClick={onClose}
           />
-          {/* Panel rises out of focus: blur + scale settle on a spring */}
           <motion.div
             ref={panelRef}
             tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-label={ariaLabel || (typeof title === 'string' && title ? title : undefined)}
-            initial={{ opacity: 0, scale: 0.96, y: 14, filter: 'blur(8px)' }}
-            animate={{
-              opacity: 1, scale: 1, y: 0, filter: 'blur(0px)',
-              transition: { type: 'spring', stiffness: 420, damping: 34, mass: 0.9, opacity: { duration: 0.2 }, filter: { duration: 0.22 } },
-              transitionEnd: { filter: 'none' },
-            }}
-            exit={{ opacity: 0, scale: 0.97, y: 8, filter: 'blur(4px)', transition: { duration: 0.15, ease: [0.4, 0, 1, 1] } }}
+            {...(sheet ? SHEET_MOTION : DIALOG_MOTION)}
             className={clsx(styles.modal, className)}
           >
             {/* `bare`: the content brings its own title and buttons (the liquid confirmations) */}

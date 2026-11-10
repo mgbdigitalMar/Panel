@@ -57,8 +57,8 @@ html, body {
    Kept in sync with index.html's critical CSS and theme-color. */
 html { background: var(--canvas, var(--bg)); }
 
-[data-appearance='glass'] { --canvas: #DEEBF6; --canvas-top-rgb: 216, 225, 250; }
-[data-appearance='glass'][data-theme='dark'] { --canvas: #0A1321; --canvas-top-rgb: 16, 25, 54; }
+[data-appearance='glass'] { --canvas: #E3E6EC; --canvas-top-rgb: 232, 235, 242; }
+[data-appearance='glass'][data-theme='dark'] { --canvas: #101116; --canvas-top-rgb: 14, 15, 20; }
 
 /* Glass: the canvas carries the wallpaper's own gradient (Wallpaper.module.scss .scene), one
    screen tall from the top, so the page reads edge to edge under Safari's bars instead of
@@ -66,22 +66,12 @@ html { background: var(--canvas, var(--bg)); }
 html[data-appearance='glass'] {
   background-repeat: no-repeat;
   background-size: 100% 100lvh;
-  background-image:
-    radial-gradient(48% 44% at 10% 6%, rgba(47, 91, 234, 0.3), transparent 70%),
-    radial-gradient(40% 38% at 94% 14%, rgba(91, 124, 255, 0.22), transparent 70%),
-    radial-gradient(44% 40% at 86% 94%, rgba(14, 159, 154, 0.18), transparent 72%),
-    radial-gradient(50% 44% at 14% 98%, rgba(122, 162, 255, 0.22), transparent 72%),
-    linear-gradient(160deg, #E4EBFB 0%, #F2F5FB 50%, #E3EDF2 100%);
+  /* The room's own tones behind the veil: pale ceiling, brighter floor */
+  background-image: linear-gradient(180deg, #E8EBF2 0%, #DCDFE6 46%, #E3E6EC 100%);
 }
 
 html[data-appearance='glass'][data-theme='dark'] {
-  background-image:
-    radial-gradient(52% 46% at 10% 4%, rgba(47, 91, 234, 0.42), transparent 70%),
-    radial-gradient(60% 52% at 56% 40%, rgba(45, 75, 216, 0.12), transparent 72%),
-    radial-gradient(34% 32% at 94% 16%, rgba(91, 124, 255, 0.16), transparent 70%),
-    radial-gradient(42% 38% at 88% 96%, rgba(14, 159, 154, 0.2), transparent 72%),
-    radial-gradient(46% 40% at 12% 100%, rgba(45, 75, 216, 0.18), transparent 72%),
-    linear-gradient(160deg, #0C1120 0%, #080A11 52%, #070B10 100%);
+  background-image: linear-gradient(180deg, #0E0F14 0%, #17171C 46%, #101116 100%);
 }
 
 /* Glass: the body is see-through so the canvas and the wallpaper meet without a seam */
@@ -1154,12 +1144,42 @@ html { -webkit-tap-highlight-color: transparent; }
   transition: none !important;
 }
 
-/* Glass over the moving backdrop re-blurs every frame, so inside the shell surfaces are
-   near-opaque and unblurred. Dialog scrims opt back in with data-scrim. */
+/* Blur budget. Inside the shell nothing blurs unless it is one of the glass materials
+   (_patterns.scss: pane-blur, liquid, glass-chrome; GlassChrome's frosted bars), which opt in
+   with !important — :where() keeps this rule at zero specificity so they always win. A blur on
+   every button, chip and table row would cost far more than it shows. Dialog scrims opt in
+   with data-scrim. */
 
-.app-shell *:not([data-scrim]) {
+:where(.app-shell) :where(*:not([data-scrim])) {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+/* Phones and tablets: panes do not blur. The wallpaper is blurred once instead (Wallpaper), so
+   the page scrolls without re-blurring a screenful of cards on every frame; only the bars that
+   float over the content (top buttons, dock, section pill) keep a live blur. */
+@media (max-width: 1023px) {
+  [data-appearance='glass'] :is(.app-shell, .glass-scope) {
+    --lg-card-blur: none;
+    --lg-fill: rgba(255, 255, 255, 0.72);
+    --lg-fill-hover: rgba(255, 255, 255, 0.84);
+  }
+
+  [data-appearance='glass'][data-theme='dark'] :is(.app-shell, .glass-scope) {
+    --lg-fill: rgba(26, 25, 31, 0.6);
+    --lg-fill-hover: rgba(40, 39, 47, 0.68);
+  }
+}
+
+/* "Reduce transparency" (system setting): solid panes, no blur anywhere */
+@media (prefers-reduced-transparency: reduce) {
+  [data-appearance='glass'] :is(.app-shell, .glass-scope) {
+    --lg-card-blur: none;
+    --lg-fill: var(--card);
+    --lg-fill-hover: var(--card);
+    --lg-chrome: var(--card);
+    --lg-popover: var(--card);
+  }
 }
 
 /* Page sections rise in one after another. The standalone `translate` never fights Framer

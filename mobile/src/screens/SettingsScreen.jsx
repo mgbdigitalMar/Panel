@@ -22,7 +22,7 @@ import { usePendingApprovals } from '../hooks/usePendingApprovals';
 import { biometricSupport, authenticate } from '../services/biometrics';
 import { Notifications, isAndroidExpoGo, lastPushRegistration } from '../services/pushNotifications';
 import { supabase } from '../lib/supabase';
-import { NOTIFICATION_CATEGORIES, fetchNotificationPreferences, setNotificationPreference } from '@shared/services/notifications.js';
+import { NOTIFICATION_CATEGORIES, allNotificationsEnabled, fetchNotificationPreferences, setAllNotificationPreferences } from '@shared/services/notifications.js';
 
 function MenuRow({ icon, tone = 'accent', label, value, valueColor, badge, onPress, last, children }) {
   const { colors } = useTheme();
@@ -71,17 +71,28 @@ export default function SettingsScreen() {
 
   // null while loading or if it could not be read: the switches stay hidden rather than lying
   const [notifPrefs, setNotifPrefs] = useState(null);
+  const [prefsBusy, setPrefsBusy] = useState(false);
+  const [prefsError, setPrefsError] = useState('');
   useEffect(() => {
-    if (user?.id) fetchNotificationPreferences(supabase, user.id).then(setNotifPrefs);
+    let active = true;
+    if (user?.id) fetchNotificationPreferences(supabase, user.id).then((prefs) => {
+      if (active) {
+        setNotifPrefs(prefs);
+        setPrefsError(prefs === null ? 'No se pudieron cargar las preferencias. Vuelve a abrir Más para reintentarlo.' : '');
+      }
+    });
+    return () => { active = false; };
   }, [user?.id]);
 
-  const toggleCategory = async (category, enabled) => {
-    const previous = notifPrefs;
-    setNotifPrefs({ ...notifPrefs, [category]: enabled });
-    const { error } = await setNotificationPreference(supabase, user.id, category, enabled);
-    if (error) {
-      setNotifPrefs(previous);
-      toast.error('No se ha podido guardar', 'Revisa tu conexión e inténtalo de nuevo.');
+  const toggleAllNotifications = async (enabled) => {
+    if (prefsBusy || !notifPrefs) return;
+    setPrefsBusy(true);
+    try {
+      const { error } = await setAllNotificationPreferences(supabase, user.id, enabled);
+      if (error) toast.error('No se ha podido guardar', 'Revisa tu conexión e inténtalo de nuevo.');
+      else setNotifPrefs(Object.fromEntries(NOTIFICATION_CATEGORIES.map(({ id }) => [id, enabled])));
+    } finally {
+      setPrefsBusy(false);
     }
   };
 
@@ -182,12 +193,15 @@ export default function SettingsScreen() {
           ) : null}
           <MenuRow icon={BellRing} tone="neutral" label="Notificaciones push" value={pushLabel}
             valueColor={pushStatus === 'denied' ? colors.dangerFg : undefined} onPress={handlePushPress} />
-          {notifPrefs ? NOTIFICATION_CATEGORIES.map((c) => (
-            <View key={c.id} style={{ borderBottomWidth: 1, borderBottomColor: colors.divider }}>
-              <SwitchRow title={c.label} subtitle={c.desc}
-                value={notifPrefs[c.id] !== false} onValueChange={(on) => toggleCategory(c.id, on)} />
+          {notifPrefs ? (
+            <View style={{ borderBottomWidth: 1, borderBottomColor: colors.divider }}>
+              <SwitchRow title="Todas las notificaciones" subtitle={prefsBusy ? 'Guardando preferencias…' : 'Solicitudes, reservas, horas, documentos, noticias y eventos. Los avisos seguirán en la campana.'}
+                disabled={prefsBusy} value={allNotificationsEnabled(notifPrefs)} onValueChange={toggleAllNotifications} />
+              {!allNotificationsEnabled(notifPrefs) && NOTIFICATION_CATEGORIES.some(({ id }) => notifPrefs[id] !== false) ? (
+                <T size={12.5} color={colors.text3} style={{ paddingHorizontal: 14, paddingBottom: 12 }}>Algunas estaban silenciadas. Activa este control para recibirlas todas.</T>
+              ) : null}
             </View>
-          )) : null}
+          ) : <T size={12.5} color={colors.text3} style={{ padding: 14 }}>{prefsError || 'Cargando preferencias…'}</T>}
           <MenuRow icon={Lock} tone="neutral" label="Pausar sesión por inactividad" last>
             <T mono weight="semibold" size={14} color={colors.text2}>30 min</T>
           </MenuRow>

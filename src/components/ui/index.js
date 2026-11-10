@@ -7,6 +7,7 @@ export { Avatar } from './Avatar/Avatar';
 export { Badge } from './Badge/Badge';
 export { Card, CardHeader, CardTitle, CardContent } from './Card/Card';
 export { StatCard } from './StatCard/StatCard';
+export { AnimatedNumber } from './AnimatedNumber/AnimatedNumber';
 export { ConfirmModal } from './ConfirmModal/ConfirmModal';
 export { EmptyState } from './EmptyState/EmptyState';
 export { ErrorState } from './ErrorState/ErrorState';

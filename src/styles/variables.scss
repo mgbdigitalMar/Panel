@@ -241,6 +241,23 @@
   --lg-spot-edge:   rgba(47, 91, 234, 0.28);
   --lg-spot-glow:   0 20px 44px -22px rgba(47, 91, 234, 0.55);
 
+  /* Blue glass: the brand highlight of a page (KPI in front, covers, the next reservation).
+     White type in both themes. */
+  --glass-blue:      rgba(47, 91, 234, 0.86);
+  --glass-blue-edge: rgba(255, 255, 255, 0.32);
+  --glass-blue-glow: 0 18px 40px -18px rgba(23, 50, 160, 0.6);
+  /* The selected chip of a segmented control: ink on light glass, white on smoked glass */
+  --chip-on:        #0F1320;
+  --chip-on-fg:     #FFFFFF;
+  --chip-on-shadow: 0 6px 16px -8px rgba(15, 19, 32, 0.6);
+
+  /* Motion (the app uses the same figures, mobile/src/theme/motion.js) */
+  --dur-press:      140ms;   /* press feedback */
+  --dur-fast:       180ms;   /* hovers, tooltips, small popovers */
+  --dur-base:       240ms;   /* panels, tabs, menus */
+  --dur-enter:      420ms;   /* a page's sections rising in */
+  --stagger:        45ms;    /* gap between sections of a cascade */
+
   /* Analytical accents beside the brand blue: teal for growth and the second series,
      violet for a third. Never a section's main colour. */
   --teal:           #0E9F9A;
@@ -258,11 +275,11 @@
 /* Dark Theme — Margube Glass System */
 [data-theme='dark'] {
   /* Backgrounds — Deep obsidian & translucent glass */
-  --bg:      #0A0C10;
-  --bg-2:    #11141B;
-  --bg-3:    #15181F;
-  --card:    #13161D;
-  --sidebar: #0A0C10;
+  --bg:      #0B0B0F;
+  --bg-2:    #131318;
+  --bg-3:    #1A1A20;
+  --card:    #17171C;
+  --sidebar: #0B0B0F;
   --border:  rgba(255, 255, 255, 0.13);
   --border-2: rgba(255, 255, 255, 0.18);
 
@@ -307,10 +324,10 @@
   --info-bg:    rgba(94, 224, 213, 0.14);
 
   /* Inputs */
-  --input:          #11141B;
+  --input:          #111116;
   --input-border:   rgba(255, 255, 255, 0.15);
   --input-focus:    #7AA2FF;
-  --input-bg-hover: #15181F;
+  --input-bg-hover: #1A1A20;
 
   /* Nav */
   --nav:     #F5F6F8;
@@ -330,16 +347,16 @@
   --shadow-glow:   0 0 60px rgba(62, 99, 221, 0.25);
 
   /* Surfaces — Dark (near-opaque, like the login's form panel) */
-  --glass-bg:          rgba(19, 22, 29, 0.94);
+  --glass-bg:          rgba(22, 22, 27, 0.94);
   --glass-border:      rgba(255, 255, 255, 0.07);
   --glass-blur:        blur(28px) saturate(180%);
   --glass-blur-sm:     blur(14px) saturate(140%);
 
   /* Glass depth layers (dark) */
-  --glass-surface:     rgba(19, 22, 29, 0.6);
-  --glass-card:        rgba(19, 22, 29, 0.94);
-  --glass-card-hover:  rgba(24, 28, 36, 0.97);
-  --glass-input:       #0A0C10;
+  --glass-surface:     rgba(22, 22, 27, 0.6);
+  --glass-card:        rgba(22, 22, 27, 0.94);
+  --glass-card-hover:  rgba(28, 28, 34, 0.97);
+  --glass-input:       #0E0E12;
 
   /* Glass decorative (dark) */
   --glass-shimmer:      linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 60%, transparent 100%);
@@ -348,12 +365,12 @@
   --card-hover-shimmer: linear-gradient(115deg, transparent 0%, transparent 40%, rgba(255, 255, 255, 0.12) 50%, transparent 60%, transparent 100%);
 
   /* Liquid glass (dark) */
-  --lg-fill:        rgba(30, 34, 45, 0.55);
-  --lg-fill-hover:  rgba(38, 43, 56, 0.7);
+  --lg-fill:        rgba(32, 32, 39, 0.55);
+  --lg-fill-hover:  rgba(42, 42, 50, 0.7);
   --lg-edge:        rgba(255, 255, 255, 0.08);
   --lg-rim:         rgba(255, 255, 255, 0.2);
   --lg-sheen:       linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 55%);
-  --lg-chrome:      rgba(19, 22, 29, 0.66);
+  --lg-chrome:      rgba(20, 20, 26, 0.7);
   --lg-blur:        blur(24px) saturate(170%);
   --lg-active:      rgba(255, 255, 255, 0.14);
   --lg-wash-a:      rgba(122, 162, 255, 0.2);
@@ -363,9 +380,13 @@
   --lg-shadow:      0 14px 36px -10px rgba(0, 0, 0, 0.62);
   --lg-well:        rgba(255, 255, 255, 0.035);
   --lg-well-edge:   rgba(255, 255, 255, 0.06);
-  --lg-spot:        linear-gradient(135deg, rgba(47, 91, 234, 0.4) 0%, #13161D 72%);
+  --lg-spot:        linear-gradient(135deg, rgba(47, 91, 234, 0.4) 0%, #17171C 72%);
   --lg-spot-edge:   rgba(122, 162, 255, 0.34);
   --lg-spot-glow:   0 20px 48px -18px rgba(47, 91, 234, 0.5);
+
+  --chip-on:        #FFFFFF;
+  --chip-on-fg:     #11141B;
+  --chip-on-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.7);
 
   --teal:           #2DD4BF;
   --teal-rgb:       45, 212, 191;
@@ -373,8 +394,8 @@
   --violet-rgb:     167, 139, 250;
 
   /* RGB for rgba() */
-  --bg-rgb:           6, 11, 20;
-  --sidebar-rgb:      7, 16, 28;
+  --bg-rgb:           11, 11, 15;
+  --sidebar-rgb:      14, 14, 19;
   --sidebar-opacity:  0.92;
   --header-opacity:   0.84;
 
@@ -399,61 +420,85 @@
   );
 
   /* Command Palette (dark) */
-  --cmd-bg:         rgba(7, 16, 28, 0.96);
-  --cmd-border:     rgba(21, 32, 48, 0.90);
+  --cmd-bg:         rgba(18, 18, 24, 0.96);
+  --cmd-border:     rgba(255, 255, 255, 0.10);
   --cmd-item-hover: rgba(62, 99, 221, 0.10);
 }
 
 /* ==========================================================================
-   Appearance "glass" (default; Ajustes → Apariencia). Translucent frosted panels over a
-   wallpaper, like visionOS. Scoped to the signed-in shell and the login (.glass-scope): modals
-   and toasts, rendered outside them, keep their solid surfaces so text stays readable.
+   Margube Adaptive Glass (the one appearance; index.html marks it with data-appearance="glass").
+   Smoked grey glass over the room photograph: neutral panes that take their colour from what is
+   behind them, lit from above, with Margube blue kept for the one highlight and the actions.
+   Scoped to the signed-in shell and the login (.glass-scope): modals and toasts, rendered
+   outside them, keep their dense surfaces so text stays readable.
+   The app mirrors these values in mobile/src/theme/tokens.js.
+
+   Depth, from the back of the room to the front:
+     0  wallpaper + veil            (Wallpaper)
+     1  wells      --lg-well        (rows, fields, modules inside a pane; no blur)
+     2  panes      --lg-fill        (cards; blur --lg-card-blur on computers)
+     3  chrome     --lg-chrome      (top bar, rail, dock, tabs; always blurred)
+     4  popovers   --lg-popover     (menus, tooltips; near-opaque)
    ========================================================================== */
 [data-appearance='glass'] :is(.app-shell, .glass-scope) {
-  /* Smoked glass, light: milky panes on a pale blue mist. The edge is lit from above
-     (bright top, faint bottom), like a milled pane catching the room light. */
-  --lg-fill:        rgba(255, 255, 255, 0.6);
-  --lg-fill-hover:  rgba(255, 255, 255, 0.78);
-  --lg-edge:        rgba(17, 20, 27, 0.07);
+  /* Light: milky panes in a bright room */
+  --lg-fill:        rgba(255, 255, 255, 0.66);
+  --lg-fill-hover:  rgba(255, 255, 255, 0.8);
+  --lg-edge:        rgba(255, 255, 255, 0.6);
   --lg-edge-top:    rgba(255, 255, 255, 0.95);
-  --lg-edge-bottom: rgba(17, 20, 27, 0.08);
+  --lg-edge-bottom: rgba(17, 20, 29, 0.07);
   --lg-rim:         rgba(255, 255, 255, 0.9);
-  --lg-sheen:       linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 45%);
-  --lg-shadow:      0 14px 34px -18px rgba(16, 25, 54, 0.28);
-  --lg-chrome:      rgba(255, 255, 255, 0.62);
-  /* Cards blur what is behind them (only in this appearance; see p.glass) */
-  --lg-card-blur:   blur(26px) saturate(160%);
-  /* Menus and the dock sit over busy content: still glass, but dense enough to read */
-  --lg-popover:     rgba(255, 255, 255, 0.94);
+  --lg-sheen:       linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0) 42%);
+  --lg-shadow:      0 14px 34px -12px rgba(20, 30, 70, 0.2);
+  --lg-chrome:      rgba(255, 255, 255, 0.82);
+  /* Cards blur what is behind them on computers; phones and tablets blur the wallpaper once
+     instead (see global.scss) */
+  --lg-card-blur:   blur(22px) saturate(165%);
+  --lg-popover:     rgba(255, 255, 255, 0.95);
   --lg-active:      rgba(255, 255, 255, 0.92);
-  /* Inset wells inside a pane (rows, fields, nested modules) */
-  --lg-well:        rgba(17, 20, 27, 0.035);
-  --lg-well-edge:   rgba(17, 20, 27, 0.06);
-  /* The page's one highlight: a pane infused with Margube blue */
-  --lg-spot:        linear-gradient(135deg, rgba(47, 91, 234, 0.2) 0%, rgba(91, 124, 255, 0.08) 42%, rgba(255, 255, 255, 0.66) 78%);
-  --lg-spot-edge:   rgba(47, 91, 234, 0.28);
-  --lg-spot-glow:   0 20px 44px -22px rgba(47, 91, 234, 0.55);
-  --border:         rgba(17, 20, 27, 0.1);
+  --lg-well:        rgba(17, 20, 29, 0.055);
+  --lg-well-edge:   rgba(17, 20, 29, 0.08);
+  /* The page's one highlight: a pane of Margube blue glass */
+  --lg-spot:        linear-gradient(135deg, rgba(47, 91, 234, 0.22) 0%, rgba(91, 124, 255, 0.1) 42%, rgba(255, 255, 255, 0.66) 78%);
+  --lg-spot-edge:   rgba(47, 91, 234, 0.3);
+  --lg-spot-glow:   0 20px 44px -22px rgba(47, 91, 234, 0.5);
+  --border:         rgba(17, 20, 29, 0.12);
+  /* Fields are wells in the pane, not solid slabs */
+  --glass-input:    rgba(255, 255, 255, 0.72);
+  --input:          rgba(255, 255, 255, 0.72);
+  --input-border:   rgba(17, 20, 29, 0.14);
+  /* Text on glass: a step darker than on the solid surfaces, so it holds over the photograph */
+  --text:           #0F1320;
+  --text-sec:       #333B4D;
+  --text-mut:       #4A5366;
+  --text-rgb:       15, 19, 32;
 }
 
 [data-appearance='glass'][data-theme='dark'] :is(.app-shell, .glass-scope) {
-  /* Smoked glass, dark: deep obsidian panes over a dim room lit in Margube blue */
-  --lg-fill:        rgba(16, 19, 27, 0.6);
-  --lg-fill-hover:  rgba(24, 28, 39, 0.7);
-  --lg-edge:        rgba(255, 255, 255, 0.07);
-  --lg-edge-top:    rgba(255, 255, 255, 0.15);
-  --lg-edge-bottom: rgba(255, 255, 255, 0.025);
-  --lg-rim:         rgba(255, 255, 255, 0.08);
-  --lg-sheen:       linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 38%);
-  --lg-shadow:      0 14px 36px -10px rgba(0, 0, 0, 0.62);
-  --lg-chrome:      rgba(12, 15, 22, 0.74);
-  --lg-card-blur:   blur(28px) saturate(150%);
-  --lg-popover:     rgba(14, 17, 25, 0.95);
-  --lg-active:      rgba(255, 255, 255, 0.1);
-  --lg-well:        rgba(255, 255, 255, 0.035);
-  --lg-well-edge:   rgba(255, 255, 255, 0.06);
-  --lg-spot:        linear-gradient(135deg, rgba(47, 91, 234, 0.42) 0%, rgba(30, 58, 138, 0.2) 40%, rgba(16, 19, 27, 0.66) 78%);
-  --lg-spot-edge:   rgba(122, 162, 255, 0.34);
-  --lg-spot-glow:   0 20px 48px -18px rgba(47, 91, 234, 0.5);
-  --border:         rgba(255, 255, 255, 0.1);
+  /* Dark: smoked grey panes in a dim room */
+  --lg-fill:        rgba(24, 23, 29, 0.52);
+  --lg-fill-hover:  rgba(38, 37, 45, 0.62);
+  --lg-edge:        rgba(255, 255, 255, 0.11);
+  --lg-edge-top:    rgba(255, 255, 255, 0.22);
+  --lg-edge-bottom: rgba(255, 255, 255, 0.045);
+  --lg-rim:         rgba(255, 255, 255, 0.13);
+  --lg-sheen:       linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 40%);
+  --lg-shadow:      0 16px 36px -14px rgba(4, 6, 12, 0.5);
+  --lg-chrome:      rgba(18, 18, 24, 0.74);
+  --lg-card-blur:   blur(24px) saturate(160%);
+  --lg-popover:     rgba(18, 18, 24, 0.94);
+  --lg-active:      rgba(255, 255, 255, 0.12);
+  --lg-well:        rgba(255, 255, 255, 0.07);
+  --lg-well-edge:   rgba(255, 255, 255, 0.09);
+  --lg-spot:        linear-gradient(135deg, rgba(47, 91, 234, 0.5) 0%, rgba(47, 91, 234, 0.2) 44%, rgba(24, 23, 29, 0.5) 80%);
+  --lg-spot-edge:   rgba(143, 174, 255, 0.4);
+  --lg-spot-glow:   0 20px 48px -18px rgba(23, 50, 160, 0.6);
+  --border:         rgba(255, 255, 255, 0.12);
+  --glass-input:    rgba(8, 8, 12, 0.42);
+  --input:          rgba(8, 8, 12, 0.42);
+  --input-border:   rgba(255, 255, 255, 0.14);
+  --text:           #FFFFFF;
+  --text-sec:       #D3D6DE;
+  --text-mut:       #B3B8C3;
+  --text-rgb:       255, 255, 255;
 }
