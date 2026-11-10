@@ -61,6 +61,7 @@ function AssistantConversation() {
           setProposal({ action: data.action, prepared, expiresAt: Date.now() + 5 * 60 * 1000 });
         } catch (validationError) {
           setError(`${validationError.message} No se ha realizado ningún cambio.`);
+          setMessages((list) => [...list, { role: 'assistant', content: `La propuesta no ha superado la validación: ${validationError.message} Corrige los datos para preparar una nueva propuesta.` }]);
         }
       }
     } catch (failure) {

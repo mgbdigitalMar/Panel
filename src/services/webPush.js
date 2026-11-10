@@ -70,8 +70,7 @@ export function notificationsEnabled() {
 
 /**
  * Shows a system notification for a row of `notifications` (or any alert).
- * Same tag as the Web Push path, so it never shows twice. Defaults to the same generic text as
- * the push: it can end up on a locked screen.
+ * Same tag as the Web Push path, so it never shows twice.
  */
 export async function showSystemNotification({ id, title, body, entityType, entityId, type }) {
   if (!notificationsEnabled()) return;

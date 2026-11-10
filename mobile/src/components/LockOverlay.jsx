@@ -7,6 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { biometricSupport } from '../services/biometrics';
 import { Glow } from './common/Screen';
+import { Wallpaper } from './common/Wallpaper';
 import { T } from './common/Text';
 import { Avatar } from './common/UI';
 import { GlassButton } from './common/GlassButton';
@@ -46,6 +47,7 @@ export default function LockOverlay() {
   return (
     <KeyboardAvoidingView style={[StyleSheet.absoluteFill, { zIndex: 500, elevation: 500 }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.bg }]}>
+        <Wallpaper />
         <Glow />
         <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.overlay }]} />
       </View>

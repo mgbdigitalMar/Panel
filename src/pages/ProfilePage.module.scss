@@ -344,8 +344,8 @@
   font-weight: 600;
   font-size: 13px;
   margin-top: 16px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -431,8 +431,8 @@
   border-radius: var(--radius-lg);
   border: 1px solid rgba(var(--border-rgb), 0.45);
   background: var(--glass-surface);
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   @media (prefers-reduced-motion: reduce) {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -451,8 +451,8 @@
   height: 42px;
   border-radius: var(--radius-md);
   background: var(--glass-input);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   border: 1px solid rgba(var(--border-rgb), 0.40);
   display: flex;
   align-items: center;
@@ -544,7 +544,7 @@
   inset: 0;
   z-index: 1000;
   background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(10px);
+  backdrop-filter: var(--lg-blur);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -559,8 +559,8 @@
 
 .viewerModal {
   background: var(--glass-card);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-2xl), var(--glass-highlight);
@@ -591,8 +591,8 @@
   padding: 14px 20px;
   border-bottom: 1px solid rgba(var(--border-rgb), 0.35);
   background: rgba(var(--bg-rgb), 0.40);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   flex-shrink: 0;
   gap: 12px;
 }

@@ -32,6 +32,7 @@ export default defineConfig({
         // From the home screen it opens full screen, without Safari's bars (index.html adds
         // apple-mobile-web-app-capable + a black-translucent status bar for iOS)
         display: 'standalone',
+        display_override: ['fullscreen', 'standalone'],
         start_url: '/',
         scope: '/',
         theme_color: '#0E0F14',

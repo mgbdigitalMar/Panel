@@ -23,7 +23,7 @@ export const FONTS = {
 };
 
 // Corner radii: soft, generous cards; calendar cells and tiles a step tighter.
-export const RADIUS = { card: 28, tile: 24, cell: 14 };
+export const RADIUS = { card: 20, tile: 20, cell: 14 };
 
 // Brand colours shared by both themes. `navy` is the ink used on white controls.
 export const BRAND = {
@@ -74,7 +74,7 @@ const dark = {
   glassStrong: 'rgba(255,255,255,0.07)',
   glassBorder: 'rgba(255,255,255,0.1)',
   glassBorderStrong: 'rgba(255,255,255,0.18)',
-  glassRim: 'rgba(255,255,255,0.22)',
+  glassRim: 'rgba(255,255,255,0.13)',
   glassFill: 'rgba(22,22,28,0.8)',
   glassSheen: 0.09,
   glassTint: 'systemThinMaterialDark',
@@ -152,7 +152,7 @@ const light = {
   neutralSoft: 'rgba(17,20,27,0.06)',
   glass: 'rgba(255,255,255,0.76)',
   glassStrong: 'rgba(17,20,29,0.06)',
-  glassBorder: 'rgba(17,20,29,0.09)',
+  glassBorder: 'rgba(255,255,255,0.6)',
   glassBorderStrong: 'rgba(17,20,29,0.16)',
   glassRim: '#FFFFFF',
   glassFill: 'rgba(255,255,255,0.84)',

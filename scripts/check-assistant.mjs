@@ -42,8 +42,12 @@ for (const [expected, content] of [
       createRequest: async (actor, payload) => { serviceCalled = actor === user.id && payload.type === 'remoto'; return { data: { id: 'synthetic-only' } }; },
       createReservation: async (actor, payload) => { serviceCalled = actor === user.id && payload.room_id === 7 && payload.status === 'pending'; return { data: { id: 'synthetic-only' } }; },
     };
-    prepareAssistantAction(answer.action, context);
-    await executeAssistantAction(answer.action, context);
+    try {
+      prepareAssistantAction(answer.action, context);
+      await executeAssistantAction(answer.action, context);
+    } catch (error) {
+      console.log(JSON.stringify({ validationError: error.message, syntheticAction: answer.action }));
+    }
   }
   console.log(JSON.stringify({ expected, status: response.status, proposed: answer.action?.kind || null, confirmationDispatchValidated: serviceCalled, databaseWrites: 0, error: answer.error || null }));
   if (!response.ok || !serviceCalled) process.exitCode = 1;

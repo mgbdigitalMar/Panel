@@ -37,8 +37,8 @@
     0 0 0 1px rgba(255, 255, 255, 0.08) inset,
     var(--glass-highlight);
   background: var(--lg-sheen), var(--lg-chrome);
-  backdrop-filter: blur(36px) saturate(220%);
-  -webkit-backdrop-filter: blur(36px) saturate(220%);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
 
   /* Caret indicator pointing up to the bell button */
   &::before {
@@ -270,7 +270,9 @@
   color: var(--text-sec);
   line-height: 1.45;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 4;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

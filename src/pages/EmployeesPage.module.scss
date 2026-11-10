@@ -29,8 +29,8 @@
   display: inline-flex;
   gap: 4px;
   background: var(--glass-input);
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   border: 1px solid rgba(var(--border-rgb), 0.45);
   border-radius: var(--radius-full);
   padding: 4px;
@@ -72,8 +72,8 @@
 
 .tabBtnActive {
   background: var(--glass-card) !important;
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   color: var(--accent) !important;
   font-weight: 700;
   border-color: transparent !important;
@@ -288,8 +288,8 @@
     border-bottom: 1px solid rgba(var(--border-rgb), 0.50);
     white-space: nowrap;
     background: rgba(var(--bg-rgb), 0.65);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: var(--lg-blur);
+    -webkit-backdrop-filter: var(--lg-blur);
   }
 
   td {

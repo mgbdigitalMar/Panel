@@ -143,8 +143,8 @@
     white-space: nowrap;
     border-bottom: 1px solid rgba(var(--border-rgb), 0.50);
     background: rgba(var(--bg-rgb), 0.82);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: var(--lg-blur);
+    -webkit-backdrop-filter: var(--lg-blur);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -323,8 +323,8 @@
   height: 42px;
   border-radius: var(--radius-md);
   background: var(--glass-input);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   border: 1px solid rgba(var(--border-rgb), 0.45);
   display: flex;
   align-items: center;
@@ -434,8 +434,8 @@
   border: 2px dashed rgba(var(--border-rgb), 0.55);
   border-radius: var(--radius);
   background: var(--glass-surface);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   cursor: pointer;
   transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
   overflow: hidden;

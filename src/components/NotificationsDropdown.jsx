@@ -1,3 +1,4 @@
+import { notificationPresentation } from '../../shared/services/notificationPresentation.js';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import clsx from 'clsx';
 import { Bell, CheckCircle, XCircle, CheckCheck, Clock, ChevronRight } from 'lucide-react';
@@ -95,7 +96,7 @@ export function NotificationsDropdown({
                         <strong>{n.title}</strong>
                         {!n.read && <span className={styles.unreadDot} aria-label="No leída" />}
                       </div>
-                      {n.body && <span className={styles.notiBody}>{n.body}</span>}
+                      <span className={styles.notiBody}>{notificationPresentation(n, user?.name).body}</span>
                       <span className={styles.notiTime}>
                         <Clock size={11} aria-hidden="true" />
                         {new Date(n.created_at).toLocaleString('es-ES', {

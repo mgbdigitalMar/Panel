@@ -1,6 +1,7 @@
 import { memo, useEffect, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, StyleSheet, View, useWindowDimensions } from 'react-native';
-import Svg, { Circle, Defs, LinearGradient, Path, Pattern, RadialGradient, Rect, Stop } from 'react-native-svg';
+import { AccessibilityInfo, Animated, Easing, View } from 'react-native';
+import Svg, { Circle, Defs, Path, RadialGradient, Stop } from 'react-native-svg';
+import { Wallpaper } from './Wallpaper';
 import { useTheme } from '../../context/ThemeContext';
 import { LEAF_PATH, VEIN_PATH } from './Brand';
 
@@ -55,97 +56,9 @@ const Blob = memo(function Blob({ id, size, color, opacity }) {
   );
 });
 
-/** Dot grid across the top, faded out downward and behind the orb. */
-const DotGrid = memo(function DotGrid({ width, height, dot, bg }) {
-  return (
-    <Svg width={width} height={height}>
-      <Defs>
-        <Pattern id="dots" width={18} height={18} patternUnits="userSpaceOnUse">
-          <Circle cx={9} cy={9} r={1} fill={dot} />
-        </Pattern>
-        <LinearGradient id="fadeDown" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor={bg} stopOpacity={0} />
-          <Stop offset="0.35" stopColor={bg} stopOpacity={0.15} />
-          <Stop offset="1" stopColor={bg} stopOpacity={1} />
-        </LinearGradient>
-        <RadialGradient id="fadeCenter" cx="50%" cy="42%" r="38%">
-          <Stop offset="0" stopColor={bg} stopOpacity={1} />
-          <Stop offset="1" stopColor={bg} stopOpacity={0} />
-        </RadialGradient>
-      </Defs>
-      <Rect width={width} height={height} fill="url(#dots)" />
-      <Rect width={width} height={height} fill="url(#fadeCenter)" />
-      <Rect width={width} height={height} fill="url(#fadeDown)" />
-    </Svg>
-  );
-});
-
-/** Full-screen animated background: drifting glows + breathing dot grid. */
+/** Same room and veil as every signed-in screen and the web login. */
 export const AuthBackdrop = memo(function AuthBackdrop() {
-  const { colors, theme } = useTheme();
-  const { width } = useWindowDimensions();
-  const reduce = useReduceMotion();
-  const dark = theme === 'dark';
-
-  const driftA = useLoop(9000, !reduce);
-  const driftB = useLoop(11000, !reduce, { delay: 1200 });
-  const breathe = useLoop(4200, !reduce);
-
-  const blobA = Math.max(width * 1.35, 520);
-  const blobB = Math.max(width * 1.1, 440);
-  const gridH = Math.min(420, width * 1.05);
-
-  return (
-    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { overflow: 'hidden', backgroundColor: colors.bg }]}>
-      <Animated.View
-        {...cached}
-        style={{
-          position: 'absolute',
-          top: -blobA * 0.42,
-          left: (width - blobA) / 2,
-          transform: [
-            { translateX: driftA.interpolate({ inputRange: [0, 1], outputRange: [-36, 36] }) },
-            { translateY: driftA.interpolate({ inputRange: [0, 1], outputRange: [-12, 26] }) },
-            { scale: driftA.interpolate({ inputRange: [0, 1], outputRange: [1, 1.1] }) },
-          ],
-        }}
-      >
-        <Blob id="authA" size={blobA} color={colors.glowA} opacity={dark ? 0.42 : 0.3} />
-      </Animated.View>
-
-      <Animated.View
-        {...cached}
-        style={{
-          position: 'absolute',
-          bottom: -blobB * 0.55,
-          right: -blobB * 0.45,
-          transform: [
-            { translateX: driftB.interpolate({ inputRange: [0, 1], outputRange: [24, -40] }) },
-            { translateY: driftB.interpolate({ inputRange: [0, 1], outputRange: [0, -46] }) },
-          ],
-        }}
-      >
-        <Blob id="authB" size={blobB} color={colors.glowB} opacity={dark ? 0.28 : 0.2} />
-      </Animated.View>
-
-      <Animated.View
-        {...cached}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          opacity: breathe.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1] }),
-        }}
-      >
-        <DotGrid
-          width={width}
-          height={gridH}
-          dot={dark ? 'rgba(255,255,255,0.22)' : 'rgba(17,20,27,0.16)'}
-          bg={colors.bg}
-        />
-      </Animated.View>
-    </View>
-  );
+  return <Wallpaper />;
 });
 
 /** The static sphere: brand blue with a rim light and the leaf mark. */

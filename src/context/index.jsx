@@ -1,3 +1,5 @@
+import { notificationPresentation } from '../../shared/services/notificationPresentation.js';
+import { GLASS_STORAGE_KEY, normalizeGlass } from '../../shared/config/glass.js';
 import { createContext, useContext, useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { flushSync } from 'react-dom'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -38,6 +40,14 @@ export function ThemeProvider({ children }) {
   const [mode, setModeState] = useState(() => {
     try { return localStorage.getItem('app-theme-mode') || 'dark'; } catch { return 'dark'; }
   })
+  const [glassIntensity, setGlassState] = useState(() => {
+    try { return normalizeGlass(localStorage.getItem(GLASS_STORAGE_KEY)); } catch { return 'normal'; }
+  });
+  useEffect(() => {
+    document.documentElement.dataset.glassIntensity = glassIntensity;
+    try { localStorage.setItem(GLASS_STORAGE_KEY, glassIntensity); } catch {}
+  }, [glassIntensity]);
+  const setGlassIntensity = (value) => setGlassState(normalizeGlass(value));
 
   const applyMode = (m) => {
     const resolved = resolveTheme(m);
@@ -94,7 +104,7 @@ export function ThemeProvider({ children }) {
   };
   const theme = resolveTheme(mode);
 
-  return <ThemeCtx.Provider value={{ theme, mode, setMode }}>{children}</ThemeCtx.Provider>
+  return <ThemeCtx.Provider value={{ theme, mode, setMode, glassIntensity, setGlassIntensity }}>{children}</ThemeCtx.Provider>
 }
 export function useTheme() { return useContext(ThemeCtx) }
 
@@ -413,11 +423,10 @@ const [readIds, setReadIds] = useState(() => {
     }
 
     // System notification while the intranet is not in front of the person. It shares the
-    // `margube-<id>` tag with Web Push, so nothing shows twice, and it is just as generic:
-    // the screen may be locked. The detail is the toast and the inbox.
+    // `margube-<id>` tag with Web Push, so nothing shows twice.
     const notifyInBackground = (row) => {
       if (document.visibilityState === 'visible' && document.hasFocus()) return
-      showSystemNotification({ id: row.id, entityType: row.entity_type, entityId: row.entity_id, type: row.type })
+      showSystemNotification({ ...notificationPresentation(row, user.name), id: row.id, entityType: row.entity_type, entityId: row.entity_id, type: row.type })
     }
 
     // New requests, reviews and documents for one person already arrive as a row of
@@ -498,7 +507,7 @@ const [readIds, setReadIds] = useState(() => {
         setNotifications(prev => mergeNotification(prev, row))
         if (typeof unread === 'number') setUnreadCount(unread)
         const icon = row.type === 'success' ? '✅' : row.type === 'error' ? '❌' : '🔔'
-        pushNotif(icon, row.title)
+        pushNotif(icon, `${row.title} — ${notificationPresentation(row, user.name).body}`)
         notifyInBackground(row)
       },
       onUpdated: ({ id, read, unread }) => {

@@ -1,3 +1,4 @@
+import { GLASS_OPTIONS, glassMaterial, normalizeGlass } from '../shared/config/glass.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -152,7 +153,7 @@ export async function runGlassAppearanceTests() {
     globalCss.includes("html { background: var(--canvas, var(--bg)); }") && globalCss.includes("[data-appearance='glass'][data-theme='dark'] { --canvas: #101116; --canvas-top-rgb: 14, 15, 20; }"));
   assert('Móvil y tablet: cabecera transparente; solo la franja de la barra de estado lleva velo (Safari)',
     chromeStyles.includes('background: transparent;') && chromeStyles.includes('height: env(safe-area-inset-top);')
-    && chromeStyles.includes('background: rgba(var(--canvas-top-rgb), 0.82);') && chromeStyles.includes('backdrop-filter: blur(18px) saturate(160%);'));
+    && chromeStyles.includes('background: linear-gradient(var(--lg-chrome), transparent);') && chromeStyles.includes('backdrop-filter: var(--lg-blur);'));
   assert('Ordenador: cabecera transparente que flota sobre la página (el contenido pasa por debajo; solo las píldoras reciben clics)',
     /\.main > header \{\s*position: absolute;/.test(read('src', 'components', 'Layout.module.scss'))
     && read('src', 'components', 'Layout.module.scss').includes('padding-top: calc(#{$header-h} + clamp(12px, 1.6vw, 24px));')
@@ -163,8 +164,8 @@ export async function runGlassAppearanceTests() {
     && adminPage.includes('firstLogin: true') && adminPage.includes('navigator.clipboard.writeText')
     && read('src', 'pages', 'AdminDesk.jsx').includes('onClick={() => onResetPassword(emp)}') && read('src', 'pages', 'AdminTouch.jsx').includes('onClick={() => onResetPassword(emp)}')
     && /if not public\.is_admin\(\) then[\s\S]*?admin_set_password|admin_set_password[\s\S]*?if not public\.is_admin\(\)/.test(read('supabase', 'migrations', '20261022120000_secure_auth.sql')));
-  assert('Safari: alturas mínimas en svh (la página no se recoloca al plegarse la barra)',
-    read('src', 'components', 'Layout.module.scss').includes('min-height: 100svh;') && !read('src', 'components', 'Layout.module.scss').includes('min-height: calc(100dvh'));
+  assert('Safari: el contenedor sigue la altura visible y conserva las zonas seguras',
+    read('src', 'components', 'Layout.module.scss').includes('min-height: 100dvh;') && read('src', 'components', 'Layout.module.scss').includes('env(safe-area-inset-bottom)'));
   assert('Safari: el fondo Cristal llega bajo la barra de estado y la barra inferior',
     /\.wallpaper \{[\s\S]*?top: -120px;[\s\S]*?bottom: -120px;/.test(read('src', 'components', 'Wallpaper.module.scss')));
   assert('Safari: tema y apariencia aplicados antes del primer pintado (sin destello)',
@@ -215,5 +216,12 @@ export async function runGlassAppearanceTests() {
     && read('src', 'components', 'ui', 'AnimatedNumber', 'AnimatedNumber.jsx').includes('useReducedMotion')
     && read('src', 'components', 'ui', 'StatCard', 'StatCard.jsx').includes('<AnimatedNumber value={value}'));
 
+  assert('Preferencia corrupta vuelve al nivel normal', normalizeGlass(null) === 'normal' && normalizeGlass('invalid') === 'normal');
+  for (const dark of [false, true]) {
+    const materials = GLASS_OPTIONS.map(({ value }) => glassMaterial(value, dark));
+    assert(`Sin efecto usa superficies opacas y cero blur (${dark ? 'oscuro' : 'claro'})`, materials[0].blur === 0 && materials[0].card.endsWith(',1)') && materials[0].chrome.endsWith(',1)'));
+    assert(`Intensidad creciente y acotada (${dark ? 'oscuro' : 'claro'})`, materials.every((m, i) => m.strength >= 0 && m.strength <= 1 && m.blur <= 32 && (!i || m.blur > materials[i - 1].blur)));
+  }
+  assert('Web restaura la intensidad antes del primer pintado', indexHtml.includes("localStorage.getItem('margube-glass-intensity')") && indexHtml.includes('dataset.glassIntensity'));
   return { passed, failed };
 }

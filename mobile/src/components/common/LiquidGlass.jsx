@@ -5,8 +5,8 @@
 //              screen, which costs more than it gives on a tab bar over several mounted screens)
 // Every variant gets the same hairline edge and bright top rim, and none casts a shadow.
 // With "Reduce transparency" on, it falls back to a solid surface.
-import { memo, useEffect, useState } from 'react';
-import { AccessibilityInfo, Platform, View } from 'react-native';
+import { memo } from 'react';
+import { Platform, View } from 'react-native';
 import { GlassView, isLiquidGlassAvailable, isGlassEffectAPIAvailable } from 'expo-glass-effect';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -27,14 +27,7 @@ export const NATIVE_GLASS = detectNativeGlass();
 
 /** True while the user has iOS "Reduce transparency" on (always false on Android). */
 export function useReduceTransparency() {
-  const [reduce, setReduce] = useState(false);
-  useEffect(() => {
-    if (Platform.OS !== 'ios') return undefined;
-    AccessibilityInfo.isReduceTransparencyEnabled().then(setReduce).catch(() => {});
-    const sub = AccessibilityInfo.addEventListener('reduceTransparencyChanged', setReduce);
-    return () => sub?.remove();
-  }, []);
-  return reduce;
+  return useTheme().reduceTransparency;
 }
 
 /** Soft white sheen across the top half — the light catching the glass. */
@@ -55,8 +48,7 @@ const Sheen = memo(function Sheen({ radius, opacity }) {
  * `tint` colours the glass (selected states); `sheen` can be turned off on very small controls.
  */
 export const GlassFill = memo(function GlassFill({ radius = 22, tint, sheen = true }) {
-  const { colors, theme } = useTheme();
-  const reduce = useReduceTransparency();
+  const { colors, theme, effectiveGlass, material } = useTheme();
   const shape = { ...FILL, borderRadius: radius, overflow: 'hidden' };
   const edge = (
     <View
@@ -65,7 +57,7 @@ export const GlassFill = memo(function GlassFill({ radius = 22, tint, sheen = tr
     />
   );
 
-  if (reduce) {
+  if (effectiveGlass === 'off') {
     return (
       <View pointerEvents="none" style={[shape, { backgroundColor: tint || colors.raised }]}>
         {edge}
@@ -78,9 +70,9 @@ export const GlassFill = memo(function GlassFill({ radius = 22, tint, sheen = tr
       <GlassView
         pointerEvents="none"
         style={shape}
-        glassEffectStyle="regular"
+        glassEffectStyle={effectiveGlass === 'strong' ? 'clear' : 'regular'}
         colorScheme={theme}
-        tintColor={tint}
+        tintColor={tint || colors.glassFill}
       />
     );
   }
@@ -88,7 +80,7 @@ export const GlassFill = memo(function GlassFill({ radius = 22, tint, sheen = tr
   if (Platform.OS === 'ios') {
     return (
       <View pointerEvents="none" style={shape}>
-        <BlurView style={FILL} tint={colors.glassTint} intensity={80} />
+        <BlurView style={FILL} tint={colors.glassTint} intensity={Math.round(material.strength * 100)} />
         {tint ? <View style={[FILL, { backgroundColor: tint }]} /> : null}
         {sheen ? <Sheen radius={radius} opacity={colors.glassSheen} /> : null}
         {edge}

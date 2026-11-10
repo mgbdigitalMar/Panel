@@ -9,9 +9,9 @@ $header-h-mobile: 64px;
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  /* svh: stays put while Safari's toolbar collapses (dvh resized the page mid-scroll) */
+  /* The background follows the visible viewport as the browser controls move. */
   min-height: 100vh;
-  min-height: 100svh;
+  min-height: 100dvh;
   background: transparent;
   overflow-x: clip;
 }
@@ -158,10 +158,13 @@ $header-h-mobile: 64px;
   @media (max-width: 1023px) {
     min-height: calc(100svh - #{$header-h-mobile});
     padding: 12px 28px calc(40px + env(safe-area-inset-bottom));
+    padding-left: max(28px, env(safe-area-inset-left));
+    padding-right: max(28px, env(safe-area-inset-right));
   }
 
   @media (max-width: 767px) {
-    padding-inline: 16px;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
   }
 
   /* Phones: room for the bottom dock */

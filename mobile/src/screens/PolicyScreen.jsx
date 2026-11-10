@@ -4,6 +4,7 @@
 // It shows the onboarding document uploaded by an admin (same source as the web);
 // if there is none, the PDF bundled with the app is opened in the device's viewer.
 import { useEffect, useState } from 'react';
+import { Wallpaper } from '../components/common/Wallpaper';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
@@ -144,6 +145,7 @@ export default function PolicyScreen() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <Wallpaper />
       <View style={{ flex: 1, paddingTop: insets.top }}>
         <View style={{ paddingHorizontal: 20, paddingVertical: 16, gap: 6, borderBottomWidth: 1, borderBottomColor: colors.divider }}>
           <T size={12} weight="semibold" color={colors.accentFg}>{step === 'read' ? 'Paso 1 de 2 · Leer' : 'Paso 2 de 2 · Firmar'}</T>

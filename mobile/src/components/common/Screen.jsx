@@ -5,16 +5,18 @@ import Svg, { Defs, RadialGradient, Stop, Ellipse } from 'react-native-svg';
 import { useTheme } from '../../context/ThemeContext';
 import { TAB_BAR_HEIGHT } from '../../navigation/tabBarMetrics';
 import { onTabScreenScroll } from '../../navigation/tabBarScroll';
+import { GlassFill } from './LiquidGlass';
+import { Wallpaper } from './Wallpaper';
 
 // Content column: phones use the full width; tablets and landscape get a readable measure.
 export const CONTENT_MAX = 640;
-export const GUTTER = 20;
+export const GUTTER = 16;
 
 /** Brand blue washing in from the top and teal from the right edge; radial gradients drawn once. */
 export const Glow = memo(function Glow({ variant = 'default' }) {
   const { colors } = useTheme();
-  const { width } = useWindowDimensions();
-  const h = 760;
+  const { width, height } = useWindowDimensions();
+  const h = Math.max(760, height);
   const a = { cx: variant === 'login' ? width * 0.5 : width * 0.3, cy: variant === 'login' ? 120 : -40, rx: width * 0.95, ry: 330 };
   const b = { cx: width * 1.08, cy: variant === 'login' ? 420 : 340, rx: width * 0.6, ry: 300 };
   return (
@@ -59,6 +61,8 @@ export function Screen({
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       showsVerticalScrollIndicator={false}
+      contentInsetAdjustmentBehavior="never"
+      automaticallyAdjustContentInsets={false}
       // Tab screens: the floating tab bar shrinks while they scroll (tabBarScroll.js)
       onScroll={tabBarSpace ? onTabScreenScroll : undefined}
       scrollEventThrottle={tabBarSpace ? 32 : undefined}
@@ -87,15 +91,17 @@ export function Screen({
 
   const body = (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      {backdrop ?? (glow ? <Glow variant={glowVariant} /> : null)}
+      {backdrop ?? <Wallpaper />}
+      {glow && !backdrop ? <Glow variant={glowVariant} /> : null}
       {content}
       {fab}
       {footer ? (
         <View style={{
           paddingHorizontal: GUTTER, paddingTop: 14, paddingBottom: Math.max(insets.bottom, 8) + 14, gap: 10,
-          backgroundColor: colors.navBg, borderTopWidth: 1, borderTopColor: colors.divider,
+          backgroundColor: 'transparent',
         }}
         >
+          <GlassFill radius={0} />
           <View style={{ maxWidth: CONTENT_MAX, width: '100%', alignSelf: 'center', gap: 10 }}>
             {footer}
           </View>

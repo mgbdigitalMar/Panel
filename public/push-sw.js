@@ -1,9 +1,6 @@
 /* Notification service worker. Registered by src/services/webPush.js with scope /push/ so it
    never competes with the PWA worker. Server pushes and notifications shown by an open page share
-   the tag `margube-<id>`, so none appears twice.
-
-   Everything shown here can end up on a locked screen, so the text is always the same generic one:
-   the detail is read inside the intranet, with a session. */
+   the tag `margube-<id>`, so none appears twice. */
 
 const params = new URL(self.location.href).searchParams;
 const SUPABASE_URL = params.get('u');
@@ -37,8 +34,8 @@ self.addEventListener('push', (event) => {
 
   event.waitUntil((async () => {
     const id = payload.notificationId;
-    await self.registration.showNotification(GENERIC.title, {
-      body: GENERIC.body,
+    await self.registration.showNotification(typeof payload.title === 'string' && payload.title.trim() ? payload.title : GENERIC.title, {
+      body: typeof payload.body === 'string' && payload.body.trim() ? payload.body : GENERIC.body,
       icon: ICON,
       badge: BADGE,
       tag: id ? `margube-${id}` : 'margube',

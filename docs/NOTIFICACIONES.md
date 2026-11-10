@@ -2,6 +2,10 @@
 
 Funciona sin ningún ordenador encendido, Docker ni servidor propio: Supabase guarda, procesa y recupera; Expo entrega en Android; Web Push entrega en navegadores y en la PWA de iPhone; Vercel solo aloja la web.
 
+Los avisos de la bandeja, los avisos del sistema y los push incluyen el motivo y `De: <remitente> · Para: <destinatario>`. Los nombres se leen de los perfiles vinculados al aviso; los avisos automáticos se identifican como Margube. Este contenido también puede aparecer en la pantalla bloqueada, según los ajustes del dispositivo.
+
+Para actualizar los push al cambiar este formato, desplegar `notifications-worker` además de publicar la web o actualizar la app.
+
 ## Cómo funciona
 
 ```

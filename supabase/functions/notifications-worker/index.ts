@@ -1,18 +1,15 @@
+import { NOTIFICATION_SELECT, notificationPresentation } from '../../../shared/services/notificationPresentation.js'
 // EDGE FUNCTION: notifications-worker (ver docs/NOTIFICACIONES.md)
 // Vacía la cola notification_jobs y consulta los recibos de Expo. No guarda nada en memoria:
 // si muere a mitad, los trabajos reaparecen al caducar su tiempo de visibilidad.
 // La llaman el aviso de la base de datos y, como recuperación, pg_cron (secreto en Vault).
 //
-// La pantalla bloqueada no debe enseñar nada interno: todos los push llevan el mismo texto
-// genérico y el detalle solo se ve dentro de la web o la app, con sesión iniciada.
 import { createClient } from 'npm:@supabase/supabase-js@2.117.3'
 import webpush from 'npm:web-push@3.6.7'
 import {
   type Classified, classifyExpoError, classifyExpoHttp, classifyWebPush, parseRetryAfter,
 } from './classify.ts'
 
-const PUSH_TITLE = 'Margube'
-const PUSH_BODY = 'Tienes una nueva notificación.'
 const PUSH_TTL_SECONDS = 60 * 60 * 24
 const ANDROID_CHANNEL_ID = 'default' // mobile/src/services/pushNotifications.js
 
@@ -57,6 +54,8 @@ type Delivery = {
   auth: string | null
 }
 type Prepared = {
+  title?: string
+  body?: string
   state: 'ready' | 'done' | 'gone'
   notification_id?: unknown
   entity_type?: string | null
@@ -102,8 +101,8 @@ async function sendExpo(rows: Delivery[], job: Prepared): Promise<Result[]> {
     const chunk = rows.slice(i, i + EXPO_MAX_MESSAGES)
     const messages = chunk.map((d) => ({
       to: d.token,
-      title: PUSH_TITLE,
-      body: PUSH_BODY,
+      title: job.title,
+      body: job.body,
       sound: 'default',
       channelId: ANDROID_CHANNEL_ID,
       priority: 'high',
@@ -161,8 +160,8 @@ async function sendWeb(rows: Delivery[], job: Prepared): Promise<Result[]> {
   return await Promise.all(rows.map(async (d): Promise<Result> => {
     // Cifrado de extremo a extremo hasta el navegador (RFC 8291); lo muestra public/push-sw.js
     const payload = JSON.stringify({
-      title: PUSH_TITLE,
-      body: PUSH_BODY,
+      title: job.title,
+      body: job.body,
       notificationId: job.notification_id,
       deliveryId: d.id,
       url: job.url,
@@ -205,6 +204,12 @@ async function processJob(msgId: number, eventId: string, stats: Stats) {
 
   if (job.state === 'ready') {
     const rows = job.deliveries ?? []
+    if (rows.length) {
+      const { data, error } = await supabase.from('notifications').select(NOTIFICATION_SELECT)
+        .eq('id', job.notification_id).single()
+      if (error) throw new Error(`notification details: ${error.message}`)
+      Object.assign(job, notificationPresentation(data))
+    }
     const results = (await Promise.all([
       sendExpo(rows.filter((d) => d.channel === 'expo'), job),
       sendWeb(rows.filter((d) => d.channel === 'web'), job),

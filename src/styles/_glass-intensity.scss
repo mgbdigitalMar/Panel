@@ -1,0 +1,80 @@
+/* One material vocabulary, including dialogs and menus rendered outside the shell. */
+@each $level, $strength in (off: 0, soft: 0.35, normal: 0.65, strong: 1) {
+  $blur: 0;
+  @if $strength > 0 { $blur: 12 + $strength * 20; }
+  html[data-appearance='glass'][data-glass-intensity='#{$level}'],
+  html[data-appearance='glass'][data-glass-intensity='#{$level}'] :is(.app-shell, .glass-scope) {
+    --material-rgb: 255, 255, 255;
+    --material-card-alpha: #{1 - $strength * 0.32};
+    --material-chrome-alpha: #{1 - $strength * 0.25};
+    --material-sheen-alpha: #{$strength * 0.4};
+    --lg-fill: rgba(var(--material-rgb), var(--material-card-alpha));
+    --lg-fill-hover: rgba(var(--material-rgb), #{1 - $strength * 0.18});
+    --lg-chrome: rgba(var(--material-rgb), var(--material-chrome-alpha));
+    --lg-popover: rgba(var(--material-rgb), #{1 - $strength * 0.12});
+    --lg-sheen: linear-gradient(180deg, rgba(255,255,255,var(--material-sheen-alpha)), transparent 50%);
+    --lg-blur: blur(#{$blur}px) saturate(#{100 + $strength * 65}%);
+    --lg-card-blur: var(--lg-blur);
+    --glass-bg: var(--lg-chrome);
+    --glass-card: var(--lg-fill);
+    --glass-card-hover: var(--lg-fill-hover);
+    --glass-surface: var(--lg-fill);
+    --glass-blur: var(--lg-blur);
+    --glass-blur-sm: var(--lg-blur);
+    --glass-input: rgba(var(--material-rgb), #{1 - $strength * 0.18});
+    --input: var(--glass-input);
+  }
+
+  html[data-appearance='glass'][data-theme='dark'][data-glass-intensity='#{$level}'],
+  html[data-appearance='glass'][data-theme='dark'][data-glass-intensity='#{$level}'] :is(.app-shell, .glass-scope) {
+    --material-rgb: 24, 23, 29;
+    --material-card-alpha: #{1 - $strength * 0.42};
+    --material-chrome-alpha: #{1 - $strength * 0.34};
+    --material-sheen-alpha: #{$strength * 0.12};
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html[data-appearance='glass'][data-glass-intensity],
+  html[data-appearance='glass'][data-glass-intensity] :is(.app-shell, .glass-scope) {
+    --material-card-alpha: 1;
+    --material-chrome-alpha: 1;
+    --lg-fill: var(--card);
+    --lg-chrome: var(--card);
+    --lg-popover: var(--card);
+  }
+}
+
+/* Long mobile lists keep translucent fills; live blur is reserved for floating controls. */
+@media (max-width: 1023px) {
+  html[data-appearance='glass'][data-glass-intensity] :is(.app-shell, .glass-scope) {
+    --lg-card-blur: none;
+  }
+}
+
+html[data-appearance='glass'][data-glass-intensity='off'] *,
+html[data-appearance='glass'][data-glass-intensity='off'] *::before,
+html[data-appearance='glass'][data-glass-intensity='off'] *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  html[data-appearance='glass'][data-glass-intensity],
+  html[data-appearance='glass'][data-glass-intensity] :is(.app-shell, .glass-scope) {
+    --material-card-alpha: 1;
+    --material-chrome-alpha: 1;
+    --material-sheen-alpha: 0;
+    --lg-fill: var(--card);
+    --lg-fill-hover: var(--card);
+    --lg-chrome: var(--card);
+    --lg-popover: var(--card);
+    --glass-input: var(--card);
+    --lg-blur: none;
+    --lg-card-blur: none;
+  }
+  html[data-appearance='glass'] *, html[data-appearance='glass'] *::before, html[data-appearance='glass'] *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}

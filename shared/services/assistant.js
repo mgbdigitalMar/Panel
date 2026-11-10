@@ -6,6 +6,8 @@ export const ASSISTANT_ACTIONS = [
 ];
 
 const nullableText = { type: ['string', 'null'] };
+const nullableDate = { type: ['string', 'null'], description: 'Fecha ISO exacta YYYY-MM-DD, por ejemplo 2027-01-18; nunca texto natural ni DD/MM/YYYY.' };
+const nullableTime = { type: ['string', 'null'], description: 'Hora de 24 horas HH:mm, por ejemplo 10:00.' };
 export const ASSISTANT_RESPONSE_SCHEMA = {
   type: 'object', additionalProperties: false, required: ['message', 'action'],
   properties: {
@@ -16,8 +18,9 @@ export const ASSISTANT_RESPONSE_SCHEMA = {
       properties: {
         kind: { type: 'string', enum: ASSISTANT_ACTIONS }, id: nullableText,
         type: { type: ['string', 'null'], enum: ['remoto', 'external', 'purchase', 'room', 'vehicle', null] },
-        resource_id: nullableText, date: nullableText, start_date: nullableText, end_date: nullableText,
-        time_start: nullableText, time_end: nullableText, reason: nullableText, item: nullableText,
+        resource_id: nullableText, date: nullableDate, start_date: nullableDate,
+        end_date: { ...nullableDate, description: 'Fecha final ISO YYYY-MM-DD. En una solicitud de un solo día debe ser igual a start_date, no null.' },
+        time_start: nullableTime, time_end: nullableTime, reason: nullableText, item: nullableText,
         amount: { type: ['number', 'null'] },
       },
     }] },

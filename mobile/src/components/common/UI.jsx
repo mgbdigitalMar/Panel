@@ -491,11 +491,12 @@ export function Sheet({ visible, onClose, title, children, footer }) {
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>
       <Pressable style={{ flex: 1, backgroundColor: colors.overlay }} onPress={onClose} accessibilityRole="button" accessibilityLabel="Cerrar" />
       <View style={{
-        maxHeight: '90%', width: '100%', maxWidth: 560, alignSelf: 'center', backgroundColor: colors.sheetBg,
+        maxHeight: '90%', width: '100%', maxWidth: 560, alignSelf: 'center', backgroundColor: 'transparent',
         borderTopLeftRadius: 28, borderTopRightRadius: 28, borderTopWidth: 1, borderColor: colors.glassBorder,
         paddingTop: 10, paddingBottom: Math.max(insets.bottom, 12) + 12,
       }}
       >
+        <GlassFill radius={28} />
         <View style={{ alignSelf: 'center', width: 36, height: 5, borderRadius: 3, backgroundColor: colors.glassBorderStrong }} />
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6 }}>
           <T size={20} weight="semibold" style={{ flex: 1 }} accessibilityRole="header">{title}</T>

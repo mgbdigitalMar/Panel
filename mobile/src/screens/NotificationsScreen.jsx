@@ -1,4 +1,5 @@
 // 06 · Centro de notificaciones (NotificationsDropdown on the web)
+import { notificationPresentation } from '@shared/services/notificationPresentation';
 import { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -85,7 +86,7 @@ export default function NotificationsScreen() {
                 key={n.id}
                 onPress={() => open(n)}
                 accessibilityRole="button"
-                accessibilityLabel={`${n.read ? '' : 'Sin leer. '}${clean(n.title)}. ${n.body || ''}`}
+                accessibilityLabel={`${n.read ? '' : 'Sin leer. '}${clean(n.title)}. ${notificationPresentation(n, user?.name).body}`}
                 style={{
                   flexDirection: 'row', gap: 12, padding: 14, borderRadius: 20, alignItems: 'flex-start',
                   backgroundColor: n.read ? 'transparent' : colors.glass, borderWidth: 1, borderColor: n.read ? colors.divider : colors.glassBorder,
@@ -97,7 +98,7 @@ export default function NotificationsScreen() {
                     <T size={15} weight={n.read ? 'medium' : 'semibold'} style={{ flex: 1 }} color={n.read ? colors.text2 : colors.text}>{clean(n.title)}</T>
                     <T mono size={12} color={colors.text3}>{fmtRelative(n.created_at)}</T>
                   </View>
-                  {n.body ? <T size={13} color={colors.text3}>{n.body}</T> : null}
+                  <T size={13} color={colors.text3}>{notificationPresentation(n, user?.name).body}</T>
                 </View>
                 {!n.read ? <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent, marginTop: 6 }} /> : null}
               </PressScale>

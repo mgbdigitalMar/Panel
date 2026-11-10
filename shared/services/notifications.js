@@ -1,6 +1,8 @@
 // La base de datos crea los avisos (triggers de supabase/migrations/*_notification_system.sql),
 // así que la web y la app no pueden aplicar reglas distintas. Aquí solo se leen y se marcan.
 
+import { NOTIFICATION_SELECT } from './notificationPresentation.js';
+
 export const NOTIFICATIONS_PAGE_SIZE = 50;
 
 // Lo que cada persona puede silenciar. Un aviso desactivado sigue llegando a la bandeja.
@@ -17,7 +19,7 @@ export async function fetchNotifications(supabase, userId, { before, limit = NOT
   if (!userId) return [];
   let query = supabase
     .from('notifications')
-    .select('*')
+    .select(NOTIFICATION_SELECT)
     .eq('user_id', userId);
   if (before) query = query.lt('created_at', before);
   const { data, error } = await query
@@ -85,8 +87,18 @@ export function subscribeToNotifications(supabase, userId, { onCreated, onUpdate
     if (closed) return;
     channel = supabase
       .channel(`user:${userId}:notifications`, { config: { private: true } })
-      .on('broadcast', { event: 'notification_created' }, ({ payload }) => {
-        if (payload?.notification) onCreated?.(payload.notification, payload.unread);
+      .on('broadcast', { event: 'notification_created' }, async ({ payload }) => {
+        if (!payload?.notification) return;
+        const row = payload.notification;
+        try {
+          const { data, error } = await supabase.from('notifications').select(NOTIFICATION_SELECT)
+            .eq('user_id', userId).eq('id', row.id).maybeSingle();
+          if (error) console.warn('notification details:', error.message);
+          if (!closed) onCreated?.(data ? { ...row, ...data } : row, payload.unread);
+        } catch (err) {
+          console.warn('notification details:', err?.message);
+          if (!closed) onCreated?.(row, payload.unread);
+        }
       })
       .on('broadcast', { event: 'notification_updated' }, ({ payload }) => onUpdated?.(payload))
       .on('broadcast', { event: 'notifications_sync' }, () => onSync?.())

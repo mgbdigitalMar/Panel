@@ -1,3 +1,5 @@
+import vm from 'node:vm';
+import { notificationPresentation } from '../shared/services/notificationPresentation.js';
 // Sin red ni Docker: lo que se puede comprobar leyendo el código y ejecutando la lógica pura.
 // El recorrido real (pgmq, Realtime, cron, Edge Function) está en tests/notifications/e2e.test.mjs.
 import fs from 'node:fs';
@@ -78,11 +80,32 @@ export async function runNotificationSystemTests() {
   }
   assert('Solo hay categorías de módulos que existen', NOTIFICATION_CATEGORIES.every((c) => new RegExp(`'${c.id}'`).test(migration.match(/category in \(([^)]*)\)/)?.[1] || '')));
 
-  // Privacidad
-  assert('Push de Expo con texto genérico', /const PUSH_TITLE = 'Margube'/.test(worker) && /const PUSH_BODY = 'Tienes una nueva notificación\.'/.test(worker));
-  assert('El worker nunca lee título ni cuerpo de la notificación', !/\.title|\.body\b(?!\?\.cancel)/.test(worker.replace(/res\.body/g, '').replace(/request\.body/g, '')));
-  assert('El service worker enseña siempre lo mismo', /showNotification\(GENERIC\.title/.test(sw) && /body: GENERIC\.body/.test(sw));
-  assert('El aviso local de la web también es genérico', !/showSystemNotification\(\{[^}]*row\.title/.test(ctx));
+  const detailed = notificationPresentation({ title: 'Solicitud aprobada', body: 'Para el lunes', actor: { name: 'Ana' }, recipient: { name: 'Eva' } });
+  assert('El aviso conserva titulo y motivo', detailed.title === 'Solicitud aprobada' && detailed.body.endsWith('Para el lunes'));
+  assert('El aviso identifica origen y destinatario', detailed.body.startsWith('De: Ana \u00b7 Para: Eva\n'));
+  assert('Avisos del sistema identificados', notificationPresentation({ actor_id: null }, 'Eva').body.startsWith('De: Margube'));
+  assert('Origen desconocido sin inventar nombres', notificationPresentation({}).body.includes('Origen no disponible'));
+  assert('Relaciones en listas admitidas', notificationPresentation({ actor: [{ name: 'Ana' }], recipient: [{ name: 'Eva' }] }).body.includes('Para: Eva'));
+  assert('El worker usa la presentacion compartida', worker.includes('notificationPresentation(data)') && worker.includes('title: job.title') && worker.includes('body: job.body'));
+  assert('El service worker muestra el contenido recibido', sw.includes('payload.title : GENERIC.title') && sw.includes('payload.body : GENERIC.body'));
+  assert('La web muestra origen y destino en segundo plano', ctx.includes('...notificationPresentation(row, user.name)'));
+
+  const events = {};
+  const shown = [];
+  vm.runInNewContext(sw, {
+    URL, fetch: async () => ({ ok: true }),
+    self: { location: { href: 'https://margube.test/push-sw.js' },
+      addEventListener: (event, handler) => { events[event] = handler; },
+      registration: { showNotification: async (title, options) => shown.push({ title, ...options }) },
+    },
+  });
+  let pending;
+  events.push({ data: { json: () => ({ title: detailed.title, body: detailed.body }) }, waitUntil: (p) => { pending = p; } });
+  await pending;
+  assert('Push real muestra titulo, origen, destino y motivo', shown[0]?.title === detailed.title && shown[0]?.body === detailed.body);
+  events.push({ data: { json: () => ({}) }, waitUntil: (p) => { pending = p; } });
+  await pending;
+  assert('Push antiguo mantiene un texto de respaldo', shown[1]?.title === 'Margube' && !!shown[1]?.body);
 
   // Sin procesos permanentes ni secretos en el código
   assert('Sin polling desde el navegador', !/setInterval\([^)]*fetchNotifications/.test(ctx));

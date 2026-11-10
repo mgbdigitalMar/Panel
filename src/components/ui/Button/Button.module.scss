@@ -168,8 +168,8 @@
 
 .variant-action {
   background: var(--glass-input);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   border-color: rgba(var(--border-rgb), 0.45);
   color: var(--text-sec);
 
@@ -187,8 +187,8 @@
 
 .variant-action-danger {
   background: var(--glass-input);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   border-color: rgba(var(--border-rgb), 0.45);
   color: var(--text-sec);
 
@@ -206,8 +206,8 @@
 
 .variant-action-success {
   background: var(--glass-input);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   border-color: rgba(var(--border-rgb), 0.45);
   color: var(--text-sec);
 
@@ -225,8 +225,8 @@
 
 .variant-action-download {
   background: var(--glass-input);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   border-color: rgba(var(--border-rgb), 0.45);
   color: var(--text-sec);
 

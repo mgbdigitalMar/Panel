@@ -2,6 +2,12 @@
 
 **Panel administrativo moderno para Margube** - Gestión completa de empleados, reservas de salas/vehículos, solicitudes y dashboard realtime.
 
+## Pantalla completa y Liquid Glass
+
+En Ajustes (Más → Preferencias en la app), Liquid Glass permite elegir Sin efecto, Suave, Normal o Intenso. El cambio se aplica al momento y se guarda en el dispositivo. Reducir transparencia del sistema tiene prioridad. En iOS 26 o posterior la app usa el material nativo cuando está disponible; la web lo adapta con transparencias y desenfoque CSS.
+
+Para abrir la web sin las barras de Safari: Compartir → Añadir a pantalla de inicio y abrir Margube desde su icono. El fondo ocupa la pantalla; los controles respetan la cámara y el indicador de inicio. Safari conserva sus barras cuando se visita desde una pestaña. Los cambios de la app requieren distribuir una nueva compilación o actualización compatible.
+
 ## Asistente de trámites
 
 La web incluye `/assistant`, disponible desde el menú, el buscador y «Más» en móvil. Permite conversar por escrito, consultar trámites y preparar solicitudes, asuntos propios y reservas. Una propuesta no realiza cambios hasta que la persona pulsa «Confirmar acción». Se reutilizan los servicios y validaciones de los formularios existentes.

@@ -132,7 +132,7 @@ export function DataProvider({ children }) {
       onCreated: (row, unread) => {
         setNotifications((prev) => svc.mergeNotification(prev, row));
         if (typeof unread === 'number') setUnreadTotal(unread);
-        notify(String(row.title || ''), row.type === 'success' ? 'success' : row.type === 'error' ? 'error' : 'info');
+        notify(`${row.title || ''} — ${svc.notificationPresentation(row, user.name).body}`, row.type === 'success' ? 'success' : row.type === 'error' ? 'error' : 'info');
       },
       onUpdated: ({ id, read, unread }) => {
         setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read } : n)));

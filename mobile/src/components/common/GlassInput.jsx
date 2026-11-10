@@ -21,7 +21,7 @@ function FieldLabel({ label, required, children }) {
   );
 }
 
-/** Text input from the design system: 52 dp, radius 16, accent focus ring. */
+/** Web-style pill fields, with taller touch targets and rounded multiline fields. */
 export const GlassInput = forwardRef(function GlassInput({
   label, value, onChangeText, secure, multiline, error, hint, required, style, inputStyle, rows = 3, ...rest
 }, ref) {
@@ -48,7 +48,7 @@ export const GlassInput = forwardRef(function GlassInput({
             {...rest}
             style={[{
               minHeight: multiline ? 24 * rows + 24 : 52,
-              borderRadius: 14,
+              borderRadius: multiline ? 20 : 26,
               borderWidth: focused || error ? 1.5 : 1,
               borderColor: error ? colors.dangerFg : focused ? colors.accent : colors.inputBorder,
               backgroundColor: colors.inputBg,
@@ -88,7 +88,7 @@ function PickerBox({ icon: Icon, text, placeholder, onPress, label }) {
       accessibilityRole="button"
       accessibilityLabel={label}
       style={{
-        height: 52, borderRadius: 14, borderWidth: 1, borderColor: colors.inputBorder, backgroundColor: colors.inputBg,
+        height: 52, borderRadius: 26, borderWidth: 1, borderColor: colors.inputBorder, backgroundColor: colors.inputBg,
         paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 10,
       }}
     >

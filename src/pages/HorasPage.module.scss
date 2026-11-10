@@ -231,8 +231,8 @@
 .filterInput {
   padding: 8px 12px;
   background: var(--glass-input);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   border: 1px solid rgba(var(--border-rgb), 0.60);
   border-radius: var(--radius-sm);
   color: var(--text);
@@ -269,8 +269,8 @@
     line-height: 1.3;
     border-bottom: 1px solid rgba(var(--border-rgb), 0.50);
     background: rgba(var(--bg-rgb), 0.75);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: var(--lg-blur);
+    -webkit-backdrop-filter: var(--lg-blur);
   }
 
   td {

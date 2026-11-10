@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { GLASS_OPTIONS } from '../../shared/config/glass.js';
 import { useTheme, useAuth } from '../context';
 import { Card, Avatar } from '../components/ui';
 import {
@@ -68,7 +69,7 @@ const formatHealthTime = (iso) => (iso
   : 'Todavía no');
 
 export default function SettingsPage() {
-  const { mode, setMode } = useTheme();
+  const { mode, setMode, glassIntensity, setGlassIntensity } = useTheme();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -223,6 +224,27 @@ export default function SettingsPage() {
             </div>
           </div>
         </Card>
+        </motion.div>
+
+        <motion.div variants={item}>
+          <Card className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div className={clsx(styles.cardIcon, styles.iconAccent)}><Palette size={17} /></div>
+              <div>
+                <h2 className={styles.cardTitle}>Liquid Glass</h2>
+                <p className={styles.cardSub}>Intensidad del cristal en toda la interfaz</p>
+              </div>
+            </div>
+            <div className={styles.field}>
+              <div className={styles.glassOptions} role="group" aria-label="Intensidad de Liquid Glass">
+                {GLASS_OPTIONS.map(({ value, label }) => (
+                  <button key={value} type="button" aria-pressed={glassIntensity === value}
+                    onClick={() => setGlassIntensity(value)}>{label}</button>
+                ))}
+              </div>
+              <p className={styles.glassHint}>Se guarda en este dispositivo. Reducir transparencia del sistema tiene prioridad.</p>
+            </div>
+          </Card>
         </motion.div>
 
         {/* Notificaciones */}

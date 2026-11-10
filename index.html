@@ -44,6 +44,9 @@
         try { m = localStorage.getItem('app-theme-mode') || 'dark'; } catch (e) {}
         if (m === 'system') m = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', m);
+        var glass = 'normal';
+        try { glass = localStorage.getItem('margube-glass-intensity') || 'normal'; } catch (e) {}
+        document.documentElement.dataset.glassIntensity = ['off', 'soft', 'normal', 'strong'].indexOf(glass) >= 0 ? glass : 'normal';
       })();
     </script>
     <!-- Critical CSS: canvas colour (same values as global.scss) and the skip link, before the bundle -->

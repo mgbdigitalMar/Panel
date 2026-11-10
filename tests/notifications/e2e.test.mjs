@@ -30,7 +30,6 @@ const PROJECT = 'margube-e2e';
 const API_URL = 'http://127.0.0.1:55321';
 const MOCK_PORT = 54999;
 const WORKER_SECRET = 'e2e-worker-secret';
-const GENERIC_BODY = 'Tienes una nueva notificación.';
 const NPX = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 
 let passed = 0;
@@ -256,7 +255,7 @@ async function main() {
   await until(() => spy.status && spy.status !== 'SUBSCRIBED' ? spy.status : false, 8000);
   check('Otro empleado no puede entrar en un canal ajeno', spy.status !== 'SUBSCRIBED', spy.status);
 
-  section('1-2. Nueva solicitud: el destinatario correcto y sin datos en la pantalla bloqueada');
+  section('1-2. Nueva solicitud: el destinatario correcto con origen y destinatario');
   const adminToken = addExpoDevice(admin);
   const adminBrowser = addWebDevice(admin);
   const req = await newRequestFor(emp);
@@ -268,15 +267,15 @@ async function main() {
   await until(() => mock.expo.some((m) => m.to === adminToken) && mock.web.some((w) => w.id === adminBrowser.id));
   const expoMsg = mock.expo.find((m) => m.to === adminToken);
   check('La petición llega a Expo por webhook, en segundos', Boolean(expoMsg));
-  check('Expo: título y cuerpo genéricos', expoMsg?.title === 'Margube' && expoMsg?.body === GENERIC_BODY, expoMsg);
+  check('Expo: título, origen y destinatario', expoMsg?.title === adminNotif?.title && expoMsg?.body === `De: Eva Empleada · Para: Ana Admin\n${adminNotif.body}`, expoMsg);
   check('Expo: los datos no llevan contenido', expoMsg && !/Eva|PRIVADO|solicitud/i.test(JSON.stringify(expoMsg.data)), expoMsg?.data);
   check('Expo: canal Android y prioridad alta', expoMsg?.channelId === 'default' && expoMsg?.priority === 'high');
 
   const webMsg = mock.web.find((w) => w.id === adminBrowser.id);
   check('Web Push lleva firma VAPID', /^vapid t=/.test(webMsg?.headers?.authorization || ''));
   const webPayload = webMsg && decryptWebPush(adminBrowser, webMsg.body);
-  check('Web Push se descifra con las claves del navegador', webPayload?.title === 'Margube' && webPayload?.body === GENERIC_BODY, webPayload);
-  check('Web Push: enlace al módulo y sin contenido', webPayload?.url === '/requests' && !/Eva|PRIVADO/.test(JSON.stringify(webPayload)), webPayload);
+  check('Web Push se descifra con las claves del navegador', webPayload?.title === expoMsg?.title && webPayload?.body === expoMsg?.body, webPayload);
+  check('Web Push: enlace al modulo', webPayload?.url === '/requests', webPayload);
   check('El cuerpo cifrado no contiene el texto en claro', webMsg && !webMsg.body.toString().includes('Margube'));
 
   await until(() => dispatch(adminNotif.event_id) === 'processed');

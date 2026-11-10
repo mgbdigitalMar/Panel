@@ -40,8 +40,7 @@ html {
   -moz-osx-font-smoothing: grayscale;
   /* No top inset here: the page runs edge to edge under the status bar and Safari's
      floating toolbar (iOS 26). The sticky header pads itself with the safe area instead. */
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  /* Background reaches both landscape edges; interactive containers own their safe areas. */
 }
 
 html, body {
@@ -49,6 +48,8 @@ html, body {
   overflow-x: clip;   /* clip keeps position: sticky working (hidden made body a scroll container) */
   min-height: 100%;
 }
+
+body, #root { min-height: 100dvh; }
 
 /* The canvas behind Safari's floating toolbar and the overscroll. Since iOS 26 Safari ignores
    theme-color and tints its bars with flat colours: the sticky top bar's background at the top
@@ -171,8 +172,8 @@ img, svg, video { display: block; max-width: 100%; }
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
     background: rgba(var(--bg-rgb), 0.60);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: var(--lg-blur);
+    -webkit-backdrop-filter: var(--lg-blur);
     position: sticky;
     top: 0;
     z-index: 2;
@@ -422,8 +423,8 @@ img, svg, video { display: block; max-width: 100%; }
 
 .glass-card {
   background: var(--glass-card);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-highlight);
   position: relative;
@@ -442,15 +443,15 @@ img, svg, video { display: block; max-width: 100%; }
   }
 
   @media (max-width: 767px) {
-    backdrop-filter: blur(10px) saturate(130%);
-    -webkit-backdrop-filter: blur(10px) saturate(130%);
+    backdrop-filter: var(--lg-blur);
+    -webkit-backdrop-filter: var(--lg-blur);
   }
 }
 
 .glass-surface {
   background: var(--glass-surface);
-  backdrop-filter: blur(10px) saturate(130%);
-  -webkit-backdrop-filter: blur(10px) saturate(130%);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   border: 1px solid rgba(var(--border-rgb), 0.40);
 }
 
@@ -811,8 +812,8 @@ img, svg, video { display: block; max-width: 100%; }
   flex-wrap: wrap;
   padding: 14px 18px;
   background: var(--glass-surface);
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: var(--lg-blur);
+  -webkit-backdrop-filter: var(--lg-blur);
   border: 1px solid rgba(var(--border-rgb), 0.45);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xs);
@@ -833,8 +834,8 @@ img, svg, video { display: block; max-width: 100%; }
   &__input {
     padding: 8px 13px;
     background: var(--glass-input);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: var(--lg-blur);
+    -webkit-backdrop-filter: var(--lg-blur);
     border: 1px solid rgba(var(--border-rgb), 0.55);
     border-radius: var(--radius-sm);
     color: var(--text);
@@ -862,8 +863,8 @@ img, svg, video { display: block; max-width: 100%; }
     border: 1px solid rgba(var(--border-rgb), 0.55);
     border-radius: var(--radius-sm);
     background: var(--glass-input);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: var(--lg-blur);
+    -webkit-backdrop-filter: var(--lg-blur);
     color: var(--text-sec);
     font-size: 12px;
     font-weight: 600;
@@ -1227,3 +1228,5 @@ html { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 767px) {
   [data-appearance='glass'] { --toast-bottom: 88px; }
 }
+
+@import './glass-intensity';

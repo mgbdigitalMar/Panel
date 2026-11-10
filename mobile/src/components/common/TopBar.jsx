@@ -3,6 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Bell, Search } from 'lucide-react-native';
 import { useData } from '../../context/DataContext';
 import { IconButton } from './GlassButton';
+import { GlassFill } from './LiquidGlass';
 
 const LOGO = require('../../../assets/logo.png');
 
@@ -20,8 +21,10 @@ export function TopBar() {
         accessibilityRole="button"
         accessibilityLabel="Margube, ir al inicio"
         hitSlop={6}
+        style={{ width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' }}
       >
-        <Image source={LOGO} style={{ width: 38, height: 38, borderRadius: 10 }} />
+        <GlassFill radius={22} />
+        <Image source={LOGO} style={{ width: 30, height: 30, borderRadius: 8 }} />
       </Pressable>
       <IconButton icon={Search} onPress={() => navigation.navigate('Search')} accessibilityLabel="Buscar" />
       <View style={{ flex: 1 }} />

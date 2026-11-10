@@ -1,5 +1,6 @@
 // 23 · Más y ajustes (SettingsPage + section menu)
 import { useEffect, useState } from 'react';
+import { GLASS_OPTIONS } from '@shared/config/glass';
 import { Alert, Linking, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Constants from 'expo-constants';
@@ -52,7 +53,7 @@ function MenuRow({ icon, tone = 'accent', label, value, valueColor, badge, onPre
 }
 
 export default function SettingsScreen() {
-  const { colors, mode, setMode } = useTheme();
+  const { colors, mode, setMode, glassIntensity, setGlassIntensity, reduceTransparency } = useTheme();
   const navigation = useNavigation();
   const toast = useToast();
   const confirm = useConfirm();
@@ -184,6 +185,13 @@ export default function SettingsScreen() {
             </View>
             <Segmented value={mode} onChange={setMode} height={40}
               options={[{ value: 'light', label: 'Claro' }, { value: 'dark', label: 'Oscuro' }, { value: 'system', label: 'Auto' }]} />
+          </View>
+          <View style={{ paddingVertical: 14, paddingHorizontal: 14, gap: 12, borderBottomWidth: 1, borderBottomColor: colors.divider }}>
+            <T size={15} weight="medium">Intensidad de Liquid Glass</T>
+            <Segmented value={glassIntensity} onChange={setGlassIntensity} height={44} options={GLASS_OPTIONS} />
+            <T size={12} color={colors.text3}>
+              {reduceTransparency ? 'Reducir transparencia de iOS está activo: se usan superficies sólidas.' : 'Se aplica a toda la interfaz y se guarda en este dispositivo.'}
+            </T>
           </View>
           {bio.available ? (
             <View style={{ borderBottomWidth: 1, borderBottomColor: colors.divider }}>
