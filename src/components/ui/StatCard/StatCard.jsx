@@ -30,6 +30,7 @@ export function StatCard({ label, value, icon, color = 'var(--accent)', sub, tre
 
   return (
     <Root
+      data-motion-panel
       type={onClick ? 'button' : undefined}
       onClick={onClick}
       aria-label={onClick ? (actionLabel || `${label}: ${value}. Ver detalle`) : undefined}

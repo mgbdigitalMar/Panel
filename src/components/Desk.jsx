@@ -194,7 +194,7 @@ export function DeskChips({ label, value, onChange, options }) {
 export function DeskPanel({ title, sub, tools, children, className, flush, id }) {
   const headId = useId();
   return (
-    <section className={clsx(styles.panel, flush && styles.panelFlush, className)} aria-labelledby={title ? (id || headId) : undefined}>
+    <section data-motion-panel className={clsx(styles.panel, flush && styles.panelFlush, className)} aria-labelledby={title ? (id || headId) : undefined}>
       {(title || tools) && (
         <div className={styles.panelHead}>
           <div>

@@ -13,9 +13,10 @@
     inset 0 -14px 24px -18px rgba(var(--accent-rgb), 0.35),
     0 30px 70px -24px rgba(0, 0, 0, 0.55);
 
-  /* Light theme: the glass reads brighter over the dimmed page */
-  [data-theme='light'] & {
-    background: var(--lg-sheen), rgba(255, 255, 255, 0.78);
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--card);
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
   }
 
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {

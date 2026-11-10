@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { TimerReset } from 'lucide-react';
 import { useIdle } from '../context';
 import { Portal } from './ui';
@@ -10,21 +10,22 @@ import styles from './IdleWarning.module.scss';
  * Not modal: the person can keep working, which is exactly what dismisses it.
  */
 export function IdleWarning() {
+  const reduce = useReducedMotion();
   const { secondsLeft, stayActive } = useIdle();
   const open = secondsLeft != null;
 
   // On <body>: an open dialog makes the app inert, and the button must stay reachable
   return (
     <Portal>
-    <div className={styles.anchor}>
+    <div className={`${styles.anchor} glass-scope`}>
       <AnimatePresence>
         {open && (
           <motion.div
             className={styles.panel}
-            initial={{ opacity: 0, y: 16, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, transition: { duration: 0.15 } }}
-            transition={{ type: 'spring', stiffness: 460, damping: 34 }}
+            initial={{ opacity: 0, transform: reduce ? 'none' : 'translateY(12px) scale(0.97)' }}
+            animate={{ opacity: 1, transform: reduce ? 'none' : 'translateY(0px) scale(1)' }}
+            exit={{ opacity: 0, transform: reduce ? 'none' : 'translateY(12px) scale(0.97)', transition: { duration: 0.15 } }}
+            transition={{ duration: reduce ? 0.12 : 0.25, ease: [0.23, 1, 0.32, 1] }}
           >
             <span className={styles.count} aria-hidden="true">{secondsLeft}</span>
             {/* Read once when it appears; the countdown itself is not re-announced every second.

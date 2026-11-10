@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useAuth, useTheme, useNotifs, useDocuments, useRequests, useReservations, useHours, usePersonalDays, useDataSync } from '../context';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import clsx from 'clsx';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, Bell, UsersRound, Timer, AlertTriangle, UserRound, SlidersHorizontal, LayoutGrid, ShieldCheck
@@ -119,6 +119,7 @@ function ProfileRing({ progress, size, children }) {
 }
 
 export default function Layout({ children }) {
+  const reduceMotion = useReducedMotion();
   const { user, logout, needsOnboarding, setLastActivity, patchUser, refreshEmployees } = useAuth();
   const { theme, setMode } = useTheme();
   const navigate = useNavigate();
@@ -350,11 +351,11 @@ export default function Layout({ children }) {
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={page}
-              className={clsx(styles.panelInner, 'page-stagger')}
+              className={clsx(styles.panelInner, 'reference-motion')}
               initial={{ opacity: 0 }}
               // A lingering transform would trap position:fixed modals inside this wrapper
-              animate={{ opacity: 1, transition: { duration: 0.2, ease: [0.23, 1, 0.32, 1] }, transitionEnd: { transform: 'none' } }}
-              exit={{ opacity: 0, transition: { duration: 0.12, ease: [0.23, 1, 0.32, 1] } }}
+              animate={{ opacity: 1, transition: { duration: reduceMotion ? 0.1 : 0.15, ease: [0.23, 1, 0.32, 1] }, transitionEnd: { transform: 'none' } }}
+              exit={{ opacity: 0, transition: { duration: reduceMotion ? 0.08 : 0.1, ease: [0.23, 1, 0.32, 1] } }}
             >
               {meta && (
                 <div className={clsx(styles.pageIntro, meta.touch && styles.pageIntroTouchOwn, meta.desk && styles.pageIntroDeskOwn, meta.own && styles.pageIntroOwn, meta.coverOwn && styles.pageIntroCoverOwn)} style={meta.width ? { maxWidth: meta.width, marginInline: 'auto' } : undefined}>

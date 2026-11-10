@@ -5,7 +5,7 @@ import {
   PartyPopper, CalendarPlus, FilePlus2, Mail, FileText, TrendingUp, TrendingDown, Clock, BarChart3, Megaphone,
 } from 'lucide-react';
 import clsx from 'clsx';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Avatar, Badge, StatCard, Card, Button, AnimatedNumber } from '../components/ui';
 import { TodayPanel } from '../components/TodayPanel';
 import { fmtDate, fmtDayShort, fmtRange } from '../utils/format';
@@ -58,6 +58,7 @@ const GAUGE_ARC = 'M10 60a50 50 0 0 1 100 0';
 
 /** Workday gauge: a half dial that fills once when the page opens and then follows the clock. */
 function Gauge({ value }) {
+  const reduce = useReducedMotion();
   const pct = Math.max(0, Math.min(100, value));
   return (
     <div className={styles.gauge} role="img" aria-label={`${Math.round(pct)} % de la jornada completado`}>
@@ -66,9 +67,9 @@ function Gauge({ value }) {
         <motion.path
           d={GAUGE_ARC}
           className={styles.gaugeValue}
-          initial={{ pathLength: 0 }}
+          initial={{ pathLength: reduce ? pct / 100 : 0 }}
           animate={{ pathLength: pct / 100 }}
-          transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1], delay: 0.15 }}
+          transition={{ duration: reduce ? 0 : 0.7, ease: [0.23, 1, 0.32, 1], delay: reduce ? 0 : 0.12 }}
         />
       </svg>
       <strong><AnimatedNumber value={Math.round(pct)} /> %</strong>
@@ -83,6 +84,7 @@ function Gauge({ value }) {
  * help and the latest reservations. The data comes from DashboardPage, which computes it and passes it in `d`.
  */
 export default function DashboardGlass({ d }) {
+  const reduce = useReducedMotion();
   const {
     user, employees, navigate, reservations, requests, news, todayStr,
     greeting, dateLine, motivation, progress, pendingCount, todayResCount, newsThisMonth,
@@ -250,6 +252,7 @@ export default function DashboardGlass({ d }) {
                 {!chartEmpty && <Tooltip content={<ChartTip />} cursor={{ fill: 'rgba(var(--text-rgb), 0.05)', radius: 12 }} />}
                 {!chartEmpty && chart.bars.map((b) => (
                   <Bar key={b.key} dataKey={b.key} name={b.name} radius={chart.bars.length > 1 ? [6, 6, 6, 6] : [999, 999, 999, 999]} maxBarSize={chart.bars.length > 1 ? 14 : 58}
+                    isAnimationActive={!reduce} animationDuration={700} animationBegin={120} animationEasing="ease-out"
                     fill={b.color || 'rgba(var(--text-rgb), 0.16)'} minPointSize={chart.bars.length > 1 ? 0 : 6}>
                     {chart.bars.length === 1 && chart.data.map((x, i) => (
                       <Cell key={i} fill={chart.highlight(x) ? 'url(#barHot)' : 'rgba(var(--text-rgb), 0.16)'}
@@ -324,7 +327,7 @@ export default function DashboardGlass({ d }) {
               {/* Fixed size: a ResponsiveContainer measures 0 in a narrow flex row and draws nothing */}
               <div className={styles.donutChart}>
                 <PieChart width={124} height={124}>
-                  <Pie data={resourceTypePie} cx="50%" cy="50%" innerRadius={42} outerRadius={58} paddingAngle={4} cornerRadius={6} dataKey="value" stroke="none">
+                  <Pie data={resourceTypePie} cx="50%" cy="50%" innerRadius={42} outerRadius={58} paddingAngle={4} cornerRadius={6} dataKey="value" stroke="none" isAnimationActive={!reduce} animationDuration={700} animationBegin={120} animationEasing="ease-out">
                     {resourceTypePie.map((p) => <Cell key={p.name} fill={p.fill} />)}
                   </Pie>
                   <Tooltip content={<ChartTip />} />

@@ -110,7 +110,7 @@ export function Ledger({ items, label, className }) {
  */
 export function Spotlight({ icon: Icon, label, children, foot, actions, ticket, className, ...rest }) {
   return (
-    <section className={clsx(styles.spot, ticket && styles.spotTicket, className)} {...rest}>
+    <section data-motion-panel className={clsx(styles.spot, ticket && styles.spotTicket, className)} {...rest}>
       <svg className={styles.spotLeaf} viewBox="0 0 48 48" aria-hidden="true"><path d={LEAF_PATH} /><path d={VEIN_PATH} /></svg>
       {label && <p className={styles.spotLabel}>{Icon && <Icon size={14} aria-hidden="true" />}{label}</p>}
       {children}
@@ -137,7 +137,7 @@ export function ActionTiles({ items, className }) {
   return (
     <div className={clsx(styles.tiles, className)} style={{ '--n': items.length }}>
       {items.map((it) => (
-        <button key={it.label} type="button" className={clsx(styles.tile, it.primary && styles.tilePrimary)} onClick={it.onClick}
+        <button key={it.label} data-motion-panel type="button" className={clsx(styles.tile, it.primary && styles.tilePrimary)} onClick={it.onClick}
           aria-label={it.badge ? `${it.label}, ${it.badge} pendientes` : undefined}>
           <span className={styles.tileTop}>
             <LeafIcon icon={it.icon} tone={it.tone || 'accent'} size={36} solid={it.primary} />
@@ -261,7 +261,7 @@ export function ToolButton({ icon: Icon, label, onClick }) {
 /** A labelled run of items (a day, a month): the heading above, the items in one glass sheet. */
 export function FeedGroup({ title, meta, children, className }) {
   return (
-    <section className={clsx(styles.group, className)}>
+    <section data-motion-panel className={clsx(styles.group, className)}>
       {(title || meta) && (
         <div className={styles.groupHead}>
           <h3>{title}</h3>

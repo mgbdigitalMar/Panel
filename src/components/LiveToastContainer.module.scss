@@ -1,0 +1,11 @@
+@use '../styles/patterns' as p;
+
+.toast {
+  @include p.glass-chrome;
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--card);
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}

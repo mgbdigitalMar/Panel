@@ -1,8 +1,11 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import styles from './LiveToastContainer.module.scss';
 
 export function LiveToastContainer({ liveNotifs }) {
+  const reduce = useReducedMotion();
   return (
     <div
+      className="glass-scope"
       aria-live="polite"
       aria-relevant="additions"
       style={{
@@ -22,22 +25,18 @@ export function LiveToastContainer({ liveNotifs }) {
         {liveNotifs.map(n => (
           <motion.div
             key={n.id}
-            layout
-            initial={{ opacity: 0, y: 24, scale: 0.94, filter: 'blur(6px)' }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-            exit={{ opacity: 0, x: 48, scale: 0.96, transition: { duration: 0.18, ease: [0.4, 0, 1, 1] } }}
-            transition={{ type: 'spring', stiffness: 420, damping: 32, mass: 0.9 }}
+            className={styles.toast}
+            layout={!reduce}
+            initial={{ opacity: 0, transform: reduce ? 'none' : 'translateY(16px) scale(0.97)' }}
+            animate={{ opacity: 1, transform: reduce ? 'none' : 'translateY(0px) scale(1)' }}
+            exit={{ opacity: 0, transform: reduce ? 'none' : 'translateY(16px) scale(0.97)', transition: { duration: reduce ? 0.1 : 0.18 } }}
+            transition={{ duration: reduce ? 0.12 : 0.25, ease: [0.23, 1, 0.32, 1] }}
             style={{
-              background: 'var(--glass-bg)',
-              backdropFilter: 'var(--glass-blur)',
-              WebkitBackdropFilter: 'var(--glass-blur)',
-              border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-lg)',
               padding: '10px 16px 10px 10px',
               display: 'flex',
               alignItems: 'center',
               gap: 12,
-              boxShadow: 'var(--shadow-xl), var(--glass-highlight-sm)',
               width: 'min(360px, calc(100vw - 48px))',
               pointerEvents: 'all',
             }}

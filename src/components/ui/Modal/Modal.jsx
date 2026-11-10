@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import styles from './Modal.module.scss';
@@ -6,24 +6,29 @@ import clsx from 'clsx';
 import { Portal, useInertApp } from '../Portal/Portal';
 import { useMediaQuery, PHONE_QUERY } from '../../../hooks/useMediaQuery';
 
-const EASE_OUT = [0.16, 1, 0.3, 1];
+const EASE_OUT = [0.23, 1, 0.32, 1];
 
-// Computers and tablets: the panel rises out of focus in the middle of the screen
+// Computers and tablets: a short rise keeps the dialog connected to the page.
 const DIALOG_MOTION = {
-  initial: { opacity: 0, scale: 0.96, y: 14, filter: 'blur(8px)' },
+  initial: { opacity: 0, transform: 'translateY(18px) scale(0.95)' },
   animate: {
-    opacity: 1, scale: 1, y: 0, filter: 'blur(0px)',
-    transition: { type: 'spring', stiffness: 420, damping: 34, mass: 0.9, opacity: { duration: 0.2 }, filter: { duration: 0.22 } },
-    transitionEnd: { filter: 'none' },
+    opacity: 1, transform: 'translateY(0px) scale(1)',
+    transition: { duration: 0.28, ease: EASE_OUT },
   },
-  exit: { opacity: 0, scale: 0.97, y: 8, filter: 'blur(4px)', transition: { duration: 0.15, ease: [0.4, 0, 1, 1] } },
+  exit: { opacity: 0, transform: 'translateY(18px) scale(0.95)', transition: { duration: 0.18, ease: EASE_OUT } },
 };
 
 // Phones: a sheet that slides up from the bottom edge, where the thumb is, and leaves the same way
 const SHEET_MOTION = {
-  initial: { y: '100%' },
-  animate: { y: 0, transition: { type: 'spring', duration: 0.42, bounce: 0 } },
-  exit: { y: '100%', transition: { duration: 0.2, ease: [0.4, 0, 1, 1] } },
+  initial: { opacity: 0, transform: 'translateY(100%)' },
+  animate: { opacity: 1, transform: 'translateY(0%)', transition: { duration: 0.28, ease: [0.32, 0.72, 0, 1], opacity: { duration: 0.15 } } },
+  exit: { opacity: 0, transform: 'translateY(100%)', transition: { duration: 0.22, ease: EASE_OUT } },
+};
+
+const REDUCED_MOTION = {
+  initial: { opacity: 0, transform: 'none' },
+  animate: { opacity: 1, transform: 'none', transition: { duration: 0.12 } },
+  exit: { opacity: 0, transform: 'none', transition: { duration: 0.1 } },
 };
 
 // Open dialogs, newest last: Escape closes only the one on top (a confirm over an edit form)
@@ -34,6 +39,7 @@ export function Modal({ open, onClose, title, ariaLabel, children, className, ba
   useInertApp(open);
 
   const sheet = useMediaQuery(PHONE_QUERY);
+  const reduce = useReducedMotion();
   const panelRef = useRef(null);
   const tokenRef = useRef(null);
   if (!tokenRef.current) tokenRef.current = {};
@@ -76,11 +82,11 @@ export function Modal({ open, onClose, title, ariaLabel, children, className, ba
     <Portal>
     <AnimatePresence>
       {open && (
-        <div className={styles.overlay}>
+        <div className={clsx(styles.overlay, 'glass-scope')}>
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1, transition: { duration: 0.24, ease: EASE_OUT } }}
-            exit={{ opacity: 0, transition: { duration: 0.16 } }}
+            animate={{ opacity: 1, transition: { duration: reduce ? 0.12 : 0.24, ease: EASE_OUT } }}
+            exit={{ opacity: 0, transition: { duration: reduce ? 0.1 : 0.16 } }}
             className={styles.backdrop}
             data-scrim
             onClick={onClose}
@@ -91,7 +97,7 @@ export function Modal({ open, onClose, title, ariaLabel, children, className, ba
             role="dialog"
             aria-modal="true"
             aria-label={ariaLabel || (typeof title === 'string' && title ? title : undefined)}
-            {...(sheet ? SHEET_MOTION : DIALOG_MOTION)}
+            {...(reduce ? REDUCED_MOTION : sheet ? SHEET_MOTION : DIALOG_MOTION)}
             className={clsx(styles.modal, className)}
           >
             {/* `bare`: the content brings its own title and buttons (the liquid confirmations) */}

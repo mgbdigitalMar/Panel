@@ -21,24 +21,28 @@
 .backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.62);
-  backdrop-filter: blur(18px) saturate(180%);
-  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  background: rgba(8, 12, 22, 0.38);
 }
 
 .modal {
   position: relative;
   /* Chrome glass over the dimmed, blurred page */
   @include p.glass-chrome;
-  background: var(--lg-sheen), var(--glass-card-hover);
   border-radius: var(--radius-2xl);
   width: 100%;
   max-width: 520px;
   max-height: 90vh;
+  max-height: 90dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   z-index: 10;
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--card);
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
 
   /* Takes focus on open (programmatically) so the keyboard starts inside the dialog; the panel
      itself never shows a focus ring (its controls do) */
@@ -105,11 +109,12 @@
 
   svg { transition: transform 0.3s var(--ease-out); }
 
-  &:hover {
-    color: var(--danger);
-    background: var(--danger-bg);
-    border-color: rgba(var(--danger-rgb), 0.4);
-    svg { transform: rotate(90deg); }
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: var(--text);
+      background: rgba(var(--text-rgb), 0.1);
+      border-color: rgba(var(--accent-rgb), 0.4);
+    }
   }
 
   &:active {
