@@ -51,32 +51,25 @@ html, body {
 
 body, #root { min-height: 100dvh; }
 
-/* The canvas behind Safari's floating toolbar and the overscroll. Since iOS 26 Safari ignores
-   theme-color and tints its bars with flat colours: the sticky top bar's background at the top
-   (GlassChrome .header) and this one at the bottom. Both are the wallpaper's own colours at
-   that edge, measured from the rendered wallpaper, so the bars read as part of the page.
-   Kept in sync with index.html's critical CSS and theme-color. */
-html { background: var(--canvas, var(--bg)); }
-
-[data-appearance='glass'] { --canvas: #E3E6EC; --canvas-top-rgb: 232, 235, 242; }
-[data-appearance='glass'][data-theme='dark'] { --canvas: #101116; --canvas-top-rgb: 14, 15, 20; }
-
-/* Glass: the canvas carries the wallpaper's own gradient (Wallpaper.module.scss .scene), one
-   screen tall from the top, so the page reads edge to edge under Safari's bars instead of
-   showing a flat band. The fixed wallpaper paints the same on top while scrolling. */
+/* The document also paints the room when Safari exposes areas outside fixed layers. */
+[data-appearance='glass'] {
+  --viewport-wallpaper: linear-gradient(180deg, rgba(240,243,250,0.9), rgba(240,243,250,0.7) 240px, rgba(240,243,250,0.64)), url('/wallpaper.jpg');
+}
+[data-appearance='glass'][data-theme='dark'] {
+  --viewport-wallpaper: linear-gradient(180deg, rgba(9,10,16,0.88), rgba(9,10,16,0.68) 240px, rgba(9,10,16,0.64)), url('/wallpaper.jpg');
+}
 html[data-appearance='glass'] {
+  background-color: transparent;
+  background-image: var(--viewport-wallpaper);
   background-repeat: no-repeat;
-  background-size: 100% 100lvh;
-  /* The room's own tones behind the veil: pale ceiling, brighter floor */
-  background-image: linear-gradient(180deg, #E8EBF2 0%, #DCDFE6 46%, #E3E6EC 100%);
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
 }
-
-html[data-appearance='glass'][data-theme='dark'] {
-  background-image: linear-gradient(180deg, #0E0F14 0%, #17171C 46%, #101116 100%);
-}
-
-/* Glass: the body is see-through so the canvas and the wallpaper meet without a seam */
-[data-appearance='glass'] body { background: transparent; }
+[data-appearance='glass'] body,
+[data-appearance='glass'] #root { background: transparent; }
+html[data-theme='dark'] { color-scheme: dark; }
+html[data-theme='light'] { color-scheme: light; }
 
 body {
   font-family: var(--font-body);

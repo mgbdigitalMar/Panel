@@ -149,11 +149,10 @@ export async function runGlassAppearanceTests() {
   // 4c. Safari en iOS: el lienzo bajo las barras sigue al fondo (no el casi negro de --bg)
   const globalCss = read('src', 'styles', 'global.scss');
   const indexHtml = read('index.html');
-  assert('Safari: el lienzo del documento usa el color del fondo Cristal en cada tema',
-    globalCss.includes("html { background: var(--canvas, var(--bg)); }") && globalCss.includes("[data-appearance='glass'][data-theme='dark'] { --canvas: #101116; --canvas-top-rgb: 14, 15, 20; }"));
-  assert('Móvil y tablet: cabecera transparente; solo la franja de la barra de estado lleva velo (Safari)',
-    chromeStyles.includes('background: transparent;') && chromeStyles.includes('height: env(safe-area-inset-top);')
-    && chromeStyles.includes('background: linear-gradient(var(--lg-chrome), transparent);') && chromeStyles.includes('backdrop-filter: var(--lg-blur);'));
+  assert('Safari: el documento pinta la fotografia sin imponer un color solido',
+    globalCss.includes('background-image: var(--viewport-wallpaper);') && globalCss.includes("url('/wallpaper.jpg')") && globalCss.includes('background-color: transparent;'));
+  assert('Safari: no hay un velo independiente sobre el notch',
+    chromeStyles.includes('background: transparent;') && !chromeStyles.includes('height: env(safe-area-inset-top);'));
   assert('Ordenador: cabecera transparente que flota sobre la página (el contenido pasa por debajo; solo las píldoras reciben clics)',
     /\.main > header \{\s*position: absolute;/.test(read('src', 'components', 'Layout.module.scss'))
     && read('src', 'components', 'Layout.module.scss').includes('padding-top: calc(#{$header-h} + clamp(12px, 1.6vw, 24px));')
@@ -166,13 +165,13 @@ export async function runGlassAppearanceTests() {
     && /if not public\.is_admin\(\) then[\s\S]*?admin_set_password|admin_set_password[\s\S]*?if not public\.is_admin\(\)/.test(read('supabase', 'migrations', '20261022120000_secure_auth.sql')));
   assert('Safari: el contenedor sigue la altura visible y conserva las zonas seguras',
     read('src', 'components', 'Layout.module.scss').includes('min-height: 100dvh;') && read('src', 'components', 'Layout.module.scss').includes('env(safe-area-inset-bottom)'));
-  assert('Safari: el fondo Cristal llega bajo la barra de estado y la barra inferior',
-    /\.wallpaper \{[\s\S]*?top: -120px;[\s\S]*?bottom: -120px;/.test(read('src', 'components', 'Wallpaper.module.scss')));
-  assert('Safari: tema y apariencia aplicados antes del primer pintado (sin destello)',
-    indexHtml.includes("localStorage.getItem('app-theme-mode')") && indexHtml.includes("html { background: #101116; }") && indexHtml.includes("html[data-theme='light'] { background: #E3E6EC; }"));
-  assert('Safari: bajo las barras se ve el degradado del fondo, no una franja gris plana',
-    globalCss.includes("html[data-appearance='glass'] {") && globalCss.includes('background-size: 100% 100lvh;')
-    && read('src', 'components', 'Wallpaper.module.scss').includes('background: transparent;'));
+  assert('Safari: el fondo se monta fuera de los contenedores que lo recortan',
+    read('src', 'components', 'Wallpaper.jsx').includes('createPortal(') && read('src', 'components', 'Wallpaper.jsx').includes('document.body'));
+  assert('Safari: el fondo cubre las zonas seguras y la altura maxima',
+    read('src', 'components', 'Wallpaper.module.scss').includes('min-height: 100lvh;')
+    && read('src', 'components', 'Wallpaper.module.scss').includes('bottom: calc(-1 * env(safe-area-inset-bottom, 0px));'));
+  assert('Safari: el fondo ya aparece antes del primer pintado de React',
+    indexHtml.includes("localStorage.getItem('app-theme-mode')") && indexHtml.includes("url('/wallpaper.jpg') center / cover fixed"));
   assert('Desde la pantalla de inicio se abre a pantalla completa (sin las barras de Safari)',
     read('vite.config.js').includes("display: 'standalone'") && indexHtml.includes('apple-mobile-web-app-capable') && indexHtml.includes('black-translucent') && indexHtml.includes('viewport-fit=cover'));
   const loginPhone = read('src', 'pages', 'LoginPhone.jsx');
@@ -196,9 +195,10 @@ export async function runGlassAppearanceTests() {
 
   // 6. Margube Adaptive Glass: cristal gris ahumado sobre la sala, con el desenfoque medido
   const patterns = read('src', 'styles', '_patterns.scss');
-  assert('Adaptive Glass: la sala de fondo viene con la web y el lienzo de Safari usa sus tonos',
-    fs.existsSync(path.join(root, 'public', 'wallpaper.jpg')) && globalCss.includes("[data-appearance='glass'] { --canvas: #E3E6EC; --canvas-top-rgb: 232, 235, 242; }")
-    && read('vite.config.js').includes("background_color: '#101116'") && ctx.includes("resolved === 'dark' ? '#0E0F14' : '#E8EBF2'"));
+  assert('Adaptive Glass: Safari elige el tinte sin colores forzados desde la web',
+    fs.existsSync(path.join(root, 'public', 'wallpaper.jpg')) && !indexHtml.includes('name="theme-color"')
+    && !ctx.includes('meta[name="theme-color"]'));
+
   assert('Adaptive Glass: solo desenfocan los paneles y las barras; el resto de la interfaz no',
     globalCss.includes(":where(.app-shell) :where(*:not([data-scrim])) {") && patterns.includes('@mixin pane-blur {')
     && /@mixin surface \{\s*@include glass;\s*@include pane-blur;/.test(patterns)

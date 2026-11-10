@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import clsx from 'clsx';
 import { LEAF_PATH, VEIN_PATH } from './ui/Loader/Loader';
 import styles from './Wallpaper.module.scss';
@@ -30,7 +31,7 @@ function usePhoto() {
  * painted scene with the brand leaf while it loads or when there is no photograph. Never animated. */
 export function Wallpaper() {
   const photo = usePhoto();
-  return (
+  return createPortal(
     <div className={styles.wallpaper} aria-hidden="true">
       <div className={styles.scene} />
       {!photo && (
@@ -45,6 +46,7 @@ export function Wallpaper() {
       {/* Fades in over the scene once decoded, so there is no flash of the fallback */}
       <div className={clsx(styles.photo, photo && styles.photoOn)} style={photo ? { backgroundImage: `url("${PHOTO_URL}")` } : undefined} />
       <div className={clsx(styles.veil, photo && styles.veilPhoto)} />
-    </div>
+    </div>,
+    document.body,
   );
 }

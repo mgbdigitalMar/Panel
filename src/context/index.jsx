@@ -52,10 +52,6 @@ export function ThemeProvider({ children }) {
   const applyMode = (m) => {
     const resolved = resolveTheme(m);
     document.documentElement.setAttribute('data-theme', resolved);
-    // Same colour as the canvas under the browser bars (global.scss --canvas)
-    document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
-      meta.setAttribute('content', resolved === 'dark' ? '#0E0F14' : '#E8EBF2');
-    });
     try { localStorage.setItem('app-theme-mode', m); } catch {}
   }
 

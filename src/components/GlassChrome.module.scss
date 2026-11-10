@@ -69,23 +69,7 @@
     /* Transparent bar: the round buttons float on their own smoked glass over the page */
     background: transparent;
 
-    /* Only the status-bar strip (the safe area) keeps a veil, so the clock and battery stay
-       legible when the page scrolls under them; zero tall where there is no notch */
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      z-index: -1;
-      height: env(safe-area-inset-top);
-      background: linear-gradient(var(--lg-chrome), transparent);
-      -webkit-backdrop-filter: var(--lg-blur);
-      backdrop-filter: var(--lg-blur);
-      -webkit-mask-image: linear-gradient(#000, transparent);
-      mask-image: linear-gradient(#000, transparent);
-      pointer-events: none;
-    }
+    /* The safe area is unpainted: the same wallpaper remains visible around the notch. */
   }
 
   /* Phones: the sections go to the bottom dock */

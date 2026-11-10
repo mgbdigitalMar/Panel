@@ -4,9 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="Margube Intranet — Plataforma corporativa para gestión de reservas, solicitudes, noticias y equipo." />
-    <!-- Same colour as the page, so browser bars blend in. ThemeProvider keeps it in sync with the app theme. -->
-    <meta name="theme-color" content="#E8EBF2" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0E0F14" media="(prefers-color-scheme: dark)" />
+    <!-- Let Safari sample the page rather than requesting a solid toolbar tint. -->
     <!-- Added to the home screen: full screen, content under the status bar -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -52,8 +50,8 @@
     <!-- Critical CSS: canvas colour (same values as global.scss) and the skip link, before the bundle -->
     <style>
       html, body { margin: 0; }
-      html { background: #101116; }
-      html[data-theme='light'] { background: #E3E6EC; }
+      html { background: linear-gradient(180deg, rgba(9,10,16,.88), rgba(9,10,16,.64)), url('/wallpaper.jpg') center / cover fixed; }
+      html[data-theme='light'] { background: linear-gradient(180deg, rgba(240,243,250,.9), rgba(240,243,250,.64)), url('/wallpaper.jpg') center / cover fixed; }
       .skip-link { position: absolute; top: -100px; left: 16px; }
       .skip-link:focus { top: 16px; }
     </style>

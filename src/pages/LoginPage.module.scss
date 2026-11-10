@@ -12,7 +12,7 @@ $bp-split: 960px;
   display: grid;
   place-items: center;
   padding: clamp(16px, 3vw, 40px);
-  background: var(--bg);
+  background: transparent;
   overflow: hidden;
 
   @media (max-width: $bp-split - 1) {
