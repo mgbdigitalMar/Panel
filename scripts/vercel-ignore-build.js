@@ -41,7 +41,7 @@ function shouldBuild() {
   changedFiles.forEach(f => console.log(`  - ${f}`));
 
   // Directorios y archivos que afectan directamente a la aplicación web
-  const webPrefixes = ['src/', 'public/', 'shared/'];
+  const webPrefixes = ['src/', 'public/', 'shared/', 'api/', 'server/'];
   const webRootFiles = [
     'index.html',
     'package.json',

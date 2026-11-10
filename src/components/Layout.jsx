@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import clsx from 'clsx';
 import {
-  LayoutDashboard, Calendar, Inbox, Newspaper, Bell, UsersRound, Timer, AlertTriangle, UserRound, SlidersHorizontal, LayoutGrid, ShieldCheck
+  LayoutDashboard, Calendar, Inbox, Newspaper, Bell, UsersRound, Timer, AlertTriangle, UserRound, SlidersHorizontal, LayoutGrid, ShieldCheck, MessageSquareText
 } from 'lucide-react';
 
 import { Avatar, TopProgress, PageLoader } from './ui';
@@ -29,6 +29,7 @@ const navItems = [
   { id: 'horas',        label: 'Tiempo a compensar', icon: Timer },
   { id: 'news',         label: 'Noticias y Eventos', icon: Newspaper },
   { id: 'employees',    label: 'Equipo',             icon: UsersRound },
+  { id: 'assistant',    label: 'Asistente',          icon: MessageSquareText },
 ];
 const adminItems = [
   { id: 'admin', label: 'Administración', icon: ShieldCheck, badgeKey: 'admin' },
@@ -43,6 +44,7 @@ const adminItems = [
    heading keeps only the date line.
    `icon`: the section's mark, beside today's date on every screen size. */
 const PAGE_META = {
+  assistant:    { title: 'Asistente', desc: 'Consulta tus trámites y prepara acciones desde el chat.', icon: MessageSquareText },
   reservations: { title: 'Reservas',           desc: 'Salas y vehículos de empresa: mira qué está libre y reserva en segundos.', touch: true, desk: true, icon: Calendar },
   requests:     { title: 'Solicitudes',        desc: 'Asuntos propios, trabajo en remoto o externo y compras.', touch: true, desk: true, icon: Inbox },
   horas:        { title: 'Tiempo a compensar', desc: 'Registra tus horas y consulta tu saldo con la empresa.', own: true, icon: Timer },

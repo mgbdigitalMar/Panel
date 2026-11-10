@@ -42,6 +42,7 @@ Toda esta funcionalidad debe conservarse en cualquier cambio de interfaz:
 - **Equipo:** directorio y dónde trabaja cada persona, hoy y durante la semana.
 - **Mi perfil:** datos, modo de trabajo, contraseña, documentos.
 - **Ajustes:** tema y notificaciones.
+- **Asistente web:** chat escrito para consultar y preparar solicitudes, asuntos propios y reservas, con confirmación antes de ejecutar. Las cuentas admin también revisan y gestionan trámites del equipo. La función `/api/assistant` se despliega con la web en Vercel; necesita una clave de Groq en las variables privadas del servidor.
 - **Administración:** empleados (incluido restablecer la contraseña), salas, vehículos, documentos, bolsa de horas, exportación CSV de firmas de normas.
 - **Transversal:** notificaciones en tiempo real y push, buscador (Ctrl+K), atajos («?»), firma de las normas internas, PWA, tema claro y oscuro, cuatro estados en cada vista (carga, vacío, error, contenido).
 

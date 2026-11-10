@@ -17,6 +17,7 @@ import styles from './GlassChrome.module.scss';
 const SHORT = {
   mas: 'Más', dashboard: 'Inicio', reservations: 'Reservas', requests: 'Solicitudes', horas: 'Horas',
   news: 'Noticias', employees: 'Equipo', admin: 'Admin',
+  assistant: 'Asistente',
 };
 
 /** Hook for the small dropdowns of the bar: closes on an outside click and on Escape. */

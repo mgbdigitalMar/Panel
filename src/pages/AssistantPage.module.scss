@@ -1,0 +1,48 @@
+@use '../styles/patterns' as p;
+
+.page { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 20px; align-items: start; }
+.conversation { min-width: 0; }
+.header {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 18px 20px; border-bottom: 1px solid var(--lg-edge);
+  > div { display: flex; align-items: center; gap: 10px; }
+  svg { color: var(--accent); }
+  h2 { font-size: 17px; margin: 0; }
+}
+.log { min-height: 280px; max-height: min(58dvh, 640px); overflow-y: auto; overscroll-behavior: contain; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+.empty { padding-block: 18px; max-width: 58ch; h3 { font-size: 23px; margin-bottom: 8px; } p { color: var(--text-sec); } }
+.examples { display: grid; gap: 8px; margin-top: 20px;
+  button { @include p.well; color: var(--text); padding: 12px 14px; min-height: 44px; border-radius: 12px; text-align: left; cursor: pointer; font: inherit; }
+}
+.message { max-width: 92%; align-self: flex-start; min-width: 0; overflow-wrap: anywhere;
+  strong { display: block; font-size: 12px; color: var(--text-mut); margin-bottom: 6px; }
+  p { margin: 0; white-space: pre-wrap; color: var(--text); line-height: 1.65; }
+  &[data-author='user'] { @include p.well; padding: 12px 16px; border-radius: 16px 16px 4px 16px; align-self: flex-end; }
+}
+.proposal { @include p.well; margin: 0 20px 16px; padding: 18px; border-radius: 16px; border-color: rgba(var(--accent-rgb), 0.4); overflow-wrap: anywhere;
+  > span { color: var(--accent); font-size: 12px; font-weight: 600; }
+  h3 { font-size: 17px; margin: 6px 0 12px; }
+  ul { padding-left: 18px; color: var(--text); }
+  p { font-size: 13px; margin-top: 12px; color: var(--text-sec); }
+}
+.actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.composer { border-top: 1px solid var(--lg-edge); padding: 18px 20px;
+  label { display: block; font-weight: 600; margin-bottom: 8px; }
+  textarea { width: 100%; min-height: 88px; max-height: 220px; resize: vertical; padding: 12px 14px; border-radius: 14px; background: var(--input); border: 1px solid var(--input-border); color: var(--text); font: inherit; line-height: 1.5; }
+  textarea::placeholder { color: var(--text-mut); }
+  textarea:disabled { opacity: 0.6; }
+}
+.composerFoot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; span { font-size: 12px; color: var(--text-mut); } }
+.error { margin: 0 20px 16px; padding: 12px 14px; background: var(--danger-bg); color: var(--danger); border-radius: 12px; overflow-wrap: anywhere; }
+.status { padding: 0 20px 12px; color: var(--text-sec); font-size: 13px; }
+.info { min-width: 0; display: grid; gap: 14px; }
+.scope { padding: 20px; gap: 12px; h2 { font-size: 17px; } p { color: var(--text-sec); font-size: 13.5px; } > svg { color: var(--accent); } }
+.privacy { color: var(--text-mut); font-size: 12px; padding: 0 6px; }
+@media (max-width: 1199px) { .page { grid-template-columns: minmax(0, 1fr); } .info { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+@media (max-width: 767px) {
+  .page { gap: 16px; } .info { grid-template-columns: minmax(0, 1fr); }
+  .log { min-height: 240px; max-height: 52dvh; padding: 16px; }
+  .header, .composer { padding: 16px; } .composer textarea { font-size: 16px; }
+  .composerFoot > span { max-width: 22ch; } .proposal { margin-inline: 16px; padding: 14px; }
+  .message { max-width: 100%; } .actions > * { flex: 1; }
+}

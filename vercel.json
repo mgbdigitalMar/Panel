@@ -1,6 +1,9 @@
 {
   "framework": "vite",
   "ignoreCommand": "node scripts/vercel-ignore-build.js",
+  "functions": {
+    "api/assistant.mjs": { "maxDuration": 30 }
+  },
   "headers": [
     {
       "source": "/assets/(.*)",
@@ -28,6 +31,6 @@
     }
   ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

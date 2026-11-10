@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, SlidersHorizontal,
   User, UsersRound, Timer, Search, ChevronRight, LogOut,
-  CalendarPlus, FilePlus2, SunMoon, Keyboard, ShieldCheck
+  CalendarPlus, FilePlus2, SunMoon, Keyboard, ShieldCheck, MessageSquareText
 } from 'lucide-react';
 import { useAuth, useTheme } from '../context';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +12,7 @@ import styles from './CommandPalette.module.scss';
 
 /* Pages (mirrors Layout.jsx) — `keys` is the G-shortcut letter */
 const PAGES = [
+  { id: 'assistant', label: 'Asistente', icon: MessageSquareText, desc: 'Chat para consultar y gestionar trámites' },
   { id: 'dashboard',    label: 'Dashboard',          icon: LayoutDashboard, desc: 'Vista general de la empresa',        keys: 'D' },
   { id: 'reservations', label: 'Reservas',           icon: Calendar,        desc: 'Salas y vehículos',                  keys: 'R' },
   { id: 'requests',     label: 'Solicitudes',        icon: Inbox,           desc: 'Asuntos propios, remoto, compras',   keys: 'S' },

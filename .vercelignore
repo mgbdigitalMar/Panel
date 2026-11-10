@@ -35,3 +35,6 @@ skills-lock.json
 # 7. Dependencias y temporales
 node_modules
 .expo
+
+# Server secrets are configured in Vercel, never uploaded from the checkout.
+.env*
