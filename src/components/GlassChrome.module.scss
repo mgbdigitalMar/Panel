@@ -749,7 +749,7 @@
 /* Floating rail (computers) ------------------------------------------------------------------
    A slim capsule of smoked glass pinned to the left, clear of the edges. */
 .rail {
-  @include frosted;
+  @include p.liquid;
   position: fixed;
   top: 16px;
   bottom: 16px;
@@ -762,7 +762,16 @@
   width: 72px;
   padding: 12px 0;
   border-radius: 36px;
-  box-shadow: inset 0 1px 0 var(--lg-rim), 0 24px 52px -16px rgba(0, 0, 0, 0.5);
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: var(--bg-2);
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--card);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 
   @media (min-width: 1024px) { display: flex; }
 }

@@ -57,8 +57,7 @@ Sin decidir: a qué se dedica Margube no está documentado en el repositorio; no
 
 ## Evidence on Hand
 
-- Capturas del diseño anterior y de cada función: `docs/guia-de-uso/capturas/`.
-- Reglas de producto y UX: `docs/PROMPT_WEB.md` (sus secciones 3 y 4 describen el diseño «Cristal ahumado», que se sustituye).
+- Reglas de producto y UX: este documento y la implementación existente.
 - Sin datos inventados en la interfaz final.
 
 ## Product Principles
