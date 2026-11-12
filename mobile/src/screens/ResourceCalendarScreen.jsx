@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { ChevronLeft, ChevronRight, Building2, Car, AlertTriangle, CheckCircle2, Plus } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
@@ -12,7 +12,7 @@ import { Header } from '../components/common/Header';
 import { GlassCard } from '../components/common/GlassCard';
 import { GlassButton, IconButton } from '../components/common/GlassButton';
 import { GlassInput, DateField, TimeField } from '../components/common/GlassInput';
-import { PressScale } from '../components/common/Pressable';
+import { HapticPressable, PressScale } from '../components/common/Pressable';
 import { T } from '../components/common/Text';
 import { EmptyState, IconTile, Segmented, Sheet } from '../components/common/UI';
 import { DAY_START, DAY_END, reservationsFor, findConflicts, nearbyFreeSlots, dayLoad, reservationStatusLabel } from '../utils/domain';
@@ -163,7 +163,7 @@ export default function ResourceCalendarScreen() {
       {view === 'week' ? (
         <>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 2 }}>
-            <Pressable
+            <HapticPressable
               onPress={() => { setSelDate(addDays(selDate, -7)); setSelection(null); }}
               hitSlop={12}
               accessibilityLabel="Semana anterior"
@@ -179,7 +179,7 @@ export default function ResourceCalendarScreen() {
               }}
             >
               <ChevronLeft size={20} color={colors.text} />
-            </Pressable>
+            </HapticPressable>
 
             <View style={{ alignItems: 'center', gap: 2 }}>
               <T size={15.5} weight="bold" style={{ textTransform: 'capitalize' }}>{fmtMonthYear(selDate)}</T>
@@ -188,7 +188,7 @@ export default function ResourceCalendarScreen() {
               </T>
             </View>
 
-            <Pressable
+            <HapticPressable
               onPress={() => { setSelDate(addDays(selDate, 7)); setSelection(null); }}
               hitSlop={12}
               accessibilityLabel="Semana siguiente"
@@ -204,7 +204,7 @@ export default function ResourceCalendarScreen() {
               }}
             >
               <ChevronRight size={20} color={colors.text} />
-            </Pressable>
+            </HapticPressable>
           </View>
 
           <ScrollView
@@ -303,7 +303,7 @@ export default function ResourceCalendarScreen() {
 
           <View style={{ height: HOURS.length * HOUR_H - HOUR_H + 24, borderRadius: 22, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder, overflow: 'hidden' }}>
             {HOURS.map((h, i) => (
-              <Pressable
+              <HapticPressable
                 key={h}
                 onPress={() => i < HOURS.length - 1 && pickSlot(h)}
                 disabled={i === HOURS.length - 1}
@@ -312,7 +312,7 @@ export default function ResourceCalendarScreen() {
               >
                 <T mono size={11} color={colors.text3} style={{ width: 52, paddingLeft: 12 }}>{minToTime(h * 60)}</T>
                 <View style={{ flex: 1, height: 1, marginTop: 7, backgroundColor: colors.divider }} />
-              </Pressable>
+              </HapticPressable>
             ))}
 
             {dayItems.map((r) => {
@@ -322,19 +322,19 @@ export default function ResourceCalendarScreen() {
               const fg = tone === 'accent' ? colors.accentFg : tone === 'green' ? colors.successFg : colors.warningFg;
               const h = Math.max(28, top(r.timeEnd) - top(r.timeStart) - 2);
               return (
-                <Pressable
+                <HapticPressable
                   key={r.id}
                   onPress={() => navigation.navigate('MyReservations', { scope: mine ? 'mine' : 'all', date: iso })}
                   style={{ position: 'absolute', left: 60, right: 10, top: top(r.timeStart) + 1, height: h, borderRadius: 12, backgroundColor: bg, borderWidth: 1, borderColor: fg, paddingHorizontal: 10, paddingVertical: 6, overflow: 'hidden' }}
                 >
                   <T size={13} weight="semibold" numberOfLines={1}>{r.purpose || 'Reserva'}{mine ? ' · Tú' : r.employeeName ? ` · ${r.employeeName.split(' ')[0]}` : ''}</T>
                   {h > 40 ? <T size={12} color={fg}>{r.timeStart}–{r.timeEnd} · {reservationStatusLabel(r.status)}</T> : null}
-                </Pressable>
+                </HapticPressable>
               );
             })}
 
             {selection ? (
-              <Pressable onPress={openSheet} style={{
+              <HapticPressable onPress={openSheet} style={{
                 position: 'absolute', left: 60, right: 10, top: top(selection.start) + 1, height: Math.max(28, top(selection.end) - top(selection.start) - 2),
                 borderRadius: 12, borderWidth: 1.5, borderStyle: 'dashed', borderColor: selConflicts.length ? colors.dangerFg : colors.text,
                 backgroundColor: colors.glassStrong, paddingHorizontal: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
@@ -342,7 +342,7 @@ export default function ResourceCalendarScreen() {
               >
                 <T size={13} weight="semibold">Tu selección · {selection.start}–{selection.end}</T>
                 <CheckCircle2 size={18} color={selConflicts.length ? colors.dangerFg : colors.text} />
-              </Pressable>
+              </HapticPressable>
             ) : null}
 
             {showNow ? (
@@ -355,13 +355,13 @@ export default function ResourceCalendarScreen() {
       ) : (
         <View style={{ borderRadius: 22, padding: 14, gap: 8, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Pressable onPress={() => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() - 1, 1))} hitSlop={10} accessibilityLabel="Mes anterior" style={{ padding: 6 }}>
+            <HapticPressable onPress={() => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() - 1, 1))} hitSlop={10} accessibilityLabel="Mes anterior" style={{ padding: 6 }}>
               <ChevronLeft size={22} color={colors.text} />
-            </Pressable>
+            </HapticPressable>
             <T size={15} weight="semibold">{fmtMonthYear(monthCursor)}</T>
-            <Pressable onPress={() => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1))} hitSlop={10} accessibilityLabel="Mes siguiente" style={{ padding: 6 }}>
+            <HapticPressable onPress={() => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1))} hitSlop={10} accessibilityLabel="Mes siguiente" style={{ padding: 6 }}>
               <ChevronRight size={22} color={colors.text} />
-            </Pressable>
+            </HapticPressable>
           </View>
           <View style={{ flexDirection: 'row' }}>
             {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((l) => (
@@ -382,7 +382,7 @@ export default function ResourceCalendarScreen() {
                 const load = loadFor(d);
                 cells.push(
                   <View key={dIso} style={{ width: `${100 / 7}%`, padding: 2 }}>
-                    <Pressable
+                    <HapticPressable
                       disabled={!inMonth}
                       onPress={() => { setSelDate(d); setSelection(null); setView('week'); }}
                       accessibilityLabel={fmtDayShort(d)}
@@ -393,7 +393,7 @@ export default function ResourceCalendarScreen() {
                     >
                       <T mono weight="semibold" size={14} color={isToday ? colors.chipOnText : !inMonth ? 'transparent' : weekend ? colors.muted : colors.text}>{d.getDate()}</T>
                       <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: inMonth && !weekend ? loadColor(colors, load) : 'transparent' }} />
-                    </Pressable>
+                    </HapticPressable>
                   </View>,
                 );
               }

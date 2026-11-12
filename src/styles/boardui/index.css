@@ -1,0 +1,72 @@
+/* BoardUI inside the Margube intranet.
+ *
+ * BoardUI's stock globals.css imports all of Tailwind (with its Preflight reset) and restyles
+ * html/body, which would restyle every SCSS page of the intranet. This entry keeps only what
+ * the BoardUI components need:
+ *
+ *  - Tailwind's theme tokens, in the `theme` layer and inlined (theme(inline)): the intranet
+ *    defines --radius-*, --shadow-*, --ease-out, --ease-in-out and --font-mono with its own
+ *    values, and its unlayered variables would otherwise leak into BoardUI's utilities.
+ *  - Tailwind utilities generated ONLY from the BoardUI sources below (source(none) + @source),
+ *    and unlayered: the intranet's global `* { margin: 0; padding: 0 }` is unlayered too, and a
+ *    layered utility would always lose to it. Unlayered, a utility class out-ranks the
+ *    intranet's element and universal resets by specificity.
+ *  - A small Preflight subset, scoped to `.bui` (the root of every BoardUI surface).
+ *
+ * Dark mode follows html[data-theme="dark"] (theme.css binds its dark tokens to it).
+ */
+@layer theme, base;
+
+@import "tailwindcss/theme.css" layer(theme) theme(inline);
+@import "tailwindcss/utilities.css" source(none);
+@import "./theme.css";
+@import "./typography.css";
+
+@source "../../components/base";
+@source "../../components/foundations";
+@source "../../components/ui/DateInput";
+@source "../../components/ui/Tip";
+/* Never generate a utility named like one of the intranet's global classes with another meaning:
+ * `.table` (display: table) would undo the phone card layout of the intranet's `.table`.
+ * flex, flex-col, flex-1, items-center, justify-between, min-w-0 and gap-2 are generated too, but
+ * global.scss defines them with the same values. */
+@source not inline("table");
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  --font-inter: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* The parts of Tailwind's Preflight the BoardUI components rely on, only inside BoardUI surfaces */
+@layer base {
+  :where(.bui, .bui *),
+  :where(.bui, .bui *)::before,
+  :where(.bui, .bui *)::after {
+    border: 0 solid;
+  }
+  :where(.bui) :where(button, input, select, textarea),
+  :where(button.bui, input.bui) {
+    font: inherit;
+    font-feature-settings: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    background-color: transparent;
+    border-radius: 0;
+    appearance: none;
+  }
+  :where(.bui) :where(button, [role="button"]),
+  :where(button.bui) {
+    cursor: pointer;
+  }
+  :where(.bui) :where(table) {
+    border-collapse: collapse;
+    text-indent: 0;
+  }
+  :where(.bui) :where(svg) {
+    vertical-align: middle;
+  }
+  :where(.bui) :where(ol, ul) {
+    list-style: none;
+  }
+}

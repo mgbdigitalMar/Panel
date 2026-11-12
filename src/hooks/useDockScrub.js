@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMotionValue } from 'framer-motion';
 import { DOCK_HOLD_MS, dockCellWidth, dockIndexAt, dockIndicatorX, dockPointInside } from '../../shared/config/dock';
+import { haptic } from '../utils/haptics';
 
 export function useDockScrub({ count, onSelect }) {
   const ref = useRef(null);
@@ -39,6 +40,8 @@ export function useDockScrub({ count, onSelect }) {
     drag.index = inside ? dockIndexAt(localX, drag.rect.width, count) : -1;
     x.set(dockIndicatorX(localX, drag.rect.width, count));
     if (drag.preview !== drag.index) {
+      // A tick for each tab the finger crosses while scrubbing (the first one marks the hold)
+      if (drag.touch && drag.index >= 0) haptic('selection');
       drag.preview = drag.index;
       setPreview(drag.index);
     }
@@ -49,7 +52,8 @@ export function useDockScrub({ count, onSelect }) {
     const button = event.target.closest('[data-dock-index]');
     if (!button) return;
     const drag = { id: event.pointerId, startX: event.clientX, startY: event.clientY, lastX: event.clientX,
-      lastY: event.clientY, index: Number(button.dataset.dockIndex), active: false, cancelled: false };
+      lastY: event.clientY, index: Number(button.dataset.dockIndex), active: false, cancelled: false,
+      touch: event.pointerType === 'touch' };
     pointer.current = drag;
     setHolding(true);
     ref.current.setPointerCapture(event.pointerId);
@@ -85,6 +89,8 @@ export function useDockScrub({ count, onSelect }) {
     suppressClick.current = true;
     setTimeout(() => { suppressClick.current = false; }, 0);
     cancel();
+    // Pointer capture moves the click onto the <nav>, out of reach of the global tap haptic
+    if (selected >= 0 && drag.touch && !drag.active) haptic('light');
     if (selected >= 0) onSelect(selected);
   };
 

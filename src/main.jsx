@@ -3,10 +3,14 @@ import ReactDOM from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.tsx'
 import { supabaseConfigured } from './utils/supabase'
+import { installHaptics } from './utils/haptics'
 import { LeafMark } from './components/ui'
 import './styles/global.scss'
+import './styles/boardui/index.css'
 
 const queryClient = new QueryClient()
+
+installHaptics()
 
 // Shown instead of a blank page when the Supabase env vars are missing
 function SetupRequired() {

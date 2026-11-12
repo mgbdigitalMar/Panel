@@ -1,9 +1,10 @@
-import { View, Pressable } from 'react-native';
+import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ChevronLeft } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { IconButton } from './GlassButton';
 import { T } from './Text';
+import { HapticPressable } from './Pressable';
 
 /**
  * Large-title header (30-34/600) with optional back button, eyebrow, subtitle and right-side actions.
@@ -52,15 +53,15 @@ export function ModalHeader({ title, onCancel, actionLabel, onAction, actionDisa
   const navigation = useNavigation();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', minHeight: 44 }}>
-      <Pressable onPress={onCancel || (() => navigation.goBack())} hitSlop={10} accessibilityRole="button" style={{ flex: 1 }}>
+      <HapticPressable onPress={onCancel || (() => navigation.goBack())} hitSlop={10} accessibilityRole="button" style={{ flex: 1 }}>
         <T size={16} weight="medium" color={colors.accentFg}>{cancelLabel}</T>
-      </Pressable>
+      </HapticPressable>
       <T size={17} weight="semibold" style={{ textAlign: 'center' }}>{title}</T>
       <View style={{ flex: 1, alignItems: 'flex-end' }}>
         {actionLabel ? (
-          <Pressable onPress={onAction} disabled={actionDisabled} hitSlop={10} accessibilityRole="button">
+          <HapticPressable onPress={onAction} disabled={actionDisabled} hitSlop={10} accessibilityRole="button">
             <T size={16} weight="semibold" color={actionDisabled ? colors.muted : colors.accentFg}>{actionLabel}</T>
-          </Pressable>
+          </HapticPressable>
         ) : null}
       </View>
     </View>

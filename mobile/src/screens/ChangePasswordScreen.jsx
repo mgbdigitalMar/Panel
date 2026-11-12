@@ -1,6 +1,6 @@
 // 02 · Primer acceso: nueva contraseña (ChangePasswordPage on the web)
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { KeyRound, Check } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
 import { useTheme } from '../context/ThemeContext';
@@ -13,6 +13,7 @@ import { GlassButton } from '../components/common/GlassButton';
 import { T } from '../components/common/Text';
 import { Banner } from '../components/common/UI';
 import { firstName } from '../utils/format';
+import { HapticPressable } from '../components/common/Pressable';
 
 export const MIN_PASSWORD = 8; // same minimum as the web
 
@@ -115,9 +116,9 @@ export default function ChangePasswordScreen() {
         {err ? <Banner tone="danger">{err}</Banner> : null}
       </GlassCard>
 
-      <Pressable onPress={logout} accessibilityRole="button" style={{ alignSelf: 'center', padding: 8 }}>
+      <HapticPressable onPress={logout} accessibilityRole="button" style={{ alignSelf: 'center', padding: 8 }}>
         <T size={14} weight="medium" color={colors.text3}>Salir y entrar con otra cuenta</T>
-      </Pressable>
+      </HapticPressable>
     </Screen>
   );
 }

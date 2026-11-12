@@ -1,4 +1,4 @@
-import { View, Pressable } from 'react-native';
+import { View } from 'react-native';
 import { Paperclip, Camera, X, FileText } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
 import { useTheme } from '../../context/ThemeContext';
@@ -7,6 +7,7 @@ import { pickDocument, takePhoto, extOf } from '../../services/files';
 import { fmtBytes } from '../../utils/format';
 import { GlassButton } from './GlassButton';
 import { T } from './Text';
+import { HapticPressable } from './Pressable';
 
 /**
  * Attachment picker: file from the device or a photo from the camera (max 15 MB).
@@ -37,10 +38,10 @@ export function FileField({ label, value, onChange, kind = 'any', camera = true,
             <T size={14} weight="semibold" numberOfLines={1}>{value.name}</T>
             <T size={12} color={colors.text3}>{fmtBytes(value.size)} de 15 MB</T>
           </View>
-          <Pressable onPress={() => onChange(null)} accessibilityRole="button" accessibilityLabel="Quitar archivo" hitSlop={8}
+          <HapticPressable onPress={() => onChange(null)} accessibilityRole="button" accessibilityLabel="Quitar archivo" hitSlop={8}
             style={{ width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.glassStrong }}>
             <X size={16} color={colors.text} />
-          </Pressable>
+          </HapticPressable>
         </View>
       ) : (
         <View style={{ flexDirection: 'row', gap: 10 }}>

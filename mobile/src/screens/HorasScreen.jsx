@@ -1,7 +1,7 @@
 // 14 · Tiempo a compensar (tab "Mi Registro" of the web HorasPage): the balance as a big figure,
 // proportion pills, a month calendar of records with the chosen day in a dark card, then the list.
 import { useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Plus, Download, Users, Timer, Clock, CheckCircle2, Minus, XCircle } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
@@ -19,7 +19,7 @@ import { T } from '../components/common/Text';
 import { EmptyState, Segmented, IconTile } from '../components/common/UI';
 import { GlassCard } from '../components/common/GlassCard';
 import { BrandPanel, ON_BRAND } from '../components/common/Brand';
-import { PressScale } from '../components/common/Pressable';
+import { HapticPressable, PressScale } from '../components/common/Pressable';
 import { BigFigure, MonthCalendar, MonthSwitcher, SplitPills } from '../components/common/Bento';
 import { BRAND, tone as toneOf } from '../theme/tokens';
 import { hourStats, HOUR_LABEL, HOUR_TONE } from '../utils/domain';
@@ -227,11 +227,11 @@ export default function HorasScreen() {
       <View style={{ gap: 10 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 32 }}>
           <T size={15} heading weight="semibold" accessibilityRole="header">Registros</T>
-          <Pressable onPress={() => setShowFilters((x) => !x)} accessibilityRole="button" accessibilityState={{ expanded: showFilters }} hitSlop={10}>
+          <HapticPressable onPress={() => setShowFilters((x) => !x)} accessibilityRole="button" accessibilityState={{ expanded: showFilters }} hitSlop={10}>
             <T size={14} weight="semibold" color={colors.accentFg}>
               {showFilters ? 'Ocultar filtros' : filter !== 'all' || from || to ? 'Filtros activos' : 'Filtrar'}
             </T>
-          </Pressable>
+          </HapticPressable>
         </View>
         {showFilters ? (
           <View style={{ gap: 10 }}>

@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import styles from './Input.module.scss';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X } from 'lucide-react';
+import { DateInput } from '../DateInput/DateInput';
 
 export function Input({
   label,
@@ -32,7 +33,7 @@ export function Input({
   return (
     <div className={clsx(styles.container, className)}>
       {label && (
-        <label className={styles.label} htmlFor={id}>
+        <label className={styles.label} htmlFor={id} id={`${id}-label`}>
           {label} {required && <span className={styles.asterisk} aria-hidden="true">*</span>}
         </label>
       )}
@@ -43,6 +44,29 @@ export function Input({
         {leftElement && (
           <span className={styles.leftElement}>{leftElement}</span>
         )}
+        {type === 'date' ? (
+          // BoardUI date picker in the intranet's field style (the native date input looks
+          // different in every browser). Its trigger reads "<label>, <date>".
+          <DateInput
+            id={id}
+            value={value}
+            onChange={onChange}
+            min={props.min}
+            max={props.max}
+            disabled={disabled}
+            placeholder={placeholder}
+            aria-labelledby={label ? `${id}-label ${id}` : undefined}
+            aria-label={label ? undefined : props['aria-label']}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+            triggerClassName={clsx(styles.input, styles.dateTrigger, {
+              [styles.hasError]: !!error,
+              [styles.hasSuccess]: !!success && !error,
+              [styles.withRight]: shouldShowRightElement,
+              [styles.withLeft]: !!leftElement,
+            })}
+          />
+        ) : (
         <input
           id={id}
           type={type}
@@ -62,6 +86,7 @@ export function Input({
           })}
           {...props}
         />
+        )}
         {shouldShowRightElement && (
           <span className={styles.rightElement}>
             {rightElement || (

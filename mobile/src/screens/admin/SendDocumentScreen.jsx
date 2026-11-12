@@ -1,6 +1,6 @@
 // Enviar documento a un empleado ("Enviar documento" modal of the web AdminPage)
 import { useMemo, useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Check, Search } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
@@ -17,6 +17,7 @@ import { T } from '../../components/common/Text';
 import { Avatar } from '../../components/common/UI';
 import { FONTS } from '../../theme/tokens';
 import { uploadPickedFile } from '../../services/files';
+import { HapticPressable } from '../../components/common/Pressable';
 
 export default function SendDocumentScreen() {
   const { colors } = useTheme();
@@ -74,7 +75,7 @@ export default function SendDocumentScreen() {
           {people.slice(0, 30).map((e) => {
             const on = e.id === recipientId;
             return (
-              <Pressable key={e.id} onPress={() => setRecipientId(e.id)} accessibilityRole="radio" accessibilityState={{ checked: on }}
+              <HapticPressable key={e.id} onPress={() => setRecipientId(e.id)} accessibilityRole="radio" accessibilityState={{ checked: on }}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: 16, backgroundColor: on ? colors.accentSoft : colors.glass, borderWidth: 1, borderColor: on ? colors.accentBorder : colors.glassBorder }}>
                 <Avatar name={e.name} initials={e.avatar} size={34} />
                 <View style={{ flex: 1 }}>
@@ -82,7 +83,7 @@ export default function SendDocumentScreen() {
                   <T size={12.5} color={colors.text3}>{e.dept || 'Sin asignar'}</T>
                 </View>
                 {on ? <Check size={20} color={colors.accentFg} /> : null}
-              </Pressable>
+              </HapticPressable>
             );
           })}
         </View>

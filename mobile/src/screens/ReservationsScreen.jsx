@@ -1,6 +1,6 @@
 // 08 · Reservas: elegir recurso y crear nueva reserva
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { ScrollView, TextInput, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Building2, Car, Search, CalendarCheck, Plus, AlertTriangle, CheckCircle2 } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
@@ -20,6 +20,7 @@ import { EmptyState, IconTile, Segmented, Sheet } from '../components/common/UI'
 import { FONTS } from '../theme/tokens';
 import { availabilityNow, findConflicts, reservationsFor } from '../utils/domain';
 import { timeToMin, todayISO } from '../utils/format';
+import { HapticPressable } from '../components/common/Pressable';
 
 export default function ReservationsScreen() {
   const { colors } = useTheme();
@@ -181,7 +182,7 @@ export default function ReservationsScreen() {
           const a = availabilityNow(reservations, 'room', r.id);
           return (
             <GlassCard key={r.id} style={{ gap: 12 }} accessibilityLabel={`${r.name}, ${a.label}`}>
-              <Pressable
+              <HapticPressable
                 onPress={() => navigation.navigate('ResourceCalendar', { type: 'room', id: r.id })}
                 style={{ gap: 10 }}
               >
@@ -202,7 +203,7 @@ export default function ReservationsScreen() {
                     ))}
                   </View>
                 ) : null}
-              </Pressable>
+              </HapticPressable>
 
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.glassBorder, gap: 8 }}>
                 <GlassButton
@@ -227,7 +228,7 @@ export default function ReservationsScreen() {
           const a = availabilityNow(reservations, 'vehicle', v.id);
           return (
             <GlassCard key={v.id} style={{ gap: 12 }} accessibilityLabel={`${v.model}, ${v.plate}, ${a.label}`}>
-              <Pressable
+              <HapticPressable
                 onPress={() => navigation.navigate('ResourceCalendar', { type: 'vehicle', id: v.id })}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}
               >
@@ -242,7 +243,7 @@ export default function ReservationsScreen() {
                   </View>
                 </View>
                 {v.isActive ? <StatusBadge status={a.free ? 'approved' : 'pending'} label={a.label} /> : <Tag label="Oculto" tone="neutral" />}
-              </Pressable>
+              </HapticPressable>
 
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.glassBorder, gap: 8 }}>
                 <GlassButton
@@ -289,7 +290,7 @@ export default function ReservationsScreen() {
               {activeResources.map((res) => {
                 const isSel = String(res.id) === String(selectedId ?? currentResource?.id);
                 return (
-                  <Pressable
+                  <HapticPressable
                     key={res.id}
                     onPress={() => setSelectedId(res.id)}
                     style={{
@@ -304,7 +305,7 @@ export default function ReservationsScreen() {
                     <T size={13.5} weight={isSel ? 'semibold' : 'regular'} color={isSel ? colors.accentFg : colors.text}>
                       {bookType === 'room' ? res.name : `${res.model} (${res.plate})`}
                     </T>
-                  </Pressable>
+                  </HapticPressable>
                 );
               })}
             </ScrollView>

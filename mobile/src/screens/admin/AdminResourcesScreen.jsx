@@ -1,6 +1,6 @@
 // 22 · Salas y flota (AdminPage > Salas / Vehículos on the web)
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { Building2, Car, Plus, X } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
 import { useTheme } from '../../context/ThemeContext';
@@ -15,6 +15,7 @@ import { GlassInput } from '../../components/common/GlassInput';
 import { Tag } from '../../components/common/StatusBadge';
 import { T } from '../../components/common/Text';
 import { EmptyState, IconTile, Segmented, Sheet, Stepper, SwitchRow, ChipRail } from '../../components/common/UI';
+import { HapticPressable } from '../../components/common/Pressable';
 
 const EQUIPMENT_SUGGESTIONS = ['Proyector', 'Pantalla', 'Videoconferencia', 'Pizarra', 'Audio', 'Accesible'];
 const VEHICLE_TYPES = ['Turismo', 'Furgoneta', 'SUV'];
@@ -122,17 +123,17 @@ export default function AdminResourcesScreen() {
               <T size={13} weight="medium">Equipamiento</T>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 {edit.equipment.map((eq) => (
-                  <Pressable key={eq} onPress={() => setEdit((e) => ({ ...e, equipment: e.equipment.filter((x) => x !== eq) }))} accessibilityRole="button" accessibilityLabel={`Quitar ${eq}`}
+                  <HapticPressable key={eq} onPress={() => setEdit((e) => ({ ...e, equipment: e.equipment.filter((x) => x !== eq) }))} accessibilityRole="button" accessibilityLabel={`Quitar ${eq}`}
                     style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999, backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.accentBorder }}>
                     <T size={13} weight="medium">{eq}</T>
                     <X size={13} color={colors.text2} />
-                  </Pressable>
+                  </HapticPressable>
                 ))}
                 {EQUIPMENT_SUGGESTIONS.filter((s) => !edit.equipment.includes(s)).map((s) => (
-                  <Pressable key={s} onPress={() => addTag(s)} accessibilityRole="button"
+                  <HapticPressable key={s} onPress={() => addTag(s)} accessibilityRole="button"
                     style={{ paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999, borderWidth: 1, borderStyle: 'dashed', borderColor: colors.glassBorderStrong }}>
                     <T size={13} color={colors.text2}>+ {s}</T>
-                  </Pressable>
+                  </HapticPressable>
                 ))}
               </View>
               <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-end' }}>

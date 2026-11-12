@@ -1002,39 +1002,53 @@ export function AuthProvider({ children }) {
     }
     
     const bc = new BroadcastChannel('margube_sessions')
-    
+    // React's StrictMode (dev) mounts this effect twice: the first run is torn down before its
+    // restore finishes. It must then stop, or it posts to the closed channel and signs out a
+    // second time (a 403 from /logout, as the first call already ended the session).
+    let disposed = false
+    const broadcastLogout = () => {
+      if (disposed) return
+      try { bc.postMessage({ type: 'logout' }) } catch { /* channel closed */ }
+    }
+
     // Session restore: the identity comes from the Supabase Auth session, the
     // stored marker only says when this browser was last active.
     const restoreSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
+        if (disposed) return
         if (!session) {
           localStorage.removeItem('margube_session')
           return
         }
-        const stored = JSON.parse(localStorage.getItem('margube_session') || 'null')
+        let stored = null
+        try { stored = JSON.parse(localStorage.getItem('margube_session') || 'null') } catch { /* corrupt entry */ }
         if (!stored || Date.now() - stored.lastActivity > IDLE_TIMEOUT) {
-          clearSession()
+          await clearSession()
           return
         }
         const profile = await loadProfile(session.user.id)
+        if (disposed) return
         if (profile) await startSession(profile)
-        else clearSession()
+        else await clearSession()
       } catch (e) {
+        if (disposed) return
         console.error('Error restoring session:', e)
-        clearSession()
+        await clearSession().catch(() => {})
       } finally {
-        setAuthLoading(false)
+        if (!disposed) setAuthLoading(false)
       }
     }
 
-    const clearSession = () => {
-      supabase.auth.signOut({ scope: 'local' })
+    const clearSession = async () => {
       localStorage.removeItem('margube_session')
       sessionStorage.removeItem('margube_tabId')
-      bc.postMessage({ type: 'logout' })
+      broadcastLogout()
       setUser(null)
       navigate('/login')
+      // Ends the session on the server too. An expired or already-ended session answers 403;
+      // supabase-js still clears the local copy, so that response is not an error here.
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
     }
 
     restoreSession()
@@ -1060,6 +1074,7 @@ export function AuthProvider({ children }) {
     bc.addEventListener('message', handleBCMessage)
     
     return () => {
+      disposed = true
       bc.removeEventListener('message', handleBCMessage)
       bc.close()
       authSub.unsubscribe()

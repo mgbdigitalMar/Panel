@@ -1,7 +1,7 @@
 // Bento pieces of the redesign: big light figures, proportion pills, capsule bars, a month grid
 // with hatched off-days, accent / info tiles, file chips and the photo hero of the profile.
 import { memo } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Image, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
@@ -11,7 +11,7 @@ import { BRAND, RADIUS } from '../../theme/tokens';
 import { addDays, startOfWeek, toISODate, todayISO, MONTHS } from '../../utils/format';
 import { FILL, GradientFill, LEAF_PATH, VEIN_PATH } from './Brand';
 import { GlassFill } from './LiquidGlass';
-import { PressScale } from './Pressable';
+import { HapticPressable, PressScale } from './Pressable';
 import { T } from './Text';
 
 const clamp = (v) => Math.max(0, Math.min(100, Number(v) || 0));
@@ -146,7 +146,7 @@ export function MonthCalendar({ month, marks = {}, selected, onSelect, style }) 
             const isSel = selected === iso && inMonth;
             const isToday = iso === today;
             return (
-              <Pressable
+              <HapticPressable
                 key={iso}
                 disabled={!inMonth || !onSelect}
                 onPress={() => { Haptics.selectionAsync().catch(() => {}); onSelect(iso); }}
@@ -167,7 +167,7 @@ export function MonthCalendar({ month, marks = {}, selected, onSelect, style }) 
                   {day.getDate()}
                 </T>
                 {mark?.dot ? <View style={{ position: 'absolute', right: 6, bottom: 6, width: 6, height: 6, borderRadius: 3, backgroundColor: mark.dot }} /> : null}
-              </Pressable>
+              </HapticPressable>
             );
           })}
         </View>
@@ -183,11 +183,11 @@ export function MonthSwitcher({ value, onChange, style }) {
   const m = value.getMonth();
   const label = `${cap(MONTHS[m])}${y !== new Date().getFullYear() ? ` ${y}` : ''}`;
   const btn = (Icon, delta, a11y) => (
-    <Pressable onPress={() => { Haptics.selectionAsync().catch(() => {}); onChange(new Date(y, m + delta, 1)); }}
+    <HapticPressable haptic={null} onPress={() => { Haptics.selectionAsync().catch(() => {}); onChange(new Date(y, m + delta, 1)); }}
       accessibilityRole="button" accessibilityLabel={a11y} hitSlop={8}
       style={({ pressed }) => ({ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: pressed ? colors.neutralSoft : 'transparent' })}>
       <Icon size={17} color={colors.text2} strokeWidth={2} />
-    </Pressable>
+    </HapticPressable>
   );
   return (
     <View style={[{ flexDirection: 'row', alignItems: 'center', height: 42, borderRadius: 21, paddingHorizontal: 4 }, style]}>

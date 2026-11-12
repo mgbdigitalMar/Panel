@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import styles from './Button.module.scss';
 import { Spinner } from '../Loader/Loader';
 import { springConfig } from '../../../hooks/useSpringAnimation';
+import { Tip } from '../Tip/Tip';
 
 export function Button({
   children,
@@ -20,11 +21,15 @@ export function Button({
 }) {
   const Component = props.href ? motion.a : motion.button;
   const interactive = !disabled && !loading;
+  // An icon-only button names itself with aria-label and shows its title in a BoardUI tooltip
+  // instead of the browser's native one (which is slow, unstyled and never shows on touch)
+  // (only while it can take focus: react-aria needs a focusable trigger; disabled, it keeps the title)
+  const tip = iconOnly && title && interactive;
 
-  return (
+  const button = (
     <Component
       type={props.href ? undefined : type}
-      title={title}
+      title={tip ? undefined : title}
       whileTap={interactive ? { scale: 0.97 } : undefined}
       transition={springConfig.responsive}
       onClick={onClick}
@@ -75,4 +80,5 @@ export function Button({
       {children && !iconOnly && <span className={styles.label}>{children}</span>}
     </Component>
   );
+  return tip ? <Tip label={title}>{button}</Tip> : button;
 }

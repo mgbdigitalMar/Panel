@@ -1,6 +1,6 @@
 // Smaller building blocks, styled after the web's components (src/components/ui, styles/_patterns.scss).
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Animated, Image, Modal, Pressable, ScrollView, Switch, View } from 'react-native';
+import { ActivityIndicator, Animated, Image, Modal, ScrollView, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, Inbox, X, Info, AlertTriangle, ArrowRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
@@ -9,7 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../context/ThemeContext';
 import { tone as toneOf, glassSurface, BRAND } from '../../theme/tokens';
 import { initials as toInitials, avatarColor } from '../../utils/format';
-import { PressScale } from './Pressable';
+import { HapticPressable, PressScale } from './Pressable';
 import { T } from './Text';
 import { GradientFill, leafRadii } from './Brand';
 import { GlassFill } from './LiquidGlass';
@@ -31,7 +31,7 @@ export function Segmented({ options, value, onChange, height = 44, style }) {
       {options.map((o) => {
         const on = o.value === value;
         return (
-          <Pressable
+          <HapticPressable
             key={o.value}
             accessibilityRole="tab"
             accessibilityState={{ selected: on, disabled: !!o.disabled }}
@@ -45,7 +45,7 @@ export function Segmented({ options, value, onChange, height = 44, style }) {
             })}
           >
             <T size={14} weight={on ? 'semibold' : 'medium'} color={on ? colors.tabOnText : colors.text2} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{o.label}</T>
-          </Pressable>
+          </HapticPressable>
         );
       })}
     </View>
@@ -61,7 +61,7 @@ export function ChipRail({ options, value, onChange, style }) {
       {options.map((o) => {
         const on = o.value === value;
         return (
-          <Pressable
+          <HapticPressable
             key={o.value}
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
@@ -77,7 +77,7 @@ export function ChipRail({ options, value, onChange, style }) {
                 <T size={11} weight="bold" color={on ? colors.tabOnText : colors.text2} style={{ lineHeight: 13, fontVariant: ['tabular-nums'] }}>{o.count}</T>
               </View>
             ) : null}
-          </Pressable>
+          </HapticPressable>
         );
       })}
     </ScrollView>
@@ -205,7 +205,7 @@ export function CountTabs({ options, value, onChange, style }) {
       {options.map((o) => {
         const on = o.value === value;
         return (
-          <Pressable
+          <HapticPressable
             key={o.value}
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
@@ -221,7 +221,7 @@ export function CountTabs({ options, value, onChange, style }) {
               ) : null}
             </View>
             <View style={{ height: 2, marginTop: 4, borderRadius: 1, backgroundColor: on ? colors.accent : 'transparent', width: 16 }} />
-          </Pressable>
+          </HapticPressable>
         );
       })}
     </ScrollView>
@@ -321,11 +321,11 @@ export function SectionHead({ title, action, onAction, icon: Icon, count, style 
         ) : null}
       </View>
       {action ? (
-        <Pressable onPress={onAction} hitSlop={10} accessibilityRole="button"
+        <HapticPressable onPress={onAction} hitSlop={10} accessibilityRole="button"
           style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 4, height: 32, paddingHorizontal: 12, borderRadius: 16, backgroundColor: pressed ? colors.accentSoft : 'transparent' })}>
           <T size={13.5} weight="semibold" color={colors.accentFg}>{action}</T>
           <ArrowRight size={14} color={colors.accentFg} strokeWidth={2.2} />
-        </Pressable>
+        </HapticPressable>
       ) : null}
     </View>
   );
@@ -417,7 +417,7 @@ export function Banner({ tone = 'accent', title, children, icon }) {
 export function Checkbox({ checked, onChange, label, disabled }) {
   const { colors } = useTheme();
   return (
-    <Pressable
+    <HapticPressable
       onPress={() => { if (!disabled) { Haptics.selectionAsync().catch(() => {}); onChange(!checked); } }}
       accessibilityRole="checkbox"
       accessibilityState={{ checked, disabled }}
@@ -432,7 +432,7 @@ export function Checkbox({ checked, onChange, label, disabled }) {
         {checked ? <Check size={16} color={colors.onAccent} strokeWidth={3} /> : null}
       </View>
       <T size={14} color={checked ? colors.text : colors.text2} style={{ flex: 1 }}>{label}</T>
-    </Pressable>
+    </HapticPressable>
   );
 }
 
@@ -489,7 +489,7 @@ export function Sheet({ visible, onClose, title, children, footer }) {
   const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>
-      <Pressable style={{ flex: 1, backgroundColor: colors.overlay }} onPress={onClose} accessibilityRole="button" accessibilityLabel="Cerrar" />
+      <HapticPressable style={{ flex: 1, backgroundColor: colors.overlay }} onPress={onClose} accessibilityRole="button" accessibilityLabel="Cerrar" />
       <View style={{
         maxHeight: '90%', width: '100%', maxWidth: 560, alignSelf: 'center', backgroundColor: 'transparent',
         borderTopLeftRadius: 28, borderTopRightRadius: 28, borderTopWidth: 1, borderColor: colors.glassBorder,
@@ -500,10 +500,10 @@ export function Sheet({ visible, onClose, title, children, footer }) {
         <View style={{ alignSelf: 'center', width: 36, height: 5, borderRadius: 3, backgroundColor: colors.glassBorderStrong }} />
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6 }}>
           <T size={20} weight="semibold" style={{ flex: 1 }} accessibilityRole="header">{title}</T>
-          <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Cerrar" hitSlop={8}
+          <HapticPressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Cerrar" hitSlop={8}
             style={({ pressed }) => ({ width: 36, height: 36, borderRadius: 18, backgroundColor: pressed ? colors.segTrack : colors.glassStrong, alignItems: 'center', justifyContent: 'center' })}>
             <X size={18} color={colors.text} />
-          </Pressable>
+          </HapticPressable>
         </View>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 12, gap: 16 }}>
           {children}

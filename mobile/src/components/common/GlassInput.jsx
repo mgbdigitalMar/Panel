@@ -1,11 +1,12 @@
 import { forwardRef, useState } from 'react';
-import { Platform, Pressable, TextInput, View } from 'react-native';
+import { Platform, TextInput, View } from 'react-native';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { Eye, EyeOff, Calendar, Clock } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { FONTS } from '../../theme/tokens';
 import { T } from './Text';
 import { parseDate, toISODate, fmtDayShort } from '../../utils/format';
+import { HapticPressable } from './Pressable';
 
 function FieldLabel({ label, required, children }) {
   const { colors } = useTheme();
@@ -63,7 +64,7 @@ export const GlassInput = forwardRef(function GlassInput({
             }, inputStyle]}
           />
           {secure ? (
-            <Pressable
+            <HapticPressable
               onPress={() => setShow((s) => !s)}
               accessibilityRole="button"
               accessibilityLabel={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
@@ -71,7 +72,7 @@ export const GlassInput = forwardRef(function GlassInput({
               style={{ position: 'absolute', right: 4, width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
             >
               {show ? <EyeOff size={20} color={colors.text2} /> : <Eye size={20} color={colors.text2} />}
-            </Pressable>
+            </HapticPressable>
           ) : null}
         </View>
       </FieldLabel>
@@ -83,7 +84,7 @@ export const GlassInput = forwardRef(function GlassInput({
 function PickerBox({ icon: Icon, text, placeholder, onPress, label }) {
   const { colors } = useTheme();
   return (
-    <Pressable
+    <HapticPressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
@@ -94,7 +95,7 @@ function PickerBox({ icon: Icon, text, placeholder, onPress, label }) {
     >
       <Icon size={18} color={colors.text3} />
       <T size={16} color={text ? colors.text : colors.muted} style={{ flex: 1 }} numberOfLines={1}>{text || placeholder}</T>
-    </Pressable>
+    </HapticPressable>
   );
 }
 

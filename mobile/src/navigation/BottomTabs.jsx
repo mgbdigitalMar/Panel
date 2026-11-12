@@ -132,6 +132,7 @@ function TabBar({ state, navigation, badges }) {
         })}
       </DockScrubber>
       <PressScale
+        haptic={null}
         onPress={() => { Haptics.selectionAsync().catch(() => {}); navigation.navigate('NewRequest'); }}
         accessibilityRole="button"
         accessibilityLabel="Nueva solicitud"

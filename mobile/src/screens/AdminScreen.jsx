@@ -1,7 +1,7 @@
 // 20 · Bandeja de aprobación (admin). Gathers what the web spreads over
 // RequestsPage, ReservationsPage and AdminPage > Bolsa Horas.
 import { useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, X, ShieldCheck } from 'lucide-react-native';
@@ -15,7 +15,7 @@ import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
 import { GlassButton } from '../components/common/GlassButton';
 import { GlassFill } from '../components/common/LiquidGlass';
-import { PressScale } from '../components/common/Pressable';
+import { HapticPressable, PressScale } from '../components/common/Pressable';
 import { Tag } from '../components/common/StatusBadge';
 import { T } from '../components/common/Text';
 import { Avatar, ChipRail, EmptyState } from '../components/common/UI';
@@ -135,7 +135,7 @@ export default function AdminScreen() {
                 backgroundColor: on ? colors.accentSoft : colors.glass, borderWidth: 1, borderColor: on ? colors.accentBorder : colors.glassBorder,
               }}
               >
-                <Pressable
+                <HapticPressable
                   onPress={() => setSel((s) => ({ ...s, [entry.key]: !on }))}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: on }}
@@ -144,7 +144,7 @@ export default function AdminScreen() {
                   style={{ width: 22, height: 22, borderRadius: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? colors.accent : 'transparent', borderWidth: on ? 0 : 1.5, borderColor: colors.text3 }}
                 >
                   {on ? <Check size={14} color={colors.onAccent} strokeWidth={3} /> : null}
-                </Pressable>
+                </HapticPressable>
                 <PressScale onPress={() => openEntry(entry)} accessibilityRole="button" style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0 }}>
                   <Avatar name={name} size={34} />
                   <View style={{ flex: 1, gap: 2, minWidth: 0 }}>

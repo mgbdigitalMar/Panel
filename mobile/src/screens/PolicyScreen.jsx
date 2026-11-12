@@ -5,7 +5,7 @@
 // if there is none, the PDF bundled with the app is opened in the device's viewer.
 import { useEffect, useState } from 'react';
 import { Wallpaper } from '../components/common/Wallpaper';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { FileText, ExternalLink, PenLine, Check, ArrowLeft } from 'lucide-react-native';
@@ -23,6 +23,7 @@ import { GlassInput } from '../components/common/GlassInput';
 import { T } from '../components/common/Text';
 import { Checkbox, Loading, IconTile, Banner } from '../components/common/UI';
 import { openBundledPdf } from '../services/files';
+import { HapticPressable } from '../components/common/Pressable';
 
 const BUNDLED_POLICY = require('../../assets/docs/normas-internas-2026.pdf');
 // The web serves the same PDF from /public
@@ -100,11 +101,11 @@ export default function PolicyScreen() {
           <FileText size={18} color={colors.accentFg} />
           <T size={13.5} style={{ flex: 1 }}>Vas a firmar: <T size={13.5} weight="semibold">{POLICY_TITLE}</T></T>
         </View>
-        <Pressable onPress={() => setStep('read')} accessibilityRole="button" hitSlop={8}
+        <HapticPressable onPress={() => setStep('read')} accessibilityRole="button" hitSlop={8}
           style={{ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start' }}>
           <ArrowLeft size={15} color={colors.accentFg} />
           <T size={13.5} weight="semibold" color={colors.accentFg}>Volver al documento</T>
-        </Pressable>
+        </HapticPressable>
 
         <GlassInput label="Nombre y apellidos" value={name} onChangeText={setName} required autoCapitalize="words" autoComplete="name" textContentType="name" />
 
@@ -184,9 +185,9 @@ export default function PolicyScreen() {
               onPress={sign}
             />
           )}
-          <Pressable onPress={logout} accessibilityRole="button" style={{ alignSelf: 'center', padding: 4 }}>
+          <HapticPressable onPress={logout} accessibilityRole="button" style={{ alignSelf: 'center', padding: 4 }}>
             <T size={14} color={colors.text3}>Cerrar sesión</T>
-          </Pressable>
+          </HapticPressable>
         </View>
       </View>
     </KeyboardAvoidingView>

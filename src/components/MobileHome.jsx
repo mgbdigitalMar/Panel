@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Calendar, Car, DoorOpen, Timer, ArrowUpRight, Plus } from 'lucide-react';
 import { Avatar } from './ui';
 import { fmtDayShort } from '../utils/format';
@@ -5,6 +6,7 @@ import styles from './MobileHome.module.scss';
 
 export function MobileHome({ d }) {
   const { user, greeting, dateLine, myUpcoming, navigate, todayStr } = d;
+  const [current, setCurrent] = useState(0);
   return (
     <>
       <header className={styles.welcome}>
@@ -20,7 +22,8 @@ export function MobileHome({ d }) {
           <h2 id="mobile-upcoming">Tus próximas reservas</h2>
           <button type="button" onClick={() => navigate('/reservations?mias=1')}>Ver todas</button>
         </div>
-        <div className={styles.bookings}>
+        <div className={styles.bookings}
+          onScroll={(e) => setCurrent(Math.round(e.currentTarget.scrollLeft / Math.max(1, e.currentTarget.clientWidth)))}>
           {myUpcoming.length ? myUpcoming.map((r, i) => {
             const Icon = r.type === 'vehicle' ? Car : DoorOpen;
             return (
@@ -39,6 +42,11 @@ export function MobileHome({ d }) {
             </button>
           )}
         </div>
+        {myUpcoming.length > 1 && (
+          <div className={styles.bookingDots} aria-hidden="true">
+            {myUpcoming.map((r, i) => <i key={r.id} data-on={i === current || undefined} />)}
+          </div>
+        )}
       </section>
     </>
   );

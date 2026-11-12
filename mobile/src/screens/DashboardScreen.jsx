@@ -1,7 +1,7 @@
 // Inicio: hero card for the day, a bento row (days left, hour balance), the week as capsule bars,
 // quick access, agenda, news and birthdays.
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
   Building2, Car, Timer, CalendarDays, Inbox, ShieldCheck, Pin, ChevronRight, Gift, Newspaper, CalendarCheck, Hourglass,
@@ -12,7 +12,7 @@ import { useData } from '../context/DataContext';
 import { Screen } from '../components/common/Screen';
 import { TopBar } from '../components/common/TopBar';
 import { GlassCard } from '../components/common/GlassCard';
-import { PressScale } from '../components/common/Pressable';
+import { HapticPressable, PressScale } from '../components/common/Pressable';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { T } from '../components/common/Text';
 import { BrandPanel, ON_BRAND } from '../components/common/Brand';
@@ -216,11 +216,11 @@ export default function DashboardScreen() {
         </View>
         <ProgressBar value={progress} height={5} accessibilityLabel="Progreso de jornada laboral" />
         <T size={12} color={colors.text2}>{workdayText}</T>
-        <Pressable onPress={() => navigation.navigate('Requests')} accessibilityRole="button"
+        <HapticPressable onPress={() => navigation.navigate('Requests')} accessibilityRole="button"
           style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44, borderTopWidth: 1, borderTopColor: colors.divider, paddingTop: 8 }}>
           <T size={13} color={colors.text2}>{myPending.length ? `${myPending.length} en revisi?n` : 'Nada pendiente'}</T>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}><T size={13} weight="semibold" color={colors.accentFg}>Mis solicitudes</T><ChevronRight size={16} color={colors.accentFg} /></View>
-        </Pressable>
+        </HapticPressable>
       </GlassCard>
 
       {/* Bento: the days left stand out in brand blue, the hour balance beside them in glass */}

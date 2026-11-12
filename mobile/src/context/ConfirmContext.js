@@ -3,7 +3,7 @@
 //   const confirm = useConfirm();
 //   if (await confirm({ title: 'Eliminar reserva', message: '…', confirmText: 'Eliminar' })) { … }
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { AccessibilityInfo, Animated, Modal, Platform, StyleSheet, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import { Trash2, AlertTriangle } from 'lucide-react-native';
@@ -12,6 +12,7 @@ import { tone } from '../theme/tokens';
 import { T } from '../components/common/Text';
 import { GlassFill } from '../components/common/LiquidGlass';
 import { GlassButton } from '../components/common/GlassButton';
+import { HapticPressable } from '../components/common/Pressable';
 
 const ConfirmCtx = createContext(null);
 const RADIUS = 30;
@@ -32,12 +33,12 @@ function ConfirmSheet({ request, onAnswer }) {
   return (
     <View style={styles.root} accessibilityViewIsModal>
       {/* The screen behind goes out of focus; tapping it cancels */}
-      <Pressable style={StyleSheet.absoluteFill} onPress={() => onAnswer(false)} accessibilityLabel="Cancelar" accessibilityRole="button">
+      <HapticPressable style={StyleSheet.absoluteFill} onPress={() => onAnswer(false)} accessibilityLabel="Cancelar" accessibilityRole="button">
         {Platform.OS === 'ios'
           ? <BlurView style={StyleSheet.absoluteFill} tint={theme === 'dark' ? 'dark' : 'light'} intensity={30} />
           : null}
         <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.overlay }]} />
-      </Pressable>
+      </HapticPressable>
 
       <Animated.View
         accessibilityRole="alert"

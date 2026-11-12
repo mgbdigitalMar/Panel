@@ -1,0 +1,164 @@
+// Transitions.dev (.claude/skills/transitions-dev) — the motion-token scale and the transitions the
+// intranet uses. Snippets are pasted from the skill's reference files; only the colours were mapped
+// to the intranet's theme variables.
+//
+// Not redefined here, because variables.scss already defines them with the intranet's own curves
+// (every existing animation reads them): --ease-out, --ease-in-out, --ease-bounce.
+
+:root {
+  /* Motion tokens — shared scale (from _root.css) */
+  --duration-stagger: 40ms;
+  --duration-micro: 80ms;
+  --duration-quick: 150ms;
+  --duration-fast: 250ms;
+  --duration-medium: 350ms;
+  --duration-slow: 400ms;
+  --duration-very-slow: 500ms;
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-linear: linear;
+  --ease-bounce-strong: cubic-bezier(0.34, 3.85, 0.64, 1);
+  --distance-micro: 4px;
+  --distance-small: 6px;
+  --distance-base: 8px;
+  --distance-medium: 12px;
+  --distance-large: 30px;
+  --scale-large: 0.96;
+  --scale-medium: 0.97;
+  --scale-small: 0.98;
+  --scale-tiny: 0.99;
+  --blur-small: 2px;
+  --blur-medium: 3px;
+  --blur-large: 8px;
+
+  /* 17 Tooltip open/close */
+  --tt-in-dur: 150ms;
+  --tt-out-dur: 50ms;
+  --tt-scale: 0.98;
+  --tt-delay: 80ms;
+  --tt-in-ease: ease-out;
+  --tt-out-ease: ease-out;
+
+  /* 28 Thinking states (colours: the intranet's muted and main text) */
+  --think-hold: 2000ms;
+  --think-swap: 150ms;
+  --think-gap: 50ms;
+  --think-distance: 8px;
+  --think-blur: 2px;
+  --think-shimmer: 2000ms;
+  --think-base: var(--text-mut);
+  --think-highlight: var(--text);
+  --think-ease: ease-in-out;
+
+  /* 30 Streaming text */
+  --stream-gap: 60ms;
+  --stream-fade: 350ms;
+  --stream-blur: 1px;
+  --stream-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── 17 Tooltip open/close, on BoardUI's react-aria Tooltip (ui/Tip) ─────────────────────────
+   react-aria owns the appear delay (TooltipTrigger delay = --tt-delay) and keeps the bubble
+   mounted while it exits, so the recipe's in / out rules map onto its data-entering /
+   data-exiting states. One bubble per trigger: the recipe's shared travelling bubble needs a
+   single tooltip per group, which react-aria does not model. */
+.t-tt-aria {
+  transform-origin: var(--trigger-anchor-point, 50% 100%);
+  opacity: 1;
+  scale: 1;
+  transition:
+    opacity var(--tt-in-dur) var(--tt-in-ease),
+    scale var(--tt-in-dur) var(--tt-in-ease);
+}
+.t-tt-aria[data-entering] {
+  opacity: 0;
+  scale: var(--tt-scale);
+}
+.t-tt-aria[data-exiting] {
+  opacity: 0;
+  scale: var(--tt-scale);
+  transition:
+    opacity var(--tt-out-dur) var(--tt-out-ease),
+    scale var(--tt-out-dur) var(--tt-out-ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-tt-aria { transition: none !important; }
+}
+
+/* ── 28 Thinking states ─────────────────────────────────────────────────────────────────── */
+/* Set your type on .t-think: the sizer only reports the right
+   width if it is set in the same font as the line. */
+.t-think { position: relative; display: inline-block; text-align: center; }
+.t-think-sizer { display: block; visibility: hidden; white-space: nowrap; }
+.t-think-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: block;
+  color: var(--think-base);
+  white-space: nowrap;
+  transform: translateY(0);
+  filter: blur(0);
+  opacity: 1;
+  transition:
+    transform var(--think-swap) var(--think-ease),
+    filter var(--think-swap) var(--think-ease),
+    opacity var(--think-swap) var(--think-ease);
+  will-change: transform, filter, opacity;
+}
+/* Shimmer sweeps the glyphs only (background-clip: text). */
+.t-think-text::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(90deg,
+    transparent 0%, transparent 40%,
+    var(--think-highlight) 50%,
+    transparent 60%, transparent 100%);
+  background-size: 400% 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: t-think-shimmer var(--think-shimmer) linear infinite;
+}
+@keyframes t-think-shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: 0% 0; }
+}
+/* The outgoing line floats over the box so both halves animate. */
+.t-think-text.is-exit {
+  transform: translateY(calc(var(--think-distance) * -1));
+  filter: blur(var(--think-blur));
+  opacity: 0;
+}
+.t-think-text.is-enter-start {
+  transition: none;
+  transform: translateY(var(--think-distance));
+  filter: blur(var(--think-blur));
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-think-text { transition: none !important; transform: none !important; filter: none !important; }
+  .t-think-text::before { display: none !important; }
+}
+
+/* ── 30 Streaming text ──────────────────────────────────────────────────────────────────── */
+.t-stream-w {
+  opacity: 0;
+  filter: blur(var(--stream-blur));
+  transition:
+    opacity var(--stream-fade) var(--stream-ease),
+    filter var(--stream-fade) var(--stream-ease);
+}
+.t-stream-w.is-in {
+  opacity: 1;
+  filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-stream-w { transition: none !important; filter: none !important; opacity: 1 !important; }
+}

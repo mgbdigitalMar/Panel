@@ -1,7 +1,7 @@
 // "Sesión en pausa" (design 03): shown after 30 minutes of inactivity.
 // The session is kept; the user resumes it with biometrics or the password.
 import { useEffect, useState } from 'react';
-import { BackHandler, KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { BackHandler, KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { Fingerprint, Lock } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +13,7 @@ import { Avatar } from './common/UI';
 import { GlassButton } from './common/GlassButton';
 import { GlassInput } from './common/GlassInput';
 import { firstName } from '../utils/format';
+import { HapticPressable } from './common/Pressable';
 
 export default function LockOverlay() {
   const { colors } = useTheme();
@@ -88,9 +89,9 @@ export default function LockOverlay() {
             </View>
           )}
 
-          <Pressable onPress={logout} accessibilityRole="button" hitSlop={8} style={{ padding: 8 }}>
+          <HapticPressable onPress={logout} accessibilityRole="button" hitSlop={8} style={{ padding: 8 }}>
             <T size={15} weight="medium" color={colors.dangerFg}>Cerrar sesión</T>
-          </Pressable>
+          </HapticPressable>
         </View>
       </View>
     </KeyboardAvoidingView>

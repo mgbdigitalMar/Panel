@@ -1,13 +1,14 @@
 // Signature drawn with the finger (SignaturePad on the web). Points are kept in the shared
 // 1000 x 400 box, the stored format of policy_signatures, so the web draws them the same way.
 import { useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { Eraser } from 'lucide-react-native';
 import { SIGNATURE_BOX, normalizeStrokes, strokesToPath } from '@shared/services/policy.js';
 import { useTheme } from '../context/ThemeContext';
 import { T } from './common/Text';
+import { HapticPressable } from './common/Pressable';
 
 const INK = '#11141B';
 
@@ -74,7 +75,7 @@ export function SignaturePad({ onChange, onDrawingChange, disabled }) {
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <T size={12.5} color={colors.text3} style={{ flex: 1 }}>Firma con el dedo dentro del recuadro.</T>
-        <Pressable
+        <HapticPressable
           onPress={clear}
           disabled={!path || disabled}
           accessibilityRole="button"
@@ -88,7 +89,7 @@ export function SignaturePad({ onChange, onDrawingChange, disabled }) {
         >
           <Eraser size={15} color={colors.text2} />
           <T size={13} weight="semibold" color={colors.text2}>Borrar</T>
-        </Pressable>
+        </HapticPressable>
       </View>
     </View>
   );

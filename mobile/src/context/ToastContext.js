@@ -1,13 +1,14 @@
 // In-app toasts: the mobile equivalent of the web's LiveToastContainer.
 // Realtime events and action results are announced here; they auto-dismiss after 6 s.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Animated, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { CheckCircle2, XCircle, Bell, Info } from 'lucide-react-native';
 import { useTheme } from './ThemeContext';
 import { tone } from '../theme/tokens';
 import { T } from '../components/common/Text';
+import { HapticPressable } from '../components/common/Pressable';
 
 const ToastCtx = createContext(null);
 const DURATION = 6000;
@@ -31,7 +32,7 @@ function ToastItem({ toast, onDismiss }) {
         transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [-24, 0] }) }],
       }}
     >
-      <Pressable
+      <HapticPressable
         onPress={() => { onDismiss(toast.id); toast.onPress?.(); }}
         accessibilityRole="alert"
         style={[styles.toast, { backgroundColor: colors.sheetBg, borderColor: colors.glassBorder, shadowColor: colors.shadow, shadowOpacity: Math.min(0.5, colors.shadowOpacity * 2) }]}
@@ -43,7 +44,7 @@ function ToastItem({ toast, onDismiss }) {
           <T weight="semibold" size={14} numberOfLines={2}>{toast.title}</T>
           {toast.body ? <T size={13} color={colors.text3} numberOfLines={2}>{toast.body}</T> : null}
         </View>
-      </Pressable>
+      </HapticPressable>
     </Animated.View>
   );
 }

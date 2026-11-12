@@ -1,6 +1,6 @@
 // 01 · Iniciar sesión — the Margube monogram over the app's backdrop, the form on a floating liquid glass card
 import { forwardRef, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Easing, Image, Linking, Pressable, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Easing, Image, Linking, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { AlertCircle, Check, Eye, EyeOff, Fingerprint, Lock, Mail, ScanFace } from 'lucide-react-native';
@@ -16,6 +16,7 @@ import { biometricSupport } from '../services/biometrics';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { firstName, greeting } from '../utils/format';
 import { FONTS } from '../theme/tokens';
+import { HapticPressable } from '../components/common/Pressable';
 
 const LOGO = require('../../assets/logo.png');
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -150,7 +151,7 @@ const FloatField = forwardRef(function FloatField({ icon: Icon, label, value, on
 function RememberCheck({ value, onChange }) {
   const { colors } = useTheme();
   return (
-    <Pressable onPress={() => onChange(!value)} accessibilityRole="checkbox" accessibilityState={{ checked: value }} hitSlop={6}
+    <HapticPressable onPress={() => onChange(!value)} accessibilityRole="checkbox" accessibilityState={{ checked: value }} hitSlop={6}
       style={{ flexDirection: 'row', alignItems: 'center', gap: 9, minHeight: 44 }}>
       <View style={{
         width: 22, height: 22, borderRadius: 7, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center',
@@ -160,7 +161,7 @@ function RememberCheck({ value, onChange }) {
         {value ? <Check size={14} color={colors.onAccent} strokeWidth={3} /> : null}
       </View>
       <T size={14}>Recordarme</T>
-    </Pressable>
+    </HapticPressable>
   );
 }
 
@@ -180,7 +181,7 @@ function EnterButton({ onPress, loading, disabled, reduce }) {
   ]), [], reduce);
   const springTo = (to) => Animated.spring(press, { toValue: to, damping: 14, stiffness: 420, useNativeDriver: true }).start();
   return (
-    <Pressable onPress={onPress} disabled={disabled} onPressIn={() => springTo(0.96)} onPressOut={() => springTo(1)}
+    <HapticPressable onPress={onPress} disabled={disabled} onPressIn={() => springTo(0.96)} onPressOut={() => springTo(1)}
       accessibilityRole="button" accessibilityState={{ disabled, busy: loading }} accessibilityLabel={loading ? 'Verificando' : 'Entrar'}>
       <Animated.View
         onLayout={(e) => setW(e.nativeEvent.layout.width)}
@@ -200,7 +201,7 @@ function EnterButton({ onPress, loading, disabled, reduce }) {
         {loading ? <ActivityIndicator color={colors.onAccent} /> : null}
         <T size={16} heading weight="semibold" color={colors.onAccent}>{loading ? 'Verificando…' : 'Entrar'}</T>
       </Animated.View>
-    </Pressable>
+    </HapticPressable>
   );
 }
 
@@ -377,10 +378,10 @@ export default function LoginScreen() {
             returnKeyType="go"
             onSubmitEditing={submit}
             right={(
-              <Pressable onPress={() => setShow((x) => !x)} accessibilityRole="button" accessibilityLabel={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              <HapticPressable onPress={() => setShow((x) => !x)} accessibilityRole="button" accessibilityLabel={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 style={{ width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }}>
                 {show ? <EyeOff size={19} color={colors.text3} /> : <Eye size={19} color={colors.text3} />}
-              </Pressable>
+              </HapticPressable>
             )}
           />
 
@@ -393,9 +394,9 @@ export default function LoginScreen() {
 
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <RememberCheck value={remember} onChange={setRemember} />
-            <Pressable onPress={help} accessibilityRole="button" hitSlop={8} style={{ paddingVertical: 12 }}>
+            <HapticPressable onPress={help} accessibilityRole="button" hitSlop={8} style={{ paddingVertical: 12 }}>
               <T size={14} style={{ textDecorationLine: 'underline', textDecorationColor: colors.accent }}>¿Olvidaste la contraseña?</T>
-            </Pressable>
+            </HapticPressable>
           </View>
 
           <EnterButton onPress={submit} loading={loading} disabled={loading} reduce={reduce} />
@@ -407,7 +408,7 @@ export default function LoginScreen() {
                 <T size={11} mono weight="semibold" color={colors.text3} tracking={1.5}>O</T>
                 <View style={{ flex: 1, height: 1, backgroundColor: colors.inputBorder }} />
               </View>
-              <Pressable onPress={bioLogin} disabled={loading} accessibilityRole="button" accessibilityLabel={`Entrar con ${bio.label}`}
+              <HapticPressable onPress={bioLogin} disabled={loading} accessibilityRole="button" accessibilityLabel={`Entrar con ${bio.label}`}
                 style={({ pressed }) => ({
                   height: 54, borderRadius: 18, borderWidth: 1, borderColor: colors.inputBorder, backgroundColor: colors.neutralSoft,
                   flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, transform: [{ scale: pressed ? 0.96 : 1 }],
@@ -415,7 +416,7 @@ export default function LoginScreen() {
               >
                 <BioIcon size={24} color={colors.accentFg} strokeWidth={1.8} />
                 <T size={15} weight="semibold">Entrar con {bio.label}</T>
-              </Pressable>
+              </HapticPressable>
             </>
           ) : null}
 

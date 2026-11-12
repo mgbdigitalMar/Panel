@@ -24,12 +24,20 @@
 }
 .booking {
   @include p.liquid;
-  flex: 0 0 82%; scroll-snap-align: start; display: flex; flex-direction: column; align-items: flex-start;
+  // Full width, edge to edge like the news cards; with more than one booking they swipe
+  // sideways (one per snap) and the dots below say how many there are
+  flex: 0 0 100%; scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; align-items: flex-start;
   gap: 10px; padding: 20px; min-height: 184px; min-width: 0; border-radius: 22px;
   text-align: left; color: var(--text); font: inherit; cursor: pointer;
   > strong { font-family: var(--font-heading); font-size: 25px; font-weight: 500; letter-spacing: -0.03em; }
   > small { font-size: 12px; line-height: 1.5; opacity: 0.9; overflow-wrap: anywhere; }
   &[data-featured] { background: rgba(25,56,154,calc(1 - var(--material-strength, 0.65) * 0.22)); color: #FFFFFF; border-color: rgba(255,255,255,0.4); }
+}
+.bookingDots {
+  display: flex; justify-content: center; gap: 6px; margin-top: 10px;
+  i { width: 6px; height: 6px; border-radius: 3px; background: var(--text-mut); opacity: .35; transition: width .25s var(--ease-out), opacity .25s; }
+  i[data-on] { width: 16px; opacity: .9; background: var(--accent); }
+  @media (prefers-reduced-motion: reduce) { i { transition: none; } }
 }
 .bookingDate { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 13px; }
 .resource { display: flex; align-items: center; gap: 8px; margin-top: auto; font-size: 15px; font-weight: 500; overflow-wrap: anywhere; svg { flex: none; } }

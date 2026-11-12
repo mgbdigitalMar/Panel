@@ -1,5 +1,7 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 function assistantApi() {
@@ -16,6 +18,8 @@ function assistantApi() {
 export default defineConfig({
   plugins: [
     react(),
+    // Compiles src/styles/boardui/index.css (BoardUI components only; see that file)
+    tailwindcss(),
     assistantApi(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -52,6 +56,10 @@ export default defineConfig({
       }
     })
   ],
+  resolve: {
+    // BoardUI imports through `@/` (src/). Anchored on the slash so scoped packages like @tanstack/... are untouched.
+    alias: [{ find: /^@\//, replacement: fileURLToPath(new URL('./src/', import.meta.url)) }],
+  },
   server: {
     watch: {
       ignored: ['**/mobile/**', '**/tests/**', '**/supabase/**']

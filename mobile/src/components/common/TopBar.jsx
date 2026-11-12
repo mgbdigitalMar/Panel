@@ -1,9 +1,10 @@
-import { Image, Pressable, View } from 'react-native';
+import { Image, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Bell, Search } from 'lucide-react-native';
 import { useData } from '../../context/DataContext';
 import { IconButton } from './GlassButton';
 import { GlassFill } from './LiquidGlass';
+import { HapticPressable } from './Pressable';
 
 const LOGO = require('../../../assets/logo.png');
 
@@ -16,7 +17,7 @@ export function TopBar() {
   const { unreadCount } = useData();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 46 }}>
-      <Pressable
+      <HapticPressable
         onPress={() => navigation.navigate('Main', { screen: 'Dashboard' })}
         accessibilityRole="button"
         accessibilityLabel="Margube, ir al inicio"
@@ -25,7 +26,7 @@ export function TopBar() {
       >
         <GlassFill radius={22} />
         <Image source={LOGO} style={{ width: 30, height: 30, borderRadius: 8 }} />
-      </Pressable>
+      </HapticPressable>
       <IconButton icon={Search} onPress={() => navigation.navigate('Search')} accessibilityLabel="Buscar" />
       <View style={{ flex: 1 }} />
       <IconButton

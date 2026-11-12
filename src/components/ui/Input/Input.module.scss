@@ -179,3 +179,22 @@ textarea.input {
 @media (max-width: 479px) {
   .input { font-size: 16px; }
 }
+
+/* BoardUI date picker trigger dressed as a field (Input type="date") */
+.dateTrigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+
+  &[data-empty] { color: var(--text-mut); }
+  &[aria-expanded='true'] {
+    border-color: var(--accent);
+    box-shadow: var(--accent-glow);
+  }
+  &:focus-visible {
+    border-color: var(--accent);
+    box-shadow: var(--accent-glow);
+  }
+}

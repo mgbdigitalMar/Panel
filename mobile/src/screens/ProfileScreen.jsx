@@ -1,6 +1,6 @@
 // Mi perfil (ProfilePage on the web): info, work mode, password. Documents live in DocumentsScreen.
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { FileText, ChevronRight, ChevronLeft, KeyRound, Lock, CheckCircle2, Clock, Cake, IdCard, ArrowDown, Timer } from 'lucide-react-native';
 import { toUserMessage } from '@shared/utils/errors.js';
@@ -24,6 +24,7 @@ import { MIN_PASSWORD, StrengthMeter } from './ChangePasswordScreen';
 import { SignatureView } from '../components/SignaturePad';
 import { supabase } from '../lib/supabase';
 import { fmtDate, fmtHM, parseDate, MONTHS_SHORT } from '../utils/format';
+import { HapticPressable } from '../components/common/Pressable';
 
 /** One label/value pair of "Mi información" (two per row). */
 function Field({ label, value, mono }) {
@@ -199,9 +200,9 @@ export default function ProfileScreen() {
             </T>
           </View>
           {signature?.strokes ? (
-            <Pressable onPress={() => setSignatureOpen(true)} accessibilityRole="button" hitSlop={10}>
+            <HapticPressable onPress={() => setSignatureOpen(true)} accessibilityRole="button" hitSlop={10}>
               <T size={13.5} weight="semibold" color={colors.accentFg}>Ver firma</T>
-            </Pressable>
+            </HapticPressable>
           ) : null}
         </View>
       </GlassCard>
