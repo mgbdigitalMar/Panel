@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#2F5BEA;--blue-d:#2449C4;--ground:#EEF1F6;--panel:#fff;--ink:#0E1525;--sec:#4B5568;--line:#DCE1EA;--of:#0F8A5F;--re:#6B4FD8;--fu:#C27400;--au:#8A93A3}
+*{box-sizing:border-box;margin:0}
+body{width:1440px;height:900px;overflow:hidden;font-family:Geist,sans-serif;background:var(--ground);color:var(--ink);display:grid;grid-template-columns:240px 1fr}
+.mono{font-family:'Geist Mono',monospace;font-variant-numeric:tabular-nums}
+.rail{background:var(--blue);color:#fff;padding:22px 14px;display:flex;flex-direction:column;gap:4px}
+.brand{font-weight:700;font-size:22px;letter-spacing:-.02em;padding:4px 10px 22px}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:500;color:#E6ECFF}
+.nav.on{background:#fff;color:var(--blue)}
+.nav b{font-size:11px;background:rgba(255,255,255,.18);padding:2px 7px;border-radius:99px}
+.nav.on b{background:var(--blue);color:#fff}
+.sep{height:1px;background:rgba(255,255,255,.2);margin:12px 8px}
+.main{padding:18px 28px;display:grid;grid-template-rows:auto auto 1fr;gap:16px}
+.top{display:flex;align-items:center;gap:14px}
+.top .date{font-size:13px;color:var(--sec);flex:1}
+.search{width:340px;height:38px;border:1px solid var(--line);background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;color:var(--sec);font-size:13px}
+.kbd{font-size:11px;border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+.av{width:36px;height:36px;border-radius:60% 12% 60% 12%;background:#C9D5FF;display:grid;place-items:center;font-weight:600;color:var(--blue-d)}
+.hello{display:grid;grid-template-columns:1fr 520px;gap:20px;align-items:end}
+h1{font-size:34px;letter-spacing:-.03em;font-weight:600}
+.sub{color:var(--sec);font-size:14px;margin-top:4px}
+.day{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.day .row{display:flex;justify-content:space-between;font-size:12px;color:var(--sec)}
+.bar{height:10px;background:var(--ground);border-radius:99px;margin:8px 0;position:relative}
+.bar i{position:absolute;inset:0 38% 0 0;background:var(--blue);border-radius:99px}
+.bar u{position:absolute;left:62%;top:-4px;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--blue);transform:translateX(-50%)}
+.grid{display:grid;grid-template-columns:1.05fr 1fr 1.25fr;gap:16px;min-height:0}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.card h2{font-size:15px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.card h2 a{font-size:12px;color:var(--blue);font-weight:500}
+.ag{display:grid;grid-template-columns:54px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:13px}
+.ag .t{color:var(--sec);font-size:12px}
+.chip{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;display:inline-flex;gap:5px;align-items:center}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.ok{color:var(--of);background:#E3F4EC}.pe{color:var(--fu);background:#FBF0DF}.rm{color:var(--re);background:#EEEAFB}
+.keys{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tag{border:1px solid var(--line);border-radius:12px 12px 12px 12px;padding:22px 12px 12px;position:relative;font-size:13px}
+.tag::before{content:"";position:absolute;top:8px;left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;border:2px solid var(--line);background:var(--ground)}
+.tag b{display:block;font-size:14px}
+.tag small{color:var(--sec);font-size:12px}
+.tag.free{border-color:#9ED5BE;background:#F3FBF7}
+.tag.busy{background:var(--ground);color:var(--sec)}
+.tag .st{margin-top:8px}
+.btn{height:40px;border-radius:10px;background:var(--blue);color:#fff;font-weight:600;font-size:14px;display:grid;place-items:center}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:1}
+.col{background:var(--ground);border-radius:10px;padding:10px 8px;display:flex;flex-direction:column;gap:6px}
+.col h3{font-size:12px;font-weight:600;display:flex;justify-content:space-between;color:var(--sec)}
+.mag{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12px;display:flex;align-items:center;gap:7px}
+.mag i{width:10px;height:10px;border-radius:50%;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
+.req{display:grid;grid-template-columns:1fr 240px;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+.track{display:grid;grid-template-columns:repeat(3,1fr);font-size:11px;color:var(--sec);position:relative}
+.track::before{content:"";position:absolute;left:6px;right:6px;top:5px;height:2px;background:var(--line)}
+.track span{position:relative;padding-top:14px}
+.track span::before{content:"";position:absolute;top:0;left:0;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid var(--line)}
+.track span.on::before{background:var(--fu);border-color:var(--fu)}
+.track span.done::before{background:var(--of);border-color:var(--of)}
+</style></head><body>
+<aside class="rail">
+<div class="brand">Margube</div>
+<div class="nav on">Inicio</div><div class="nav">Reservas <b>2</b></div><div class="nav">Solicitudes <b>1</b></div>
+<div class="nav">Tiempo a compensar</div><div class="nav">Noticias y eventos</div><div class="nav">Equipo</div><div class="nav">Asistente</div>
+<div class="sep"></div><div class="nav">Administración <b>4</b></div>
+<div style="flex:1"></div><div class="nav">Ajustes</div>
+</aside>
+<main class="main">
+<div class="top"><div class="date">Miércoles, 11 de noviembre</div><div class="search">Buscar trámites, salas, personas <span class="kbd">Ctrl K</span></div><div class="av">LM</div></div>
+<section class="hello">
+<div><h1>Buenas tardes, Lucía</h1><p class="sub">Tienes 2 reservas hoy y 1 solicitud en revisión.</p></div>
+<div class="day"><div class="row"><span>Tu jornada</span><span class="mono">62 % · quedan 3 h 25 min</span></div><div class="bar"><i></i><u></u></div><div class="row mono"><span>08:00</span><span>13:00</span><span>17:00</span></div></div>
+</section>
+<section class="grid">
+<div class="card"><h2>Hoy <a>Ver agenda</a></h2>
+<div class="ag"><span class="t mono">09:30</span><span>Sala Norte · Revisión de obra</span><span class="chip ok">Confirmada</span></div>
+<div class="ag"><span class="t mono">12:00</span><span>Toyota Corolla 4821 KLM</span><span class="chip ok">Confirmada</span></div>
+<div class="ag"><span class="t mono">16:00</span><span>Sala Mar · Equipo comercial</span><span class="chip pe">Pendiente</span></div>
+<h2 style="margin-top:8px">Mis solicitudes <a>Ver todas</a></h2>
+<div class="req" style="grid-template-columns:1fr"><span>Asunto propio · 21 nov</span><div class="track"><span class="done">Enviada</span><span class="on">En revisión</span><span>Aprobada</span></div></div>
+</div>
+<div class="card"><h2>Libre ahora <a>Reservar</a></h2>
+<div class="keys">
+<div class="tag free"><b>Sala Norte</b><small>8 personas · planta 1</small><div class="st"><span class="chip ok">Libre hasta 16:00</span></div></div>
+<div class="tag busy"><b>Sala Mar</b><small>Ocupada por J. Ortega</small><div class="st"><span class="chip pe">Hasta 13:30</span></div></div>
+<div class="tag free"><b>Toyota Corolla</b><small class="mono">4821 KLM</small><div class="st"><span class="chip ok">Libre todo el día</span></div></div>
+<div class="tag busy"><b>Renault Kangoo</b><small class="mono">0937 JHT</small><div class="st"><span class="chip pe">Vuelve 18:00</span></div></div>
+</div>
+<div class="btn">Nueva reserva</div>
+</div>
+<div class="card"><h2>Equipo hoy <a>Ver semana</a></h2>
+<div class="board">
+<div class="col"><h3>Oficina <span class="mono">12</span></h3><div class="mag"><i style="background:var(--of)"></i>Ana Ruiz</div><div class="mag"><i style="background:var(--of)"></i>Javier Ortega</div><div class="mag"><i style="background:var(--of)"></i>Marta Gil</div><div class="mag"><i style="background:var(--of)"></i>+9</div></div>
+<div class="col"><h3>Remoto <span class="mono">5</span></h3><div class="mag"><i style="background:var(--re)"></i>Pablo Sanz</div><div class="mag"><i style="background:var(--re)"></i>Elena Vidal</div><div class="mag"><i style="background:var(--re)"></i>+3</div></div>
+<div class="col"><h3>Fuera <span class="mono">2</span></h3><div class="mag"><i style="background:var(--fu)"></i>Raúl Prieto</div><div class="mag"><i style="background:var(--fu)"></i>Sofía León</div></div>
+<div class="col"><h3>Ausente <span class="mono">1</span></h3><div class="mag"><i style="background:var(--au)"></i>Luis Mora</div></div>
+</div></div>
+</section>
+</main></body></html>

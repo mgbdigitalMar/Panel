@@ -3,10 +3,10 @@
 /* Chrome of the glass appearance. Every surface here is frosted (real backdrop blur):
    they float over the wallpaper and the page scrolling underneath. */
 @mixin frosted {
-  background: var(--lg-chrome);
+  background: var(--lg-sheen), var(--lg-chrome);
   border: 1px solid var(--lg-edge);
   border-color: var(--lg-edge-top, var(--lg-edge)) var(--lg-edge) var(--lg-edge-bottom, var(--lg-edge));
-  box-shadow: inset 0 1px 0 var(--lg-rim), 0 10px 30px -12px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 0 var(--lg-rim), var(--lg-control-shadow, 0 10px 30px -12px rgba(0, 0, 0, 0.35));
   -webkit-backdrop-filter: var(--lg-blur) !important;
   backdrop-filter: var(--lg-blur) !important;
 }
@@ -16,7 +16,7 @@
   background: var(--lg-sheen), var(--lg-popover, rgba(255, 255, 255, 0.86));
   border: 1px solid var(--lg-edge);
   border-color: var(--lg-edge-top, var(--lg-edge)) var(--lg-edge) var(--lg-edge-bottom, var(--lg-edge));
-  box-shadow: inset 0 1px 0 var(--lg-rim), 0 20px 48px -12px rgba(0, 0, 0, 0.55);
+  box-shadow: inset 0 1px 0 var(--lg-rim), var(--lg-control-shadow, 0 20px 48px -12px rgba(0, 0, 0, 0.55));
   -webkit-backdrop-filter: var(--lg-blur) !important;
   backdrop-filter: var(--lg-blur) !important;
 }
@@ -916,4 +916,64 @@
   @media (hover: hover) and (pointer: fine) {
     &:hover { color: var(--danger); background: rgba(var(--danger-rgb), 0.12); }
   }
+}
+
+@media (max-width: 767px) {
+  .dock {
+    left: max(var(--dock-gutter), env(safe-area-inset-left));
+    right: max(var(--dock-gutter), env(safe-area-inset-right));
+    bottom: calc(var(--dock-bottom-gap) + env(safe-area-inset-bottom));
+    gap: var(--dock-gap);
+  }
+  .dockCompact { transform: scale(var(--dock-shrink)); }
+  .tabBar {
+    flex: 1; min-width: 0; height: var(--dock-height); box-sizing: border-box;
+    justify-content: space-around; padding: var(--dock-padding); gap: var(--dock-item-gap);
+    border: 0;
+    background: rgba(17,24,34,calc(1 - var(--material-strength, 0.65) * var(--dock-transparency)));
+    border-color: rgba(255,255,255,0.18);
+    box-shadow: inset 0 0 0 1px var(--dock-selection-edge);
+  }
+  .tab {
+    flex: 1; min-width: 0; height: calc(var(--dock-height) - 2 * var(--dock-padding)); padding: 0 1px;
+    flex-direction: column; gap: 4px; color: var(--dock-inactive);
+  }
+  .tabActive { color: var(--dock-active); }
+  .tabPill { background: var(--dock-selection); border: 1px solid var(--dock-selection-edge); box-shadow: none; }
+  .tabLabel { display: block; max-width: 100%; font-size: var(--dock-label-size); font-weight: 500; line-height: var(--dock-label-leading); }
+  .tabActive::after { display: none; }
+  .dockPlus { width: var(--dock-action-size); height: var(--dock-action-size); color: var(--dock-active); background: var(--dock-action); border-color: rgba(255,255,255,0.3); }
+  .dockPlus:active { transform: scale(var(--dock-action-scale)); }
+  .tabBar::before, .dockPlus::before { display: none; }
+  .header { padding-inline: max(16px, env(safe-area-inset-left)); }
+}
+
+@media (max-width: 767px) {
+  :global(html[data-glass-intensity='off']) .tabBar { background: #111822; }
+  @media (prefers-reduced-transparency: reduce) { .tabBar { background: #111822; } }
+}
+
+.tabBar {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.dock[data-dock-holding] { transform: none; }
+.scrubPill {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  bottom: 5px;
+  border-radius: var(--radius-full);
+  pointer-events: none;
+  background: var(--dock-selection);
+  border: 1px solid var(--dock-selection-edge);
+}
+.tab[data-dock-preview] { color: #FFFFFF; }
+
+.tabIcon { position: relative; width: 20px; height: 20px; display: grid; place-items: center; }
+.tabIcon .tabBadge {
+  top: -7px; right: -10px; min-width: 18px; height: 18px; padding: 0 4px;
+  border: 2px solid #111822; border-radius: 9px; font-size: 9.5px; line-height: 11px;
 }

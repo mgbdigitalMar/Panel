@@ -6,6 +6,7 @@ import {
 import clsx from 'clsx';
 import { Avatar } from '../components/ui';
 import { TodayPanel } from '../components/TodayPanel';
+import { MobileHome, MobileOverview } from '../components/MobileHome';
 import {
   Masthead, Ledger, Spotlight, SpotButton, ActionTiles, TabStrip, FeedGroup, FeedItem, Fold, BlockHead, TouchEmpty,
   TouchButton, LeafIcon, TimeLead, STATUS,
@@ -125,12 +126,12 @@ export default function DashboardTouch({ d }) {
 
   return (
     <div className={styles.page}>
-      <Masthead
+      {phone ? <MobileHome d={d} /> : <Masthead
         icon={LayoutDashboard}
         eyebrow={dateLine}
         title={<>{greeting},<br />{firstName}</>}
         desc={motivation}
-      />
+      />}
 
       {/* Phones already have "Nueva solicitud" in the dock's "+" */}
       <ActionTiles className={styles.tiles} items={[
@@ -139,10 +140,12 @@ export default function DashboardTouch({ d }) {
         { icon: Car, label: 'Reservar vehículo', tone: 'info', hint: 'Coches y furgonetas', onClick: () => navigate('/reservations?nueva=1&tipo=vehicle') },
       ]} />
 
+      {phone && <MobileOverview d={d} />}
+
       <div className={styles.grid}>
         <div className={styles.colMain}>
           {/* Your agenda: next bookings as times, then your latest requests */}
-          <section className={styles.agenda} aria-labelledby="touch-agenda">
+          <section className={clsx(styles.agenda, phone && !myRequests.length && styles.phoneHidden)} aria-labelledby="touch-agenda">
             <span id="touch-agenda">
               <BlockHead title="Tu agenda" meta={myUpcoming.length ? `${myUpcoming.length} ${myUpcoming.length === 1 ? 'reserva próxima' : 'reservas próximas'}` : 'Sin reservas próximas'}
                 action="Mis reservas" onAction={() => navigate('/reservations?mias=1')} />
@@ -152,7 +155,7 @@ export default function DashboardTouch({ d }) {
                 action={<TouchButton primary icon={CalendarPlus} onClick={() => navigate('/reservations?nueva=1')}>Reservar ahora</TouchButton>} />
             ) : (
               <>
-                {myUpcoming.length > 0 && (
+                {!phone && myUpcoming.length > 0 && (
                   <FeedGroup title="Próximas reservas">
                     {myUpcoming.map((r) => (
                       <FeedItem key={r.id}

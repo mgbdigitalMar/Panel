@@ -33,6 +33,7 @@ export function DataProvider({ children }) {
   const [notifHasMore, setNotifHasMore] = useState(false);
   const [loadedFor, setLoadedFor] = useState(null); // user id whose data is loaded
   const [lastSync, setLastSync] = useState(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   // The shared fetchers return null when a request fails (offline, server down): the
   // list on screen is kept instead of being replaced by an empty one
   const syncFailed = useRef(false);
@@ -97,6 +98,7 @@ export function DataProvider({ children }) {
       loadRequests(), loadReservations(), loadRooms(), loadVehicles(), loadDocuments(),
       loadHours(), loadPersonalDays(), loadNews(), loadNotifications(),
     ]);
+    setLoadFailed(syncFailed.current);
     if (syncFailed.current) return false;
     setLastSync(new Date());
     return true;
@@ -454,9 +456,9 @@ export function DataProvider({ children }) {
 
   const value = useMemo(() => ({
     requests, reservations, rooms, vehicles, documents, hourCompensations, personalDays, news, notifications: myNotifications,
-    unreadCount, notifHasMore, loadingData, lastSync, onboardingDocUrl, refresh, ...actions,
+    unreadCount, notifHasMore, loadingData, loadFailed, lastSync, onboardingDocUrl, refresh, ...actions,
   }), [requests, reservations, rooms, vehicles, documents, hourCompensations, personalDays, news, myNotifications,
-    unreadCount, notifHasMore, loadingData, lastSync, onboardingDocUrl, refresh, actions]);
+    unreadCount, notifHasMore, loadingData, loadFailed, lastSync, onboardingDocUrl, refresh, actions]);
 
   return <DataCtx.Provider value={value}>{children}</DataCtx.Provider>;
 }

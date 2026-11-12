@@ -28,6 +28,17 @@ const handler = createAssistantHandler({
   },
 });
 
+for (const content of ['Hola, ¿en qué puedes ayudarme?', 'Quiero reservar una sala, pero aún no he elegido fecha ni horario.']) {
+  const response = await handler(new Request('http://localhost/api/assistant', {
+    method: 'POST', headers: { Authorization: 'Bearer synthetic-test', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages: [{ role: 'user', content }] }),
+  }));
+  const answer = await response.json();
+  const valid = response.ok && typeof answer.message === 'string' && answer.message.trim() && answer.action === null;
+  console.log(JSON.stringify({ expected: 'conversation_without_action', status: response.status, answered: !!valid, databaseWrites: 0, error: answer.error || null }));
+  if (!valid) process.exitCode = 1;
+}
+
 for (const [expected, content] of [
   ['create_request', 'Solicita trabajo en remoto el 18 de enero de 2027, solo ese día, motivo: trabajo de concentración. Prepara la propuesta para confirmar.'],
   ['create_reservation', 'Reserva la Sala de prueba el 19 de enero de 2027 de 10:00 a 11:00 para una reunión de coordinación. Prepara la propuesta para confirmar.'],

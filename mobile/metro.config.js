@@ -19,6 +19,10 @@ const cryptoShim = path.resolve(projectRoot, 'src/shims/crypto.js');
 const defaultResolve = config.resolver.resolveRequest;
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
+  // Shared hooks live beside the web app, whose React version differs from native.
+  if (moduleName === 'react' || moduleName.startsWith('react/')) {
+    return context.resolveRequest(context, path.join(projectRoot, 'node_modules', moduleName), platform);
+  }
   if (moduleName === 'crypto') {
     return { type: 'sourceFile', filePath: cryptoShim };
   }

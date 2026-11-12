@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
-  Building2, Car, Timer, CalendarDays, Inbox, ShieldCheck, Pin, ChevronRight, Gift, Newspaper, Clock, CalendarCheck, Hourglass,
+  Building2, Car, Timer, CalendarDays, Inbox, ShieldCheck, Pin, ChevronRight, Gift, Newspaper, CalendarCheck, Hourglass,
 } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -15,15 +15,16 @@ import { GlassCard } from '../components/common/GlassCard';
 import { PressScale } from '../components/common/Pressable';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { T } from '../components/common/Text';
-import { BrandPanel, HeroCard, HeroChip, ON_BRAND } from '../components/common/Brand';
-import { AccentTile, BigFigure, CapsuleBars, InfoTile } from '../components/common/Bento';
+import { BrandPanel, ON_BRAND } from '../components/common/Brand';
+import { BigFigure, CapsuleBars, InfoTile } from '../components/common/Bento';
 import { ActionGrid, Avatar, IconTile, Pill, ProgressBar, Row, SectionHead, WashCard } from '../components/common/UI';
 import { usePendingApprovals } from '../hooks/usePendingApprovals';
-import { buildRequestItems, hourStats, personalDaysSummary, requestTitle, requestDetail, REQUEST_TONE, reservationStatusLabel, reservationTone } from '../utils/domain';
-import { fmtHM, fmtHMSigned, firstName, greeting, todayISO, fmtDate, parseDate, toISODate, addDays, startOfWeek, MONTHS, MONTHS_SHORT, DAYS, DAYS_SHORT } from '../utils/format';
+import { buildRequestItems, hourStats, personalDaysSummary, requestTitle, requestDetail, REQUEST_TONE } from '../utils/domain';
+import { fmtHM, fmtHMSigned, firstName, greeting, todayISO, parseDate, toISODate, addDays, startOfWeek, MONTHS, MONTHS_SHORT, DAYS, DAYS_SHORT } from '../utils/format';
 import { workdayProgress, isWeekend, motivationFor } from '../utils/workday';
 import { requestIcon } from '../utils/icons';
 import { BRAND } from '../theme/tokens';
+import { UpcomingBookings } from '../components/UpcomingBookings';
 
 /** Re-renders once a minute so the greeting, hero and rings stay current. */
 function useNow(interval = 60000) {
@@ -33,16 +34,6 @@ function useNow(interval = 60000) {
     return () => clearInterval(t);
   }, [interval]);
   return now;
-}
-
-function HeroMeta({ icon: Icon, value, label, color, onPress }) {
-  return (
-    <PressScale onPress={onPress} accessibilityRole="button" accessibilityLabel={`${label}: ${value}`} scaleTo={0.94}
-      hitSlop={8} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 32 }}>
-      <Icon size={16} color={color || ON_BRAND.text2} strokeWidth={2} />
-      <T size={14} weight="semibold" color={ON_BRAND.text} numberOfLines={1}>{value}</T>
-    </PressScale>
-  );
 }
 
 /** Mon–Fri as capsules filled with the workday: past days full, today partial, future empty. */
@@ -179,18 +170,6 @@ export default function DashboardScreen() {
   };
 
   const agenda = [
-    ...upcoming.map((r) => ({
-      key: `r${r.id}`,
-      icon: r.type === 'vehicle' ? Car : Building2,
-      tone: r.type === 'vehicle' ? 'teal' : 'accent',
-      title: r.resourceName,
-      subtitle: r.purpose || (r.type === 'vehicle' ? 'Reserva de vehículo' : 'Reserva de sala'),
-      time: `${r.timeStart}–${r.timeEnd}`,
-      timeMono: true,
-      when: r.date === today ? 'Hoy' : fmtDate(r.date, { year: false }),
-      badge: <StatusBadge status={reservationTone(r.status)} label={reservationStatusLabel(r.status)} small />,
-      onPress: () => navigation.navigate('MyReservations', { scope: 'mine' }),
-    })),
     ...myPending.slice(0, 2).map((r) => ({
       key: `q${r.type}${r.id}`,
       icon: requestIcon(r.type),
@@ -214,41 +193,39 @@ export default function DashboardScreen() {
     <Screen tabBarSpace onRefresh={onRefresh} refreshing={refreshing}>
       <TopBar />
 
-      <View style={{ gap: 2 }}>
-        <T size={14} color={colors.text3}>{greeting(now)},</T>
-        <T size={36} weight="light" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} accessibilityRole="header">
-          {firstName(user?.name)}
-        </T>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <Avatar name={user?.name} initials={user?.avatar} src={user?.avatarUrl} size={42} />
+        <View style={{ flex: 1, gap: 2 }}>
+          <T size={12} color={colors.text2}>{greeting(now)}</T>
+          <T size={21} weight="semibold" accessibilityRole="header">{firstName(user?.name)}</T>
+        </View>
+        <T size={12} color={colors.text2} style={{ maxWidth: 100, textAlign: 'right' }}>{DAYS[now.getDay()]}, {now.getDate()} {MONTHS[now.getMonth()]}</T>
       </View>
 
-      <HeroCard>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <HeroChip label={status} dot={weekend || progress >= 100 ? '#B8BEC9' : progress <= 0 ? '#F5B544' : '#34D399'} />
-          <T mono weight="semibold" size={14} color={ON_BRAND.text}>{Math.round(progress)}%</T>
+      <UpcomingBookings reservations={upcoming} today={today}
+        onView={() => navigation.navigate('MyReservations', { scope: 'mine' })}
+        onCreate={() => navigation.navigate('Reservations')} />
+
+      <GlassCard padding={18} radius={20} style={{ gap: 12 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
+          <View style={{ flex: 1, gap: 3 }}>
+            <T size={15} weight="semibold" accessibilityRole="header">Tu jornada</T>
+            <T size={12} color={colors.text2}>{status} ? {weekend ? 'Disfruta del descanso' : `8:00?${endsAt}`}</T>
+          </View>
+          <T size={25} weight="medium" color={colors.accentFg}>{Math.round(progress)}%</T>
         </View>
-        <View style={{ flex: 1, minHeight: 36 }} />
-        <View style={{ gap: 10 }}>
-          <View>
-            <T size={13} weight="medium" color={ON_BRAND.text2} upper>{DAYS[now.getDay()]}, {now.getDate()} de {MONTHS[now.getMonth()]}</T>
-            <T size={29} weight="light" color={ON_BRAND.text} numberOfLines={2}>{workdayText}</T>
-          </View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 16, rowGap: 4 }}>
-            <HeroMeta icon={Clock} value={weekend ? 'Libre' : `8:00–${endsAt}`} label="Horario de hoy" onPress={() => navigation.navigate('Horas')} />
-          </View>
-          <ProgressBar value={progress} track={ON_BRAND.track} color="#FFFFFF" height={6} accessibilityLabel="Progreso de jornada laboral" />
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <T size={13} color={ON_BRAND.text2}>{myPending.length ? `${myPending.length} solicitud${myPending.length === 1 ? '' : 'es'} en revisión` : 'Nada pendiente'}</T>
-            <Pressable onPress={() => navigation.navigate('Requests')} accessibilityRole="button" hitSlop={10} style={{ flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 32 }}>
-              <T size={13.5} weight="semibold" color={ON_BRAND.text}>Mis solicitudes</T>
-              <ChevronRight size={16} color={ON_BRAND.text} />
-            </Pressable>
-          </View>
-        </View>
-      </HeroCard>
+        <ProgressBar value={progress} height={5} accessibilityLabel="Progreso de jornada laboral" />
+        <T size={12} color={colors.text2}>{workdayText}</T>
+        <Pressable onPress={() => navigation.navigate('Requests')} accessibilityRole="button"
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44, borderTopWidth: 1, borderTopColor: colors.divider, paddingTop: 8 }}>
+          <T size={13} color={colors.text2}>{myPending.length ? `${myPending.length} en revisi?n` : 'Nada pendiente'}</T>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}><T size={13} weight="semibold" color={colors.accentFg}>Mis solicitudes</T><ChevronRight size={16} color={colors.accentFg} /></View>
+        </Pressable>
+      </GlassCard>
 
       {/* Bento: the days left stand out in brand blue, the hour balance beside them in glass */}
       <View style={{ flexDirection: 'row', gap: 10 }}>
-        <AccentTile
+        <InfoTile
           icon={CalendarCheck}
           label="Días propios"
           value={`${days.left}/${days.total}`}
@@ -316,7 +293,7 @@ export default function DashboardScreen() {
 
       <View style={{ gap: 10 }}>
         <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', gap: 8 }}>
-          <T size={15} weight="semibold" accessibilityRole="header">Agenda</T>
+          <T size={15} weight="semibold" accessibilityRole="header">Tus solicitudes</T>
           <T size={13.5} color={colors.text3}>Hoy, {now.getDate()} {MONTHS_SHORT[now.getMonth()]}</T>
         </View>
         {agenda.length === 0 ? (

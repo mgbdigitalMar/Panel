@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F5F6F8;--ink:#0B0D12;--sec:#4A505C;--line:#D9DCE2;--blue:#2F5BEA;--ok:#0F8A5F;--warn:#B86A00;--bad:#C8323C}
+*{box-sizing:border-box;margin:0}
+body{width:1440px;height:900px;overflow:hidden;font-family:'Roboto Flex',sans-serif;font-variation-settings:'opsz' 14;background:var(--paper);color:var(--ink);display:grid;grid-template-columns:220px 1fr;font-variant-numeric:tabular-nums}
+.rail{background:var(--ink);color:#C9CCD3;padding:24px 12px;display:flex;flex-direction:column;gap:2px}
+.brand{color:#fff;font-size:22px;font-weight:800;letter-spacing:-.02em;padding:0 12px 26px}
+.n{display:flex;justify-content:space-between;padding:10px 12px;border-radius:8px;font-size:14px;font-weight:500}
+.n.on{background:var(--blue);color:#fff}
+.n b{font-size:12px;font-weight:600;color:#fff}
+.sep{height:1px;background:#262A33;margin:12px}
+main{padding:22px 40px;display:flex;flex-direction:column;gap:22px}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--sec)}
+.search{width:360px;height:38px;border:1px solid var(--line);background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:40px;align-items:end;border-bottom:1px solid var(--ink);padding-bottom:18px}
+.clock{font-size:168px;line-height:.8;letter-spacing:-.04em;font-variation-settings:'wght' 620,'wdth' 100,'opsz' 144}
+.hi h1{font-size:44px;letter-spacing:-.03em;font-variation-settings:'wght' 640,'opsz' 72;line-height:1}
+.hi p{font-size:15px;color:var(--sec);margin-top:8px}
+.axis{margin-top:16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;font-size:13px;color:var(--sec)}
+.track{height:4px;background:var(--line);position:relative}
+.track i{position:absolute;left:0;top:0;bottom:0;width:62%;background:var(--ink)}
+.track u{position:absolute;left:62%;top:-7px;width:18px;height:18px;border-radius:50%;background:var(--blue);margin-left:-9px}
+.row{display:grid;grid-template-columns:1fr 1fr 1fr 1.2fr;gap:0;border-bottom:1px solid var(--line)}
+.p{padding:4px 24px 18px 0;margin-right:24px;border-right:1px solid var(--line)}
+.p:last-child{border-right:0;margin-right:0}
+.p small{font-size:13px;color:var(--sec);font-weight:500;display:block}
+.p .big{font-size:76px;letter-spacing:-.04em;font-variation-settings:'wght' 700,'opsz' 144;line-height:1;margin:6px 0}
+.p .u{font-size:13px;color:var(--sec)}
+.p a{font-size:13px;color:var(--blue);font-weight:600}
+.cols{display:grid;grid-template-columns:1.3fr 1fr;gap:40px}
+h2{font-size:15px;font-variation-settings:'wght' 650;display:flex;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--ink)}
+h2 a{font-size:13px;color:var(--blue)}
+.ag{display:grid;grid-template-columns:56px 1fr 110px;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;align-items:center}
+.ag .bar{height:8px;background:var(--blue);border-radius:2px}
+.st{font-size:12px;font-weight:600;display:inline-flex;gap:6px;align-items:center}
+.st::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.ok{color:var(--ok)}.warn{color:var(--warn)}
+.tm{display:grid;grid-template-columns:1fr 110px 70px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.tm span:last-child{text-align:right;color:var(--sec)}
+</style></head><body>
+<aside class="rail">
+<div class="brand">Margube</div>
+<div class="n on">Inicio</div><div class="n">Reservas <b>2</b></div><div class="n">Solicitudes <b>1</b></div><div class="n">Tiempo a compensar</div><div class="n">Noticias y eventos</div><div class="n">Equipo</div><div class="n">Asistente</div>
+<div class="sep"></div><div class="n">Administración <b>4</b></div><div style="flex:1"></div><div class="n">Ajustes</div><div class="n">Cerrar sesión</div>
+</aside>
+<main>
+<div class="top"><span>Miércoles, 11 de noviembre</span><span class="search">Buscar trámites, salas, personas <span>Ctrl K</span></span></div>
+<section class="hero">
+<div class="clock">15:42</div>
+<div class="hi"><h1>Buenas tardes, Lucía</h1><p>Tienes 2 reservas hoy y 1 solicitud en revisión.</p>
+<div class="axis"><span>08:00</span><div class="track"><i></i><u></u></div><span>17:00 · 62 % de la jornada</span></div></div>
+</section>
+<section class="row">
+<div class="p"><small>Salas libres ahora</small><div class="big">3</div><span class="u">de 5 · </span><a>Reservar</a></div>
+<div class="p"><small>Vehículos libres</small><div class="big">1</div><span class="u">de 3 · </span><a>Reservar</a></div>
+<div class="p"><small>Tu bolsa de horas</small><div class="big">+6,7</div><span class="u">horas a tu favor · </span><a>Registrar</a></div>
+<div class="p"><small>En la oficina hoy</small><div class="big">12</div><span class="u">5 en remoto · 2 fuera · 1 asuntos propios</span></div>
+</section>
+<section class="cols">
+<div><h2>Hoy <a>Ver agenda</a></h2>
+<div class="ag"><span>09:30</span><span>Sala Norte · Revisión de obra</span><span class="st ok">Confirmada</span></div>
+<div class="ag"><span>12:00</span><span>Toyota Corolla · 4821 KLM</span><span class="st ok">Confirmada</span></div>
+<div class="ag"><span>16:00</span><span>Sala Mar · Equipo comercial</span><span class="st warn">Pendiente</span></div>
+</div>
+<div><h2>Mis solicitudes <a>Nueva solicitud</a></h2>
+<div class="tm"><span>Asunto propio · 21 nov</span><span class="st warn">En revisión</span><span>1 día</span></div>
+<div class="tm"><span>Trabajo en remoto · 14 nov</span><span class="st ok">Aprobada</span><span>1 día</span></div>
+<div class="tm"><span>Compra · Monitor 27"</span><span class="st ok">Aprobada</span><span>—</span></div>
+</div>
+</section>
+</main></body></html>

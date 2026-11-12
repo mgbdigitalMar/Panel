@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:1440px;height:900px;overflow:hidden;font-family:'Inter Tight',sans-serif;background:#F3F4F6;color:#111318}
+header{height:64px;background:#111318;color:#fff;display:flex;align-items:center;gap:28px;padding:0 32px;font-size:14px}
+header b{font-size:20px;margin-right:20px}
+header .on{color:#F2A900}
+.m{font-family:'JetBrains Mono',monospace}
+main{display:grid;grid-template-columns:1fr 420px;gap:24px;padding:28px 32px}
+.board{background:#111318;color:#fff;border-radius:6px;padding:20px}
+.board h1{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#9AA0AA;margin-bottom:12px;display:flex;justify-content:space-between}
+.hd,.r{display:grid;grid-template-columns:90px 1fr 200px 160px;gap:12px;padding:14px 8px;font-size:16px}
+.hd{font-size:11px;color:#9AA0AA;text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid #2A2E36}
+.r{border-bottom:1px solid #22262D}
+.r.ch{background:rgba(242,169,0,.14);box-shadow:inset 3px 0 #F2A900}
+.st{font-weight:700}.y{color:#F2A900}.g{color:#5BD39B}
+.pass{background:#fff;border-radius:6px;display:grid;grid-template-rows:auto auto auto;overflow:hidden}
+.pass .t{background:#2F5BEA;color:#fff;padding:18px 20px;font-weight:700;font-size:18px}
+.seg{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px dashed #C9CDD4}
+.seg div{padding:14px 20px}.seg small{display:block;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.08em}
+.seg b{font-size:20px}
+</style></head><body>
+<header><b>Margube</b><span class="on">Hoy</span><span>Reservas</span><span>Solicitudes</span><span>Horas</span><span>Noticias</span><span>Equipo</span></header>
+<main>
+<div class="board"><h1><span>Salidas de hoy · miércoles 11</span><span class="m">15:42</span></h1>
+<div class="hd"><span>Hora</span><span>Recurso</span><span>Quién</span><span>Estado</span></div>
+<div class="r"><span class="m">09:30</span><span>Sala Norte</span><span>Lucía Martín</span><span class="st g">Finalizada</span></div>
+<div class="r"><span class="m">12:00</span><span>Toyota Corolla 4821 KLM</span><span>Lucía Martín</span><span class="st g">En curso</span></div>
+<div class="r ch"><span class="m">16:00</span><span>Sala Mar → Sala Norte</span><span>Equipo comercial</span><span class="st y">Cambio de sala</span></div>
+<div class="r"><span class="m">17:30</span><span>Renault Kangoo 0937 JHT</span><span>Raúl Prieto</span><span class="st">Programada</span></div>
+</div>
+<div class="pass"><div class="t">Asunto propio</div>
+<div class="seg"><div><small>Fecha</small><b class="m">21 NOV</b></div><div><small>Estado</small><b style="color:#B37A00">En revisión</b></div></div>
+<div class="seg"><div><small>Enviada</small><b class="m">10 NOV</b></div><div><small>Revisa</small><b>RR. HH.</b></div></div>
+</div>
+</main></body></html>

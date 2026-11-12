@@ -39,8 +39,8 @@ export async function runGlassAppearanceTests() {
   assert('Sin el fondo animado del diseño Clásico', !read('src', 'components', 'ui', 'index.js').includes('AnimatedBackdrop')
     && read('src', 'pages', 'ChangePasswordPage.jsx').includes('<Wallpaper />'));
   const chromeStyles = read('src', 'components', 'GlassChrome.module.scss');
-  assert('Móvil Cristal: la sección abierta con nombre, el resto solo icono',
-    layout.includes('<GlassTabBar') && chrome.includes('{items.map((item) => {') && chrome.includes('{active && <span className={styles.tabLabel}>'));
+  assert('Móvil Cristal: todas las secciones con nombre visible',
+    layout.includes('<GlassTabBar') && chrome.includes('{items.map((item) => {') && chrome.includes('<span className={styles.tabLabel}>') && !chrome.includes('{active && <span className={styles.tabLabel}>'));
   assert('iPad Cristal: las secciones en la barra superior, sin dock', /\.dock \{[\s\S]*?@media \(min-width: 768px\) \{ display: none; \}/.test(chromeStyles)
     && /\.nav \{[\s\S]*?@media \(max-width: 767px\) \{ display: none; \}/.test(chromeStyles));
   assert('Ordenador: las secciones en el menú lateral flotante; la píldora solo en iPad',

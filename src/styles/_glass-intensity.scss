@@ -5,6 +5,7 @@
   html[data-appearance='glass'][data-glass-intensity='#{$level}'],
   html[data-appearance='glass'][data-glass-intensity='#{$level}'] :is(.app-shell, .glass-scope) {
     --material-rgb: 255, 255, 255;
+    --material-strength: #{$strength};
     --material-card-alpha: #{1 - $strength * 0.32};
     --material-chrome-alpha: #{1 - $strength * 0.25};
     --material-sheen-alpha: #{$strength * 0.4};
@@ -12,7 +13,13 @@
     --lg-fill-hover: rgba(var(--material-rgb), #{1 - $strength * 0.18});
     --lg-chrome: rgba(var(--material-rgb), var(--material-chrome-alpha));
     --lg-popover: rgba(var(--material-rgb), #{1 - $strength * 0.12});
-    --lg-sheen: linear-gradient(180deg, rgba(255,255,255,var(--material-sheen-alpha)), transparent 50%);
+    --lg-sheen: linear-gradient(180deg, rgba(255,255,255,var(--material-sheen-alpha)), transparent 55%);
+    --lg-edge: rgba(255,255,255,0.6);
+    --lg-edge-top: #FFFFFF;
+    --lg-edge-bottom: var(--lg-edge);
+    --lg-rim: #FFFFFF;
+    --lg-shadow: 0 0 0 transparent;
+    --lg-control-shadow: 0 0 0 transparent;
     --lg-blur: blur(#{$blur}px) saturate(#{100 + $strength * 65}%);
     --lg-card-blur: var(--lg-blur);
     --glass-bg: var(--lg-chrome);
@@ -31,6 +38,9 @@
     --material-card-alpha: #{1 - $strength * 0.42};
     --material-chrome-alpha: #{1 - $strength * 0.34};
     --material-sheen-alpha: #{$strength * 0.12};
+    --lg-edge: rgba(255,255,255,0.1);
+    --lg-edge-top: rgba(255,255,255,0.13);
+    --lg-rim: rgba(255,255,255,0.13);
   }
 }
 

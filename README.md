@@ -10,7 +10,9 @@ Para abrir la web sin las barras de Safari: Compartir → Añadir a pantalla de 
 
 ## Asistente de trámites
 
-La web incluye `/assistant`, disponible desde el menú, el buscador y «Más» en móvil. Permite conversar por escrito, consultar trámites y preparar solicitudes, asuntos propios y reservas. Una propuesta no realiza cambios hasta que la persona pulsa «Confirmar acción». Se reutilizan los servicios y validaciones de los formularios existentes.
+La web y la app incluyen un globo con la hoja de Margube abajo a la derecha, sobre el dock en móvil. Abre una mini ventana de chat en esa misma esquina, conservando Liquid Glass y el fondo de oficina. El chat permanece al cerrar la ventana y al navegar; se borra al cerrar sesión o iniciar una nueva conversación. El asistente no aparece en el menú lateral; `/assistant` conserva el acceso desde enlaces antiguos.
+
+Permite consultar trámites y preparar solicitudes, asuntos propios y reservas. Una propuesta no realiza cambios hasta pulsar «Confirmar acción». Se reutilizan los servicios y validaciones de los formularios existentes. La app usa `https://margube.vercel.app/api/assistant`; `EXPO_PUBLIC_WEB_URL` permite cambiar el origen público en otra instalación. Usa la sesión de Supabase de la app, sin incluir claves del proveedor. La API debe estar desplegada y configurada en ese origen.
 
 Los empleados pueden crear trámites y eliminar los suyos pendientes. Las cuentas con rol `admin` también pueden aprobar/rechazar solicitudes y asuntos propios, confirmar/cancelar reservas y eliminar registros del equipo. RR. HH. conserva los permisos de su cuenta: el departamento por sí solo no concede permisos de administración. No se añaden nuevos roles ni se cambian las políticas de la base de datos.
 
@@ -32,7 +34,9 @@ El comando guarda la clave en `.env.local`, excluido de Git. `npm run dev` y `np
 
 En Vercel, abre **Settings → Environment Variables**, añade `GROQ_API_KEY` como variable sensible para Production y Preview, y vuelve a desplegar. `GROQ_MODEL` es opcional. Se reutilizan las variables existentes `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY`; también se admiten `SUPABASE_URL` y `SUPABASE_ANON_KEY` en el servidor. Los cambios de `api/` y `server/` activan el despliegue y las rutas `/api/` quedan fuera del fallback de la SPA. Los secretos locales no se transfieren automáticamente a Vercel.
 
-El modelo debe admitir Structured Outputs en modo estricto de Groq. La función valida la sesión con Supabase Auth y consulta con el JWT del usuario y las políticas RLS; no usa una clave de servicio para acceder a datos. Las consultas se procesan con Groq y están sujetas a sus condiciones de privacidad. El historial se conserva solo en memoria de la página. No se utiliza la API de pago de OpenAI; el identificador `openai/gpt-oss-20b` corresponde al modelo abierto alojado en Groq.
+Los modelos compatibles usan Structured Outputs estricto. Si Groq rechaza ese formato con 400/422, se intenta una sola generación en modo JSON con el mismo modelo y plazo total de 25 segundos. Otros modelos configurados usan JSON directamente. Las respuestas se validan en el servidor; las propuestas incompletas preguntan por los datos ausentes. Este reintento no ejecuta acciones ni cambia de proveedor; los errores de cuota no se reintentan automáticamente.
+
+La función valida la sesión con Supabase Auth y consulta con el JWT del usuario y las políticas RLS; no usa una clave de servicio para acceder a datos. Las consultas se procesan con Groq y están sujetas a sus condiciones de privacidad. El historial se conserva solo en memoria de la sesión. No se utiliza la API de pago de OpenAI; el identificador `openai/gpt-oss-20b` corresponde al modelo abierto alojado en Groq.
 
 La función reduce el contexto de datos a unos 4000 caracteres y el historial a 3000 para moderar el consumo del plan gratuito. Conserva los totales y avisa al modelo cuando una lista se acorta. Estos límites de caracteres no garantizan una cuota de tokens: Groq aplica sus límites por cuenta y puede devolver 429. No hay cambio automático a un proveedor de pago.
 

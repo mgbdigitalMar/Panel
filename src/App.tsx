@@ -3,6 +3,7 @@ import { ThemeProvider, AuthProvider, AuthCtx, AppCtx, DataProvider } from './co
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AnimatePresence, MotionConfig } from 'framer-motion'
 import Layout from './components/Layout'
+import { AssistantProvider } from './context/AssistantContext'
 import { BootLoader } from './components/ui'
 
 const LoginPage          = lazy(() => import('./pages/LoginPage'))
@@ -62,7 +63,7 @@ function AppShell() {
             {!authLoading && (
               <AppCtx.Provider value={{}}> {/* AppCtx ya no maneja navegación */}
                 <DataProvider>
-                  <Suspense fallback={<BootLoader label="Cargando…" />}>
+                  <AssistantProvider><Suspense fallback={<BootLoader label="Cargando…" />}>
                     <Routes>
                       <Route path="/login" element={<LoginPage />} />
                       <Route path="/changePassword" element={<ChangePasswordPage />} />
@@ -84,7 +85,7 @@ function AppShell() {
                       
                       <Route path="*" element={<Navigate to="/dashboard" replace />} />
                     </Routes>
-                  </Suspense>
+                  </Suspense></AssistantProvider>
                 </DataProvider>
               </AppCtx.Provider>
             )}

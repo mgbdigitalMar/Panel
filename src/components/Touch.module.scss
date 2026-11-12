@@ -1171,3 +1171,21 @@ button.itemHead {
 @media (prefers-reduced-motion: reduce) {
   .itemChev { transition: none; }
 }
+
+@media (max-width: 767px) {
+  .masthead { margin: 6px 0 18px; gap: 16px; }
+  .mastText { display: flex; flex-direction: column; align-items: flex-start; }
+  .mastTitle { font-size: 28px; line-height: 1.2; letter-spacing: -0.03em; }
+  .mastDesc { font-size: 14px; margin-top: 8px; }
+  .mastEyebrow { order: 3; margin: 10px 0 0; padding: 0; border: 0; background: none; color: var(--text-sec); font-size: 11px; text-transform: none; letter-spacing: 0; }
+  .mastMark { display: none; }
+  .tile { min-height: 88px; gap: 10px; padding: 14px; border-radius: 20px; box-shadow: none; }
+  .tilePrimary { background: var(--lg-sheen), var(--lg-fill); color: var(--text); border-color: var(--lg-edge); }
+  .tilePrimary .tileGo { color: var(--accent); }
+  .tilePrimary .tileText span { color: var(--text-sec); }
+  .tilePrimary .leafIconSolid { color: var(--accent); background: var(--accent-bg); }
+  .spot { border-radius: 24px; }
+  .group, .fold, .empty { border-radius: 22px; }
+  .empty { padding: 24px 18px; }
+  .blockHead h2 { font-size: 17px; }
+}

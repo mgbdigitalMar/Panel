@@ -13,6 +13,8 @@ import { runGlassAppearanceTests } from './12_glass_appearance.test.mjs';
 import { runEnterpriseQualityTests } from './13_enterprise_quality.test.mjs';
 import { runNotificationSystemTests } from './14_notification_system.test.mjs';
 import { runAssistantTests } from './15_assistant.test.mjs';
+import { runDockGestureTests } from './16_dock_gestures.test.mjs';
+import { runAssistantClientTests } from './17_assistant_client.test.mjs';
 
 // Suites 2 and 3 read and write the real Supabase project (suite 3 creates and
 // deletes rows): they only run when asked, e.g. against a staging project.
@@ -40,6 +42,8 @@ async function main() {
     { name: 'Calidad Empresarial', fn: runEnterpriseQualityTests },
     { name: 'Sistema de Notificaciones', fn: runNotificationSystemTests },
     { name: 'Asistente y Permisos', fn: runAssistantTests },
+    { name: 'Gestos del dock', fn: runDockGestureTests },
+    { name: 'Cliente asistente web y app', fn: runAssistantClientTests },
   ];
 
   let totalPassed = 0;

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:1440px;height:900px;overflow:hidden;font-family:Geist,sans-serif;background:#14161B;color:#E8EAF0;display:grid;grid-template-columns:200px 1fr;grid-template-rows:48px 1fr}
+.m{font-family:'Geist Mono',monospace}
+header{grid-column:1/-1;border-bottom:1px solid #2A2E37;display:flex;align-items:center;gap:20px;padding:0 16px;font-size:13px;color:#9AA1AE}
+header b{color:#fff;font-size:16px}
+header .s{margin-left:auto;border:1px solid #2A2E37;padding:6px 10px;width:300px;border-radius:6px}
+nav{border-right:1px solid #2A2E37;padding:12px 8px;display:flex;flex-direction:column;gap:2px;font-size:13px}
+nav div{padding:8px 10px;border-radius:6px;color:#B5BBC7;display:flex;justify-content:space-between}
+nav .on{background:#1C1F26;color:#fff;box-shadow:inset 0 0 0 1px #2A2E37}
+.g{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:1px;background:#2A2E37}
+.p{background:#14161B;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.p h2{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#9AA1AE;font-weight:600;display:flex;justify-content:space-between}
+.r{display:grid;grid-template-columns:56px 1fr auto;gap:10px;font-size:13px;padding:7px 0;border-bottom:1px solid #22252D}
+.ok{color:#3FBF8A}.w{color:#E0A43A}
+.big{font-size:52px;font-weight:500}
+.btn{margin-top:auto;align-self:flex-start;background:#7A96FF;color:#0D1020;font-weight:600;font-size:13px;padding:8px 14px;border-radius:6px}
+.w2{grid-column:span 2}
+</style></head><body>
+<header><b>Margube</b><span>Inicio</span><span class="s">Buscar · Ctrl K</span><span class="m">15:42</span></header>
+<nav><div class="on">Inicio</div><div>Reservas <span class="m">2</span></div><div>Solicitudes <span class="m">1</span></div><div>Tiempo a compensar</div><div>Noticias</div><div>Equipo</div><div>Asistente</div><div>Administración <span class="m">4</span></div></nav>
+<div class="g">
+<div class="p w2"><h2>Agenda de hoy <span>miércoles 11</span></h2>
+<div class="r"><span class="m">09:30</span><span>Sala Norte · Revisión de obra</span><span class="ok">Confirmada</span></div>
+<div class="r"><span class="m">12:00</span><span>Toyota Corolla · 4821 KLM</span><span class="ok">Confirmada</span></div>
+<div class="r"><span class="m">16:00</span><span>Sala Mar · Equipo comercial</span><span class="w">Pendiente</span></div></div>
+<div class="p"><h2>Jornada</h2><div class="big m">62 %</div><span style="font-size:13px;color:#9AA1AE">Termina a las 17:00</span></div>
+<div class="p"><h2>Pendientes de revisar <span class="m">4</span></h2>
+<div class="r"><span class="m">10 nov</span><span>Ana Ruiz · Asunto propio</span><span class="w">Revisar</span></div>
+<div class="r"><span class="m">10 nov</span><span>Pablo Sanz · Remoto</span><span class="w">Revisar</span></div></div>
+<div class="p"><h2>Equipo hoy</h2><div class="r"><span class="m">12</span><span>En oficina</span><span></span></div><div class="r"><span class="m">5</span><span>En remoto</span><span></span></div><div class="r"><span class="m">2</span><span>Fuera</span><span></span></div></div>
+<div class="p"><h2>Bolsa de horas</h2><div class="big m ok">+6,7 h</div><span class="btn">Registrar horas</span></div>
+</div>
+</body></html>

@@ -10,7 +10,7 @@ import { Wallpaper } from './Wallpaper';
 
 // Content column: phones use the full width; tablets and landscape get a readable measure.
 export const CONTENT_MAX = 640;
-export const GUTTER = 16;
+export const GUTTER = 20;
 
 /** Brand blue washing in from the top and teal from the right edge; radial gradients drawn once. */
 export const Glow = memo(function Glow({ variant = 'default' }) {
@@ -71,7 +71,7 @@ export function Screen({
           paddingTop: insets.top + 12,
           paddingBottom: bottomSpace,
           paddingHorizontal: gutter,
-          gap: 18,
+          gap: 22,
           maxWidth: CONTENT_MAX + gutter * 2,
           width: '100%',
           alignSelf: 'center',

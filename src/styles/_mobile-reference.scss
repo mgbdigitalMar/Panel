@@ -1,0 +1,11 @@
+/* Phone surfaces share the reference's quiet canvas and compact reading hierarchy. */
+@media (max-width: 767px) {
+  html[data-appearance='glass'] {
+    --text-mut: #626C7D;
+    --shadow-cta: 0 6px 16px -10px rgba(47, 91, 234, 0.5);
+    --shadow-cta-hover: var(--shadow-cta);
+  }
+  html[data-appearance='glass'][data-theme='dark'] {
+    --text-mut: #ADB5C3;
+  }
+}

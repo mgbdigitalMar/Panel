@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase';
 import { Notifications, notificationIdFromResponse, acknowledgeResponse, listenForForegroundPushes } from '../services/pushNotifications';
 import { openNotificationTarget } from './notificationTarget';
 import BottomTabs from './BottomTabs';
+import AssistantWidget from '../components/AssistantWidget';
 
 import LoginScreen from '../screens/LoginScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
@@ -88,7 +89,7 @@ function usePushRouting(ready) {
 
 export default function RootNavigator({ onReady }) {
   const { colors, theme } = useTheme();
-  const { user, needsPasswordChange, needsPolicy } = useAuth();
+  const { user, needsPasswordChange, needsPolicy, locked } = useAuth();
   const [navReady, setNavReady] = useState(false);
   const isAdmin = user?.role === 'admin';
   usePushRouting(navReady);
@@ -151,6 +152,7 @@ export default function RootNavigator({ onReady }) {
           </>
         )}
       </Stack.Navigator>
+      {user && !needsPasswordChange && !needsPolicy && !locked && <AssistantWidget key={user.id} />}
     </NavigationContainer>
   );
 }

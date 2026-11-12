@@ -107,3 +107,10 @@
 
   .veil { background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(3, 5, 9, 0.55) 100%); }
 }
+
+@media (max-width: 767px) {
+  .photo { filter: blur(2px) brightness(1.08) contrast(0.78) saturate(1.02); }
+  .veil.veilPhoto { background: linear-gradient(180deg, rgba(237,242,245,0.82), rgba(237,242,245,0.62) 240px, rgba(237,242,245,0.5)); }
+  :global([data-theme='dark']) .photo { filter: blur(2px) brightness(0.7) contrast(0.86) saturate(1.08); }
+  :global([data-theme='dark']) .veil.veilPhoto { background: linear-gradient(180deg, rgba(17,24,34,0.78), rgba(17,24,34,0.66) 240px, rgba(11,15,22,0.62)); }
+}

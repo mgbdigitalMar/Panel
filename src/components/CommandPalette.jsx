@@ -1,3 +1,4 @@
+import { useAssistant } from '../context/AssistantContext';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -28,6 +29,7 @@ const normalize = (s = '') => s.toLocaleLowerCase('es').normalize('NFD').replace
 
 export default function CommandPalette({ open, onClose, onShowShortcuts }) {
   const navigate = useNavigate();
+  const { openAssistant } = useAssistant();
   const { user, employees = [], logout } = useAuth();
   const { theme, setMode } = useTheme();
   const [query, setQuery] = useState('');
@@ -35,7 +37,7 @@ export default function CommandPalette({ open, onClose, onShowShortcuts }) {
   const inputRef = useRef(null);
   const listRef = useRef(null);
 
-  const go = useCallback((path) => { navigate(path); onClose(); }, [navigate, onClose]);
+  const go = useCallback((path) => { if (path === '/assistant') openAssistant(); else navigate(path); onClose(); }, [navigate, onClose, openAssistant]);
 
   /* Every result is { key, section, label, desc, icon|avatar, keys?, run } */
   const results = useMemo(() => {

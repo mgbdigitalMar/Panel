@@ -23,7 +23,7 @@ export const FONTS = {
 };
 
 // Corner radii: soft, generous cards; calendar cells and tiles a step tighter.
-export const RADIUS = { card: 20, tile: 20, cell: 14 };
+export const RADIUS = { card: 22, tile: 20, cell: 14 };
 
 // Brand colours shared by both themes. `navy` is the ink used on white controls.
 export const BRAND = {
@@ -106,9 +106,9 @@ const dark = {
   brandBg: 'rgba(47,91,234,0.9)',
   brandBorder: 'rgba(255,255,255,0.3)',
   glowA: '#7AA2FF',
-  glowAOpacity: 0.42,
+  glowAOpacity: 0.12,
   glowB: '#0E9F9A',
-  glowBOpacity: 0.26,
+  glowBOpacity: 0.04,
   dots: 'rgba(240,244,255,0.13)',
   // Calendar cells, diagonal hatching for days that don't count, capsule-bar tracks
   cell: 'rgba(255,255,255,0.05)',
@@ -184,9 +184,9 @@ const light = {
   brandBg: 'rgba(47,91,234,0.92)',
   brandBorder: 'rgba(255,255,255,0.5)',
   glowA: '#2F5BEA',
-  glowAOpacity: 0.2,
+  glowAOpacity: 0.08,
   glowB: '#0E9F9A',
-  glowBOpacity: 0.12,
+  glowBOpacity: 0.04,
   dots: 'rgba(6,17,43,0.12)',
   cell: 'rgba(255,255,255,0.78)',
   cellBorder: 'rgba(17,20,27,0.05)',

@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import clsx from 'clsx';
 import {
   Search, UserRound, SlidersHorizontal, Sun, Moon, LogOut, Clock, LayoutGrid, Plus, Calendar, Inbox,
-  Timer, ChevronDown,
+  Timer, ChevronDown, Home, CalendarDays,
 } from 'lucide-react';
 import logoIcon from '../assets/logos/logo-icon.png';
 import logoColor from '../assets/logos/logo-color.png';
@@ -11,6 +11,8 @@ import logoWhite from '../assets/logos/logo-white.png';
 import { LEAF_PATH, VEIN_PATH } from './ui/Loader/Loader';
 import { useScrolling } from '../hooks/useScrolling';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { useDockScrub } from '../hooks/useDockScrub';
+import { DOCK_STYLE, DOCK_WEB_VARIABLES } from '../../shared/config/dock';
 import styles from './GlassChrome.module.scss';
 
 // Short labels for the top pill; the full name stays in the tooltip and for screen readers
@@ -305,11 +307,13 @@ export function GlassRail({ items, page, badges, onNavigate, onLogout }) {
 
 // Phones: the app's tab bar — four sections and "Más" (the rest, profile and preferences)
 const DOCK_IDS = ['dashboard', 'reservations', 'requests', 'horas'];
+const DOCK_ICONS = { dashboard: Home, reservations: CalendarDays };
 
 /** Bottom dock of the glass appearance on phones (tablets and computers use the top pill), with
  * the app's round "Nueva solicitud" button beside it. The open tab is blue, named and underlined.
  * While the page scrolls the dock shrinks out of the way; it returns to its size when it stops. */
 export function GlassTabBar({ items, page, badges, onNavigate }) {
+  const reduceMotion = useReducedMotion();
   const scrolling = useScrolling();
   const badgeOf = (item) => (item.badgeKey ? badges[item.badgeKey] || 0 : 0);
   const rest = items.filter((i) => !DOCK_IDS.includes(i.id));
@@ -318,35 +322,41 @@ export function GlassTabBar({ items, page, badges, onNavigate }) {
     { id: 'mas', label: 'Más', icon: LayoutGrid, extra: rest.reduce((s, i) => s + badgeOf(i), 0) },
   ];
   const isActive = (id) => (id === 'mas' ? !DOCK_IDS.includes(page) : page === id);
+  const scrub = useDockScrub({ count: tabs.length, onSelect: (index) => onNavigate(tabs[index].id) });
 
   return (
-    <div className={clsx(styles.dock, scrolling && styles.dockCompact)}>
-      <nav className={styles.tabBar} aria-label="Navegación principal">
-        {tabs.map((item) => {
-          const Icon = item.icon;
+    <div className={clsx(styles.dock, scrolling && styles.dockCompact)} style={DOCK_WEB_VARIABLES} data-dock-holding={scrub.holding || undefined}>
+      <nav ref={scrub.ref} className={styles.tabBar} aria-label="Navegación principal" {...scrub.handlers} data-scrubbing={scrub.preview >= 0 || undefined}>
+        {scrub.preview >= 0 && <motion.span className={styles.scrubPill} style={{ x: scrub.x, width: scrub.cellWidth }} initial={false} animate={{ scale: reduceMotion ? 1 : DOCK_STYLE.selectionScale }} transition={{ duration: DOCK_STYLE.pressDuration / 1000 }} aria-hidden="true" />}
+        {tabs.map((item, index) => {
+          const Icon = DOCK_ICONS[item.id] || item.icon;
           const active = isActive(item.id);
           const badge = item.extra ?? badgeOf(item);
           return (
             <button
               key={item.id}
               type="button"
+              data-dock-index={index}
+              data-dock-preview={scrub.preview === index || undefined}
               className={clsx(styles.tab, active && styles.tabActive)}
               onClick={() => onNavigate(item.id)}
               aria-current={active ? 'page' : undefined}
               aria-label={badge ? `${item.label}, ${badge} pendientes` : item.label}
             >
-              {active && (
+              {active && scrub.preview < 0 && (
                 <motion.span layoutId="glass-tab-pill" className={styles.tabPill} transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.9 }} aria-hidden="true" />
               )}
-              <Icon size={19} aria-hidden="true" />
-              {active && <span className={styles.tabLabel}>{SHORT[item.id] || item.label}</span>}
-              {badge > 0 && <span className={styles.tabBadge} aria-hidden="true">{badge > 9 ? '9+' : badge}</span>}
+              <span className={styles.tabIcon}>
+                <Icon size={DOCK_STYLE.iconSize} strokeWidth={active ? 2.1 : 1.8} aria-hidden="true" />
+                {badge > 0 && <span className={styles.tabBadge} aria-hidden="true">{badge > 99 ? '99+' : badge}</span>}
+              </span>
+              <span className={styles.tabLabel}>{SHORT[item.id] || item.label}</span>
             </button>
           );
         })}
       </nav>
       <button type="button" className={styles.dockPlus} onClick={() => onNavigate('requests?nueva=1')} aria-label="Nueva solicitud" title="Nueva solicitud">
-        <Plus size={22} aria-hidden="true" />
+        <Plus size={24} strokeWidth={2} aria-hidden="true" />
       </button>
     </div>
   );

@@ -29,7 +29,7 @@
 .colSide { display: contents; }
 
 @media (max-width: 767px) {
-  .spot { order: 1; }
+  .spot, .phoneHidden { display: none; }
   .agenda { order: 2; }
   .pinned { order: 3; }
   .company { order: 4; }
@@ -575,4 +575,13 @@
 @media (prefers-reduced-motion: reduce) {
   .meterTrack i,
   .barTrack i { transition: none; }
+}
+
+@media (max-width: 767px) {
+  .page { gap: 22px; padding: 0 4px; }
+  .tiles { margin-top: -4px; }
+  .company { order: 1; }
+  .agenda { order: 2; }
+  .pinned { order: 3; }
+  .away { order: 4; }
 }

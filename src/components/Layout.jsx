@@ -1,3 +1,4 @@
+import { useAssistant } from '../context/AssistantContext';
 import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useAuth, useTheme, useNotifs, useDocuments, useRequests, useReservations, useHours, usePersonalDays, useDataSync } from '../context';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -29,7 +30,6 @@ const navItems = [
   { id: 'horas',        label: 'Tiempo a compensar', icon: Timer },
   { id: 'news',         label: 'Noticias y Eventos', icon: Newspaper },
   { id: 'employees',    label: 'Equipo',             icon: UsersRound },
-  { id: 'assistant',    label: 'Asistente',          icon: MessageSquareText },
 ];
 const adminItems = [
   { id: 'admin', label: 'Administración', icon: ShieldCheck, badgeKey: 'admin' },
@@ -125,6 +125,7 @@ export default function Layout({ children }) {
   const { user, logout, needsOnboarding, setLastActivity, patchUser, refreshEmployees } = useAuth();
   const { theme, setMode } = useTheme();
   const navigate = useNavigate();
+  const { openAssistant } = useAssistant();
   const location = useLocation();
   const page = location.pathname.replace('/', '') || 'dashboard';
   const { liveNotifs = [], notifications = [], unreadCount = 0, notifHasMore, loadMoreNotifications, markNotifRead, markAllNotifsRead } = useNotifs();
@@ -208,8 +209,9 @@ export default function Layout({ children }) {
   }, []);
 
   const handleNavigate = useCallback((id) => {
-    navigate('/' + id);
-  }, [navigate]);
+    if (id === 'assistant') openAssistant();
+    else navigate('/' + id);
+  }, [navigate, openAssistant]);
 
   const [cmdOpen, setCmdOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);

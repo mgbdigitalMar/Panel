@@ -47,13 +47,13 @@ const Sheen = memo(function Sheen({ radius, opacity }) {
  * It fills the container absolutely, so the container keeps its own layout and press feedback.
  * `tint` colours the glass (selected states); `sheen` can be turned off on very small controls.
  */
-export const GlassFill = memo(function GlassFill({ radius = 22, tint, sheen = true }) {
+export const GlassFill = memo(function GlassFill({ radius = 22, tint, sheen = true, edgeColor, rimColor }) {
   const { colors, theme, effectiveGlass, material } = useTheme();
   const shape = { ...FILL, borderRadius: radius, overflow: 'hidden' };
   const edge = (
     <View
       pointerEvents="none"
-      style={[FILL, { borderRadius: radius, borderWidth: 1, borderColor: colors.glassBorder, borderTopColor: colors.glassRim }]}
+      style={[FILL, { borderRadius: radius, borderWidth: 1, borderColor: edgeColor || colors.glassBorder, borderTopColor: rimColor || colors.glassRim }]}
     />
   );
 
@@ -66,15 +66,16 @@ export const GlassFill = memo(function GlassFill({ radius = 22, tint, sheen = tr
   }
 
   if (NATIVE_GLASS) {
-    return (
+    const nativeFill = (
       <GlassView
         pointerEvents="none"
         style={shape}
-        glassEffectStyle={effectiveGlass === 'strong' ? 'clear' : 'regular'}
+        glassEffectStyle="regular"
         colorScheme={theme}
         tintColor={tint || colors.glassFill}
       />
     );
+    return edgeColor || rimColor ? <View pointerEvents="none" style={shape}>{nativeFill}{edge}</View> : nativeFill;
   }
 
   if (Platform.OS === 'ios') {

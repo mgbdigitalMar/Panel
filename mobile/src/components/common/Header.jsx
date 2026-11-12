@@ -9,7 +9,7 @@ import { T } from './Text';
  * Large-title header (30-34/600) with optional back button, eyebrow, subtitle and right-side actions.
  * In root tabs (no back button), actions stay cleanly aligned side-by-side with the title.
  */
-export function Header({ title, subtitle, eyebrow, back, right, onBack, size = 30 }) {
+export function Header({ title, subtitle, eyebrow, back, right, onBack, size = 28 }) {
   const { colors } = useTheme();
   const navigation = useNavigation();
   const goBack = onBack || (() => navigation.goBack());
@@ -25,7 +25,7 @@ export function Header({ title, subtitle, eyebrow, back, right, onBack, size = 3
           <View style={{ gap: 4 }}>
             {eyebrow ? <T size={13} weight="semibold" color={colors.accentFg} upper>{eyebrow}</T> : null}
             {title ? <T size={size} weight="semibold" accessibilityRole="header">{title}</T> : null}
-            {subtitle ? <T size={13.5} color={colors.text3}>{subtitle}</T> : null}
+            {subtitle ? <T size={14} color={colors.text2}>{subtitle}</T> : null}
           </View>
         ) : null}
       </View>
@@ -37,8 +37,8 @@ export function Header({ title, subtitle, eyebrow, back, right, onBack, size = 3
       {eyebrow ? <T size={13} weight="semibold" color={colors.accentFg} upper>{eyebrow}</T> : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44, gap: 10 }}>
         <View style={{ flex: 1, gap: 2, minWidth: 0 }}>
-          {title ? <T size={size} weight="semibold" accessibilityRole="header" numberOfLines={1} adjustsFontSizeToFit>{title}</T> : null}
-          {subtitle ? <T size={13.5} color={colors.text3} numberOfLines={1}>{subtitle}</T> : null}
+          {title ? <T size={size} weight="semibold" accessibilityRole="header">{title}</T> : null}
+          {subtitle ? <T size={14} color={colors.text2}>{subtitle}</T> : null}
         </View>
         {right ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 }}>{right}</View> : null}
       </View>

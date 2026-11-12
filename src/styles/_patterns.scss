@@ -207,7 +207,7 @@
   box-shadow:
     inset 0 1px 0 var(--lg-rim),
     inset 0 -1px 0 rgba(255, 255, 255, 0.06),
-    0 12px 32px -14px rgba(0, 0, 0, 0.45);
+    var(--lg-control-shadow, 0 12px 32px -14px rgba(0, 0, 0, 0.45));
   -webkit-backdrop-filter: var(--lg-blur) !important;
   backdrop-filter: var(--lg-blur) !important;
 
@@ -217,7 +217,7 @@
     inset: 0;
     z-index: -1;
     border-radius: inherit;
-    background: radial-gradient(120% 70% at 30% 0%, rgba(255, 255, 255, 0.14), transparent 55%);
+    background: radial-gradient(120% 70% at 30% 0%, rgba(255, 255, 255, var(--material-sheen-alpha, 0.14)), transparent 55%);
     pointer-events: none;
   }
 }
