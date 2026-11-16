@@ -115,7 +115,7 @@ export default function NewHoursScreen() {
           {[30, 60, 120, 240].map((m) => {
             const on = m === min;
             return (
-              <PressScale key={m} onPress={() => { Haptics.selectionAsync().catch(() => {}); setMin(m); }} accessibilityRole="button"
+              <PressScale key={m} haptic="selection" onPress={() => setMin(m)} accessibilityRole="button"
                 style={{ flex: 1, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? colors.segOn : colors.segTrack }}>
                 <T mono weight="semibold" size={14} color={on ? color : colors.text2}>{fmtHM(m / 60)}</T>
               </PressScale>

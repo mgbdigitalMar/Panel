@@ -10,9 +10,9 @@ export function useScrolling(idle = 220) {
       clearTimeout(timer);
       timer = setTimeout(() => setScrolling(false), idle);
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
+    document.addEventListener('scroll', onScroll, { passive: true, capture: true });
     return () => {
-      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('scroll', onScroll, { capture: true });
       clearTimeout(timer);
     };
   }, [idle]);

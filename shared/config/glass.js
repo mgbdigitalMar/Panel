@@ -15,12 +15,23 @@ export function glassMaterial(value, dark = false) {
   const strength = { off: 0, soft: 0.35, normal: 0.65, strong: 1 }[level];
   const rgb = dark ? '24,23,29' : '255,255,255';
   const fill = (alpha) => `rgba(${rgb},${alpha})`;
+  // Separate surface opacity from blur: a dense fill otherwise hides the stronger optics.
+  const density = {
+    off: { card: 1, chrome: 1, popover: 1, native: 1, blur: 0 },
+    soft: { card: 0.92, chrome: 0.9, popover: 0.97, native: 0.64, blur: 20 },
+    normal: { card: 0.78, chrome: 0.74, popover: 0.92, native: 0.3, blur: 45 },
+    // Preserve the original full-strength material at the last slider stop.
+    strong: { card: dark ? 0.58 : 0.68, chrome: dark ? 0.66 : 0.75, popover: 0.88, blur: 100 },
+  }[level];
   return {
     strength,
     blur: strength === 0 ? 0 : Math.round(12 + strength * 20),
-    card: fill(1 - strength * (dark ? 0.42 : 0.32)),
-    chrome: fill(1 - strength * (dark ? 0.34 : 0.25)),
-    popover: fill(1 - strength * 0.12),
+    blurIntensity: density.blur,
+    nativeStyle: level === 'off' ? 'none' : 'regular',
+    nativeTint: level === 'strong' ? undefined : fill(density.native),
+    card: fill(density.card),
+    chrome: fill(density.chrome),
+    popover: fill(density.popover),
     sheen: strength * (dark ? 0.12 : 0.4),
   };
 }

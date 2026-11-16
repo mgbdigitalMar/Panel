@@ -1,7 +1,9 @@
 import { useLayoutEffect, useRef } from 'react';
 import { animate, useReducedMotion } from 'framer-motion';
 
-const EASE_OUT = [0.23, 1, 0.32, 1];
+import { EASE } from '../../../motion/tokens';
+
+const EASE_OUT = EASE.out;
 
 function format(v, decimals, signed) {
   const n = Number(v) || 0;

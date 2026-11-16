@@ -53,10 +53,14 @@
 
   button {
     @include p.tab-btn;
+    @include p.tab-indicator-host;
   }
 
-  .switchOn { @include p.tab-btn-active; }
+  .switchOn { @include p.tab-btn-active-glide; }
 }
+
+/* The selected view's chip glides between the two (ActiveIndicator) */
+.switchIndicator { @include p.tab-indicator; }
 
 .switchCount {
   @include p.tab-count;
@@ -162,9 +166,8 @@
 
 .heroLabel {
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0;
   color: rgba(255, 255, 255, 0.66);
 }
 

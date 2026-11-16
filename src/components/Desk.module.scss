@@ -139,10 +139,9 @@
 
 .railTitle {
   margin: 4px 10px 8px;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0;
   color: var(--text-mut);
 }
 
@@ -161,20 +160,34 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  @include p.tab-indicator-host;
+  transition: background-color 0.15s, color 0.15s;
 
-  &:hover { background: rgba(var(--text-rgb), 0.05); color: var(--text); }
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { background: rgba(var(--text-rgb), 0.05); color: var(--text); }
+  }
 }
 
+/* The selected item's tint is an <ActiveIndicator>: it glides up and down the rail */
 .railOn {
-  background: rgba(var(--accent-rgb), 0.12);
-  border-color: rgba(var(--accent-rgb), 0.32);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   color: var(--text);
 
-  &:hover { background: rgba(var(--accent-rgb), 0.16); }
-
   .railIcon { background: var(--tone, var(--accent)); color: #FFFFFF; }
+}
+
+.railIndicator {
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border: 1px solid rgba(var(--accent-rgb), 0.32);
+  background: rgba(var(--accent-rgb), 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+  transition: background-color 0.15s;
+
+  @media (hover: hover) and (pointer: fine) {
+    .railOn:hover > & { background: rgba(var(--accent-rgb), 0.16); }
+  }
 }
 
 .railIcon {
@@ -503,8 +516,10 @@
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+    @include p.tab-indicator-host;
+    transition: color 0.15s, transform 0.14s var(--ease-out);
 
+    &:active { transform: scale(0.97); }
     &:hover { color: var(--text); }
 
     em {
@@ -514,16 +529,17 @@
     }
   }
 
+  /* The chip itself is the <ActiveIndicator> gliding between options */
   .segOn {
-    background: var(--chip-on);
     color: var(--chip-on-fg);
-    box-shadow: var(--chip-on-shadow);
 
     &:hover { color: var(--chip-on-fg); }
 
     em { color: inherit; opacity: 0.75; }
   }
 }
+
+.segIndicator { @include p.tab-indicator; }
 
 .select {
   position: relative;
@@ -746,10 +762,9 @@
     padding: 14px 20px 8px;
     background: transparent;
     color: var(--text-mut);
-    font-size: 11.5px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0;
   }
 }
 
@@ -840,6 +855,7 @@
   font: 600 13.5px/1 var(--font-body);
   white-space: nowrap;
   cursor: pointer;
+  isolation: isolate;
   transition: color 0.15s, background-color 0.15s, transform 0.15s var(--ease-out);
 
   &:active { transform: scale(0.97); }
@@ -864,13 +880,17 @@
   }
 }
 
-/* The open tab: a solid chip (white on smoked glass, ink on light glass) */
+/* The open tab: a solid chip (white on smoked glass, ink on light glass), drawn by the
+   <ActiveIndicator> so it glides from tab to tab */
 .tabOn {
-  background: var(--chip-on);
   color: var(--chip-on-fg);
-  box-shadow: var(--chip-on-shadow);
 
   em { background: color-mix(in srgb, currentColor 14%, transparent); color: inherit; }
+}
+
+.tabIndicator {
+  @include p.tab-indicator;
+  inset: -1px;
 }
 
 .tabAlert {

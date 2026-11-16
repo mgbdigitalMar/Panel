@@ -149,7 +149,8 @@ export function MonthCalendar({ month, marks = {}, selected, onSelect, style }) 
               <HapticPressable
                 key={iso}
                 disabled={!inMonth || !onSelect}
-                onPress={() => { Haptics.selectionAsync().catch(() => {}); onSelect(iso); }}
+                haptic="selection"
+                onPress={() => onSelect(iso)}
                 accessibilityRole={onSelect && inMonth ? 'button' : undefined}
                 accessibilityState={{ selected: isSel }}
                 accessibilityLabel={`${day.getDate()} de ${MONTHS[day.getMonth()]}${isToday ? ', hoy' : ''}${mark?.label ? `, ${mark.label}` : ''}`}

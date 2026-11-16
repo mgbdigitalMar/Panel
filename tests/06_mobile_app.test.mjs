@@ -101,8 +101,8 @@ export async function runMobileAppTests() {
   // Diseño del boceto (igual que la web en el móvil)
   const src = (...p) => readFileSync(resolve(mobileDir, 'src', ...p), 'utf8');
   const tabs = src('navigation', 'BottomTabs.jsx');
-  assert(tabs.includes('tint={dockTint}') && tabs.includes('<T size={DOCK_STYLE.labelSize} weight="medium" color={color}'),
-    'Barra de pestañas: cristal oscuro y nombres visibles en todas las secciones');
+  assert(tabs.includes('const palette = dockTheme(theme);') && tabs.includes('tint={glass}') && tabs.includes('<T size={DOCK_STYLE.labelSize} weight="medium" color={color}'),
+    'Barra de pestañas: cristal del tema (blanco en claro, ahumado en oscuro) y nombres visibles en todas las secciones');
   assert(['DashboardScreen.jsx', 'ReservationsScreen.jsx', 'RequestsScreen.jsx', 'HorasScreen.jsx', 'SettingsScreen.jsx']
     .every((f) => src('screens', f).includes('<TopBar />')) && !src('components', 'common', 'TopBar.jsx').includes('<Avatar'), 'Barra superior (hoja, buscar y avisos, sin avatar) en las cinco pestañas');
   assert(src('navigation', 'RootNavigator.jsx').includes('name="Search" component={SearchScreen}') && existsSync(resolve(mobileDir, 'src', 'screens', 'SearchScreen.jsx')),

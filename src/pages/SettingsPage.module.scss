@@ -97,6 +97,7 @@
   gap: 6px;
 
   button {
+    @include p.tab-indicator-host;
     min-height: 44px;
     padding: 8px 4px;
     border: 1px solid var(--lg-edge);
@@ -106,7 +107,7 @@
     font: inherit;
     font-size: 12px;
     cursor: pointer;
-    &[aria-pressed='true'] { background: var(--chip-on); color: var(--chip-on-fg); }
+    &[aria-pressed='true'] { background: transparent; color: var(--chip-on-fg); }
     &:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   }
 }
@@ -278,15 +279,27 @@
   left: 3px;
   width: 18px;
   height: 18px;
-  border-radius: 50%;
+  border-radius: 7px;
   background: var(--text-mut);
-  transition: color 0.2s var(--ease-out), background-color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  translate: 0 0;
+  transition: translate 260ms cubic-bezier(.3,.7,.3,1), scale 260ms cubic-bezier(.3,.7,.3,1), background-color 160ms var(--ease-out);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,.4);
 
   .toggleOn & {
-    left: calc(100% - 21px);
+    translate: 19px 0;
     background: #ffffff;
   }
+  .toggle:active:not(:disabled) & { scale: .88 1.05; transition-duration: 120ms; }
+}
+.toggle { touch-action: manipulation; }
+.toggle:disabled { opacity: .5; cursor: default; }
+.themeCard, .glassOptions button {
+  transition: scale 260ms cubic-bezier(.3,.7,.3,1), background-color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+  &:active:not(:disabled) { scale: .97 1.015; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toggleThumb, .themeCard, .glassOptions button { transition: background-color 120ms; }
+  .toggle:active:not(:disabled) .toggleThumb, .themeCard:active, .glassOptions button:active { scale: 1; }
 }
 
 .accountGrid {
@@ -453,7 +466,7 @@
   line-height: 1;
 
   strong { font-family: var(--font-heading); font-size: 20px; }
-  small { font-size: 10px; font-weight: 700; color: var(--text-mut); text-transform: uppercase; letter-spacing: 0.06em; }
+  small { font-size: 12.5px; font-weight: 600; color: var(--text-mut); letter-spacing: 0; }
 }
 
 .sessionActions {
@@ -541,3 +554,5 @@
   font-size: 12.5px;
   line-height: 1.4;
 }
+
+.glassOptionIndicator { @include p.tab-indicator; }

@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { Recharts } from '../components/charts/Recharts';
 import {
   Download, Search, CheckCircle, Inbox, TrendingDown, TrendingUp, X, CheckCheck, CalendarRange, Timer, UsersRound, Wallet,
 } from 'lucide-react';
 import { Button, Input } from '../components/ui';
 import { DeskEyebrow, DeskGauge, gaugeRow } from '../components/Desk';
 import { fmtHM } from '../utils/format';
+import { ActiveIndicator, IndicatorGroup } from '../motion/ActiveIndicator';
 import styles from './HorasDesk.module.scss';
 
 /*
@@ -49,15 +50,19 @@ export function HorasDeskHeader({ view, setView, isAdmin, teamPending = 0, onExp
       </div>
       <div className={styles.headActions}>
         {isAdmin && (
+          <IndicatorGroup>
           <div className={styles.switch} role="tablist" aria-label="Vista">
             <button type="button" role="tab" aria-selected={view !== 'usuarios'} className={clsx(view !== 'usuarios' && styles.switchOn)} onClick={() => setView('bolsa')}>
+              {view !== 'usuarios' && <ActiveIndicator className={styles.switchIndicator} radius={999} />}
               <Wallet size={15} aria-hidden="true" /> Mi cuenta
             </button>
             <button type="button" role="tab" aria-selected={view === 'usuarios'} className={clsx(view === 'usuarios' && styles.switchOn)} onClick={() => setView('usuarios')}>
+              {view === 'usuarios' && <ActiveIndicator className={styles.switchIndicator} radius={999} />}
               <UsersRound size={15} aria-hidden="true" /> Equipo
               {teamPending > 0 && <span className={styles.switchCount} aria-label={`${teamPending} con horas pendientes`}>{teamPending}</span>}
             </button>
           </div>
+          </IndicatorGroup>
         )}
         {canExport && <Button variant="secondary" icon={Download} onClick={onExport}>Exportar CSV</Button>}
       </div>
@@ -143,6 +148,7 @@ function BalanceHero({ records, balance, creditHours, debtHours, pendingHours, f
         <span className={styles.heroLabel}>Evolución · 90 días</span>
         {evolution.length > 1 ? (
           <div className={styles.chart}>
+            <Recharts>{({ ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip }) => (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={evolution} margin={{ top: 8, right: 4, left: 4, bottom: 0 }}>
                 <defs>
@@ -158,6 +164,7 @@ function BalanceHero({ records, balance, creditHours, debtHours, pendingHours, f
                   dot={false} activeDot={{ r: 4, fill: '#FFFFFF', stroke: '#2F5BEA', strokeWidth: 2 }} isAnimationActive={false} />
               </AreaChart>
             </ResponsiveContainer>
+            )}</Recharts>
           </div>
         ) : (
           <p className={styles.chartEmpty}>La evolución aparecerá con tus primeros movimientos.</p>
@@ -483,6 +490,7 @@ function MonthSummary({ records, balance }) {
           {empty ? (
             <p className={styles.monthlyEmpty}>Aún no hay movimientos en los últimos seis meses.</p>
           ) : (
+            <Recharts>{({ ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip }) => (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={months} barGap={6} barCategoryGap="30%" margin={{ top: 8, right: 4, left: 4, bottom: 0 }}>
                 <defs>
@@ -498,6 +506,7 @@ function MonthSummary({ records, balance }) {
                 <Bar dataKey="debidas" name="Debidas" fill="rgba(var(--danger-rgb), 0.55)" radius={[999, 999, 999, 999]} maxBarSize={22} minPointSize={3} />
               </BarChart>
             </ResponsiveContainer>
+            )}</Recharts>
           )}
         </div>
         <p className={styles.monthlyFoot}>Media mensual generada: <strong>{fmtHM(avg)} h</strong></p>

@@ -3,6 +3,7 @@ import { TimerReset } from 'lucide-react';
 import { useIdle } from '../context';
 import { Portal } from './ui';
 import styles from './IdleWarning.module.scss';
+import { EASE } from '../motion/tokens';
 
 /**
  * Announces the idle logout before it happens, so a half-written form is not lost by surprise.
@@ -25,7 +26,7 @@ export function IdleWarning() {
             initial={{ opacity: 0, transform: reduce ? 'none' : 'translateY(12px) scale(0.97)' }}
             animate={{ opacity: 1, transform: reduce ? 'none' : 'translateY(0px) scale(1)' }}
             exit={{ opacity: 0, transform: reduce ? 'none' : 'translateY(12px) scale(0.97)', transition: { duration: 0.15 } }}
-            transition={{ duration: reduce ? 0.12 : 0.25, ease: [0.23, 1, 0.32, 1] }}
+            transition={{ duration: reduce ? 0.12 : 0.25, ease: EASE.out }}
           >
             <span className={styles.count} aria-hidden="true">{secondsLeft}</span>
             {/* Read once when it appears; the countdown itself is not re-announced every second.

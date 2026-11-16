@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Animated, Image, Modal, ScrollView, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, Inbox, X, Info, AlertTriangle, ArrowRight } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
 import Svg, { Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../context/ThemeContext';
@@ -37,7 +36,8 @@ export function Segmented({ options, value, onChange, height = 44, style }) {
             accessibilityState={{ selected: on, disabled: !!o.disabled }}
             accessibilityLabel={o.label}
             disabled={o.disabled}
-            onPress={() => { if (!on) { Haptics.selectionAsync().catch(() => {}); onChange(o.value); } }}
+            haptic="selection"
+            onPress={() => { if (!on) onChange(o.value); }}
             style={({ pressed }) => ({
               opacity: o.disabled && !on ? 0.4 : 1,
               flex: 1, minWidth: 0, height: height - 8, borderRadius: (height - 8) / 2, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8,
@@ -65,7 +65,8 @@ export function ChipRail({ options, value, onChange, style }) {
             key={o.value}
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
-            onPress={() => { if (!on) { Haptics.selectionAsync().catch(() => {}); onChange(o.value); } }}
+            haptic="selection"
+            onPress={() => { if (!on) onChange(o.value); }}
             style={{
               height: 36, paddingHorizontal: 14, borderRadius: 18, flexDirection: 'row', alignItems: 'center', gap: 6,
               ...(on ? { backgroundColor: colors.tabOn, borderWidth: 1, borderColor: colors.tabOn } : glassSurface(colors)),
@@ -101,10 +102,8 @@ export function WeekdayPicker({ options, values, onChange, style }) {
             accessibilityRole="checkbox"
             accessibilityState={{ checked: on }}
             accessibilityLabel={o.label}
-            onPress={() => {
-              Haptics.selectionAsync().catch(() => {});
-              onChange(on ? values.filter((v) => v !== o.value) : [...values, o.value]);
-            }}
+            haptic="selection"
+            onPress={() => onChange(on ? values.filter((v) => v !== o.value) : [...values, o.value])}
             style={{
               flex: 1, maxWidth: 56, aspectRatio: 1, borderRadius: 999, alignItems: 'center', justifyContent: 'center',
               ...(on ? { backgroundColor: bg, borderWidth: 1, borderColor: fg } : glassSurface(colors)),
@@ -211,7 +210,8 @@ export function CountTabs({ options, value, onChange, style }) {
             accessibilityState={{ selected: on }}
             accessibilityLabel={o.count != null ? `${o.label}, ${o.count}` : o.label}
             hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
-            onPress={() => { if (!on) { Haptics.selectionAsync().catch(() => {}); onChange(o.value); } }}
+            haptic="selection"
+            onPress={() => { if (!on) onChange(o.value); }}
             style={{ minHeight: 36, justifyContent: 'center' }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
@@ -257,12 +257,13 @@ export function WashCard({ children, onPress, radius = 28, padding = 16, style, 
   const { colors } = useTheme();
   const body = (
     <>
+      <GlassFill radius={radius} edgeColor={colors.accentBorder} />
       <LinearGradient pointerEvents="none" colors={colors.wash} locations={[0, 0.45, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: radius }} />
       {children}
     </>
   );
-  const s = [{ borderRadius: radius, padding, ...glassSurface(colors), borderColor: colors.accentBorder, overflow: 'hidden' }, style];
+  const s = [{ borderRadius: radius, padding, overflow: 'hidden' }, style];
   if (onPress) return <PressScale onPress={onPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel} scaleTo={0.98} style={s}>{body}</PressScale>;
   return <View style={s}>{body}</View>;
 }
@@ -295,6 +296,9 @@ export function Row({ left, title, subtitle, right, onPress, first = true, last 
   const s = [{
     flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 13, paddingHorizontal: 14, minHeight: 64,
     ...glassSurface(colors),
+    // List rows are not see-through either, but stay without a live blur: a screen can hold dozens
+    // of them and a blur per row would cost every frame of a scroll on Android
+    backgroundColor: colors.glassStrong,
     ...(first ? null : { borderTopColor: colors.glassBorder }),
     borderTopLeftRadius: radius.tl, borderTopRightRadius: radius.tl, borderBottomLeftRadius: radius.bl, borderBottomRightRadius: radius.bl,
   }, style];
@@ -418,7 +422,8 @@ export function Checkbox({ checked, onChange, label, disabled }) {
   const { colors } = useTheme();
   return (
     <HapticPressable
-      onPress={() => { if (!disabled) { Haptics.selectionAsync().catch(() => {}); onChange(!checked); } }}
+      haptic="selection"
+      onPress={() => { if (!disabled) onChange(!checked); }}
       accessibilityRole="checkbox"
       accessibilityState={{ checked, disabled }}
       hitSlop={6}
@@ -442,7 +447,8 @@ export function Stepper({ value, onChange, min = 0, max = 999, step = 1, format 
     const blocked = next < min || next > max;
     return (
       <PressScale
-        onPress={() => { Haptics.selectionAsync().catch(() => {}); onChange(Math.max(min, Math.min(max, next))); }}
+        haptic="selection"
+        onPress={() => onChange(Math.max(min, Math.min(max, next)))}
         disabled={blocked}
         accessibilityRole="button"
         accessibilityLabel={a11y}

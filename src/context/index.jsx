@@ -25,6 +25,8 @@ import {
 } from '../../shared/services/notifications.js'
 import { safeFileUrl } from '../../shared/utils/urls.js'
 import { toUserMessage } from '../../shared/utils/errors.js'
+import { startLiquidRefraction } from '../glass/liquidRefraction'
+import { supportsWebGLGlass } from '../glass/wallpaperGlass'
 
 export const ThemeCtx = createContext()
 
@@ -48,6 +50,28 @@ export function ThemeProvider({ children }) {
     try { localStorage.setItem(GLASS_STORAGE_KEY, glassIntensity); } catch {}
   }, [glassIntensity]);
   const setGlassIntensity = (value) => setGlassState(normalizeGlass(value));
+
+  // Real Liquid Glass (glass/liquidRefraction.js, Chromium only): refraction and dispersion at the
+  // rim. «Intenso» bends the chrome and the cards; «Suave» and «Normal» the dock only; «Sin efecto»
+  // nothing. "Reduce transparency" switches it off here, since the refraction filter is an inline
+  // style that a stylesheet rule could not override.
+  useEffect(() => {
+    if (glassIntensity === 'off') return undefined;
+    // With WebGL the cards get their glass from the wallpaper canvas (glass/wallpaperGlass.js), in
+    // every browser; this SVG refraction then only bends the floating chrome
+    const options = glassIntensity === 'strong'
+      ? (supportsWebGLGlass() ? { only: '[data-liquid]' } : undefined)
+      : { only: '[data-liquid="dock"]' };
+    const reduced = window.matchMedia('(prefers-reduced-transparency: reduce)');
+    let stop = () => {};
+    const sync = () => {
+      stop();
+      stop = reduced.matches ? () => {} : startLiquidRefraction(options);
+    };
+    sync();
+    reduced.addEventListener?.('change', sync);
+    return () => { reduced.removeEventListener?.('change', sync); stop(); };
+  }, [glassIntensity]);
 
   const applyMode = (m) => {
     const resolved = resolveTheme(m);

@@ -2,6 +2,7 @@ import { useId } from 'react';
 import clsx from 'clsx';
 import { Search, X, ChevronDown } from 'lucide-react';
 import { LEAF_PATH, VEIN_PATH } from './ui/Loader/Loader';
+import { ActiveIndicator, IndicatorGroup } from '../motion/ActiveIndicator';
 import styles from './Desk.module.scss';
 
 /**
@@ -56,6 +57,7 @@ export function DeskRail({ title, items, value, onChange, asFilter }) {
   return (
     <nav className={styles.rail} aria-label={title}>
       {title && <p className={styles.railTitle}>{title}</p>}
+      <IndicatorGroup>
       <ul>
         {items.map((it) => {
           const Icon = it.icon;
@@ -69,7 +71,8 @@ export function DeskRail({ title, items, value, onChange, asFilter }) {
                 aria-current={!asFilter && on ? 'page' : undefined}
                 aria-pressed={asFilter ? on : undefined}
               >
-                {Icon && <span className={styles.railIcon} data-tone={it.tone} aria-hidden="true"><Icon size={16} /></span>}
+                {on && <ActiveIndicator className={styles.railIndicator} radius={14} />}
+                {Icon &&<span className={styles.railIcon} data-tone={it.tone} aria-hidden="true"><Icon size={16} /></span>}
                 <span className={styles.railText}>
                   <span>{it.label}</span>
                   {it.hint && <small>{it.hint}</small>}
@@ -85,6 +88,7 @@ export function DeskRail({ title, items, value, onChange, asFilter }) {
           );
         })}
       </ul>
+      </IndicatorGroup>
     </nav>
   );
 }
@@ -126,6 +130,7 @@ export function DeskMetrics({ items, label }) {
  */
 export function DeskTabs({ items, value, onChange, label }) {
   return (
+    <IndicatorGroup>
     <div className={styles.tabs} role="group" aria-label={label}>
       {items.map((it) => {
         const Icon = it.icon;
@@ -133,6 +138,7 @@ export function DeskTabs({ items, value, onChange, label }) {
         return (
           <button key={it.value} type="button" className={clsx(styles.tab, on && styles.tabOn)}
             onClick={() => onChange(it.value)} aria-pressed={on}>
+            {on && <ActiveIndicator className={styles.tabIndicator} radius={999} />}
             {Icon && <Icon size={15} aria-hidden="true" />}
             <span>{it.label}</span>
             {it.count != null && <em>{it.count}</em>}
@@ -141,6 +147,7 @@ export function DeskTabs({ items, value, onChange, label }) {
         );
       })}
     </div>
+    </IndicatorGroup>
   );
 }
 
@@ -248,12 +255,15 @@ export function DeskSearch({ value, onChange, placeholder, label }) {
 /** One choice among a few (view, period, scope). */
 export function DeskSegmented({ value, onChange, options, label }) {
   return (
+    <IndicatorGroup>
     <div className={styles.segmented} role="radiogroup" aria-label={label}>
       {options.map((o) => {
         const Icon = o.icon;
+        const on = value === o.value;
         return (
-          <button key={o.value} type="button" role="radio" aria-checked={value === o.value}
-            className={clsx(value === o.value && styles.segOn)} onClick={() => onChange(o.value)} title={o.title}>
+          <button key={o.value} type="button" role="radio" aria-checked={on}
+            className={clsx(on && styles.segOn)} onClick={() => onChange(o.value)} title={o.title}>
+            {on && <ActiveIndicator className={styles.segIndicator} radius={999} />}
             {Icon && <Icon size={15} aria-hidden="true" />}
             {o.label && <span>{o.label}</span>}
             {o.count != null && <em>{o.count}</em>}
@@ -261,6 +271,7 @@ export function DeskSegmented({ value, onChange, options, label }) {
         );
       })}
     </div>
+    </IndicatorGroup>
   );
 }
 

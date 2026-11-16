@@ -30,9 +30,13 @@
   white-space: nowrap;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: color 0.15s var(--ease-out), background-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), transform 0.15s var(--ease-out);
+  transition: color 0.15s var(--ease-out), background-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), transform 0.15s var(--ease-out), scale 260ms cubic-bezier(.3,.7,.3,1);
 
-  &:active { transform: scale(0.97); }
+  &:active { scale: .96 1.025; transition-duration: 120ms; }
+  @media (prefers-reduced-motion: reduce) {
+    transition: color 120ms, background-color 120ms;
+    &:active { scale: 1; }
+  }
 
   &:focus-visible {
     outline: none;
@@ -53,6 +57,28 @@
   color: var(--chip-on-fg) !important;
   border-color: transparent !important;
   box-shadow: var(--chip-on-shadow) !important;
+}
+
+/* Tabs whose selected chip is an <ActiveIndicator> (src/motion/ActiveIndicator.jsx): the chip glides
+   from the old tab to the new one instead of jumping. The selected button only changes its text
+   colour; the indicator, rendered inside it, carries the chip. */
+@mixin tab-indicator-host {
+  position: relative;
+  isolation: isolate;
+}
+
+@mixin tab-btn-active-glide {
+  color: var(--chip-on-fg) !important;
+}
+
+@mixin tab-indicator {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--chip-on);
+  box-shadow: var(--chip-on-shadow);
+  pointer-events: none;
 }
 
 @mixin tab-count {
@@ -210,6 +236,15 @@
     var(--lg-control-shadow, 0 12px 32px -14px rgba(0, 0, 0, 0.45));
   -webkit-backdrop-filter: var(--lg-blur) !important;
   backdrop-filter: var(--lg-blur) !important;
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: var(--bg-2);
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--bg-2);
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
 
   &::before {
     content: '';

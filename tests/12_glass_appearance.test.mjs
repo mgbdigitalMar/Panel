@@ -41,11 +41,11 @@ export async function runGlassAppearanceTests() {
   const chromeStyles = read('src', 'components', 'GlassChrome.module.scss');
   assert('Móvil Cristal: todas las secciones con nombre visible',
     layout.includes('<GlassTabBar') && chrome.includes('{items.map((item) => {') && chrome.includes('<span className={styles.tabLabel}>') && !chrome.includes('{active && <span className={styles.tabLabel}>'));
-  assert('iPad Cristal: las secciones en la barra superior, sin dock', /\.dock \{[\s\S]*?@media \(min-width: 768px\) \{ display: none; \}/.test(chromeStyles)
-    && /\.nav \{[\s\S]*?@media \(max-width: 767px\) \{ display: none; \}/.test(chromeStyles));
+  assert('Tablets Cristal: el mismo dock que en m?vil, tambi?n en horizontal', /\.dock \{[\s\S]*?@media \(min-width: 1367px\) \{ display: none; \}/.test(chromeStyles)
+    && /\.nav \{[\s\S]*?@media \(max-width: 1366px\) \{ display: none; \}/.test(chromeStyles));
   assert('Ordenador: las secciones en el menú lateral flotante; la píldora solo en iPad',
-    /\.nav \{[\s\S]*?@media \(min-width: 1024px\) \{ display: none; \}/.test(chromeStyles)
-    && /\.rail \{[\s\S]*?position: fixed;[\s\S]*?@media \(min-width: 1024px\) \{ display: flex; \}/.test(chromeStyles)
+    /\.nav \{[\s\S]*?@media \(min-width: 1367px\) \{ display: none; \}/.test(chromeStyles)
+    && /\.rail \{[\s\S]*?position: fixed;[\s\S]*?@media \(min-width: 1367px\) \{ display: flex; \}/.test(chromeStyles)
     && read('src', 'components', 'Layout.module.scss').includes('padding-left: 104px;'));
   assert('Cristal: logo con nombre en ordenador y solo la hoja en móvil y iPad', chrome.includes('isDark ? logoWhite : logoColor') && chrome.includes('className={styles.brandIcon}'));
   assert('Móvil Cristal: sin menú lateral que repita el perfil del avatar', !chrome.includes('onOpenMenu') && !layout.includes('onOpenMenu'));
@@ -71,7 +71,7 @@ export async function runGlassAppearanceTests() {
     ["'reservations?nueva=1'", "'requests?nueva=1'", "'horas?nueva=1'"].every((k) => chrome.includes(k)) && chrome.includes('aria-expanded={open}'));
   assert('Ordenador: la barra superior dice dónde estás y busca con Ctrl+K',
     layout.includes('section={page === ') && chrome.includes('className={styles.crumb}') && chrome.includes('className={styles.searchBar} onClick={onSearch}'));
-  assert('Cristal: botón de tema claro/oscuro en la barra superior', chrome.includes('onClick={onToggleTheme}') && layout.includes('onToggleTheme={() => setMode('));
+  assert('Cristal: botón de tema claro/oscuro en la barra superior', chrome.includes('<ThemeSwitch isDark={isDark} onToggle={onToggleTheme} />') && layout.includes('onToggleTheme={() => setMode('));
   assert('Cristal: búsqueda (Ctrl+K), perfil, ajustes y cerrar sesión siguen arriba',
     ['onSearch', "go('profile')", "go('settings')", 'onLogout'].every(k => chrome.includes(k)));
   assert('Cristal: atajos de teclado siguen con «?» y desde el buscador', layout.includes("if (e.key === '?')") && layout.includes('onShowShortcuts={openShortcuts}'));
@@ -127,7 +127,7 @@ export async function runGlassAppearanceTests() {
     && chrome.includes("onNavigate('requests?nueva=1')") && read('src', 'App.tsx').includes('path="/mas"'));
   assert('Dock: se encoge mientras se desplaza la pantalla y vuelve a su tamaño al parar (web y app)',
     chrome.includes('scrolling && styles.dockCompact') && read('src', 'components', 'GlassChrome.module.scss').includes('.dockCompact {')
-    && read('src', 'hooks', 'useScrolling.js').includes("addEventListener('scroll', onScroll, { passive: true })")
+    && read('src', 'hooks', 'useScrolling.js').includes("addEventListener('scroll', onScroll, { passive: true, capture: true })")
     && read('mobile', 'src', 'navigation', 'BottomTabs.jsx').includes('tabBarCompact.interpolate')
     && read('mobile', 'src', 'components', 'common', 'Screen.jsx').includes('onScroll={tabBarSpace ? onTabScreenScroll : undefined}')
     && read('mobile', 'src', 'navigation', 'tabBarScroll.js').includes('useNativeDriver: true'));

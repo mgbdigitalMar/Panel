@@ -9,13 +9,18 @@ export function useDockScrub({ count, onSelect }) {
   const timer = useRef(null);
   const suppressClick = useRef(false);
   const [holding, setHolding] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [preview, setPreview] = useState(-1);
   const [cellWidth, setCellWidth] = useState(0);
   const x = useMotionValue(0);
 
   const cancel = () => {
     clearTimeout(timer.current);
+    const drag = pointer.current;
+    if (drag) suppressClick.current = true;
     pointer.current = null;
+    if (drag && ref.current?.hasPointerCapture(drag.id)) ref.current.releasePointerCapture(drag.id);
+    setDragging(false);
     setHolding(false);
     setPreview(-1);
   };
@@ -49,6 +54,7 @@ export function useDockScrub({ count, onSelect }) {
 
   const onPointerDown = (event) => {
     if (pointer.current || !event.isPrimary || event.button !== 0) { cancel(); return; }
+    suppressClick.current = false;
     const button = event.target.closest('[data-dock-index]');
     if (!button) return;
     const drag = { id: event.pointerId, startX: event.clientX, startY: event.clientY, lastX: event.clientX,
@@ -60,6 +66,7 @@ export function useDockScrub({ count, onSelect }) {
     timer.current = setTimeout(() => {
       if (pointer.current !== drag || drag.cancelled) return;
       drag.active = true;
+      setDragging(true);
       drag.rect = ref.current.getBoundingClientRect();
       setCellWidth(dockCellWidth(drag.rect.width, count));
       update({ clientX: drag.lastX, clientY: drag.lastY }, drag);
@@ -85,21 +92,24 @@ export function useDockScrub({ count, onSelect }) {
     const drag = pointer.current;
     if (!drag || event.pointerId !== drag.id) return;
     if (drag.active) update(event, drag);
-    const selected = drag.cancelled ? -1 : drag.index;
+    const rect = drag.rect || ref.current.getBoundingClientRect();
+    const inside = dockPointInside(event.clientX - rect.left, event.clientY - rect.top, rect.width, rect.height);
+    const selected = drag.cancelled || !inside ? -1 : drag.index;
     suppressClick.current = true;
     setTimeout(() => { suppressClick.current = false; }, 0);
     cancel();
     // Pointer capture moves the click onto the <nav>, out of reach of the global tap haptic
-    if (selected >= 0 && drag.touch && !drag.active) haptic('light');
+    if (selected >= 0 && drag.touch && !drag.active) haptic('medium');
     if (selected >= 0) onSelect(selected);
   };
 
-  return { ref, holding, preview, cellWidth, x, handlers: {
+  return { ref, holding, dragging, preview, cellWidth, x, handlers: {
     onPointerDown, onPointerMove, onPointerUp,
-    onPointerCancel: cancel, onLostPointerCapture: cancel,
+    onPointerCancel: () => { suppressClick.current = true; cancel(); },
+    onLostPointerCapture: () => { if (pointer.current) { suppressClick.current = true; cancel(); } },
     onContextMenu: (event) => event.preventDefault(),
     onClickCapture: (event) => {
-      if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); }
+      if (suppressClick.current && event.detail !== 0) { event.preventDefault(); event.stopPropagation(); }
     },
   } };
 }

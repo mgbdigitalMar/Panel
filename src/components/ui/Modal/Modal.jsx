@@ -6,7 +6,9 @@ import clsx from 'clsx';
 import { Portal, useInertApp } from '../Portal/Portal';
 import { useMediaQuery, PHONE_QUERY } from '../../../hooks/useMediaQuery';
 
-const EASE_OUT = [0.23, 1, 0.32, 1];
+import { EASE } from '../../../motion/tokens';
+
+const EASE_OUT = EASE.out;
 
 // Computers and tablets: a short rise keeps the dialog connected to the page.
 const DIALOG_MOTION = {
@@ -21,7 +23,7 @@ const DIALOG_MOTION = {
 // Phones: a sheet that slides up from the bottom edge, where the thumb is, and leaves the same way
 const SHEET_MOTION = {
   initial: { opacity: 0, transform: 'translateY(100%)' },
-  animate: { opacity: 1, transform: 'translateY(0%)', transition: { duration: 0.28, ease: [0.32, 0.72, 0, 1], opacity: { duration: 0.15 } } },
+  animate: { opacity: 1, transform: 'translateY(0%)', transition: { duration: 0.28, ease: EASE.drawer, opacity: { duration: 0.15 } } },
   exit: { opacity: 0, transform: 'translateY(100%)', transition: { duration: 0.22, ease: EASE_OUT } },
 };
 
@@ -95,6 +97,7 @@ export function Modal({ open, onClose, title, ariaLabel, children, className, ba
             ref={panelRef}
             tabIndex={-1}
             role="dialog"
+            data-liquid="dense"
             aria-modal="true"
             aria-label={ariaLabel || (typeof title === 'string' && title ? title : undefined)}
             {...(reduce ? REDUCED_MOTION : sheet ? SHEET_MOTION : DIALOG_MOTION)}

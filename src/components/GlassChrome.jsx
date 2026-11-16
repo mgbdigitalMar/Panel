@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion, useMotionValue, useTransform, animate } from 'framer-motion';
 import clsx from 'clsx';
 import {
-  Search, UserRound, SlidersHorizontal, Sun, Moon, LogOut, Clock, LayoutGrid, Plus, Calendar, Inbox,
+  Search, UserRound, SlidersHorizontal, LogOut, Clock, LayoutGrid, Plus, Calendar, Inbox,
   Timer, ChevronDown, Home, CalendarDays,
 } from 'lucide-react';
 import logoIcon from '../assets/logos/logo-icon.png';
@@ -12,7 +12,10 @@ import { LEAF_PATH, VEIN_PATH } from './ui/Loader/Loader';
 import { useScrolling } from '../hooks/useScrolling';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { useDockScrub } from '../hooks/useDockScrub';
-import { DOCK_STYLE, DOCK_WEB_VARIABLES } from '../../shared/config/dock';
+import { DOCK_STYLE, DOCK_GAP, dockCellWidth, dockWebVariables } from '../../shared/config/dock';
+import { useTheme } from '../context';
+import { EASE, SPRING, popoverMotion } from '../motion/tokens';
+import { createGlassThemeToggle } from '../glass/glass-theme-toggle';
 import styles from './GlassChrome.module.scss';
 
 // Short labels for the top pill; the full name stays in the tooltip and for screen readers
@@ -53,7 +56,7 @@ export function GlassHeader({
     <header className={styles.header} role="banner">
       <div className={styles.left}>
         {/* Computer: the logo with the name · phones and tablets: just the leaf. Both go home. */}
-        <div className={styles.crumbs}>
+        <div className={styles.crumbs} data-liquid>
           <button type="button" className={styles.brand} onClick={() => onNavigate('dashboard')} aria-label="Margube, ir al inicio" title="Inicio">
             <img src={isDark ? logoWhite : logoColor} alt="" className={styles.brandFull} />
             <img src={logoIcon} alt="" className={styles.brandIcon} />
@@ -65,13 +68,13 @@ export function GlassHeader({
             </span>
           )}
         </div>
-        <button type="button" className={clsx(styles.round, styles.liquid, styles.searchRound)} onClick={onSearch} aria-label="Buscar (Ctrl+K)" aria-haspopup="dialog" title="Buscar · Ctrl K">
+        <button type="button" data-liquid className={clsx(styles.round, styles.liquid, styles.searchRound)} onClick={onSearch} aria-label="Buscar (Ctrl+K)" aria-haspopup="dialog" title="Buscar · Ctrl K">
           <Search size={17} aria-hidden="true" />
         </button>
       </div>
 
       {/* Tablets: the sections in a pill (computers have the rail, phones the dock) */}
-      <nav className={styles.nav} aria-label="Navegación principal">
+      <nav className={styles.nav} data-liquid aria-label="Navegación principal">
         {items.map((item) => {
           const Icon = item.icon;
           const active = page === item.id;
@@ -90,7 +93,7 @@ export function GlassHeader({
                 <motion.span
                   layoutId="glass-nav-pill"
                   className={styles.navPill}
-                  transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.9 }}
+                  transition={SPRING.indicator}
                   aria-hidden="true"
                 />
               )}
@@ -103,7 +106,7 @@ export function GlassHeader({
       </nav>
 
       {/* Computers: one wide capsule opens the command palette */}
-      <button type="button" className={styles.searchBar} onClick={onSearch} aria-haspopup="dialog" aria-label="Buscar (Ctrl+K)">
+      <button type="button" data-liquid className={styles.searchBar} onClick={onSearch} aria-haspopup="dialog" aria-label="Buscar (Ctrl+K)">
         <Search size={17} aria-hidden="true" />
         <span className={styles.searchText}>Buscar personas, salas, solicitudes…</span>
         <kbd className={styles.keycap} aria-hidden="true">Ctrl K</kbd>
@@ -111,29 +114,10 @@ export function GlassHeader({
 
       <div className={styles.right}>
         <NewMenu onNavigate={onNavigate} />
-        <span className={styles.clock} aria-label={`Hora actual ${clockStr}`}>
+        <span className={styles.clock} data-liquid aria-label={`Hora actual ${clockStr}`}>
           <Clock size={14} aria-hidden="true" />{clockStr}
         </span>
-        <button
-          type="button"
-          className={clsx(styles.round, styles.themeBtn)}
-          onClick={onToggleTheme}
-          aria-label={isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
-          title={isDark ? 'Tema claro' : 'Tema oscuro'}
-        >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={isDark ? 'sun' : 'moon'}
-              className={styles.swap}
-              initial={{ opacity: 0, rotate: -45, scale: 0.8 }}
-              animate={{ opacity: 1, rotate: 0, scale: 1 }}
-              exit={{ opacity: 0, rotate: 45, scale: 0.8 }}
-              transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-            >
-              {isDark ? <Sun size={17} aria-hidden="true" /> : <Moon size={17} aria-hidden="true" />}
-            </motion.span>
-          </AnimatePresence>
-        </button>
+        <ThemeSwitch isDark={isDark} onToggle={onToggleTheme} />
         {bell}
         <ProfileMenu
           avatar={avatar}
@@ -150,6 +134,43 @@ export function GlassHeader({
   );
 }
 
+/**
+ * Light/dark switch: the liquid-glass-ui skill's glass toggle (pixel moon and sun on a squircle
+ * thumb, glass/glass-theme-toggle.js), mounted as is. It only shows and requests the theme: the
+ * change goes through the app's own setter (ThemeProvider.setMode, with its circular reveal and its
+ * saved preference), so the module gets its own host as `scope` and never writes <html> itself.
+ */
+function ThemeSwitch({ isDark, onToggle }) {
+  const hostRef = useRef(null);
+  const toggleRef = useRef(null);
+  const state = useRef({ isDark, onToggle });
+  state.current = { isDark, onToggle };
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return undefined;
+    const toggle = createGlassThemeToggle(host, {
+      scope: host,
+      persist: false,
+      theme: state.current.isDark ? 'dark' : 'light',
+      ariaLabel: 'Tema oscuro',
+    });
+    toggle.title = 'Tema claro u oscuro';
+    const onChange = (event) => {
+      // A change the app already made (synced below) is not a request
+      if ((event.detail.theme === 'dark') !== state.current.isDark) state.current.onToggle();
+    };
+    toggle.addEventListener('glassthemechange', onChange);
+    toggleRef.current = toggle;
+    return () => { toggle.removeEventListener('glassthemechange', onChange); toggle.remove(); toggleRef.current = null; };
+  }, []);
+
+  // The theme changed elsewhere (Ajustes, the system): the switch follows
+  useEffect(() => { toggleRef.current?.setGlassTheme(isDark ? 'dark' : 'light'); }, [isDark]);
+
+  return <span ref={hostRef} className={styles.themeSwitch} />;
+}
+
 const NEW_ITEMS = [
   { to: 'reservations?nueva=1', label: 'Nueva reserva', hint: 'Sala o vehículo', icon: Calendar, tone: 'accent' },
   { to: 'requests?nueva=1', label: 'Nueva solicitud', hint: 'Asuntos propios, remoto, externo o compra', icon: Inbox, tone: 'teal' },
@@ -158,6 +179,7 @@ const NEW_ITEMS = [
 
 /** «Nuevo»: the three things people create every day, one click from any page (computers). */
 function NewMenu({ onNavigate }) {
+  const reduce = useReducedMotion();
   const { open, setOpen, ref } = usePopover();
   const go = (to) => { setOpen(false); onNavigate(to); };
   return (
@@ -170,11 +192,9 @@ function NewMenu({ onNavigate }) {
       <AnimatePresence>
         {open && (
           <motion.div
+            data-liquid="dense"
             className={clsx(styles.menu, styles.newMenu)}
-            initial={{ opacity: 0, y: -6, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.98, transition: { duration: 0.12 } }}
-            transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+            {...popoverMotion(reduce)}
           >
             {NEW_ITEMS.map(({ to, label, hint, icon: Icon, tone }) => (
               <button key={to} type="button" className={styles.newItem} onClick={() => go(to)}>
@@ -197,6 +217,7 @@ function ProfileMenu({ avatar, user, workday, upcomingCount, openRequests, onNav
   // Computers: the avatar only opens Mi perfil (settings and logout are in the rail).
   // Tablets keep the account menu, as they have no rail.
   const desk = useMediaQuery('(min-width: 1024px)');
+  const reduce = useReducedMotion();
 
   return (
     <div className={styles.profile} ref={ref}>
@@ -214,11 +235,9 @@ function ProfileMenu({ avatar, user, workday, upcomingCount, openRequests, onNav
       <AnimatePresence>
         {open && !desk && (
           <motion.div
+            data-liquid="dense"
             className={styles.menu}
-            initial={{ opacity: 0, y: -6, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.98, transition: { duration: 0.12 } }}
-            transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+            {...popoverMotion(reduce)}
           >
             <div className={styles.menuHead}>
               <strong>{user?.name}</strong>
@@ -273,7 +292,7 @@ export function GlassRail({ items, page, badges, onNavigate, onLogout }) {
           aria-label={badge ? `${item.label}, ${badge} pendientes` : item.label}
         >
           {active && (
-            <motion.span layoutId="glass-rail-disc" className={styles.railDisc} transition={{ type: 'spring', stiffness: 520, damping: 40, mass: 0.9 }} aria-hidden="true" />
+            <motion.span layoutId="glass-rail-disc" className={styles.railDisc} transition={SPRING.indicator} aria-hidden="true" />
           )}
           <Icon size={19} aria-hidden="true" />
           {badge > 0 && <span className={styles.railBadge} aria-hidden="true">{badge > 9 ? '9+' : badge}</span>}
@@ -284,7 +303,7 @@ export function GlassRail({ items, page, badges, onNavigate, onLogout }) {
   };
 
   return (
-    <nav className={styles.rail} aria-label="Navegación principal">
+    <nav className={styles.rail} data-liquid aria-label="Navegación principal">
       <button type="button" className={styles.railBrand} onClick={() => onNavigate('dashboard')} aria-label="Margube, ir al inicio">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d={LEAF_PATH} />
@@ -309,27 +328,123 @@ export function GlassRail({ items, page, badges, onNavigate, onLogout }) {
 const DOCK_IDS = ['dashboard', 'reservations', 'requests', 'horas'];
 const DOCK_ICONS = { dashboard: Home, reservations: CalendarDays };
 
-/** Bottom dock of the glass appearance on phones (tablets and computers use the top pill), with
- * the app's round "Nueva solicitud" button beside it. The open tab is blue, named and underlined.
- * While the page scrolls the dock shrinks out of the way; it returns to its size when it stops. */
-export function GlassTabBar({ items, page, badges, onNavigate }) {
+/** One tab of the dock: icon (with its pending count) and short name. Rendered twice: as the real
+ * button, and as a still copy inside the lens (see GlassTabBar). */
+function DockTabFace({ item, active, badge }) {
+  const Icon = DOCK_ICONS[item.id] || item.icon;
+  return (
+    <>
+      <span className={styles.tabIcon}>
+        <Icon size={DOCK_STYLE.iconSize} strokeWidth={active ? 2.1 : 1.8} aria-hidden="true" />
+        {badge > 0 && <span className={styles.tabBadge} aria-hidden="true">{badge > 99 ? '99+' : badge}</span>}
+      </span>
+      <span className={styles.tabLabel}>{SHORT[item.id] || item.label}</span>
+    </>
+  );
+}
+
+// The lens lifting off the bar, gliding to a tab (a little overshoot, like liquid) and settling
+const LENS_LIFT = { duration: 0.12, ease: EASE.out };
+const LENS_SETTLE = { type: 'spring', stiffness: 320, damping: 26, delay: 0.1 };
+const LENS_GLIDE = { type: 'spring', stiffness: 380, damping: 30, mass: 0.9 };
+// The lens is a capsule wider than its tab (8 px each side), as on iOS
+const LENS_PAD = 8;
+
+/** Bottom dock shared by phones and tablets, with
+ * the app's round "Nueva solicitud" button beside it. While the page scrolls the dock shrinks out
+ * of the way; it returns to its size when it stops.
+ *
+ * At rest the open tab sits in a capsule of Margube-blue glass, its icon and name in light blue.
+ * When a finger switches tab, or holds and drags along the bar, the capsule lifts into a clear lens:
+ * it grows past the bar, follows the finger (or glides to the tapped tab) and settles on the new
+ * one. The lens magnifies what is under it: it holds a still copy of the tabs, aligned with the
+ * real ones, so as the lens grows its content grows with it around its centre. A copy rather than
+ * a backdrop filter, so it works in every browser and costs one transform per frame. */
+export function GlassTabBar({ items, page, badges, onNavigate, onReselect }) {
   const reduceMotion = useReducedMotion();
+  const { theme } = useTheme();
   const scrolling = useScrolling();
   const badgeOf = (item) => (item.badgeKey ? badges[item.badgeKey] || 0 : 0);
   const rest = items.filter((i) => !DOCK_IDS.includes(i.id));
   const tabs = [
-    ...items.filter((i) => DOCK_IDS.includes(i.id)),
+    ...DOCK_IDS.map((id) => items.find((item) => item.id === id)).filter(Boolean),
     { id: 'mas', label: 'Más', icon: LayoutGrid, extra: rest.reduce((s, i) => s + badgeOf(i), 0) },
   ];
   const isActive = (id) => (id === 'mas' ? !DOCK_IDS.includes(page) : page === id);
-  const scrub = useDockScrub({ count: tabs.length, onSelect: (index) => onNavigate(tabs[index].id) });
+  const activeIndex = Math.max(0, tabs.findIndex((t) => isActive(t.id)));
+  // Only a switch made on the dock lifts the lens; arriving from a link elsewhere does not
+  const fromDock = useRef(false);
+  const go = (id) => {
+    if (id === page) { onReselect?.(); return; }
+    fromDock.current = true;
+    onNavigate(id);
+  };
+  const scrub = useDockScrub({ count: tabs.length, onSelect: (index) => go(tabs[index].id) });
+  const scrubbing = scrub.dragging;
+
+  // Geometry of the bar: every tab is one equal cell (shared/config/dock.js)
+  const [barWidth, setBarWidth] = useState(0);
+  useEffect(() => {
+    const bar = scrub.ref.current;
+    if (!bar) return undefined;
+    const ro = new ResizeObserver(() => setBarWidth(bar.offsetWidth));
+    ro.observe(bar);
+    return () => ro.disconnect();
+  }, [scrub.ref]);
+  const cell = dockCellWidth(barWidth, tabs.length);
+
+  const lensX = useMotionValue(0);
+  const lift = useMotionValue(0); // 0 at rest, 1 lifted
+  const lensScale = useTransform(lift, [0, 1], [1, DOCK_STYLE.lensScale]);
+  const lensOpacity = useTransform(lift, [0, 0.12], [0, 1]);
+  const pillOpacity = useTransform(lift, [0, 0.25], [1, 0]);
+  const copyX = useTransform(lensX, (v) => -v);
+
+  const last = useRef({ index: activeIndex, scrubbing: false, cell: 0 });
+  useEffect(() => {
+    const before = last.current;
+    last.current = { index: activeIndex, scrubbing, cell };
+    if (!cell) return undefined;
+    const target = activeIndex * (cell + DOCK_GAP);
+    const controls = [];
+    let disposed = false;
+    let unsubscribe;
+    const run = (value, to, options) => {
+      const control = animate(value, to, options);
+      controls.push(control);
+      return control;
+    };
+    if (scrubbing) {
+      lensX.set(scrub.x.get());
+      if (!reduceMotion) run(lift, 1, LENS_LIFT);
+      unsubscribe = scrub.x.on('change', (value) => lensX.set(value));
+    } else {
+      const tapped = before.index !== activeIndex && fromDock.current;
+      fromDock.current = false;
+      if (reduceMotion || before.cell !== cell) {
+        lensX.set(target);
+        lift.set(0);
+      } else {
+        run(lensX, target, tapped || before.scrubbing ? LENS_GLIDE : SPRING.indicator);
+        if (tapped && !before.scrubbing) {
+          run(lift, 1, LENS_LIFT).then(() => {
+            if (!disposed) run(lift, 0, LENS_SETTLE);
+          });
+        } else run(lift, 0, { ...LENS_SETTLE, delay: before.scrubbing ? 0.08 : 0 });
+      }
+    }
+    return () => {
+      disposed = true;
+      unsubscribe?.();
+      controls.forEach((control) => control.stop());
+    };
+  }, [activeIndex, scrubbing, cell, reduceMotion, lensX, lift, scrub.x]);
 
   return (
-    <div className={clsx(styles.dock, scrolling && styles.dockCompact)} style={DOCK_WEB_VARIABLES} data-dock-holding={scrub.holding || undefined}>
-      <nav ref={scrub.ref} className={styles.tabBar} aria-label="Navegación principal" {...scrub.handlers} data-scrubbing={scrub.preview >= 0 || undefined}>
-        {scrub.preview >= 0 && <motion.span className={styles.scrubPill} style={{ x: scrub.x, width: scrub.cellWidth }} initial={false} animate={{ scale: reduceMotion ? 1 : DOCK_STYLE.selectionScale }} transition={{ duration: DOCK_STYLE.pressDuration / 1000 }} aria-hidden="true" />}
+    <div className={clsx(styles.dock, scrolling && styles.dockCompact)} style={dockWebVariables(theme)} data-dock-holding={scrub.holding || undefined}>
+      <nav ref={scrub.ref} data-liquid="dock" className={styles.tabBar} aria-label="Navegación principal" {...scrub.handlers} data-scrubbing={scrubbing || undefined}>
+        <motion.span className={clsx(styles.tabPill, styles.dockSelection)} style={{ x: lensX, width: cell, opacity: pillOpacity }} aria-hidden="true" />
         {tabs.map((item, index) => {
-          const Icon = DOCK_ICONS[item.id] || item.icon;
           const active = isActive(item.id);
           const badge = item.extra ?? badgeOf(item);
           return (
@@ -339,23 +454,26 @@ export function GlassTabBar({ items, page, badges, onNavigate }) {
               data-dock-index={index}
               data-dock-preview={scrub.preview === index || undefined}
               className={clsx(styles.tab, active && styles.tabActive)}
-              onClick={() => onNavigate(item.id)}
+              onClick={() => go(item.id)}
               aria-current={active ? 'page' : undefined}
               aria-label={badge ? `${item.label}, ${badge} pendientes` : item.label}
             >
-              {active && scrub.preview < 0 && (
-                <motion.span layoutId="glass-tab-pill" className={styles.tabPill} transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.9 }} aria-hidden="true" />
-              )}
-              <span className={styles.tabIcon}>
-                <Icon size={DOCK_STYLE.iconSize} strokeWidth={active ? 2.1 : 1.8} aria-hidden="true" />
-                {badge > 0 && <span className={styles.tabBadge} aria-hidden="true">{badge > 99 ? '99+' : badge}</span>}
-              </span>
-              <span className={styles.tabLabel}>{SHORT[item.id] || item.label}</span>
+              <DockTabFace item={item} active={active} badge={badge} />
             </button>
           );
         })}
+        {/* The lens: above the tabs, invisible at rest */}
+        <motion.span className={styles.lens} style={{ x: lensX, width: cell ? cell + LENS_PAD * 2 : undefined, scale: lensScale, opacity: lensOpacity, '--lens-pad': `${LENS_PAD}px` }} aria-hidden="true">
+          <motion.span className={styles.lensCopy} style={{ x: copyX, width: barWidth || undefined }}>
+            {tabs.map((item, index) => (
+              <span key={item.id} className={clsx(styles.tab, isActive(item.id) && styles.tabActive)} data-dock-preview={scrub.preview === index || undefined}>
+                <DockTabFace item={item} active={isActive(item.id)} badge={item.extra ?? badgeOf(item)} />
+              </span>
+            ))}
+          </motion.span>
+        </motion.span>
       </nav>
-      <button type="button" className={styles.dockPlus} onClick={() => onNavigate('requests?nueva=1')} aria-label="Nueva solicitud" title="Nueva solicitud">
+      <button type="button" data-liquid="dock" className={styles.dockPlus} onClick={() => onNavigate('requests?nueva=1')} aria-label="Nueva solicitud" title="Nueva solicitud">
         <Plus size={24} strokeWidth={2} aria-hidden="true" />
       </button>
     </div>

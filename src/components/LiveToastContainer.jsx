@@ -1,5 +1,6 @@
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import styles from './LiveToastContainer.module.scss';
+import { EASE } from '../motion/tokens';
 
 export function LiveToastContainer({ liveNotifs }) {
   const reduce = useReducedMotion();
@@ -25,12 +26,13 @@ export function LiveToastContainer({ liveNotifs }) {
         {liveNotifs.map(n => (
           <motion.div
             key={n.id}
+            data-liquid="dense"
             className={styles.toast}
             layout={!reduce}
             initial={{ opacity: 0, transform: reduce ? 'none' : 'translateY(16px) scale(0.97)' }}
             animate={{ opacity: 1, transform: reduce ? 'none' : 'translateY(0px) scale(1)' }}
             exit={{ opacity: 0, transform: reduce ? 'none' : 'translateY(16px) scale(0.97)', transition: { duration: reduce ? 0.1 : 0.18 } }}
-            transition={{ duration: reduce ? 0.12 : 0.25, ease: [0.23, 1, 0.32, 1] }}
+            transition={{ duration: reduce ? 0.12 : 0.25, ease: EASE.out }}
             style={{
               borderRadius: 'var(--radius-lg)',
               padding: '10px 16px 10px 10px',

@@ -17,8 +17,16 @@ export const DOCK_STYLE = {
   transparency: 0.28,
   active: '#FFFFFF',
   inactive: '#CBD2DF',
-  selection: 'rgba(255,255,255,0.14)',
-  selectionEdge: 'rgba(255,255,255,0.2)',
+  // The open tab at rest: a capsule of Margube-blue glass with its icon and name in a light blue
+  activeTab: '#B7C8FF',
+  selection: 'rgba(47,91,234,0.42)',
+  selectionEdge: 'rgba(170,192,255,0.34)',
+  // While a finger presses, drags or switches tab, the capsule lifts into a clear lens that grows
+  // past the bar and magnifies the icons under it, then settles on the new tab
+  lensScale: 1.24,
+  lensFill: 'rgba(255,255,255,0.07)',
+  lensEdge: 'rgba(255,255,255,0.6)',
+  lensShadow: 'rgba(0,0,0,0.35)',
   action: '#2F5BEA',
   selectionScale: 1.06,
   actionPressScale: 0.92,
@@ -27,6 +35,73 @@ export const DOCK_STYLE = {
 
 export function dockTint(strength) {
   return `rgba(17,24,34,${1 - strength * DOCK_STYLE.transparency})`;
+}
+
+/**
+ * The whole dock as Liquid Glass, in the theme's own glass: white glass with ink icons in the light
+ * theme, smoked glass with white icons in the dark one. The page shows through it (bent at the
+ * rim on the web, blurred in the app), the rim catches the light, and the round action button is
+ * the same glass. `solid` replaces the glass when transparency is off or reduced.
+ */
+export const DOCK_THEMES = {
+  light: {
+    glass: 'rgba(255,255,255,0.5)',
+    solid: '#F4F6FA',
+    rim: 'rgba(255,255,255,0.95)',
+    edge: 'rgba(255,255,255,0.65)',
+    shadow: 'rgba(15,19,32,0.22)',
+    inactive: '#2B3242',
+    preview: '#0F1320',
+    activeTab: '#2F5BEA',
+    selection: 'rgba(47,91,234,0.14)',
+    selectionEdge: 'rgba(47,91,234,0.24)',
+    lens: 'rgba(252,253,255,0.97)',
+    lensEdge: '#FFFFFF',
+    badgeRing: '#FFFFFF',
+    action: '#2F5BEA',
+  },
+  dark: {
+    glass: 'rgba(22,26,34,0.4)',
+    solid: '#111822',
+    rim: 'rgba(255,255,255,0.4)',
+    edge: 'rgba(255,255,255,0.14)',
+    shadow: 'rgba(0,0,0,0.5)',
+    inactive: '#D2D8E3',
+    preview: '#FFFFFF',
+    activeTab: '#B7C8FF',
+    selection: 'rgba(47,91,234,0.42)',
+    selectionEdge: 'rgba(170,192,255,0.34)',
+    lens: '#1E2633',
+    lensEdge: 'rgba(255,255,255,0.6)',
+    badgeRing: '#161A22',
+    action: '#B7C8FF',
+  },
+};
+
+export function dockTheme(theme) {
+  return DOCK_THEMES[theme === 'light' ? 'light' : 'dark'];
+}
+
+/** DOCK_WEB_VARIABLES plus the colours of the theme's glass */
+export function dockWebVariables(theme) {
+  const t = dockTheme(theme);
+  return {
+    ...DOCK_WEB_VARIABLES,
+    '--dock-glass': t.glass,
+    '--dock-solid': t.solid,
+    '--dock-rim': t.rim,
+    '--dock-edge': t.edge,
+    '--dock-shadow': t.shadow,
+    '--dock-inactive': t.inactive,
+    '--dock-preview': t.preview,
+    '--dock-active-tab': t.activeTab,
+    '--dock-selection': t.selection,
+    '--dock-selection-edge': t.selectionEdge,
+    '--dock-lens': t.lens,
+    '--dock-lens-edge': t.lensEdge,
+    '--dock-badge-ring': t.badgeRing,
+    '--dock-action-ink': t.action,
+  };
 }
 
 export const DOCK_WEB_VARIABLES = {
@@ -43,6 +118,10 @@ export const DOCK_WEB_VARIABLES = {
   '--dock-selection': DOCK_STYLE.selection,
   '--dock-selection-edge': DOCK_STYLE.selectionEdge,
   '--dock-active': DOCK_STYLE.active,
+  '--dock-active-tab': DOCK_STYLE.activeTab,
+  '--dock-lens-fill': DOCK_STYLE.lensFill,
+  '--dock-lens-edge': DOCK_STYLE.lensEdge,
+  '--dock-lens-shadow': DOCK_STYLE.lensShadow,
   '--dock-inactive': DOCK_STYLE.inactive,
   '--dock-action': DOCK_STYLE.action,
   '--dock-transparency': DOCK_STYLE.transparency,

@@ -11,6 +11,7 @@ import { useTouch } from '../components/Touch';
 import styles from './SettingsPage.module.scss';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
+import { ActiveIndicator, IndicatorGroup } from '../motion/ActiveIndicator';
 import {
   PREF_NOTIFS, notificationsSupported, notificationsEnabled, needsIosInstall,
   enablePush, disablePush, showSystemNotification,
@@ -236,12 +237,17 @@ export default function SettingsPage() {
               </div>
             </div>
             <div className={styles.field}>
+              <IndicatorGroup>
               <div className={styles.glassOptions} role="group" aria-label="Intensidad de Liquid Glass">
                 {GLASS_OPTIONS.map(({ value, label }) => (
                   <button key={value} type="button" aria-pressed={glassIntensity === value}
-                    onClick={() => setGlassIntensity(value)}>{label}</button>
+                    onClick={() => setGlassIntensity(value)}>
+                    {glassIntensity === value && <ActiveIndicator className={styles.glassOptionIndicator} radius={14} />}
+                    {label}
+                  </button>
                 ))}
               </div>
+              </IndicatorGroup>
               <p className={styles.glassHint}>Se guarda en este dispositivo. Reducir transparencia del sistema tiene prioridad.</p>
             </div>
           </Card>

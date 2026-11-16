@@ -4,6 +4,8 @@ import clsx from 'clsx';
 import { ChevronDown, ArrowUpRight, SlidersHorizontal, Check, X } from 'lucide-react';
 import { useMediaQuery, TOUCH_QUERY } from '../hooks/useMediaQuery';
 import { LEAF_PATH, VEIN_PATH } from './ui/Loader/Loader';
+import { ActiveIndicator, IndicatorGroup } from '../motion/ActiveIndicator';
+import { EASE as EASE_TOKENS } from '../motion/tokens';
 import styles from './Touch.module.scss';
 
 /**
@@ -16,7 +18,7 @@ export function useTouch() {
   return useMediaQuery(TOUCH_QUERY);
 }
 
-const EASE = [0.23, 1, 0.32, 1];
+const EASE = EASE_TOKENS.out;
 
 /** Icon on a leaf-shaped tile (the avatars' shape). Tones: accent, success, warning, danger, info, purple, neutral. */
 export function LeafIcon({ icon: Icon, tone = 'accent', size = 40, solid }) {
@@ -160,12 +162,16 @@ export function ActionTiles({ items, className }) {
  */
 export function TabStrip({ value, onChange, options, label, className, stacked }) {
   return (
+    <IndicatorGroup>
     <div className={clsx(styles.tabStrip, stacked && styles.tabStripStacked, className)} role="tablist" aria-label={label}>
       {options.map((o) => {
         const Icon = o.icon;
+        const on = value === o.value;
         return (
-          <button key={o.value} type="button" role="tab" aria-selected={value === o.value}
-            className={clsx(styles.tabBtn, value === o.value && styles.tabOn)} onClick={() => onChange(o.value)}>
+          <button key={o.value} type="button" role="tab" aria-selected={on}
+            className={clsx(styles.tabBtn, on && styles.tabOn)} onClick={() => onChange(o.value)}>
+            {/* No fixed radius: stacked tabs round less on phones than the pill does elsewhere */}
+            {on && <ActiveIndicator className={styles.tabIndicator} />}
             {Icon && <Icon size={stacked ? 18 : 15} className={styles.tabIcon} aria-hidden="true" />}
             <span className={styles.tabLabel}>{o.label}</span>
             {o.count != null && <span className={styles.tabCount}>{o.count}</span>}
@@ -173,6 +179,7 @@ export function TabStrip({ value, onChange, options, label, className, stacked }
         );
       })}
     </div>
+    </IndicatorGroup>
   );
 }
 

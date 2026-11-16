@@ -40,7 +40,7 @@
 
   /* Computers: the rail holds the sections; the bar carries where you are, the search
      capsule and the tools */
-  @media (min-width: 1024px) {
+  @media (min-width: 1367px) {
     grid-template-columns: minmax(0, 1fr) minmax(280px, 460px) minmax(0, 1fr);
     padding: 18px clamp(20px, 2.4vw, 36px) 10px;
     /* Transparent bar floating over the page: the gaps between the pills let clicks through
@@ -52,16 +52,12 @@
   }
 
   /* Laptops and small desktops: both ends keep their full width and the search capsule takes what is left */
-  @media (min-width: 1024px) and (max-width: 1439px) {
+  @media (min-width: 1367px) and (max-width: 1439px) {
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 12px;
   }
 
-  @media (min-width: 1024px) and (max-width: 1279px) {
-    .keycap { display: none; }
-  }
-
-  @media (max-width: 1023px) {
+  @media (max-width: 1366px) {
     gap: 8px;
     padding: calc(10px + env(safe-area-inset-top)) 12px 10px;
     padding-left: max(12px, env(safe-area-inset-left));
@@ -73,7 +69,7 @@
   }
 
   /* Phones: the sections go to the bottom dock */
-  @media (max-width: 767px) { grid-template-columns: auto 1fr; }
+  @media (max-width: 1366px) { grid-template-columns: auto 1fr; }
 
   /* Phones: slightly smaller round buttons so the bar fits at 320 px */
   @media (max-width: 479px) {
@@ -134,7 +130,7 @@
   height: 26px;
   width: auto;
 
-  @media (max-width: 1023px) { display: none; }
+  @media (max-width: 1366px) { display: none; }
 }
 
 /* The leaf PNG has transparent padding around the tile: the negative margin trims it so
@@ -145,7 +141,7 @@
   max-width: none;
   margin: -12px;
 
-  @media (min-width: 1024px) { display: none; }
+  @media (min-width: 1367px) { display: none; }
 
   @media (max-width: 479px) {
     width: 56px;
@@ -180,8 +176,8 @@
   padding: 5px;
   border-radius: var(--radius-full);
 
-  @media (max-width: 767px) { display: none; }
-  @media (min-width: 1024px) { display: none; }
+  @media (max-width: 1366px) { display: none; }
+  @media (min-width: 1367px) { display: none; }
 }
 
 .navItem {
@@ -414,7 +410,7 @@
   transform-origin: 50% 100%;
   transition: transform 0.42s cubic-bezier(0.34, 1.3, 0.64, 1);
 
-  @media (min-width: 768px) { display: none; }
+  @media (min-width: 1367px) { display: none; }
 }
 
 .dockCompact {
@@ -424,7 +420,9 @@
 
 .tabBar {
   @include p.liquid;
-  background: var(--lg-sheen), var(--lg-popover, rgba(255, 255, 255, 0.86));
+  /* --lg-dock only exists with real Liquid Glass («Intenso» in Chromium): a clearer dock that
+     shows the refraction at its rim. Otherwise the dense menu fill. */
+  background: var(--lg-sheen), var(--lg-dock, var(--lg-popover, rgba(255, 255, 255, 0.86)));
   display: flex;
   align-items: center;
   gap: 2px;
@@ -458,6 +456,36 @@
 /* Phones: the theme switch lives in "Más" */
 .themeBtn {
   @media (max-width: 767px) { display: none !important; }
+}
+
+/* The liquid-glass-ui theme switch (ThemeSwitch), brought down from its 192 × 84 demo size to the
+   44 px height of the bar's round buttons; its glow scaled to match. Hidden on phones, like the
+   button it replaces. */
+.themeSwitch {
+  display: inline-flex;
+  flex-shrink: 0;
+
+  @media (max-width: 767px) { display: none !important; }
+
+  :global(.glass-theme-toggle) {
+    --gtt-width: 80px;
+    --gtt-height: 44px;
+    --gtt-thumb: 36px;
+    --gtt-inset: 4px;
+    --gtt-radius: 12px;
+    border-radius: 16px;
+
+    &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.45); }
+  }
+
+  :global(.glass-theme-toggle .theme-icon) { width: 22px; height: 22px; }
+
+  :global(.glass-theme-toggle .theme-glow) {
+    inset: -3px;
+    border-width: 3px;
+    border-radius: calc(var(--gtt-radius) + 3px);
+    filter: blur(1px) drop-shadow(0 0 4px var(--glow-color)) drop-shadow(0 0 12px var(--glow-color));
+  }
 }
 
 .tab {
@@ -565,7 +593,7 @@
   align-items: center;
   min-width: 0;
 
-  @media (min-width: 1024px) {
+  @media (min-width: 1367px) {
     @include frosted;
     gap: 12px;
     height: 48px;
@@ -577,7 +605,7 @@
 .crumb {
   display: none;
 
-  @media (min-width: 1024px) {
+  @media (min-width: 1367px) {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -597,7 +625,7 @@
 
 /* Phones and tablets keep the round search button; computers get the capsule */
 .searchRound {
-  @media (min-width: 1024px) { display: none !important; }
+  @media (min-width: 1367px) { display: none !important; }
 }
 
 .searchBar {
@@ -617,7 +645,7 @@
   cursor: pointer;
   transition: border-color 0.15s var(--ease-out), color 0.15s var(--ease-out);
 
-  @media (min-width: 1024px) { display: flex; }
+  @media (min-width: 1367px) { display: flex; }
 
   @media (hover: hover) and (pointer: fine) {
     &:hover {
@@ -650,7 +678,7 @@
 .newWrap {
   position: relative;
 
-  @media (max-width: 1023px) { display: none; }
+  @media (max-width: 1366px) { display: none; }
 }
 
 .newBtn {
@@ -761,7 +789,7 @@
     -webkit-backdrop-filter: none !important;
   }
 
-  @media (min-width: 1024px) { display: flex; }
+  @media (min-width: 1367px) { display: flex; }
 }
 
 .railBrand {
@@ -918,7 +946,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1366px) {
   .dock {
     left: max(var(--dock-gutter), env(safe-area-inset-left));
     right: max(var(--dock-gutter), env(safe-area-inset-right));
@@ -930,27 +958,48 @@
     flex: 1; min-width: 0; height: var(--dock-height); box-sizing: border-box;
     justify-content: space-around; padding: var(--dock-padding); gap: var(--dock-item-gap);
     border: 0;
-    background: rgba(17,24,34,calc(1 - var(--material-strength, 0.65) * var(--dock-transparency)));
-    border-color: rgba(255,255,255,0.18);
-    box-shadow: inset 0 0 0 1px var(--dock-selection-edge);
+    /* The theme's glass (white or smoked, shared/config/dock.js): the page shows through, bent at
+       the rim where the browser can (liquidRefraction.js), and the rim catches the light */
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 55%), var(--dock-glass);
+    box-shadow:
+      inset 0 1px 1px var(--dock-rim),
+      inset 0 -1px 1px rgba(255, 255, 255, 0.12),
+      inset 0 0 0 1px var(--dock-edge),
+      0 14px 32px -14px var(--dock-shadow);
   }
   .tab {
     flex: 1; min-width: 0; height: calc(var(--dock-height) - 2 * var(--dock-padding)); padding: 0 1px;
     flex-direction: column; gap: 4px; color: var(--dock-inactive);
+    transition: color 0.15s var(--ease-out);
   }
-  .tabActive { color: var(--dock-active); }
-  .tabPill { background: var(--dock-selection); border: 1px solid var(--dock-selection-edge); box-shadow: none; }
+  .tabActive { color: var(--dock-active-tab); }
+  /* The open tab at rest: a capsule of Margube-blue glass, its rim catching the light */
+  .tabPill {
+    background: var(--dock-selection);
+    border: 1px solid var(--dock-selection-edge);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.28), inset 0 -1px 1px rgba(255, 255, 255, 0.08);
+  }
   .tabLabel { display: block; max-width: 100%; font-size: var(--dock-label-size); font-weight: 500; line-height: var(--dock-label-leading); }
   .tabActive::after { display: none; }
-  .dockPlus { width: var(--dock-action-size); height: var(--dock-action-size); color: var(--dock-active); background: var(--dock-action); border-color: rgba(255,255,255,0.3); }
+  /* The round action: the same glass as the bar, its plus in the theme's accent */
+  .dockPlus {
+    width: var(--dock-action-size); height: var(--dock-action-size); color: var(--dock-action-ink);
+    border: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 60%), var(--dock-glass);
+    box-shadow:
+      inset 0 1px 1px var(--dock-rim),
+      inset 0 -1px 1px rgba(255, 255, 255, 0.12),
+      inset 0 0 0 1px var(--dock-edge),
+      0 14px 32px -14px var(--dock-shadow);
+  }
   .dockPlus:active { transform: scale(var(--dock-action-scale)); }
   .tabBar::before, .dockPlus::before { display: none; }
   .header { padding-inline: max(16px, env(safe-area-inset-left)); }
 }
 
-@media (max-width: 767px) {
-  :global(html[data-glass-intensity='off']) .tabBar { background: #111822; }
-  @media (prefers-reduced-transparency: reduce) { .tabBar { background: #111822; } }
+@media (max-width: 1366px) {
+  :global(html[data-glass-intensity='off']) :is(.tabBar, .dockPlus) { background: var(--dock-solid); }
+  @media (prefers-reduced-transparency: reduce) { :is(.tabBar, .dockPlus) { background: var(--dock-solid); } }
 }
 
 .tabBar {
@@ -960,20 +1009,69 @@
   -webkit-touch-callout: none;
 }
 .dock[data-dock-holding] { transform: none; }
-.scrubPill {
+/* The lens (GlassTabBar): clear raised glass over the tabs while a finger switches or drags.
+   Opaque underneath so the real icons don't show through next to their magnified copy; the copy
+   inside (.lensCopy) is aligned with the real tabs and grows with the lens. */
+.lens {
   position: absolute;
-  left: 5px;
-  top: 5px;
-  bottom: 5px;
+  left: calc(var(--dock-padding, 5px) - var(--lens-pad, 0px));
+  top: var(--dock-padding, 5px);
+  bottom: var(--dock-padding, 5px);
+  z-index: 2;
+  overflow: hidden;
   border-radius: var(--radius-full);
   pointer-events: none;
-  background: var(--dock-selection);
-  border: 1px solid var(--dock-selection-edge);
+  opacity: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03) 60%), var(--dock-lens, #1B2433);
+  box-shadow:
+    inset 0 1px 1px var(--dock-lens-edge),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 10px 24px -10px var(--dock-lens-shadow);
+  will-change: transform;
 }
-.tab[data-dock-preview] { color: #FFFFFF; }
+
+.lensCopy {
+  position: absolute;
+  left: calc(var(--lens-pad, 0px) - var(--dock-padding, 5px));
+  top: calc(-1 * var(--dock-padding, 5px));
+  height: var(--dock-height, 64px);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding: var(--dock-padding, 5px);
+  gap: var(--dock-item-gap, 2px);
+}
+.tab[data-dock-preview] { color: var(--dock-preview, #FFFFFF); }
 
 .tabIcon { position: relative; width: 20px; height: 20px; display: grid; place-items: center; }
 .tabIcon .tabBadge {
   top: -7px; right: -10px; min-width: 18px; height: 18px; padding: 0 4px;
-  border: 2px solid #111822; border-radius: 9px; font-size: 9.5px; line-height: 11px;
+  border: 2px solid var(--dock-badge-ring, #111822); border-radius: 9px; font-size: 9.5px; line-height: 11px;
+}
+
+@media (min-width: 768px) and (max-width: 1366px) {
+  .dock { width: 560px; max-width: calc(100% - 48px); margin-inline: auto; }
+}
+
+.round, .newBtn, .profileBtn, .railItem, .tab {
+  transition: scale 240ms cubic-bezier(.3,.7,.3,1), color 150ms var(--ease-out), background-color 150ms var(--ease-out);
+  &:active { scale: .94 1.025; transition-duration: 120ms; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .round, .newBtn, .profileBtn, .railItem, .tab { transition: color 120ms; &:active { scale: 1; } }
+}
+
+.dockSelection {
+  inset: auto;
+  left: var(--dock-padding);
+  top: var(--dock-padding);
+  bottom: var(--dock-padding);
+  pointer-events: none;
+}
+.tabBar > .tab { z-index: 1; }
+.dock .tab:active { transform: scale(.94); scale: 1; }
+.dock[data-dock-holding] { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .dock .tab:active, .dockPlus:active { transform: none; }
 }

@@ -2,11 +2,13 @@ import { useState, useEffect, forwardRef } from 'react';
 import { useAuth, useNews, useNotifs } from '../context';
 import { Avatar, Badge, Modal, Input, Select, Textarea, Button, Card, ConfirmModal, Section } from '../components/ui';
 import { Edit2, Trash2, Pin, Plus, Newspaper } from 'lucide-react';
+import { ActiveIndicator, IndicatorGroup } from '../motion/ActiveIndicator';
 import styles from './NewsPage.module.scss';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fmtDate, toDate } from '../utils/format';
 import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
+import { EASE } from '../motion/tokens';
 
 const typeLabel = (t) => (t === 'event' ? 'Evento' : 'Noticia');
 
@@ -21,7 +23,7 @@ const FeaturedPost = forwardRef(function FeaturedPost({ item, canEdit, onEdit, o
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, transition: { duration: 0.15 } }}
-      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+      transition={{ duration: 0.3, ease: EASE.out }}
     >
       <svg className={styles.featuredLeaf} viewBox="0 0 48 48" aria-hidden="true">
         <motion.path d={LEAF_PATH} initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.8, ease: [0.65, 0, 0.35, 1], delay: 0.2 }} />
@@ -64,7 +66,7 @@ const PostCard = forwardRef(function PostCard({ item, canEdit, onEdit, onDelete 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, transition: { duration: 0.15 } }}
-      transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
+      transition={{ duration: 0.28, ease: EASE.out }}
     >
       <Card className={styles.post}>
         <div className={clsx(styles.postDate, item.type === 'event' && styles.postDateEvent)} aria-hidden="true">
@@ -162,11 +164,14 @@ export default function NewsPage() {
   const tabBtn = (id, label) => {
     const count = id === 'all' ? news.length : news.filter(n => n.type === id).length;
     return (
-    <button 
-      key={id} 
+    <button
+      key={id}
+      type="button"
+      aria-pressed={tab === id}
       onClick={() => setTab(id)}
       className={clsx(styles.tabBtn, { [styles.tabBtnActive]: tab === id })}
     >
+      {tab === id && <ActiveIndicator className={styles.tabIndicator} radius={999} />}
       {label}
       {count > 0 && (
         <span className={styles.tabCount}>{count}</span>
@@ -178,11 +183,13 @@ export default function NewsPage() {
   return (
     <div className={styles.container}>
       <div className={styles.pageControls}>
+        <IndicatorGroup>
         <div className={styles.tabsRow}>
           {tabBtn('all', 'Todo')}
           {tabBtn('news', 'Noticias')}
           {tabBtn('event', 'Eventos')}
         </div>
+        </IndicatorGroup>
         {(user.role === 'admin' || user.dept === 'Comunicación - marketing') && (
           <div className={styles.controlsRight}>
             <Button icon={Plus} onClick={() => { setEditItem(null); setForm({ type: 'news', title: '', content: '', category: 'Empresa', pinned: false }); setShowModal(true); }}>

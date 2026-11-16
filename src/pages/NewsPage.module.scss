@@ -223,11 +223,13 @@
 }
 
 .tabsRow { @include p.tabs-row; }
-.tabBtn { @include p.tab-btn; }
+.tabBtn { @include p.tab-btn; @include p.tab-indicator-host; }
 .tabBtnActive {
-  @include p.tab-btn-active;
+  @include p.tab-btn-active-glide;
   .tabCount { @include p.tab-count-on-active; }
 }
+/* The selected filter's chip glides between tabs (ActiveIndicator) */
+.tabIndicator { @include p.tab-indicator; }
 .tabCount { @include p.tab-count; }
 
 /* Pinned post: brand panel */
@@ -413,7 +415,7 @@
     border-radius: 14px;
 
     strong { font-size: 19px; }
-    span { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    span { font-size: 12.5px; font-weight: 600; letter-spacing: 0; }
   }
 
   .postBody { display: contents; }

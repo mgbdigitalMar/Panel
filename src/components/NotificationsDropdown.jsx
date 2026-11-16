@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { Bell, CheckCircle, XCircle, CheckCheck, Clock, ChevronRight } from 'lucide-react';
 import { notificationWebPath } from '../../shared/config/constants.js';
 import { Button } from './ui';
+import { popoverMotion } from '../motion/tokens';
 import styles from './NotificationsDropdown.module.scss';
 
 export function NotificationsDropdown({
@@ -24,9 +25,8 @@ export function NotificationsDropdown({
       {notiMenu && (
         <motion.div
           style={{ transformOrigin: 'top right' }}
-          initial={{ opacity: 0, transform: reduce ? 'none' : 'translateY(-6px) scale(0.97)' }}
-          animate={{ opacity: 1, transform: reduce ? 'none' : 'translateY(0px) scale(1)', transition: { duration: reduce ? 0.12 : 0.2, ease: [0.23, 1, 0.32, 1] } }}
-          exit={{ opacity: 0, transform: reduce ? 'none' : 'translateY(-6px) scale(0.97)', transition: { duration: reduce ? 0.1 : 0.15, ease: [0.23, 1, 0.32, 1] } }}
+          {...popoverMotion(reduce)}
+          data-liquid="dense"
           className={clsx(styles.dropdown, styles.notiDropdown)}
           role="dialog"
           aria-label="Panel de notificaciones"

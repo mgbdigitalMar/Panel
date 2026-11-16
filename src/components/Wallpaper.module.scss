@@ -68,6 +68,13 @@
   .photo { filter: blur(22px) brightness(1.14) contrast(0.72) saturate(1.05); }
 }
 
+/* Liquid Glass draws only under the panes; the original room and veil remain visible elsewhere. */
+.glass {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
 /* Keeps text on the glass readable whatever is behind it */
 .veil {
   position: absolute;

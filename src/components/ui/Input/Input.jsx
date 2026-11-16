@@ -3,7 +3,10 @@ import clsx from 'clsx';
 import styles from './Input.module.scss';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X } from 'lucide-react';
-import { DateInput } from '../DateInput/DateInput';
+import { lazy, Suspense } from 'react';
+
+// The BoardUI date picker (react-aria + @internationalized/date) loads only for date fields
+const DateInput = lazy(() => import('../DateInput/DateInput').then((m) => ({ default: m.DateInput })));
 
 export function Input({
   label,
@@ -46,7 +49,9 @@ export function Input({
         )}
         {type === 'date' ? (
           // BoardUI date picker in the intranet's field style (the native date input looks
-          // different in every browser). Its trigger reads "<label>, <date>".
+          // different in every browser). Its trigger reads "<label>, <date>". While the picker's
+          // code loads, a box in the same style holds its place.
+          <Suspense fallback={<span className={clsx(styles.input, styles.dateTrigger)} aria-hidden="true">{value || placeholder || ''}</span>}>
           <DateInput
             id={id}
             value={value}
@@ -66,6 +71,7 @@ export function Input({
               [styles.withLeft]: !!leftElement,
             })}
           />
+          </Suspense>
         ) : (
         <input
           id={id}

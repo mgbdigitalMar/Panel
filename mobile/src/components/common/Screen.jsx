@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useRef } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, RadialGradient, Stop, Ellipse } from 'react-native-svg';
@@ -7,6 +7,8 @@ import { TAB_BAR_HEIGHT } from '../../navigation/tabBarMetrics';
 import { onTabScreenScroll } from '../../navigation/tabBarScroll';
 import { GlassFill } from './LiquidGlass';
 import { Wallpaper } from './Wallpaper';
+import { BlurTargetView } from 'expo-blur';
+import { ANDROID_BLUR, BlurTargetContext, useRegisterBlurTarget } from './BlurTarget';
 
 // Content column: phones use the full width; tablets and landscape get a readable measure.
 export const CONTENT_MAX = 640;
@@ -52,6 +54,12 @@ export function Screen({
 }) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  // Android (BlurTarget.jsx): the glass cards blur the wallpaper; the dock, which floats outside
+  // every screen, blurs the whole screen in front of it, cards included
+  const blurTarget = useRef(null);
+  const screenTarget = useRef(null);
+  useRegisterBlurTarget(screenTarget);
+  const Body = ANDROID_BLUR ? BlurTargetView : View;
   const bottomSpace = (footer ? 20 : tabBarSpace ? (TAB_BAR_HEIGHT + Math.max(insets.bottom, 10) + 28) : 32 + insets.bottom) + (fab ? 64 : 0);
   const gutter = padded ? Math.max(GUTTER, insets.left, insets.right) : 0;
 
@@ -90,9 +98,10 @@ export function Screen({
   );
 
   const body = (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      {backdrop ?? <Wallpaper />}
+    <Body ref={ANDROID_BLUR ? screenTarget : undefined} style={{ flex: 1, backgroundColor: colors.bg }}>
+      {backdrop ?? <Wallpaper targetRef={blurTarget} />}
       {glow && !backdrop ? <Glow variant={glowVariant} /> : null}
+      <BlurTargetContext.Provider value={backdrop ? null : blurTarget}>
       {content}
       {fab}
       {footer ? (
@@ -107,7 +116,8 @@ export function Screen({
           </View>
         </View>
       ) : null}
-    </View>
+      </BlurTargetContext.Provider>
+    </Body>
   );
 
   if (!keyboard) return body;

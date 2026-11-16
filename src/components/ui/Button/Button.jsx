@@ -1,9 +1,12 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import clsx from 'clsx';
 import styles from './Button.module.scss';
 import { Spinner } from '../Loader/Loader';
-import { springConfig } from '../../../hooks/useSpringAnimation';
-import { Tip } from '../Tip/Tip';
+import { SPRING } from '../../../motion/tokens';
+import { lazy, Suspense } from 'react';
+
+// react-aria (≈200 kB with its date library) loads only for buttons that show a tooltip
+const Tip = lazy(() => import('../Tip/Tip').then((m) => ({ default: m.Tip })));
 
 export function Button({
   children,
@@ -19,6 +22,7 @@ export function Button({
   title,
   ...props
 }) {
+  const reduceMotion = useReducedMotion();
   const Component = props.href ? motion.a : motion.button;
   const interactive = !disabled && !loading;
   // An icon-only button names itself with aria-label and shows its title in a BoardUI tooltip
@@ -30,8 +34,8 @@ export function Button({
     <Component
       type={props.href ? undefined : type}
       title={tip ? undefined : title}
-      whileTap={interactive ? { scale: 0.97 } : undefined}
-      transition={springConfig.responsive}
+      whileTap={interactive && !reduceMotion ? { scaleX: 0.96, scaleY: 1.015 } : undefined}
+      transition={SPRING.press}
       onClick={onClick}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
@@ -80,5 +84,5 @@ export function Button({
       {children && !iconOnly && <span className={styles.label}>{children}</span>}
     </Component>
   );
-  return tip ? <Tip label={title}>{button}</Tip> : button;
+  return tip ? <Suspense fallback={button}><Tip label={title}>{button}</Tip></Suspense> : button;
 }

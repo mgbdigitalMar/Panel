@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Animated, Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { SPRING } from '../../theme/motion';
+import { NATIVE_GLASS } from './LiquidGlass';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -24,9 +26,12 @@ export function HapticPressable({ haptic = 'light', onPress, ...rest }) {
  * `style` goes on the pressable itself, so flex, width, alignSelf and absolute
  * positioning size and place the touch target, not an inner wrapper.
  */
-export function PressScale({ style, children, disabled, scaleTo = 0.97, haptic = 'light', onPressIn, onPressOut, onPress, ...rest }) {
+export function PressScale({ style, children, disabled, scaleTo = 0.97, haptic = 'light', nativeGlass, onPressIn, onPressOut, onPress, ...rest }) {
   const [scale] = useState(() => new Animated.Value(1));
-  const to = (v) => Animated.spring(scale, { toValue: v, damping: 15, stiffness: 250, mass: 0.6, useNativeDriver: true }).start();
+  // `nativeGlass`: a control made of interactive system glass. On iOS 26 the glass answers the touch
+  // itself, so this does not scale it as well; elsewhere it keeps the spring.
+  const native = nativeGlass && NATIVE_GLASS;
+  const to = (v) => { if (!native) Animated.spring(scale, { toValue: v, ...SPRING.press, useNativeDriver: true }).start(); };
   return (
     <AnimatedPressable
       disabled={disabled}

@@ -76,22 +76,22 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
+        // Only the libraries every page needs from the start get a shared chunk of their own.
+        // Anything else (react-aria and its date library, the BoardUI pieces) is left out on
+        // purpose: it then travels with the lazy code that imports it instead of being bundled
+        // into the first download. A catch-all `return 'vendor'` had put ~200 kB of date picker
+        // and tooltip into every first load.
         manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('recharts') || id.includes('d3')) {
-              return 'vendor-recharts';
-            }
-            if (id.includes('framer-motion')) {
-              return 'vendor-framer';
-            }
-            if (id.includes('@supabase') || id.includes('supabase-js')) {
-              return 'vendor-supabase';
-            }
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            return 'vendor';
-          }
+          if (!id.includes('node_modules')) return undefined;
+          // clsx and react-is are shared with recharts: left unassigned, the bundler put clsx in the
+          // charts chunk and every first load then downloaded all of it to get a 1 kB helper
+          if (/[\\/]node_modules[\\/](react|react-dom|scheduler|react-router|react-router-dom|@tanstack|clsx|react-is)[\\/]/.test(id)) return 'vendor-react';
+          if (/framer-motion|motion-dom|motion-utils/.test(id)) return 'vendor-framer';
+          if (/@supabase|supabase-js/.test(id)) return 'vendor-supabase';
+          // Charts load on demand (components/charts/Recharts.jsx) with everything they pull in
+          if (/recharts|[\\/]d3-|victory-vendor|es-toolkit|[\\/]immer[\\/]|decimal\.js|@reduxjs|[\\/]redux|reselect|eventemitter3/.test(id)) return 'vendor-recharts';
+          if (/lucide-react/.test(id)) return 'vendor-icons';
+          return undefined;
         }
       }
     }

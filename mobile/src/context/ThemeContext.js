@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AccessibilityInfo, Platform, useColorScheme } from 'react-native';
 import { GLASS_STORAGE_KEY, normalizeGlass, glassMaterial } from '@shared/config/glass';
 import * as SystemUI from 'expo-system-ui';
@@ -13,6 +13,7 @@ export function ThemeProvider({ children }) {
   const [mode, setModeState] = useState('dark');
   const [ready, setReady] = useState(false);
   const [glassIntensity, setGlassState] = useState('normal');
+  const [glassPreview, setGlassPreview] = useState(null);
   const [reduceTransparency, setReduceTransparency] = useState(false);
 
   useEffect(() => {
@@ -25,13 +26,26 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     if (Platform.OS !== 'ios') return undefined;
-    AccessibilityInfo.isReduceTransparencyEnabled().then(setReduceTransparency).catch(() => {});
-    const subscription = AccessibilityInfo.addEventListener('reduceTransparencyChanged', setReduceTransparency);
+    const syncTransparency = (reduce) => {
+      setReduceTransparency(reduce);
+      if (reduce) setGlassPreview(null);
+    };
+    AccessibilityInfo.isReduceTransparencyEnabled().then(syncTransparency).catch(() => {});
+    const subscription = AccessibilityInfo.addEventListener('reduceTransparencyChanged', syncTransparency);
     return () => subscription.remove();
   }, []);
 
   const resolved = mode === 'system' ? (system === 'light' ? 'light' : 'dark') : mode;
-  const effectiveGlass = reduceTransparency ? 'off' : glassIntensity;
+  const effectiveGlass = reduceTransparency ? 'off' : glassPreview ?? glassIntensity;
+  const previewGlassIntensity = useCallback((value) => {
+    setGlassPreview(value == null ? null : normalizeGlass(value));
+  }, []);
+  const setGlassIntensity = useCallback((value) => {
+    const next = normalizeGlass(value);
+    setGlassPreview(null);
+    setGlassState(next);
+    setItem(GLASS_STORAGE_KEY, next);
+  }, []);
   const material = useMemo(() => glassMaterial(effectiveGlass, resolved === 'dark'), [effectiveGlass, resolved]);
   const colors = useMemo(() => ({
     ...PALETTES[resolved],
@@ -57,16 +71,13 @@ export function ThemeProvider({ children }) {
     effectiveGlass,
     material,
     reduceTransparency,
-    setGlassIntensity: (value) => {
-      const next = normalizeGlass(value);
-      setGlassState(next);
-      setItem(GLASS_STORAGE_KEY, next);
-    },
+    previewGlassIntensity,
+    setGlassIntensity,
     setMode: (m) => {
       setModeState(m);
       setItem(KEYS.themeMode, m);
     },
-  }), [mode, resolved, colors, ready, glassIntensity, effectiveGlass, material, reduceTransparency]);
+  }), [mode, resolved, colors, ready, glassIntensity, effectiveGlass, material, reduceTransparency, previewGlassIntensity, setGlassIntensity]);
 
   return <ThemeCtx.Provider value={value}>{children}</ThemeCtx.Provider>;
 }

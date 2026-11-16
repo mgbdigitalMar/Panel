@@ -1,6 +1,5 @@
 import { useAssistant } from '../context/AssistantContext';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, SlidersHorizontal,
   User, UsersRound, Timer, Search, ChevronRight, LogOut,
@@ -103,26 +102,19 @@ export default function CommandPalette({ open, onClose, onShowShortcuts }) {
   }, {});
 
   return (
-    <AnimatePresence>
+    // No open, close or highlight animation, on purpose: the palette is summoned from the keyboard
+    // (Ctrl K, /) and walked with the arrows many times a day, and anything that delays the first
+    // keystroke reads as lag. Same reasoning as Raycast and Linear.
+    <>
       {open && (
         <div className={styles.overlay} role="dialog" aria-modal="true" aria-label="Buscar en la intranet">
-          <motion.div
+          <div
             className={styles.backdrop}
             data-scrim
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.12 } }}
-            transition={{ duration: 0.18 }}
             onClick={onClose}
           />
 
-          <motion.div
-            className={styles.panel}
-            initial={{ opacity: 0, y: -16, scale: 0.97, filter: 'blur(6px)' }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
-            exit={{ opacity: 0, y: -8, scale: 0.98, transition: { duration: 0.12, ease: [0.4, 0, 1, 1] } }}
-            transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.8 }}
-          >
+          <div className={styles.panel}>
             <div className={styles.searchRow}>
               <Search size={16} className={styles.searchIcon} aria-hidden="true" />
               <input
@@ -166,14 +158,7 @@ export default function CommandPalette({ open, onClose, onShowShortcuts }) {
                           onClick={item.run}
                           onMouseMove={() => !isSelected && setSelected(item.index)}
                         >
-                          {/* Highlight glides between rows */}
-                          {isSelected && (
-                            <motion.span
-                              layoutId="cmd-highlight"
-                              className={styles.itemHighlight}
-                              transition={{ type: 'spring', stiffness: 700, damping: 46 }}
-                            />
-                          )}
+                          {isSelected && <span className={styles.itemHighlight} aria-hidden="true" />}
                           {item.avatar ? (
                             <Avatar initials={item.avatar} size={34} />
                           ) : (
@@ -205,9 +190,9 @@ export default function CommandPalette({ open, onClose, onShowShortcuts }) {
                 Cerrar sesión
               </button>
             </div>
-          </motion.div>
+          </div>
         </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }

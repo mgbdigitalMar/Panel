@@ -1065,7 +1065,7 @@ input[type=number] { -moz-appearance: textfield; }
 
   @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
     &:hover {
-      transform:    translateY(-5px);
+      transform:    translateY(-2px); /* a hint of lift: cards are hovered tens of times a day */
       box-shadow:   var(--shadow-lg);
       border-color: rgba(var(--accent-rgb), 0.20) !important;
     }
@@ -1219,8 +1219,8 @@ html { -webkit-tap-highlight-color: transparent; }
 }
 
 /* Glass on phones: toasts float above the bottom dock */
-@media (max-width: 767px) {
-  [data-appearance='glass'] { --toast-bottom: 88px; }
+@media (max-width: 1366px) {
+  [data-appearance='glass'] { --toast-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
 }
 
 @import './glass-intensity';

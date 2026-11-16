@@ -112,7 +112,7 @@ $header-h-mobile: 64px;
 /* Content panel */
 /* Desktop: a fixed window onto the page (only the panel scrolls).
    Phones and tablets: normal page scrolling under the sticky top bar. */
-@media (min-width: 1024px) {
+@media (min-width: 1367px) {
   .layout {
     height: 100vh;
     height: 100dvh;
@@ -155,7 +155,7 @@ $header-h-mobile: 64px;
   min-height: calc(100svh - #{$header-h});
   padding: clamp(12px, 1.6vw, 24px) clamp(20px, 3vw, 44px) calc(clamp(32px, 4vw, 56px) + env(safe-area-inset-bottom));
 
-  @media (max-width: 1023px) {
+  @media (max-width: 1366px) {
     min-height: calc(100svh - #{$header-h-mobile});
     padding: 12px 28px calc(40px + env(safe-area-inset-bottom));
     padding-left: max(28px, env(safe-area-inset-left));
@@ -167,8 +167,8 @@ $header-h-mobile: 64px;
     padding-right: max(16px, env(safe-area-inset-right));
   }
 
-  /* Phones: room for the bottom dock */
-  @media (max-width: 767px) {
+  /* Reserve the dock on phones and tablets, including landscape. */
+  @media (max-width: 1366px) {
     padding-bottom: calc(92px + env(safe-area-inset-bottom));
   }
 }

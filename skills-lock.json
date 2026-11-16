@@ -1,173 +1,243 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
     "animate": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/animate/SKILL.md",
-      "computedHash": "18c66551f62a1b1d0d3c5116a2fe6af66d8fbc643db84c99c11f8abd584fcf1e"
+      "computedHash": "60613e9badee4110074d32e1f5d8bf63b720961c2acb9eefe962cd0e591e2e58"
     },
     "animate-expo": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/animate-expo/SKILL.md",
-      "computedHash": "3e914b8abdff154a289dcabc63817b6b5d649272a0d054e7e799f37e4bb1c471"
+      "computedHash": "3cbc0a9466a1404de98bec73eb6789257556e632f82c58319308a64ff42a5771"
     },
     "animation-performance": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/animation-performance/SKILL.md",
-      "computedHash": "9a5cf80000695ae2e340126d44a38305f1f4625ec220c262a7ff59433d9f34c0"
+      "computedHash": "cbd338b7c961d1a2f2f61a30905adf1db94206595e8da593fef1b44265d5d08f"
     },
     "animation-vocabulary": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/animation-vocabulary/SKILL.md",
-      "computedHash": "9aaad861dd54dab7c9bb3fb5bd4c539078d8d06c14530d92d49cdb1509bfa937"
+      "computedHash": "1c50a737b755ff021f5216c7b89af3734ba0f9a908d0b540d3e9979f52fef3e2"
     },
     "antislop": {
       "source": "miqdadbadjuber/anti-slop",
       "sourceType": "github",
       "skillPath": "skills/antislop/SKILL.md",
-      "computedHash": "55b6115f5bcfd328b5fc6ff7d0d5ac5951b26b4ace240e46026975696eee49e1"
+      "computedHash": "81c0e3e01cc4f0439dfe232165cc94cffba877bf2b9d0101578ca54690a8ecf0"
     },
     "antislop-code": {
       "source": "miqdadbadjuber/anti-slop",
       "sourceType": "github",
       "skillPath": "skills/antislop-code/SKILL.md",
-      "computedHash": "459c556cee628a295f1e4ab0f575a6ca9f63032bb87e52e8dfd7a50cbc9c88c9"
+      "computedHash": "648f9f24b44a610626dcd1dbe52a2147c3f5f994c3e641b83aeab58404a09fa9"
     },
     "antislop-copywriting": {
       "source": "miqdadbadjuber/anti-slop",
       "sourceType": "github",
       "skillPath": "skills/antislop-copywriting/SKILL.md",
-      "computedHash": "cdee48612a644126d839586a518b5e53327c45499928335e2d02f9587b128773"
+      "computedHash": "1d3210e90a7872f2f1d40806c1d5cd7ab6a66a4fb9de988d63c16ce990f0cb8e"
     },
     "antislop-human": {
       "source": "miqdadbadjuber/anti-slop",
       "sourceType": "github",
       "skillPath": "skills/antislop-human/SKILL.md",
-      "computedHash": "831b46a032166165fc35b84f978c94e0dcacbbc1022156b3d56676338c0f3b6d"
+      "computedHash": "5859782d56903ed844705013785197fbd5831083ce99c5bd153109c2048da2c9"
     },
     "antislop-layoutmobile": {
       "source": "miqdadbadjuber/anti-slop",
       "sourceType": "github",
       "skillPath": "skills/antislop-layoutmobile/SKILL.md",
-      "computedHash": "1def32958e5be3356d1dd27428d04df0bd69bb9df8df9117c11abacc464b4ef6"
+      "computedHash": "90c893982c197eb438a7136aee48d084da7e9210127670e924431d45fecc225e"
     },
     "antislop-ui": {
       "source": "miqdadbadjuber/anti-slop",
       "sourceType": "github",
       "skillPath": "skills/antislop-ui/SKILL.md",
-      "computedHash": "12c2cd7d1d5fbae9210410eb16230332747e9414fc06129200ac13ee174909b6"
+      "computedHash": "42bf76813477f6b9d97acf6509b4a55935bd75a81312f9a516fd9bcdf9e00ed1"
     },
     "apple-design": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/apple-design/SKILL.md",
-      "computedHash": "f3f1d2cbc8f3e79ccddff05f4e42d34d995f057fb30ff670e4edf8c87d568b69"
+      "computedHash": "118d450c2d6ca54fee5f56cf8883fa3231bc2d917bb8f5a3f87488162c55fac9"
     },
     "ask-sonner": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/ask-sonner/SKILL.md",
-      "computedHash": "0168a6a129ba0a3561ccbda3a3d8d0dc0af1d556f373e315e9479e3364420dd3"
+      "computedHash": "3d53f948bd8b19993b70d66929f70fa5ddb44bca6018e2c29f9cec6c8bf2b9cf"
     },
     "break-ui": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/break-ui/SKILL.md",
-      "computedHash": "79e9e01e3f2fe2ced55448b55de1835c6e641826ee0a81991289e79d3f50cdc7"
+      "computedHash": "accfc40025b4cc57475bebdcef52153a1598beec2794d6f11dec5cbbd79481c9"
     },
     "design-taste-frontend": {
       "source": "Leonxlnx/taste-skill",
       "sourceType": "github",
       "skillPath": "skills/taste-skill/SKILL.md",
-      "computedHash": "53590ee9325bee34d7888bf0d81bd3941a108b1e7850df46802d93104e3f2b90"
+      "computedHash": ""
     },
     "emil-design-eng": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/emil-design-eng/SKILL.md",
-      "computedHash": "74e0ede3a72c476a4c293e1e34d75fa1713f83bdc5c6c1cd76f1002fc564ecc6"
+      "computedHash": "55735a70a886326ee8ba1dd4d1ee040e4e9503a536891467e4ed7e114a69b0dd"
     },
     "find-animation-opportunities": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/find-animation-opportunities/SKILL.md",
-      "computedHash": "c6673fadf179233cc0a52c978ea9acc9b82a210665c749307a571a86ed4c092e"
+      "computedHash": "6912a27a684feba9dd220349940d8a44e0d7b720cab71042f268a7ed93bf4bab"
     },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",
       "skillPath": "skills/frontend-design/SKILL.md",
-      "computedHash": "106acf230014cbb43ca34e6410371321b56ca742f9ee0442e8ec05bf02eb0384"
+      "computedHash": ""
+    },
+    "gsap-core": {
+      "source": "greensock/gsap-skills",
+      "commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "sourceType": "github",
+      "skillPath": "skills/gsap-core/SKILL.md",
+      "computedHash": "dfc8ba849fa8b81c8cc60964ee2a5fa8db4b2a2611801cf549a5b267b8284fa5"
+    },
+    "gsap-frameworks": {
+      "source": "greensock/gsap-skills",
+      "commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "sourceType": "github",
+      "skillPath": "skills/gsap-frameworks/SKILL.md",
+      "computedHash": "25f2f1f85c3d7a6431623c50e894af58213cc96d4e6660564be80ca011b883f6"
+    },
+    "gsap-performance": {
+      "source": "greensock/gsap-skills",
+      "commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "sourceType": "github",
+      "skillPath": "skills/gsap-performance/SKILL.md",
+      "computedHash": "4dd4382cad329927a248fbe55c426901f2bf4f5c598db6ef5ec38c19861b829f"
+    },
+    "gsap-plugins": {
+      "source": "greensock/gsap-skills",
+      "commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "sourceType": "github",
+      "skillPath": "skills/gsap-plugins/SKILL.md",
+      "computedHash": "328b52a98e9704c0349ba2cee23a6a92376c06b6b1fd3e60e5c20395b55e25e8"
+    },
+    "gsap-react": {
+      "source": "greensock/gsap-skills",
+      "commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "sourceType": "github",
+      "skillPath": "skills/gsap-react/SKILL.md",
+      "computedHash": "35fd08f2cbfc945f1a8cdd39e232882a19e27781a4043ee1bc71f65432f03389"
+    },
+    "gsap-scrolltrigger": {
+      "source": "greensock/gsap-skills",
+      "commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "sourceType": "github",
+      "skillPath": "skills/gsap-scrolltrigger/SKILL.md",
+      "computedHash": "c29c5a0fb1506a7f577fe68282eafc6df14b8d2b8ecd24f1f05836f5a0957b67"
+    },
+    "gsap-timeline": {
+      "source": "greensock/gsap-skills",
+      "commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "sourceType": "github",
+      "skillPath": "skills/gsap-timeline/SKILL.md",
+      "computedHash": "622140f48b7aa6bcf2f4d4c050b8fa20effa533688a1650854f5ffc1be169a0b"
+    },
+    "gsap-utils": {
+      "source": "greensock/gsap-skills",
+      "commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "sourceType": "github",
+      "skillPath": "skills/gsap-utils/SKILL.md",
+      "computedHash": "d05b56284eea0118d481b8c673aff27cae66199282995bfe78315785f561002d"
     },
     "impeccable": {
       "source": "pbakaus/impeccable",
       "sourceType": "github",
       "skillPath": ".agents/skills/impeccable/SKILL.md",
-      "computedHash": "de0ad62df4a20451e6f9715b6861b068ac8f558b1829a5c7b947c58ae94f0c6f"
+      "computedHash": ""
     },
     "improve-animations": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/improve-animations/SKILL.md",
-      "computedHash": "d8c10dad70287ad3a8f85f98dc7e763a490c8d669d883e250c28322a71a79a90"
+      "computedHash": "197db8a2e4a2f009ad5aeef57fb9aafbec83f9023bfff269a4bf5ede1106584a"
     },
     "mobile-native": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/mobile-native/SKILL.md",
-      "computedHash": "8d77850a34ec20f745aed3215aa0d587e90438599bb09dc72d9d09ce896a5765"
+      "computedHash": "2141766c0a370128cbee3dc004d3f254a411e54f8352e154e73b040e52070e38"
+    },
+    "motion": {
+      "source": "secondsky/claude-skills",
+      "commit": "88378361314f558fb719aec0af9fd898ab36f0b2",
+      "sourceType": "github",
+      "skillPath": "plugins/motion/skills/motion/SKILL.md",
+      "computedHash": "540bfe5a35ab06ad34c2730875ee737e554be8b836dac17cce26cd543f4d2ac4"
     },
     "pick-ui-library": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/pick-ui-library/SKILL.md",
-      "computedHash": "95f37cddc1c5f7cf5c60c8f8f07c938f2ddd1a70dd45f50c37e7e522fcde5bb9"
+      "computedHash": "c5d418c22e298c1c85856dc838190ec366782c0b476752dfae71d32ae8342cd5"
     },
     "prototype": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/prototype/SKILL.md",
-      "computedHash": "165c803775adbe0df600b961167747b6ba6577e6e1dc9ae1b87fcf5dee800645"
+      "computedHash": "c9b2890f9c5f4cff4e05d097549dd633c3f17db3c7378b5b7baa823c9f220bf2"
+    },
+    "react-native-best-practices": {
+      "source": "software-mansion-labs/skills",
+      "commit": "43cde80af628d103647c13bde07975d0b21b8419",
+      "sourceType": "github",
+      "skillPath": "skills/react-native-best-practices/SKILL.md",
+      "computedHash": "1bd087221ec591a8809ec3d551d8275910906f4d38db8ecdd832800ff5f1075c"
     },
     "remove-animations": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/remove-animations/SKILL.md",
-      "computedHash": "103811fdd3d8b040617a750a6cc825c20fb7e31f08098388289d36d9c751fd72"
+      "computedHash": "f6eec22d000b9d9779b7f1b1734f930d37d37ead204f36f1b4b097cd47f9f16d"
     },
     "review-animations": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/review-animations/SKILL.md",
-      "computedHash": "bb706e42e29a74fe8acf1e3c6ef10f066d2ccc58eb8cff5ab89dd21876231ea3"
+      "computedHash": "7d23a794b6cb0191a68485b87d546adc9bb5ea93aa4168b299e2fefeea940790"
     },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/supabase/SKILL.md",
-      "computedHash": "af1844ade632808fc0c15cf2db87daf3b2431c5262dc8a0c3ea7d70880fadf91"
+      "computedHash": ""
     },
     "supabase-postgres-best-practices": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
-      "computedHash": "128fac78002d916c8ca908245d398e634f540d8bcf20915b2b2359aeb18eba59"
+      "computedHash": "3eb972c2d7c818e544e35cc33ea8d7147d4d78ae08142ef40037b0fbac7a2505"
     },
     "web-design-guidelines": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/web-design-guidelines/SKILL.md",
-      "computedHash": "f3bc47f890f42a44db1007ab390709ec368e4b8c089baee6b0007182236ac474"
+      "computedHash": ""
     },
     "write-swift": {
       "source": "emilkowalski/skill",
       "sourceType": "github",
       "skillPath": "skills/write-swift/SKILL.md",
-      "computedHash": "3c4854221f2c654172c3532e71dcb4ece25ef62057d97bec1c26c3ab17eca191"
+      "computedHash": "aba96f69500a765c53e6230e036aacaf1e98f81d5eefd1a15d10d6706dd27b97"
     }
   }
 }

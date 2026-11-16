@@ -35,10 +35,12 @@ export function GlassButton({
   }[variant];
   const isDisabled = disabled || loading;
   const gradient = variant === 'primary' && !color;
+  const glass = variant === 'glass';
 
   return (
     <PressScale
       onPress={onPress}
+      nativeGlass={glass}
       disabled={isDisabled}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel || title}
@@ -56,16 +58,19 @@ export function GlassButton({
       }, style]}
     >
       {gradient ? <GradientFill radius={radius} /> : null}
-      {variant === 'glass' ? <GlassFill radius={radius} /> : null}
-      {loading ? (
-        <ActivityIndicator color={v.fg} />
-      ) : (
-        <>
-          {Icon ? <Icon size={s.icon} color={v.fg} strokeWidth={2} /> : null}
-          {title ? <T size={s.font} weight="semibold" color={v.fg} numberOfLines={1} style={{ flexShrink: 1 }}>{title}</T> : null}
-          {children}
-        </>
-      )}
+      {glass ? <GlassFill radius={radius} interactive /> : null}
+      {/* The content lets touches through to the interactive glass beneath (iOS 26) */}
+      <View pointerEvents={glass ? 'none' : 'auto'} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, flexShrink: 1 }}>
+        {loading ? (
+          <ActivityIndicator color={v.fg} />
+        ) : (
+          <>
+            {Icon ? <Icon size={s.icon} color={v.fg} strokeWidth={2} /> : null}
+            {title ? <T size={s.font} weight="semibold" color={v.fg} numberOfLines={1} style={{ flexShrink: 1 }}>{title}</T> : null}
+            {children}
+          </>
+        )}
+      </View>
     </PressScale>
   );
 }
@@ -76,15 +81,16 @@ export function IconButton({ icon: Icon, onPress, accessibilityLabel, size = 44,
   return (
     <PressScale
       onPress={onPress}
+      nativeGlass={variant === 'glass'}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       hitSlop={size < 44 ? (44 - size) / 2 + 2 : 4}
       style={[{ width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center' }, style]}
     >
-      {variant === 'glass' ? <GlassFill radius={size / 2} sheen={false} /> : null}
-      <Icon size={size >= 44 ? 21 : 19} color={colors.text} strokeWidth={1.9} />
+      {variant === 'glass' ? <GlassFill radius={size / 2} sheen={false} interactive /> : null}
+      <View pointerEvents="none"><Icon size={size >= 44 ? 21 : 19} color={colors.text} strokeWidth={1.9} /></View>
       {badge ? (
-        <View style={{
+        <View pointerEvents="none" style={{
           position: 'absolute', top: -3, right: -3, minWidth: 18, height: 18, paddingHorizontal: 5, borderRadius: 9,
           backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.bg,
         }}

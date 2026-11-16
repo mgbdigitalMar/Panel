@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, LabelList } from 'recharts';
+import { Recharts } from '../components/charts/Recharts';
 import {
   Users, Calendar, Inbox, Newspaper, Pin, Car, DoorOpen, Building, ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight,
   PartyPopper, CalendarPlus, FilePlus2, Mail, FileText, TrendingUp, TrendingDown, Clock, BarChart3, Megaphone,
@@ -10,7 +10,9 @@ import { Avatar, Badge, StatCard, Card, Button, AnimatedNumber } from '../compon
 import { TodayPanel } from '../components/TodayPanel';
 import { fmtDate, fmtDayShort, fmtRange } from '../utils/format';
 import { localISODate } from '../../shared/services/workMode.js';
+import { ActiveIndicator, IndicatorGroup } from '../motion/ActiveIndicator';
 import styles from './DashboardGlass.module.scss';
+import { EASE } from '../motion/tokens';
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 const RANGES = [
@@ -69,7 +71,7 @@ function Gauge({ value }) {
           className={styles.gaugeValue}
           initial={{ pathLength: reduce ? pct / 100 : 0 }}
           animate={{ pathLength: pct / 100 }}
-          transition={{ duration: reduce ? 0 : 0.7, ease: [0.23, 1, 0.32, 1], delay: reduce ? 0 : 0.12 }}
+          transition={{ duration: reduce ? 0 : 0.7, ease: EASE.out, delay: reduce ? 0 : 0.12 }}
         />
       </svg>
       <strong><AnimatedNumber value={Math.round(pct)} /> %</strong>
@@ -221,14 +223,17 @@ export default function DashboardGlass({ d }) {
                   <button type="button" onClick={chart.nav.next} disabled={chart.nav.nextDisabled} aria-label={chart.nav.nextLabel}><ChevronRight size={16} aria-hidden="true" /></button>
                 </span>
               )}
+              <IndicatorGroup>
               <div className={styles.segmented} role="tablist" aria-label="Periodo">
                 {RANGES.map((r) => (
                   <button key={r.id} type="button" role="tab" aria-selected={range === r.id}
                     className={clsx(range === r.id && styles.segOn)} onClick={() => setRange(r.id)}>
+                    {range === r.id && <ActiveIndicator className={styles.segIndicator} radius={999} />}
                     {r.label}
                   </button>
                 ))}
               </div>
+              </IndicatorGroup>
             </div>
           </div>
           {chart.bars.length > 1 && !chartEmpty && (
@@ -237,6 +242,7 @@ export default function DashboardGlass({ d }) {
             </div>
           )}
           <div className={clsx(styles.chartBody, chartEmpty && styles.chartBodyEmpty)}>
+            <Recharts>{({ ResponsiveContainer, BarChart, Bar, Cell, XAxis, YAxis, Tooltip, LabelList }) => (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chart.data} barCategoryGap={chart.bars.length > 1 ? '22%' : '28%'} barGap={3} margin={{ top: 34, right: 4, left: 4, bottom: 0 }}>
                 <defs>
@@ -273,6 +279,7 @@ export default function DashboardGlass({ d }) {
                 ))}
               </BarChart>
             </ResponsiveContainer>
+            )}</Recharts>
             {chartEmpty && (
               <div className={styles.chartEmpty} role="status">
                 <BarChart3 size={22} aria-hidden="true" />
@@ -326,12 +333,14 @@ export default function DashboardGlass({ d }) {
             <div className={styles.donut}>
               {/* Fixed size: a ResponsiveContainer measures 0 in a narrow flex row and draws nothing */}
               <div className={styles.donutChart}>
+                <Recharts>{({ PieChart, Pie, Cell, Tooltip }) => (
                 <PieChart width={124} height={124}>
                   <Pie data={resourceTypePie} cx="50%" cy="50%" innerRadius={42} outerRadius={58} paddingAngle={4} cornerRadius={6} dataKey="value" stroke="none" isAnimationActive={!reduce} animationDuration={700} animationBegin={120} animationEasing="ease-out">
                     {resourceTypePie.map((p) => <Cell key={p.name} fill={p.fill} />)}
                   </Pie>
                   <Tooltip content={<ChartTip />} />
                 </PieChart>
+                )}</Recharts>
                 <span className={styles.donutTotal} aria-hidden="true">
                   <strong>{resourceTypePie.reduce((s, p) => s + (p.value || 0), 0)}</strong>
                   reservas

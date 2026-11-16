@@ -1,4 +1,5 @@
 import { Animated } from 'react-native';
+import { DUR, EASE, SPRING } from '../theme/motion';
 
 // The floating tab bar shrinks while a tab screen scrolls and springs back once it stops,
 // the same as the web's dock. One value for the whole app: 0 = full size, 1 = compact.
@@ -19,9 +20,9 @@ function settle(toValue) {
     return;
   }
   if (toValue) {
-    Animated.timing(tabBarCompact, { toValue, duration: 180, useNativeDriver: true }).start();
+    Animated.timing(tabBarCompact, { toValue, duration: DUR.fast, easing: EASE.out, useNativeDriver: true }).start();
   } else {
-    Animated.spring(tabBarCompact, { toValue, damping: 14, stiffness: 220, mass: 0.8, useNativeDriver: true }).start();
+    Animated.spring(tabBarCompact, { toValue, ...SPRING.settle, useNativeDriver: true }).start();
   }
 }
 

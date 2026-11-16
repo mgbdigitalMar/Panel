@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Building, Car, ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './ReservationsCalendar.module.scss';
 import clsx from 'clsx';
+import { EASE } from '../motion/tokens';
 
 const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const DAYS_ES   = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
@@ -92,7 +93,7 @@ export default function ReservationsCalendar() {
   const periodMotion = {
     initial: enterFrom === null ? false : { opacity: 0, transform: `translateX(${enterFrom * 24}px)` },
     animate: { opacity: 1, transform: 'translateX(0px)', transitionEnd: { transform: 'none' } },
-    transition: { duration: 0.24, ease: [0.23, 1, 0.32, 1] },
+    transition: { duration: 0.24, ease: EASE.out },
   };
 
   return (

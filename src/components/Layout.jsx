@@ -21,6 +21,8 @@ import { ConnectionStatus } from './ConnectionStatus';
 import { IdleWarning } from './IdleWarning';
 import { todayKey } from '../utils/format';
 import { workdayProgress } from '../utils/workday';
+import { EASE, SPRING } from '../motion/tokens';
+import { LIQUID_PAUSE_EVENT } from '../glass/liquidRefraction';
 import styles from './Layout.module.scss';
 
 const navItems = [
@@ -112,7 +114,7 @@ function ProfileRing({ progress, size, children }) {
           strokeDasharray="1 1"
           initial={{ strokeDashoffset: 1 }}
           animate={{ strokeDashoffset: 1 - progress / 100 }}
-          transition={{ duration: 1.1, ease: [0.23, 1, 0.32, 1], delay: 0.2 }}
+          transition={{ duration: 1.1, ease: EASE.out, delay: 0.2 }}
         />
       </svg>
       <div className={styles.ringInner}>{children}</div>
@@ -264,18 +266,27 @@ export default function Layout({ children }) {
     document.title = docTitle ? `${docTitle} · Margube` : 'Margube';
   }, [docTitle]);
 
-  // Each page opens at the top (the panel scrolls on desktop, the window on phones)
+  // Each page opens at the top (the panel scrolls on desktop, the window on phones). It happens
+  // once the old page has faded out (AnimatePresence onExitComplete below): scrolling at the click
+  // made the leaving page jump to its top while it was still on screen.
   const panelRef = useRef(null);
+  // Real Liquid Glass («Intenso»): the cards stop refracting while the pages cross (liquidRefraction.js)
+  const firstPage = useRef(true);
   useEffect(() => {
+    if (firstPage.current) { firstPage.current = false; return; }
+    window.dispatchEvent(new Event(LIQUID_PAUSE_EVENT));
+  }, [page]);
+  const scrollToTop = useCallback(() => {
     panelRef.current?.scrollTo(0, 0);
     window.scrollTo(0, 0);
-  }, [page]);
+  }, []);
 
   // Notifications bell + dropdown, in the top bar
   const bellNode = (
             <div className={styles.bellWrap} ref={notiMenuRef}>
               <button
                 type="button"
+                data-liquid
                 className={clsx(styles.iconBtn, { [styles.iconBtnActive]: notiMenu })}
                 onClick={() => setNotiMenu(v => !v)}
                 aria-label={`Notificaciones${unreadCount > 0 ? ` (${unreadCount} sin leer)` : ''}`}
@@ -288,7 +299,7 @@ export default function Layout({ children }) {
                   key={unreadCount}
                   initial={{ scale: 0.6, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: 'spring', stiffness: 520, damping: 24 }}
+                  transition={SPRING.badge}
                   className={styles.badge}
                   aria-hidden="true"
                 >
@@ -352,14 +363,17 @@ export default function Layout({ children }) {
         </GlassHeader>
 
         <main ref={panelRef} className={styles.panel} id="main-content" role="main" aria-busy={loadingData}>
-          <AnimatePresence mode="wait" initial={false}>
+          {/* Changing section is done tens of times a day: a quick crossfade (100 ms out, 150 ms in)
+              and no slide, since sections are siblings, not a hierarchy. The page's own panels then
+              rise in their short cascade (.reference-motion [data-motion-panel], global.scss). */}
+          <AnimatePresence mode="wait" initial={false} onExitComplete={scrollToTop}>
             <motion.div
               key={page}
               className={clsx(styles.panelInner, 'reference-motion')}
               initial={{ opacity: 0 }}
               // A lingering transform would trap position:fixed modals inside this wrapper
-              animate={{ opacity: 1, transition: { duration: reduceMotion ? 0.1 : 0.15, ease: [0.23, 1, 0.32, 1] }, transitionEnd: { transform: 'none' } }}
-              exit={{ opacity: 0, transition: { duration: reduceMotion ? 0.08 : 0.1, ease: [0.23, 1, 0.32, 1] } }}
+              animate={{ opacity: 1, transition: { duration: reduceMotion ? 0.1 : 0.15, ease: EASE.out }, transitionEnd: { transform: 'none' } }}
+              exit={{ opacity: 0, transition: { duration: reduceMotion ? 0.08 : 0.1, ease: EASE.out } }}
             >
               {meta && (
                 <div className={clsx(styles.pageIntro, meta.touch && styles.pageIntroTouchOwn, meta.desk && styles.pageIntroDeskOwn, meta.own && styles.pageIntroOwn, meta.coverOwn && styles.pageIntroCoverOwn)} style={meta.width ? { maxWidth: meta.width, marginInline: 'auto' } : undefined}>
@@ -398,6 +412,7 @@ export default function Layout({ children }) {
         page={page}
         badges={navBadges}
         onNavigate={handleNavigate}
+        onReselect={scrollToTop}
       />
 
       <LiveToastContainer liveNotifs={liveNotifs} />
