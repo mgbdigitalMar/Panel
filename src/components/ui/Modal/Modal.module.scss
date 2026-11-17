@@ -21,7 +21,8 @@
 .backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(8, 12, 22, 0.38);
+  /* --sheet-dim: 1 at rest, falling to 0 as a phone sheet is dragged down (Modal.jsx) */
+  background: rgba(8, 12, 22, calc(0.38 * var(--sheet-dim, 1)));
 }
 
 .modal {
@@ -58,14 +59,36 @@
     padding-bottom: env(safe-area-inset-bottom);
     border-radius: 28px 28px 0 0;
     border-bottom: 0;
+  }
+}
+
+.top { flex: none; }
+
+/* Phones: the handle and header take the drag (Modal.jsx). The browser must not scroll or
+   pull-to-refresh from here, or it would steal the gesture. */
+.grabZone {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+
+  &:active { cursor: grabbing; }
+}
+
+/* Grab mark: 40 × 4 px, inside a 20 px band so it is easy to catch */
+.grabber {
+  display: none;
+
+  @media (max-width: 767px) {
+    display: block;
+    height: 20px;
 
     &::before {
       content: '';
-      flex: none;
-      align-self: center;
+      display: block;
       width: 40px;
       height: 4px;
-      margin-top: 8px;
+      margin: 8px auto 0;
       border-radius: var(--radius-full);
       background: rgba(var(--text-rgb), 0.22);
     }
@@ -81,7 +104,7 @@
   flex-shrink: 0;
   gap: 12px;
 
-  @media (max-width: 767px) { padding: 10px 20px 14px; }
+  @media (max-width: 767px) { padding: 2px 20px 14px; }
 }
 
 .title {

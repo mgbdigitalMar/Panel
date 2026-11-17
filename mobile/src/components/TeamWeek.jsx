@@ -12,6 +12,7 @@ import { IconButton } from './common/GlassButton';
 import { PressScale } from './common/Pressable';
 import { T } from './common/Text';
 import { Avatar, IconTile, Pill } from './common/UI';
+import { ListFill } from './common/LiquidGlass';
 
 // Same icons and tones as the work mode of the directory
 const LOOK = {
@@ -84,11 +85,12 @@ export function TeamWeek({ employees, isAdmin, shortDept }) {
               accessibilityLabel={`${WEEKDAYS[i]} ${dayNum(d)}${d === today ? ', hoy' : ''}: ${inOffice} de ${rows.length} en la oficina`}
               style={{
                 flex: 1, minHeight: 64, borderRadius: 16, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', gap: 2,
-                backgroundColor: on ? colors.accentSoft : colors.glassStrong,
-                borderWidth: 1, borderColor: on ? colors.accent : colors.glassBorder,
+                backgroundColor: on ? colors.accentSoft : 'transparent',
+                borderWidth: on ? 1 : 0, borderColor: colors.accent,
                 opacity: d < today && !on ? 0.6 : 1,
               }}
             >
+              {on ? null : <ListFill radius={16} />}
               <T size={11.5} weight="semibold" color={on || d === today ? colors.accentFg : colors.text3}>{WEEKDAYS[i].slice(0, 3)}</T>
               <T size={17} weight="semibold" mono>{dayNum(d)}</T>
               <T size={10.5} color={colors.text3} mono>{inOffice}/{rows.length}</T>

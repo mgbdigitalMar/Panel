@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { RADIUS } from '../../theme/tokens';
-import { GlassFill } from './LiquidGlass';
+import { GlassFill, InsideGlassContext } from './LiquidGlass';
 import { PressScale } from './Pressable';
 
 /**
@@ -19,9 +19,10 @@ export function GlassCard({ children, style, onPress, radius = RADIUS.card, padd
     return (
       <PressScale onPress={onPress} disabled={disabled} accessibilityRole="button" accessibilityLabel={accessibilityLabel} scaleTo={0.98} style={[surface, style]}>
         {fill}
-        {children}
+        <InsideGlassContext.Provider value>{children}</InsideGlassContext.Provider>
       </PressScale>
     );
   }
-  return <View style={[surface, style]}>{fill}{children}</View>;
+  // What the card holds sits inside glass: rows and chips in it take the dense surface (ListFill)
+  return <View style={[surface, style]}>{fill}<InsideGlassContext.Provider value>{children}</InsideGlassContext.Provider></View>;
 }

@@ -1,18 +1,29 @@
 // Smaller building blocks, styled after the web's components (src/components/ui, styles/_patterns.scss).
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Animated, Image, Modal, ScrollView, Switch, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, Image, Modal, ScrollView, StyleSheet, Switch, View, useWindowDimensions } from 'react-native';
+import { GestureDetector, GestureHandlerRootView, usePanGesture } from 'react-native-gesture-handler';
+import Reanimated, { cancelAnimation, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
+import { SHEET_DRAG_THRESHOLD, SHEET_SPRING, sheetDragOffset, shouldDismissSheet } from '@shared/config/sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, Inbox, X, Info, AlertTriangle, ArrowRight } from 'lucide-react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../context/ThemeContext';
-import { tone as toneOf, glassSurface, BRAND } from '../../theme/tokens';
+import { tone as toneOf, BRAND } from '../../theme/tokens';
 import { initials as toInitials, avatarColor } from '../../utils/format';
 import { HapticPressable, PressScale } from './Pressable';
 import { T } from './Text';
 import { GradientFill, leafRadii } from './Brand';
-import { GlassFill } from './LiquidGlass';
+import { GlassFill, InsideGlassContext, ListFill } from './LiquidGlass';
 import { useReduceMotion } from './AuthBackdrop';
+import { DUR } from '../../theme/motion';
+
+/** A shared/config/sheet.js spring for Reanimated (duration in ms), optionally with a start velocity */
+const sheetSpring = ({ dampingRatio, duration }, velocity = 0) => {
+  'worklet';
+  return { dampingRatio, duration: duration * 1000, velocity };
+};
 
 /**
  * Segmented tabs: a liquid-glass pill track; the active option is a solid chip (white on smoked
@@ -69,9 +80,10 @@ export function ChipRail({ options, value, onChange, style }) {
             onPress={() => { if (!on) onChange(o.value); }}
             style={{
               height: 36, paddingHorizontal: 14, borderRadius: 18, flexDirection: 'row', alignItems: 'center', gap: 6,
-              ...(on ? { backgroundColor: colors.tabOn, borderWidth: 1, borderColor: colors.tabOn } : glassSurface(colors)),
+              ...(on ? { backgroundColor: colors.tabOn, borderWidth: 1, borderColor: colors.tabOn } : null),
             }}
           >
+            {on ? null : <ListFill radius={18} />}
             <T size={13} weight="semibold" color={on ? colors.tabOnText : colors.text2}>{o.label}</T>
             {o.count != null ? (
               <View style={{ minWidth: 20, height: 20, paddingHorizontal: 6, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? 'rgba(128,128,128,0.22)' : colors.neutralSoft }}>
@@ -106,9 +118,10 @@ export function WeekdayPicker({ options, values, onChange, style }) {
             onPress={() => onChange(on ? values.filter((v) => v !== o.value) : [...values, o.value])}
             style={{
               flex: 1, maxWidth: 56, aspectRatio: 1, borderRadius: 999, alignItems: 'center', justifyContent: 'center',
-              ...(on ? { backgroundColor: bg, borderWidth: 1, borderColor: fg } : glassSurface(colors)),
+              ...(on ? { backgroundColor: bg, borderWidth: 1, borderColor: fg } : null),
             }}
           >
+            {on ? null : <ListFill radius={28} />}
             <T size={15} weight="bold" color={on ? fg : colors.text2}>{o.short}</T>
           </PressScale>
         );
@@ -285,6 +298,8 @@ export function Row({ left, title, subtitle, right, onPress, first = true, last 
   const radius = { tl: first ? 24 : 8, bl: last ? 24 : 8 };
   const content = (
     <>
+      {/* The same glass as the cards (no live blur on Android: a list holds dozens of rows) */}
+      <ListFill corners={{ tl: radius.tl, tr: radius.tl, bl: radius.bl, br: radius.bl }} rimColor={first ? undefined : colors.glassBorder} />
       {left}
       <View style={{ flex: 1, gap: 2, minWidth: 0 }}>
         {typeof title === 'string' ? <T size={15} weight={titleWeight} numberOfLines={2}>{title}</T> : title}
@@ -295,11 +310,6 @@ export function Row({ left, title, subtitle, right, onPress, first = true, last 
   );
   const s = [{
     flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 13, paddingHorizontal: 14, minHeight: 64,
-    ...glassSurface(colors),
-    // List rows are not see-through either, but stay without a live blur: a screen can hold dozens
-    // of them and a blur per row would cost every frame of a scroll on Android
-    backgroundColor: colors.glassStrong,
-    ...(first ? null : { borderTopColor: colors.glassBorder }),
     borderTopLeftRadius: radius.tl, borderTopRightRadius: radius.tl, borderBottomLeftRadius: radius.bl, borderBottomRightRadius: radius.bl,
   }, style];
   if (onPress) {
@@ -431,7 +441,7 @@ export function Checkbox({ checked, onChange, label, disabled }) {
     >
       <View style={{
         width: 24, height: 24, borderRadius: 8, marginTop: 1, alignItems: 'center', justifyContent: 'center',
-        backgroundColor: checked ? colors.accent : colors.inputBg, borderWidth: checked ? 0 : 1.5, borderColor: colors.glassBorderStrong,
+        backgroundColor: checked ? colors.accent : colors.glassStrong, borderWidth: checked ? 0 : 1.5, borderColor: colors.glassBorderStrong,
       }}
       >
         {checked ? <Check size={16} color={colors.onAccent} strokeWidth={3} /> : null}
@@ -452,7 +462,7 @@ export function Stepper({ value, onChange, min = 0, max = 999, step = 1, format 
         disabled={blocked}
         accessibilityRole="button"
         accessibilityLabel={a11y}
-        style={{ width: 44, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: filled ? colors.accent : colors.glassFill }}
+        style={{ width: 44, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: filled ? colors.accent : colors.glassStrong }}
       >
         <T size={20} weight="medium" color={filled ? colors.onAccent : colors.text} style={{ lineHeight: 24 }}>{txt}</T>
       </PressScale>
@@ -489,33 +499,145 @@ export function SwitchRow({ title, subtitle, value, onValueChange, disabled }) {
   );
 }
 
-/** Bottom sheet modal (Confirmar reserva, Editar sala…). */
+/**
+ * Bottom sheet modal (Confirmar reserva, Editar sala…).
+ *
+ * Opens and closes on springs (UI thread), and can be dragged down from its handle or header: it
+ * follows the finger 1:1, resists when pulled up, and on release is thrown to where the gesture was
+ * heading, closing or settling back with the finger's velocity (shared/config/sheet.js, the same
+ * physics as the web's sheet). Caught mid-flight, it carries on from where it is. The content area
+ * is left alone, so its scrolling and the signature pad keep their own gestures.
+ */
 export function Sheet({ visible, onClose, title, children, footer }) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const reduce = useReduceMotion();
+  const { height: screenHeight } = useWindowDimensions();
+
+  // The Modal stays mounted until the closing spring has finished
+  const [mounted, setMounted] = useState(visible);
+  if (visible && !mounted) setMounted(true);
+
+  const offset = useSharedValue(screenHeight); // distance below the rest position
+  const fade = useSharedValue(1); // carries the transition instead of movement under reduce motion
+  const height = useSharedValue(0);
+  const grab = useSharedValue(0);
+  const visibleRef = useRef(visible);
+  const closingRef = useRef(false); // a drag already threw the sheet off; don't restart its spring
+
+  const finish = () => {
+    closingRef.current = false;
+    if (visibleRef.current) return;
+    offset.set(screenHeight);
+    setMounted(false);
+  };
+
+  useEffect(() => {
+    visibleRef.current = visible;
+    if (!mounted) return;
+    if (visible) {
+      closingRef.current = false;
+      if (reduce) {
+        offset.set(0);
+        fade.set(withTiming(1, { duration: DUR.reduced }));
+      } else {
+        fade.set(1);
+        offset.set(withSpring(0, sheetSpring(SHEET_SPRING.open)));
+      }
+    } else if (!closingRef.current) {
+      const done = (finished) => { if (finished) scheduleOnRN(finish); };
+      if (reduce) fade.set(withTiming(0, { duration: DUR.exit }, done));
+      else offset.set(withSpring(screenHeight, sheetSpring(SHEET_SPRING.close), done));
+    }
+    // finish only reads refs, shared values and a state setter
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, mounted, reduce, screenHeight, offset, fade]);
+
+  // Drag-to-dismiss asks the owner to close. One that keeps it open (a save in progress) gets it back.
+  const requestClose = () => {
+    closingRef.current = true;
+    onClose?.();
+    setTimeout(() => {
+      if (!visibleRef.current) return;
+      closingRef.current = false;
+      if (reduce) fade.set(withTiming(1, { duration: DUR.reduced }));
+      offset.set(withSpring(0, sheetSpring(SHEET_SPRING.settle)));
+    }, 160);
+  };
+
+  const pan = usePanGesture({
+    activeOffsetY: [-SHEET_DRAG_THRESHOLD, SHEET_DRAG_THRESHOLD],
+    maxPointers: 1,
+    onActivate: (event) => {
+      // Take over from wherever the sheet is; the threshold travelled does not make it jump
+      cancelAnimation(offset);
+      grab.set(offset.get() - event.translationY);
+    },
+    onUpdate: (event) => {
+      offset.set(sheetDragOffset(grab.get() + event.translationY, height.get()));
+    },
+    onDeactivate: (event) => {
+      const velocity = event.canceled ? 0 : event.velocityY;
+      if (shouldDismissSheet(offset.get(), velocity, height.get())) {
+        const done = (finished) => { if (finished) scheduleOnRN(finish); };
+        if (reduce) fade.set(withTiming(0, { duration: DUR.exit }, done));
+        else offset.set(withSpring(screenHeight, sheetSpring(SHEET_SPRING.close, velocity), done));
+        scheduleOnRN(requestClose);
+      } else {
+        offset.set(withSpring(0, sheetSpring(SHEET_SPRING.settle, velocity)));
+      }
+    },
+  });
+
+  // The scrim lightens as the sheet goes down
+  const scrimStyle = useAnimatedStyle(() => {
+    const travel = height.get() || screenHeight;
+    return { opacity: fade.get() * Math.min(1, Math.max(0, 1 - offset.get() / travel)) };
+  });
+  const sheetStyle = useAnimatedStyle(() => ({
+    opacity: fade.get(),
+    transform: [{ translateY: offset.get() }],
+  }));
+
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>
-      <HapticPressable style={{ flex: 1, backgroundColor: colors.overlay }} onPress={onClose} accessibilityRole="button" accessibilityLabel="Cerrar" />
-      <View style={{
-        maxHeight: '90%', width: '100%', maxWidth: 560, alignSelf: 'center', backgroundColor: 'transparent',
-        borderTopLeftRadius: 28, borderTopRightRadius: 28, borderTopWidth: 1, borderColor: colors.glassBorder,
-        paddingTop: 10, paddingBottom: Math.max(insets.bottom, 12) + 12,
-      }}
-      >
-        <GlassFill radius={28} />
-        <View style={{ alignSelf: 'center', width: 36, height: 5, borderRadius: 3, backgroundColor: colors.glassBorderStrong }} />
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 6 }}>
-          <T size={20} weight="semibold" style={{ flex: 1 }} accessibilityRole="header">{title}</T>
-          <HapticPressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Cerrar" hitSlop={8}
-            style={({ pressed }) => ({ width: 36, height: 36, borderRadius: 18, backgroundColor: pressed ? colors.segTrack : colors.glassStrong, alignItems: 'center', justifyContent: 'center' })}>
-            <X size={18} color={colors.text} />
-          </HapticPressable>
-        </View>
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 12, gap: 16 }}>
-          {children}
-        </ScrollView>
-        {footer ? <View style={{ paddingHorizontal: 20, gap: 10 }}>{footer}</View> : null}
-      </View>
+    <Modal visible={mounted} transparent animationType="none" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>
+      <GestureHandlerRootView style={{ flex: 1, justifyContent: 'flex-end' }}>
+        <Reanimated.View style={[StyleSheet.absoluteFill, { backgroundColor: colors.overlay }, scrimStyle]}>
+          <HapticPressable style={{ flex: 1 }} onPress={onClose} accessibilityRole="button" accessibilityLabel="Cerrar" />
+        </Reanimated.View>
+        <Reanimated.View
+          accessibilityViewIsModal
+          onLayout={(event) => height.set(event.nativeEvent.layout.height)}
+          style={[{
+            maxHeight: '90%', width: '100%', maxWidth: 560, alignSelf: 'center', backgroundColor: 'transparent',
+            borderTopLeftRadius: 28, borderTopRightRadius: 28, borderTopWidth: 1, borderColor: colors.glassBorder,
+            paddingBottom: Math.max(insets.bottom, 12) + 12,
+          }, sheetStyle]}
+        >
+          <GlassFill radius={28} />
+          <GestureDetector gesture={pan}>
+            <View>
+              {/* Grab mark inside a taller band, so it is easy to catch */}
+              <View style={{ paddingTop: 10, paddingBottom: 2, alignItems: 'center' }}>
+                <View style={{ width: 36, height: 5, borderRadius: 3, backgroundColor: colors.glassBorderStrong }} />
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingHorizontal: 20, paddingTop: 10, paddingBottom: 6 }}>
+                <T size={20} weight="semibold" style={{ flex: 1 }} accessibilityRole="header">{title}</T>
+                <HapticPressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Cerrar" hitSlop={8}
+                  style={({ pressed }) => ({ width: 36, height: 36, borderRadius: 18, backgroundColor: pressed ? colors.segTrack : colors.glassStrong, alignItems: 'center', justifyContent: 'center' })}>
+                  <X size={18} color={colors.text} />
+                </HapticPressable>
+              </View>
+            </View>
+          </GestureDetector>
+            <InsideGlassContext.Provider value>
+            <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 12, gap: 16 }}>
+              {children}
+            </ScrollView>
+            {footer ? <View style={{ paddingHorizontal: 20, gap: 10 }}>{footer}</View> : null}
+          </InsideGlassContext.Provider>
+        </Reanimated.View>
+      </GestureHandlerRootView>
     </Modal>
   );
 }

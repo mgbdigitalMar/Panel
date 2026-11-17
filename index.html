@@ -24,16 +24,13 @@
     <title>Margube · Intranet Corporativa</title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/logo.png" />
-    <link rel="apple-touch-icon" href="/logo.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
-    <!-- Google Fonts — Inter for UI text, Poppins (the wordmark face) for headings -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Poppins:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Fonts are self-hosted (main.jsx) and swap in when ready. Deliberately not preloaded: no
+         text exists until the app's JavaScript renders it, and a preloaded font competed with that
+         JavaScript for the connection. Measured on a throttled phone, the preload delayed the first
+         paint by ~130 ms and the dashboard's largest paint by ~120 ms. -->
     <!-- Saved theme before the first paint (main.jsx sets the same), so the canvas under
          Safari's bars has the right colour from the start -->
     <script>
@@ -50,8 +47,8 @@
     <!-- Critical CSS: canvas colour (same values as global.scss) and the skip link, before the bundle -->
     <style>
       html, body { margin: 0; }
-      html { background: linear-gradient(180deg, rgba(9,10,16,.88), rgba(9,10,16,.64)), url('/wallpaper.jpg') center / cover fixed; }
-      html[data-theme='light'] { background: linear-gradient(180deg, rgba(240,243,250,.9), rgba(240,243,250,.64)), url('/wallpaper.jpg') center / cover fixed; }
+      html { background: linear-gradient(180deg, rgba(9,10,16,.88), rgba(9,10,16,.64)), url('/wallpaper.webp') center / cover fixed; }
+      html[data-theme='light'] { background: linear-gradient(180deg, rgba(240,243,250,.9), rgba(240,243,250,.64)), url('/wallpaper.webp') center / cover fixed; }
       .skip-link { position: absolute; top: -100px; left: 16px; }
       .skip-link:focus { top: 16px; }
     </style>

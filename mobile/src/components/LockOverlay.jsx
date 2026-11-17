@@ -1,6 +1,6 @@
 // "Sesión en pausa" (design 03): shown after 30 minutes of inactivity.
 // The session is kept; the user resumes it with biometrics or the password.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BackHandler, KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { Fingerprint, Lock } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
@@ -14,9 +14,12 @@ import { GlassButton } from './common/GlassButton';
 import { GlassInput } from './common/GlassInput';
 import { firstName } from '../utils/format';
 import { HapticPressable } from './common/Pressable';
+import { GlassFill } from './common/LiquidGlass';
+import { BlurTargetContext } from './common/BlurTarget';
 
 export default function LockOverlay() {
   const { colors } = useTheme();
+  const blurTarget = useRef(null);
   const { user, biometric, unlockWithBiometrics, unlockWithPassword, logout } = useAuth();
   const [bio, setBio] = useState({ available: false, label: 'biometría' });
   const [usePassword, setUsePassword] = useState(false);
@@ -48,10 +51,12 @@ export default function LockOverlay() {
   return (
     <KeyboardAvoidingView style={[StyleSheet.absoluteFill, { zIndex: 500, elevation: 500 }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.bg }]}>
-        <Wallpaper />
+        <Wallpaper targetRef={blurTarget} />
         <Glow />
         <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.overlay }]} />
       </View>
+      {/* Android: the card and its buttons blur this wallpaper, as in every Screen (BlurTarget.jsx) */}
+      <BlurTargetContext.Provider value={blurTarget}>
       <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 20 }}>
         <View
           accessibilityViewIsModal
@@ -60,9 +65,10 @@ export default function LockOverlay() {
             width: '100%',
             alignSelf: 'center',
             borderRadius: 32, padding: 22, paddingTop: 28, gap: 18, alignItems: 'center',
-            backgroundColor: colors.sheetBg, borderWidth: 1, borderColor: colors.glassBorderStrong,
           }}
         >
+          {/* Real glass, like the confirmation dialog */}
+          <GlassFill radius={32} />
           <View>
             <Avatar name={user?.name} initials={user?.avatar} size={76} />
             <View style={{ position: 'absolute', right: -4, bottom: -4, width: 30, height: 30, borderRadius: 15, backgroundColor: colors.sheetBg, borderWidth: 2, borderColor: colors.glassBorderStrong, alignItems: 'center', justifyContent: 'center' }}>
@@ -94,6 +100,7 @@ export default function LockOverlay() {
           </HapticPressable>
         </View>
       </View>
+      </BlurTargetContext.Provider>
     </KeyboardAvoidingView>
   );
 }

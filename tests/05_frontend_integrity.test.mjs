@@ -80,7 +80,8 @@ export async function runFrontendIntegrityTests() {
 
   // 4. Verificación de configuración en index.html
   const htmlContent = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf8');
-  assert('index.html contiene favicon apuntando a /logo.png', htmlContent.includes('/logo.png'));
+  assert('index.html contiene favicon y icono de inicio a su tamaño', htmlContent.includes('href="/favicon-48.png"') && htmlContent.includes('href="/apple-touch-icon.png"')
+    && fs.existsSync(path.join(rootDir, 'public', 'favicon-48.png')) && fs.existsSync(path.join(rootDir, 'public', 'apple-touch-icon.png')));
   assert('index.html contiene meta viewport responsivo', htmlContent.includes('viewport'));
 
   // 5. Verificación de configuración moderna en vite.config.js

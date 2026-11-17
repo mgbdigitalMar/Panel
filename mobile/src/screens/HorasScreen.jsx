@@ -22,6 +22,7 @@ import { BrandPanel, ON_BRAND } from '../components/common/Brand';
 import { HapticPressable, PressScale } from '../components/common/Pressable';
 import { BigFigure, MonthCalendar, MonthSwitcher, SplitPills } from '../components/common/Bento';
 import { BRAND, tone as toneOf } from '../theme/tokens';
+import { ListFill } from '../components/common/LiquidGlass';
 import { hourStats, HOUR_LABEL, HOUR_TONE } from '../utils/domain';
 import { fmtHM, fmtHMSigned, parseDate, MONTHS_SHORT, DAYS, toISODate, todayISO, fmtDate } from '../utils/format';
 import { exportCsv } from '../services/files';
@@ -39,7 +40,8 @@ export function HourRow({ h, showEmployee }) {
   const d = parseDate(h.date);
   const amtColor = h.type === 'debe' ? colors.dangerFg : h.status === 'pending' ? colors.warningFg : h.status === 'rejected' ? colors.muted : colors.successFg;
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 18, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 18 }}>
+      <ListFill radius={18} />
       <View style={{ width: 40, alignItems: 'center' }}>
         <T mono weight="semibold" size={18}>{d ? String(d.getDate()).padStart(2, '0') : '—'}</T>
         <T size={11} color={colors.text3}>{d ? MONTHS_SHORT[d.getMonth()] : ''}</T>

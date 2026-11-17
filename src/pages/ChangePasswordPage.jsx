@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth, useTheme } from '../context';
 import { useNavigate } from 'react-router-dom';
-import logoColor from '../assets/logos/logo-color.png';
+import logoColor from '../assets/logos/logo-color-90.png';
 import logoWhite from '../assets/logos/logo-white.png';
 import { Button } from '../components/ui';
 import { Wallpaper } from '../components/Wallpaper';

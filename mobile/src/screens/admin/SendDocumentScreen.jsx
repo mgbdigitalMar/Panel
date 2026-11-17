@@ -18,6 +18,7 @@ import { Avatar } from '../../components/common/UI';
 import { FONTS } from '../../theme/tokens';
 import { uploadPickedFile } from '../../services/files';
 import { HapticPressable } from '../../components/common/Pressable';
+import { ListFill } from '../../components/common/LiquidGlass';
 
 export default function SendDocumentScreen() {
   const { colors } = useTheme();
@@ -67,16 +68,18 @@ export default function SendDocumentScreen() {
       <View style={{ gap: 8 }}>
         <T size={13} weight="medium" color={colors.text2}>Destinatario <T size={13} color={colors.dangerFg}>*</T></T>
         <View style={{ justifyContent: 'center' }}>
+          <ListFill radius={14} />
           <Search size={18} color={colors.text3} style={{ position: 'absolute', left: 14, zIndex: 1 }} />
           <TextInput value={q} onChangeText={setQ} placeholder="Buscar empleado" placeholderTextColor={colors.muted} accessibilityLabel="Buscar empleado"
-            style={{ height: 44, borderRadius: 14, borderWidth: 1, borderColor: colors.glassBorderStrong, backgroundColor: colors.inputBg, color: colors.text, fontFamily: FONTS.regular, fontSize: 15, paddingLeft: 42, paddingRight: 14 }} />
+            style={{ height: 44, borderRadius: 14, backgroundColor: 'transparent', color: colors.text, fontFamily: FONTS.regular, fontSize: 15, paddingLeft: 42, paddingRight: 14 }} />
         </View>
         <View style={{ gap: 6 }}>
           {people.slice(0, 30).map((e) => {
             const on = e.id === recipientId;
             return (
               <HapticPressable key={e.id} onPress={() => setRecipientId(e.id)} accessibilityRole="radio" accessibilityState={{ checked: on }}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: 16, backgroundColor: on ? colors.accentSoft : colors.glass, borderWidth: 1, borderColor: on ? colors.accentBorder : colors.glassBorder }}>
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: 16, backgroundColor: on ? colors.accentSoft : 'transparent', borderWidth: on ? 1 : 0, borderColor: colors.accentBorder }}>
+                {on ? null : <ListFill radius={16} />}
                 <Avatar name={e.name} initials={e.avatar} size={34} />
                 <View style={{ flex: 1 }}>
                   <T size={14.5} weight="semibold">{e.name}</T>

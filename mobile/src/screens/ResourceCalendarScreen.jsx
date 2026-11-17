@@ -11,6 +11,8 @@ import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
 import { GlassCard } from '../components/common/GlassCard';
 import { GlassButton, IconButton } from '../components/common/GlassButton';
+import { GlassFill, ListFill } from '../components/common/LiquidGlass';
+import { rowSurface } from '../theme/tokens';
 import { GlassInput, DateField, TimeField } from '../components/common/GlassInput';
 import { HapticPressable, PressScale } from '../components/common/Pressable';
 import { T } from '../components/common/Text';
@@ -163,23 +165,12 @@ export default function ResourceCalendarScreen() {
       {view === 'week' ? (
         <>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 2 }}>
-            <HapticPressable
+            <IconButton
+              icon={ChevronLeft}
+              size={38}
               onPress={() => { setSelDate(addDays(selDate, -7)); setSelection(null); }}
-              hitSlop={12}
               accessibilityLabel="Semana anterior"
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 19,
-                backgroundColor: colors.glass,
-                borderWidth: 1,
-                borderColor: colors.glassBorder,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <ChevronLeft size={20} color={colors.text} />
-            </HapticPressable>
+            />
 
             <View style={{ alignItems: 'center', gap: 2 }}>
               <T size={15.5} weight="bold" style={{ textTransform: 'capitalize' }}>{fmtMonthYear(selDate)}</T>
@@ -188,23 +179,12 @@ export default function ResourceCalendarScreen() {
               </T>
             </View>
 
-            <HapticPressable
+            <IconButton
+              icon={ChevronRight}
+              size={38}
               onPress={() => { setSelDate(addDays(selDate, 7)); setSelection(null); }}
-              hitSlop={12}
               accessibilityLabel="Semana siguiente"
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 19,
-                backgroundColor: colors.glass,
-                borderWidth: 1,
-                borderColor: colors.glassBorder,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <ChevronRight size={20} color={colors.text} />
-            </HapticPressable>
+            />
           </View>
 
           <ScrollView
@@ -235,12 +215,13 @@ export default function ResourceCalendarScreen() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: 3,
-                    backgroundColor: on ? colors.chipOnBg : colors.glass,
-                    borderWidth: on ? 1.5 : 1,
-                    borderColor: on ? colors.accentBorder : isToday ? colors.accent : colors.glassBorder,
+                    backgroundColor: on ? colors.chipOnBg : 'transparent',
+                    borderWidth: on ? 1.5 : 0,
+                    borderColor: colors.accentBorder,
                     opacity: past && !on ? 0.55 : 1,
                   }}
                 >
+                  {on ? null : <ListFill radius={18} edgeColor={isToday ? colors.accent : undefined} />}
                   <T
                     size={11.5}
                     weight={on ? 'bold' : 'semibold'}
@@ -301,7 +282,8 @@ export default function ResourceCalendarScreen() {
             </View>
           </GlassCard>
 
-          <View style={{ height: HOURS.length * HOUR_H - HOUR_H + 24, borderRadius: 22, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder, overflow: 'hidden' }}>
+          <View style={{ height: HOURS.length * HOUR_H - HOUR_H + 24, borderRadius: 22, overflow: 'hidden' }}>
+            <GlassFill radius={22} />
             {HOURS.map((h, i) => (
               <HapticPressable
                 key={h}
@@ -353,7 +335,8 @@ export default function ResourceCalendarScreen() {
           </View>
         </>
       ) : (
-        <View style={{ borderRadius: 22, padding: 14, gap: 8, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder }}>
+        <View style={{ borderRadius: 22, padding: 14, gap: 8 }}>
+          <GlassFill radius={22} />
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <HapticPressable onPress={() => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() - 1, 1))} hitSlop={10} accessibilityLabel="Mes anterior" style={{ padding: 6 }}>
               <ChevronLeft size={22} color={colors.text} />
@@ -431,7 +414,7 @@ export default function ResourceCalendarScreen() {
           </>
         )}
       >
-        <View style={{ borderRadius: 20, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder }}>
+        <View style={{ borderRadius: 20, ...rowSurface(colors) }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderBottomWidth: 1, borderBottomColor: colors.divider }}>
             <IconTile icon={type === 'room' ? Building2 : Car} tone={type === 'room' ? 'accent' : 'teal'} size={38} />
             <View style={{ flex: 1 }}>

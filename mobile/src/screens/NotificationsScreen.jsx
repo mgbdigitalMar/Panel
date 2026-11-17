@@ -15,6 +15,7 @@ import { T, Label } from '../components/common/Text';
 import { EmptyState, IconTile, Segmented } from '../components/common/UI';
 import { openNotificationTarget } from '../navigation/notificationTarget';
 import { dayBucket, fmtRelative } from '../utils/format';
+import { ListFill } from '../components/common/LiquidGlass';
 
 const ENTITY_ICON = {
   reservation: CalendarDays,
@@ -89,9 +90,10 @@ export default function NotificationsScreen() {
                 accessibilityLabel={`${n.read ? '' : 'Sin leer. '}${clean(n.title)}. ${notificationPresentation(n, user?.name).body}`}
                 style={{
                   flexDirection: 'row', gap: 12, padding: 14, borderRadius: 20, alignItems: 'flex-start',
-                  backgroundColor: n.read ? 'transparent' : colors.glass, borderWidth: 1, borderColor: n.read ? colors.divider : colors.glassBorder,
+                  borderWidth: n.read ? 1 : 0, borderColor: colors.divider,
                 }}
               >
+                {n.read ? null : <ListFill radius={20} />}
                 <IconTile icon={ENTITY_ICON[n.entity_type] || Bell} tone={tone} size={40} />
                 <View style={{ flex: 1, gap: 3, minWidth: 0 }}>
                   <View style={{ flexDirection: 'row', gap: 8, alignItems: 'baseline' }}>

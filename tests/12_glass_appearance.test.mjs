@@ -47,7 +47,7 @@ export async function runGlassAppearanceTests() {
     /\.nav \{[\s\S]*?@media \(min-width: 1367px\) \{ display: none; \}/.test(chromeStyles)
     && /\.rail \{[\s\S]*?position: fixed;[\s\S]*?@media \(min-width: 1367px\) \{ display: flex; \}/.test(chromeStyles)
     && read('src', 'components', 'Layout.module.scss').includes('padding-left: 104px;'));
-  assert('Cristal: logo con nombre en ordenador y solo la hoja en móvil y iPad', chrome.includes('isDark ? logoWhite : logoColor') && chrome.includes('className={styles.brandIcon}'));
+  assert('Cristal: logo con nombre en ordenador y solo la hoja en móvil y iPad', chrome.includes('<source media="(min-width: 1367px)" srcSet={isDark ? logoWhite : logoColor} />') && chrome.includes('className={styles.brandMark}'));
   assert('Móvil Cristal: sin menú lateral que repita el perfil del avatar', !chrome.includes('onOpenMenu') && !layout.includes('onOpenMenu'));
   const chromeCss = read('src', 'components', 'GlassChrome.module.scss');
   assert('Menús y dock legibles: cristal denso', chromeCss.includes('@mixin frosted-dense') && /\.menu \{\s*@include frosted-dense;/.test(chromeCss) && chromeCss.includes('var(--lg-popover, rgba(255, 255, 255, 0.86))'));
@@ -150,7 +150,7 @@ export async function runGlassAppearanceTests() {
   const globalCss = read('src', 'styles', 'global.scss');
   const indexHtml = read('index.html');
   assert('Safari: el documento pinta la fotografia sin imponer un color solido',
-    globalCss.includes('background-image: var(--viewport-wallpaper);') && globalCss.includes("url('/wallpaper.jpg')") && globalCss.includes('background-color: transparent;'));
+    globalCss.includes('background-image: var(--viewport-wallpaper);') && globalCss.includes("url('/wallpaper.webp')") && globalCss.includes('background-color: transparent;'));
   assert('Safari: no hay un velo independiente sobre el notch',
     chromeStyles.includes('background: transparent;') && !chromeStyles.includes('height: env(safe-area-inset-top);'));
   assert('Ordenador: cabecera transparente que flota sobre la página (el contenido pasa por debajo; solo las píldoras reciben clics)',
@@ -171,7 +171,7 @@ export async function runGlassAppearanceTests() {
     read('src', 'components', 'Wallpaper.module.scss').includes('min-height: 100lvh;')
     && read('src', 'components', 'Wallpaper.module.scss').includes('bottom: calc(-1 * env(safe-area-inset-bottom, 0px));'));
   assert('Safari: el fondo ya aparece antes del primer pintado de React',
-    indexHtml.includes("localStorage.getItem('app-theme-mode')") && indexHtml.includes("url('/wallpaper.jpg') center / cover fixed"));
+    indexHtml.includes("localStorage.getItem('app-theme-mode')") && indexHtml.includes("url('/wallpaper.webp') center / cover fixed"));
   assert('Desde la pantalla de inicio se abre a pantalla completa (sin las barras de Safari)',
     read('vite.config.js').includes("display: 'standalone'") && indexHtml.includes('apple-mobile-web-app-capable') && indexHtml.includes('black-translucent') && indexHtml.includes('viewport-fit=cover'));
   const loginPhone = read('src', 'pages', 'LoginPhone.jsx');
@@ -190,13 +190,13 @@ export async function runGlassAppearanceTests() {
   const wp = read('src', 'components', 'Wallpaper.module.scss');
   assert('Fondo con los colores de Margube, no atardecer', wp.includes('rgba(47, 91, 234') && wp.includes('rgba(14, 159, 154') && !wp.includes('.windows'));
   assert('El desenfoque de tarjetas solo existe en Cristal', read('src', 'styles', '_patterns.scss').includes('backdrop-filter: var(--lg-card-blur, none);'));
-  assert('Fondo de pantalla, con foto opcional en public/wallpaper.jpg', read('src', 'components', 'Wallpaper.jsx').includes("const PHOTO_URL = '/wallpaper.jpg'"));
+  assert('Fondo de pantalla, con foto opcional en public/wallpaper.webp', read('src', 'components', 'Wallpaper.jsx').includes("const PHOTO_URL = '/wallpaper.webp'"));
   assert('Equipo: el selector de vista no se sale de la página', read('src', 'pages', 'EmployeesPage.module.scss').includes('min-width: min(430px, 100%);'));
 
   // 6. Margube Adaptive Glass: cristal gris ahumado sobre la sala, con el desenfoque medido
   const patterns = read('src', 'styles', '_patterns.scss');
   assert('Adaptive Glass: Safari elige el tinte sin colores forzados desde la web',
-    fs.existsSync(path.join(root, 'public', 'wallpaper.jpg')) && !indexHtml.includes('name="theme-color"')
+    fs.existsSync(path.join(root, 'public', 'wallpaper.webp')) && !indexHtml.includes('name="theme-color"')
     && !ctx.includes('meta[name="theme-color"]'));
 
   assert('Adaptive Glass: solo desenfocan los paneles y las barras; el resto de la interfaz no',

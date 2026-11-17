@@ -22,7 +22,8 @@ import { PressScale } from '../../components/common/Pressable';
 import { Tag } from '../../components/common/StatusBadge';
 import { T } from '../../components/common/Text';
 import { Avatar, ChipRail, EmptyState, Sheet, Banner, InfoLine } from '../../components/common/UI';
-import { FONTS } from '../../theme/tokens';
+import { FONTS, rowSurface } from '../../theme/tokens';
+import { ListFill } from '../../components/common/LiquidGlass';
 import { MIN_PASSWORD } from '../ChangePasswordScreen';
 
 export function tempPassword() {
@@ -139,9 +140,10 @@ Entra con tu email (${reset.emp.email}) y te pedirá crear una contraseña nueva
       </GlassCard>
 
       <View style={{ justifyContent: 'center' }}>
+        <ListFill radius={14} />
         <Search size={18} color={colors.text3} style={{ position: 'absolute', left: 14, zIndex: 1 }} />
         <TextInput value={q} onChangeText={setQ} placeholder="Buscar por nombre o correo" placeholderTextColor={colors.muted} accessibilityLabel="Buscar usuario" autoCapitalize="none"
-          style={{ height: 44, borderRadius: 14, borderWidth: 1, borderColor: colors.glassBorderStrong, backgroundColor: colors.inputBg, color: colors.text, fontFamily: FONTS.regular, fontSize: 15, paddingLeft: 42, paddingRight: 14 }} />
+          style={{ height: 44, borderRadius: 14, backgroundColor: 'transparent', color: colors.text, fontFamily: FONTS.regular, fontSize: 15, paddingLeft: 42, paddingRight: 14 }} />
       </View>
 
       <ChipRail value={role} onChange={setRole} options={[
@@ -154,7 +156,8 @@ Entra con tu email (${reset.emp.email}) y te pedirá crear una contraseña nueva
           const open = expanded === e.id;
           const first = e.firstLogin === true || e.firstLogin === 'true';
           return (
-            <View key={e.id} style={{ borderRadius: 20, backgroundColor: open ? colors.glassStrong : colors.glass, borderWidth: 1, borderColor: open ? colors.accentBorder : colors.glassBorder, overflow: 'hidden' }}>
+            <View key={e.id} style={{ borderRadius: 20, overflow: 'hidden' }}>
+              <ListFill radius={20} edgeColor={open ? colors.accentBorder : undefined} />
               <PressScale onPress={() => setExpanded(open ? null : e.id)} scaleTo={0.985} accessibilityRole="button" accessibilityState={{ expanded: open }}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12 }}>
                 <Avatar name={e.name} initials={e.avatar} size={40} />
@@ -265,7 +268,7 @@ Entra con tu email (${reset.emp.email}) y te pedirá crear una contraseña nueva
               Comunícasela a {reset.emp.name} ({reset.emp.email}) por un canal seguro. Cuando entre, se le pedirá crear una contraseña nueva.
             </T>
             {/* Long press selects it too */}
-            <View style={{ paddingVertical: 14, paddingHorizontal: 16, borderRadius: 16, borderWidth: 1, borderStyle: 'dashed', borderColor: colors.accent, backgroundColor: colors.glass }}>
+            <View style={{ paddingVertical: 14, paddingHorizontal: 16, borderRadius: 16, ...rowSurface(colors), borderStyle: 'dashed', borderColor: colors.accent, borderTopColor: colors.accent }}>
               <T size={20} weight="semibold" mono selectable style={{ letterSpacing: 1.5, textAlign: 'center' }}>{reset.password}</T>
             </View>
             <GlassButton title="Copiar o enviar" icon={Share2} variant="glass" onPress={shareReset} />

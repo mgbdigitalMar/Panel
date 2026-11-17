@@ -51,7 +51,6 @@ export function ThemeProvider({ children }) {
     ...PALETTES[resolved],
     card: material.card,
     glassFill: material.chrome,
-    glassStrong: material.popover,
     glassSheen: material.sheen,
     navBg: material.chrome,
     sheetBg: material.popover,

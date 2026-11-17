@@ -15,6 +15,7 @@ import { buildRequestItems, requestTitle, requestDetail, REQUEST_TONE } from '..
 import { requestIcon } from '../utils/icons';
 import { fmtDate } from '../utils/format';
 import { FONTS } from '../theme/tokens';
+import { ListFill } from '../components/common/LiquidGlass';
 
 const LIMIT = 5;
 const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -58,6 +59,7 @@ export default function SearchScreen() {
     <Screen>
       <Header back title="Buscar" />
       <View style={{ justifyContent: 'center' }}>
+        <ListFill radius={16} />
         <Search size={18} color={colors.text3} style={{ position: 'absolute', left: 14, zIndex: 1 }} />
         <TextInput
           value={q}
@@ -67,7 +69,7 @@ export default function SearchScreen() {
           placeholder="Personas, noticias, reservas, solicitudes…"
           placeholderTextColor={colors.muted}
           accessibilityLabel="Buscar"
-          style={{ height: 48, borderRadius: 16, borderWidth: 1, borderColor: colors.glassBorderStrong, backgroundColor: colors.inputBg, color: colors.text, fontFamily: FONTS.regular, fontSize: 16, paddingLeft: 42, paddingRight: 14 }}
+          style={{ height: 48, borderRadius: 16, backgroundColor: 'transparent', color: colors.text, fontFamily: FONTS.regular, fontSize: 16, paddingLeft: 42, paddingRight: 14 }}
         />
       </View>
 

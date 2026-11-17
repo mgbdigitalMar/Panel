@@ -12,6 +12,7 @@ import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
 import { GlassCard } from '../components/common/GlassCard';
 import { GlassButton } from '../components/common/GlassButton';
+import { ListFill } from '../components/common/LiquidGlass';
 import { PressScale } from '../components/common/Pressable';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { T, Label } from '../components/common/Text';
@@ -63,7 +64,8 @@ export default function DocumentsScreen() {
 
   const rowFor = (d) => (
     <PressScale key={d.id} onPress={() => setOpen(d)} accessibilityRole="button" accessibilityLabel={`${d.title}, ${d.status}`}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 18, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder }}>
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 18 }}>
+      <ListFill radius={18} />
       <ExtBadge url={d.fileUrl} />
       <View style={{ flex: 1, gap: 2 }}>
         <T size={15} weight="semibold" numberOfLines={1}>{d.title}</T>
@@ -135,8 +137,9 @@ export default function DocumentsScreen() {
             ? navigation.navigate('DocumentViewer', { url: onboardingDocUrl, title: 'Normas internas 2026' })
             : openBundledPdf(BUNDLED_POLICY, 'Procedimiento normas internas 2026').catch((e) => toast.error(toUserMessage(e))))}
           accessibilityRole="button"
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 18, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder }}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 18 }}
         >
+          <ListFill radius={18} />
           <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' }}>
             <ShieldCheck size={18} color={colors.accentFg} />
           </View>

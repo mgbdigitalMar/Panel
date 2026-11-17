@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth, useTheme } from '../context';
-import logoColor from '../assets/logos/logo-color.png';
+import logoColor from '../assets/logos/logo-color-90.png';
 import logoWhite from '../assets/logos/logo-white.png';
 import {
   Eye, EyeOff, AlertCircle, LogIn, Lock, Loader2, Sun, Moon, Info,

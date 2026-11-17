@@ -28,6 +28,31 @@ export default defineConfig({
         // server; otherwise the SPA fallback serves index.html and the policy
         // iframe renders the intranet inside itself instead of the PDF.
         navigateFallbackDenylist: [/\/[^/?]+\.[^/?]+$/, /^\/api\//],
+        // Fonts and images are cached as they are used rather than precached: the font package
+        // ships subsets (Cyrillic, Greek…) a Spanish page never asks for.
+        runtimeCaching: [
+          {
+            // Hashed files under /assets: a new version has a new name, so the cached copy is final
+            urlPattern: ({ request, sameOrigin }) => sameOrigin && request.destination === 'font',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'fonts',
+              expiration: { maxEntries: 16, maxAgeSeconds: 365 * 24 * 60 * 60 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+          {
+            // Shown from the cache at once and refreshed behind: /wallpaper.webp and the icons keep
+            // their names when replaced, so a cache-first copy would never update
+            urlPattern: ({ request, sameOrigin }) => sameOrigin && request.destination === 'image',
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'images',
+              expiration: { maxEntries: 40, maxAgeSeconds: 30 * 24 * 60 * 60 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+        ],
       },
       manifest: {
         name: 'Margube Intranet',

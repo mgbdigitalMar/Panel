@@ -3,7 +3,7 @@
 // drawn signature, saved by sign_internal_policy() with the server's date.
 // It shows the onboarding document uploaded by an admin (same source as the web);
 // if there is none, the PDF bundled with the app is opened in the device's viewer.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Wallpaper } from '../components/common/Wallpaper';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,6 +24,8 @@ import { T } from '../components/common/Text';
 import { Checkbox, Loading, IconTile, Banner } from '../components/common/UI';
 import { openBundledPdf } from '../services/files';
 import { HapticPressable } from '../components/common/Pressable';
+import { GlassFill } from '../components/common/LiquidGlass';
+import { BlurTargetContext } from '../components/common/BlurTarget';
 
 const BUNDLED_POLICY = require('../../assets/docs/normas-internas-2026.pdf');
 // The web serves the same PDF from /public
@@ -32,6 +34,10 @@ const BUNDLED_POLICY_URL = '/Procedimiento normas internas 2026.pdf';
 export default function PolicyScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  // Android: the glass blurs this screen's wallpaper, as in every Screen (BlurTarget.jsx). This
+  // screen keeps its own ScrollView (it stops scrolling while the person signs), so it wires the
+  // target itself.
+  const blurTarget = useRef(null);
   const { user, setUser, refreshEmployees, logout } = useAuth();
   const { onboardingDocUrl, loadingData } = useData();
   const toast = useToast();
@@ -146,7 +152,8 @@ export default function PolicyScreen() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Wallpaper />
+      <Wallpaper targetRef={blurTarget} />
+      <BlurTargetContext.Provider value={blurTarget}>
       <View style={{ flex: 1, paddingTop: insets.top }}>
         <View style={{ paddingHorizontal: 20, paddingVertical: 16, gap: 6, borderBottomWidth: 1, borderBottomColor: colors.divider }}>
           <T size={12} weight="semibold" color={colors.accentFg}>{step === 'read' ? 'Paso 1 de 2 · Leer' : 'Paso 2 de 2 · Firmar'}</T>
@@ -158,7 +165,9 @@ export default function PolicyScreen() {
           </T>
         </View>
         {body}
-        <View style={{ padding: 20, paddingBottom: insets.bottom + 16, gap: 14, backgroundColor: colors.navBg, borderTopWidth: 1, borderTopColor: colors.divider }}>
+        {/* The same glass footer as Screen's */}
+        <View style={{ padding: 20, paddingBottom: insets.bottom + 16, gap: 14 }}>
+          <GlassFill radius={0} />
           {step === 'read' ? (
             <>
               <Checkbox
@@ -190,6 +199,7 @@ export default function PolicyScreen() {
           </HapticPressable>
         </View>
       </View>
+      </BlurTargetContext.Provider>
     </KeyboardAvoidingView>
   );
 }

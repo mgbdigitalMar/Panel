@@ -21,6 +21,7 @@ import { FONTS } from '../theme/tokens';
 import { availabilityNow, findConflicts, reservationsFor } from '../utils/domain';
 import { timeToMin, todayISO } from '../utils/format';
 import { HapticPressable } from '../components/common/Pressable';
+import { ListFill } from '../components/common/LiquidGlass';
 
 export default function ReservationsScreen() {
   const { colors } = useTheme();
@@ -157,6 +158,7 @@ export default function ReservationsScreen() {
       />
 
       <View style={{ justifyContent: 'center' }}>
+        <ListFill radius={14} />
         <Search size={18} color={colors.text3} style={{ position: 'absolute', left: 14, zIndex: 1 }} />
         <TextInput
           value={q}
@@ -165,7 +167,7 @@ export default function ReservationsScreen() {
           placeholderTextColor={colors.muted}
           accessibilityLabel="Buscar recurso"
           style={{
-            height: 44, borderRadius: 14, borderWidth: 1, borderColor: colors.glassBorderStrong, backgroundColor: colors.inputBg,
+            height: 44, borderRadius: 14, backgroundColor: 'transparent',
             color: colors.text, fontFamily: FONTS.regular, fontSize: 15, paddingLeft: 42, paddingRight: 14,
           }}
         />
@@ -297,11 +299,12 @@ export default function ReservationsScreen() {
                       paddingHorizontal: 14,
                       paddingVertical: 8,
                       borderRadius: 12,
-                      borderWidth: 1,
-                      borderColor: isSel ? colors.accent : colors.glassBorder,
-                      backgroundColor: isSel ? colors.accentSoft : colors.glassStrong,
+                      borderWidth: isSel ? 1 : 0,
+                      borderColor: colors.accent,
+                      backgroundColor: isSel ? colors.accentSoft : 'transparent',
                     }}
                   >
+                    {isSel ? null : <ListFill radius={12} />}
                     <T size={13.5} weight={isSel ? 'semibold' : 'regular'} color={isSel ? colors.accentFg : colors.text}>
                       {bookType === 'room' ? res.name : `${res.model} (${res.plate})`}
                     </T>

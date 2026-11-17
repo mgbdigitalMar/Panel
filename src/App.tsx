@@ -6,19 +6,56 @@ import Layout from './components/Layout'
 import { AssistantProvider } from './context/AssistantContext'
 import { BootLoader } from './components/ui'
 
-const LoginPage          = lazy(() => import('./pages/LoginPage'))
-const ChangePasswordPage = lazy(() => import('./pages/ChangePasswordPage'))
-const DashboardPage      = lazy(() => import('./pages/DashboardPage'))
-const ReservationsPage   = lazy(() => import('./pages/ReservationsPage'))
-const RequestsPage       = lazy(() => import('./pages/RequestsPage'))
-const NewsPage           = lazy(() => import('./pages/NewsPage'))
-const AdminPage          = lazy(() => import('./pages/AdminPage'))
-const EmployeesPage      = lazy(() => import('./pages/EmployeesPage'))
-const ProfilePage        = lazy(() => import('./pages/ProfilePage'))
-const HorasPage          = lazy(() => import('./pages/HorasPage'))
-const SettingsPage       = lazy(() => import('./pages/SettingsPage'))
-const MorePage           = lazy(() => import('./pages/MorePage'))
-const AssistantPage      = lazy(() => import('./pages/AssistantPage'))
+// Each page's code, loaded when its route is first shown
+const pages = {
+  login:          () => import('./pages/LoginPage'),
+  changePassword: () => import('./pages/ChangePasswordPage'),
+  dashboard:      () => import('./pages/DashboardPage'),
+  reservations:   () => import('./pages/ReservationsPage'),
+  requests:       () => import('./pages/RequestsPage'),
+  news:           () => import('./pages/NewsPage'),
+  admin:          () => import('./pages/AdminPage'),
+  employees:      () => import('./pages/EmployeesPage'),
+  profile:        () => import('./pages/ProfilePage'),
+  horas:          () => import('./pages/HorasPage'),
+  settings:       () => import('./pages/SettingsPage'),
+  mas:            () => import('./pages/MorePage'),
+  assistant:      () => import('./pages/AssistantPage'),
+}
+
+const LoginPage          = lazy(pages.login)
+const ChangePasswordPage = lazy(pages.changePassword)
+const DashboardPage      = lazy(pages.dashboard)
+const ReservationsPage   = lazy(pages.reservations)
+const RequestsPage       = lazy(pages.requests)
+const NewsPage           = lazy(pages.news)
+const AdminPage          = lazy(pages.admin)
+const EmployeesPage      = lazy(pages.employees)
+const ProfilePage        = lazy(pages.profile)
+const HorasPage          = lazy(pages.horas)
+const SettingsPage       = lazy(pages.settings)
+const MorePage           = lazy(pages.mas)
+const AssistantPage      = lazy(pages.assistant)
+
+/**
+ * The first screen's code starts downloading now, while the session is checked, instead of after:
+ * the check takes a round trip to Supabase and the page's code was only requested once it ended.
+ * A restored session always opens /dashboard (or the page a tapped notification points to), and
+ * one idle for more than a minute is closed (context/index.jsx), as is a visit with no session:
+ * those open /login.
+ */
+function preloadFirstPage() {
+  let active = false
+  try {
+    const stored = JSON.parse(localStorage.getItem('margube_session') || 'null')
+    active = Boolean(stored?.id) && Date.now() - stored.lastActivity <= 60 * 1000
+  } catch { /* private mode or a corrupt entry: treat as signed out */ }
+  const route = window.location.pathname.slice(1) as keyof typeof pages
+  const notif = new URLSearchParams(window.location.search).has('notif')
+  const load = !active ? pages.login : notif && pages[route] ? pages[route] : pages.dashboard
+  load().catch(() => { /* the route's own lazy() retries and shows the error */ })
+}
+preloadFirstPage()
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return (

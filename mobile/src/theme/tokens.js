@@ -209,6 +209,18 @@ export function glassSurface(c) {
   };
 }
 
+/**
+ * Rows and sections inside a surface that is already glass (a GlassCard, the bottom sheet): the
+ * dense fill of the glass level the person chose (ThemeContext sets glassStrong from it), the
+ * hairline edge and the bright top rim. Glass cannot sit on glass. On the wallpaper, rows and chips
+ * are glass like the cards: use ListFill (LiquidGlass.jsx), which picks one or the other. Never use
+ * the static `colors.glass` for a surface: it ignores the glass level, «Sin efecto» and "Reduce
+ * transparency".
+ */
+export function rowSurface(c) {
+  return { ...glassSurface(c), backgroundColor: c.glassStrong };
+}
+
 /** Tone pairs used by pills and icon tiles: [background, foreground]. */
 export function tone(c, name) {
   switch (name) {

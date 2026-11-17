@@ -14,7 +14,7 @@ import { useConfirm } from '../context/ConfirmContext';
 import { Screen } from '../components/common/Screen';
 import { Header } from '../components/common/Header';
 import { GlassButton } from '../components/common/GlassButton';
-import { GlassFill } from '../components/common/LiquidGlass';
+import { GlassFill, ListFill } from '../components/common/LiquidGlass';
 import { HapticPressable, PressScale } from '../components/common/Pressable';
 import { Tag } from '../components/common/StatusBadge';
 import { T } from '../components/common/Text';
@@ -132,9 +132,10 @@ export default function AdminScreen() {
             return (
               <View key={entry.key} style={{
                 flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, paddingLeft: 10, borderRadius: 20,
-                backgroundColor: on ? colors.accentSoft : colors.glass, borderWidth: 1, borderColor: on ? colors.accentBorder : colors.glassBorder,
+                backgroundColor: on ? colors.accentSoft : 'transparent', borderWidth: on ? 1 : 0, borderColor: colors.accentBorder,
               }}
               >
+                {on ? null : <ListFill radius={20} />}
                 <HapticPressable
                   onPress={() => setSel((s) => ({ ...s, [entry.key]: !on }))}
                   accessibilityRole="checkbox"

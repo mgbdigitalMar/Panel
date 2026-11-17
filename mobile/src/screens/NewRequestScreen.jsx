@@ -97,7 +97,7 @@ function Conditions({ type, onRead }) {
       </View>
       <ScrollView
         nestedScrollEnabled
-        style={{ maxHeight: 190, borderRadius: 12, backgroundColor: colors.inputBg }}
+        style={{ maxHeight: 190, borderRadius: 12, backgroundColor: colors.glassStrong }}
         contentContainerStyle={{ padding: 12, gap: 10 }}
         onLayout={(e) => setBoxH(e.nativeEvent.layout.height)}
         onContentSizeChange={(_w, h) => { if (boxH && h <= boxH + 5) onRead(); }}

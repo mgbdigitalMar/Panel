@@ -6,6 +6,7 @@ import { useToast } from '../../context/ToastContext';
 import { pickDocument, takePhoto, extOf } from '../../services/files';
 import { fmtBytes } from '../../utils/format';
 import { GlassButton } from './GlassButton';
+import { ListFill } from './LiquidGlass';
 import { T } from './Text';
 import { HapticPressable } from './Pressable';
 
@@ -30,7 +31,8 @@ export function FileField({ label, value, onChange, kind = 'any', camera = true,
     <View style={{ gap: 8 }}>
       {label ? <T size={13} weight="medium" color={colors.text2}>{label}</T> : null}
       {value ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16 }}>
+          <ListFill radius={16} />
           <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: colors.dangerSoft, alignItems: 'center', justifyContent: 'center' }}>
             {extOf(value.name) ? <T size={11} weight="bold" color={colors.dangerFg}>{extOf(value.name).toUpperCase().slice(0, 4)}</T> : <FileText size={18} color={colors.dangerFg} />}
           </View>

@@ -1,7 +1,6 @@
 import { memo, useEffect, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, View } from 'react-native';
 import Svg, { Circle, Defs, Path, RadialGradient, Stop } from 'react-native-svg';
-import { Wallpaper } from './Wallpaper';
 import { useTheme } from '../../context/ThemeContext';
 import { LEAF_PATH, VEIN_PATH } from './Brand';
 
@@ -56,10 +55,6 @@ const Blob = memo(function Blob({ id, size, color, opacity }) {
   );
 });
 
-/** Same room and veil as every signed-in screen and the web login. */
-export const AuthBackdrop = memo(function AuthBackdrop() {
-  return <Wallpaper />;
-});
 
 /** The static sphere: brand blue with a rim light and the leaf mark. */
 const OrbArt = memo(function OrbArt({ size }) {

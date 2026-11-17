@@ -3,8 +3,7 @@
 //   const confirm = useConfirm();
 //   if (await confirm({ title: 'Eliminar reserva', message: '…', confirmText: 'Eliminar' })) { … }
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Modal, Platform, StyleSheet, View } from 'react-native';
-import { BlurView } from 'expo-blur';
+import { AccessibilityInfo, Animated, Modal, StyleSheet, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Trash2, AlertTriangle } from 'lucide-react-native';
 import { useTheme } from './ThemeContext';
@@ -18,7 +17,7 @@ const ConfirmCtx = createContext(null);
 const RADIUS = 30;
 
 function ConfirmSheet({ request, onAnswer }) {
-  const { colors, theme } = useTheme();
+  const { colors } = useTheme();
   const [anim] = useState(() => new Animated.Value(0));
   const danger = request.tone !== 'accent';
   const [orbBg, orbFg] = tone(colors, danger ? 'danger' : 'accent');
@@ -32,11 +31,9 @@ function ConfirmSheet({ request, onAnswer }) {
 
   return (
     <View style={styles.root} accessibilityViewIsModal>
-      {/* The screen behind goes out of focus; tapping it cancels */}
+      {/* The screen behind dims, as under every sheet (no blur: on iOS the only glass is the
+          system's, and a blurred scrim is not it); tapping it cancels */}
       <HapticPressable style={StyleSheet.absoluteFill} onPress={() => onAnswer(false)} accessibilityLabel="Cancelar" accessibilityRole="button">
-        {Platform.OS === 'ios'
-          ? <BlurView style={StyleSheet.absoluteFill} tint={theme === 'dark' ? 'dark' : 'light'} intensity={30} />
-          : null}
         <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.overlay }]} />
       </HapticPressable>
 

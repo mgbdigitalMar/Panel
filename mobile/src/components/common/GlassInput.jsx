@@ -7,6 +7,7 @@ import { FONTS } from '../../theme/tokens';
 import { T } from './Text';
 import { parseDate, toISODate, fmtDayShort } from '../../utils/format';
 import { HapticPressable } from './Pressable';
+import { ListFill } from './LiquidGlass';
 
 function FieldLabel({ label, required, children }) {
   const { colors } = useTheme();
@@ -34,6 +35,7 @@ export const GlassInput = forwardRef(function GlassInput({
     <View style={[{ gap: 6 }, style]}>
       <FieldLabel label={label} required={required}>
         <View style={{ position: 'relative', justifyContent: 'center' }}>
+          <ListFill radius={multiline ? 20 : 26} />
           <TextInput
             ref={ref}
             value={value}
@@ -51,8 +53,8 @@ export const GlassInput = forwardRef(function GlassInput({
               minHeight: multiline ? 24 * rows + 24 : 52,
               borderRadius: multiline ? 20 : 26,
               borderWidth: focused || error ? 1.5 : 1,
-              borderColor: error ? colors.dangerFg : focused ? colors.accent : colors.inputBorder,
-              backgroundColor: colors.inputBg,
+              borderColor: error ? colors.dangerFg : focused ? colors.accent : 'transparent',
+              backgroundColor: 'transparent',
               color: colors.text,
               fontFamily: FONTS.regular,
               fontSize: 16,
@@ -89,10 +91,11 @@ function PickerBox({ icon: Icon, text, placeholder, onPress, label }) {
       accessibilityRole="button"
       accessibilityLabel={label}
       style={{
-        height: 52, borderRadius: 26, borderWidth: 1, borderColor: colors.inputBorder, backgroundColor: colors.inputBg,
+        height: 52, borderRadius: 26,
         paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 10,
       }}
     >
+      <ListFill radius={26} />
       <Icon size={18} color={colors.text3} />
       <T size={16} color={text ? colors.text : colors.muted} style={{ flex: 1 }} numberOfLines={1}>{text || placeholder}</T>
     </HapticPressable>

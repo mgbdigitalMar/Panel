@@ -14,6 +14,7 @@ import { T } from '../components/common/Text';
 import { Avatar, ChipRail, EmptyState, Segmented } from '../components/common/UI';
 import { TeamWeek } from '../components/TeamWeek';
 import { FONTS } from '../theme/tokens';
+import { ListFill } from '../components/common/LiquidGlass';
 
 export const WORK_MODES = {
   Office: { label: 'Oficina', icon: Building2, tone: 'accent' },
@@ -87,9 +88,10 @@ export default function EmployeesScreen() {
       </View>
 
       <View style={{ justifyContent: 'center' }}>
+        <ListFill radius={14} />
         <Search size={18} color={colors.text3} style={{ position: 'absolute', left: 14, zIndex: 1 }} />
         <TextInput value={q} onChangeText={setQ} placeholder="Nombre, puesto o correo" placeholderTextColor={colors.muted} accessibilityLabel="Buscar persona"
-          style={{ height: 44, borderRadius: 14, borderWidth: 1, borderColor: colors.glassBorderStrong, backgroundColor: colors.inputBg, color: colors.text, fontFamily: FONTS.regular, fontSize: 15, paddingLeft: 42, paddingRight: 14 }} />
+          style={{ height: 44, borderRadius: 14, backgroundColor: 'transparent', color: colors.text, fontFamily: FONTS.regular, fontSize: 15, paddingLeft: 42, paddingRight: 14 }} />
       </View>
 
       <ChipRail value={dept} onChange={setDept}

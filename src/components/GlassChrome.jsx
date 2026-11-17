@@ -5,8 +5,8 @@ import {
   Search, UserRound, SlidersHorizontal, LogOut, Clock, LayoutGrid, Plus, Calendar, Inbox,
   Timer, ChevronDown, Home, CalendarDays,
 } from 'lucide-react';
-import logoIcon from '../assets/logos/logo-icon.png';
-import logoColor from '../assets/logos/logo-color.png';
+import logoIcon from '../assets/logos/logo-icon-186.png';
+import logoColor from '../assets/logos/logo-color-90.png';
 import logoWhite from '../assets/logos/logo-white.png';
 import { LEAF_PATH, VEIN_PATH } from './ui/Loader/Loader';
 import { useScrolling } from '../hooks/useScrolling';
@@ -58,8 +58,11 @@ export function GlassHeader({
         {/* Computer: the logo with the name · phones and tablets: just the leaf. Both go home. */}
         <div className={styles.crumbs} data-liquid>
           <button type="button" className={styles.brand} onClick={() => onNavigate('dashboard')} aria-label="Margube, ir al inicio" title="Inicio">
-            <img src={isDark ? logoWhite : logoColor} alt="" className={styles.brandFull} />
-            <img src={logoIcon} alt="" className={styles.brandIcon} />
+            {/* One image, chosen by width: the hidden one of two <img>s was downloaded as well */}
+            <picture>
+              <source media="(min-width: 1367px)" srcSet={isDark ? logoWhite : logoColor} />
+              <img src={logoIcon} alt="" className={styles.brandMark} />
+            </picture>
           </button>
           {section?.label && (
             <span className={styles.crumb}>

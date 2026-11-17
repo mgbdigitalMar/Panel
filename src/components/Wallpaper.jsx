@@ -7,9 +7,11 @@ import { startWallpaperGlass } from '../glass/wallpaperGlass';
 import { supportsLiquidRefraction } from '../glass/liquidRefraction';
 import styles from './Wallpaper.module.scss';
 
-// The room the glass panes hang in: public/wallpaper.jpg. Replace the file to change the room;
-// without it the backdrop falls back to the painted scene in Margube colours.
-const PHOTO_URL = '/wallpaper.jpg';
+// The room the glass panes hang in: public/wallpaper.webp (1920 px wide, WebP at about quality 80:
+// 167 kB where the JPEG was 299 kB). Replace the file to change the room; index.html and
+// styles/global.scss paint the same file before the app starts. Without it the backdrop falls back
+// to the painted scene in Margube colours.
+const PHOTO_URL = '/wallpaper.webp';
 let photoCheck; // one request per page load
 let photoKnown = false; // later mounts (page changes, login → app) paint the photo at once
 let photoImage = null; // the decoded photo, which the Liquid Glass canvas samples

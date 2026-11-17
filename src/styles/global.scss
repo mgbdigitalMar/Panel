@@ -54,10 +54,10 @@ body, #root { min-height: 100dvh; }
 
 /* The document also paints the room when Safari exposes areas outside fixed layers. */
 [data-appearance='glass'] {
-  --viewport-wallpaper: linear-gradient(180deg, rgba(240,243,250,0.9), rgba(240,243,250,0.7) 240px, rgba(240,243,250,0.64)), url('/wallpaper.jpg');
+  --viewport-wallpaper: linear-gradient(180deg, rgba(240,243,250,0.9), rgba(240,243,250,0.7) 240px, rgba(240,243,250,0.64)), url('/wallpaper.webp');
 }
 [data-appearance='glass'][data-theme='dark'] {
-  --viewport-wallpaper: linear-gradient(180deg, rgba(9,10,16,0.88), rgba(9,10,16,0.68) 240px, rgba(9,10,16,0.64)), url('/wallpaper.jpg');
+  --viewport-wallpaper: linear-gradient(180deg, rgba(9,10,16,0.88), rgba(9,10,16,0.68) 240px, rgba(9,10,16,0.64)), url('/wallpaper.webp');
 }
 html[data-appearance='glass'] {
   background-color: transparent;

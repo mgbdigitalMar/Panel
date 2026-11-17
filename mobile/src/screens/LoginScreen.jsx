@@ -8,7 +8,7 @@ import { IDLE_TIMEOUT_MOBILE } from '@shared/config/constants.js';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Screen } from '../components/common/Screen';
-import { AuthBackdrop, useReduceMotion } from '../components/common/AuthBackdrop';
+import { useReduceMotion } from '../components/common/AuthBackdrop';
 import { GlassFill } from '../components/common/LiquidGlass';
 import { T } from '../components/common/Text';
 import { Banner } from '../components/common/UI';
@@ -307,7 +307,6 @@ export default function LoginScreen() {
     <Screen
       padded={false}
       glow={false}
-      backdrop={<AuthBackdrop />}
       contentStyle={{ flexGrow: 1, paddingTop: 0, paddingBottom: 0, gap: 0, maxWidth: '100%' }}
     >
       {/* Hero: the logo pill and the monogram */}

@@ -18,6 +18,7 @@ import { T } from '../../components/common/Text';
 import { Avatar, ChipRail, EmptyState, Segmented } from '../../components/common/UI';
 import { HourRow, exportHoursCsv } from '../HorasScreen';
 import { FONTS } from '../../theme/tokens';
+import { ListFill } from '../../components/common/LiquidGlass';
 import { hourStats } from '../../utils/domain';
 import { fmtHM, fmtHMSigned, toISODate } from '../../utils/format';
 import { exportCsv } from '../../services/files';
@@ -121,16 +122,18 @@ export default function AdminHoursScreen() {
       ) : (
         <>
           <View style={{ justifyContent: 'center' }}>
+            <ListFill radius={14} />
             <Search size={18} color={colors.text3} style={{ position: 'absolute', left: 14, zIndex: 1 }} />
             <TextInput value={q} onChangeText={setQ} placeholder="Buscar empleado o departamento" placeholderTextColor={colors.muted} accessibilityLabel="Buscar empleado"
-              style={{ height: 44, borderRadius: 14, borderWidth: 1, borderColor: colors.glassBorderStrong, backgroundColor: colors.inputBg, color: colors.text, fontFamily: FONTS.regular, fontSize: 15, paddingLeft: 42, paddingRight: 14 }} />
+              style={{ height: 44, borderRadius: 14, backgroundColor: 'transparent', color: colors.text, fontFamily: FONTS.regular, fontSize: 15, paddingLeft: 42, paddingRight: 14 }} />
           </View>
           <View style={{ gap: 8 }}>
             {userStats.map((s) => {
               const balance = s.bolsa + s.ya - s.debe;
               return (
                 <PressScale key={s.employee.id} onPress={() => navigation.navigate('HoursUserHistory', { id: s.employee.id })} accessibilityRole="button"
-                  style={{ padding: 12, borderRadius: 20, gap: 10, backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder }}>
+                  style={{ padding: 12, borderRadius: 20, gap: 10 }}>
+                  <ListFill radius={20} />
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                     <Avatar name={s.employee.name} initials={s.employee.avatar} size={36} />
                     <View style={{ flex: 1 }}>

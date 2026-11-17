@@ -5,6 +5,13 @@ import App from './App.tsx'
 import { supabaseConfigured } from './utils/supabase'
 import { installHaptics } from './utils/haptics'
 import { LeafMark } from './components/ui'
+// Self-hosted fonts (no third-party request before the first paint; precached for offline use).
+// Inter keeps the optical-size axis the design used from Google Fonts; Poppins only the three
+// weights the headings use. unicode-range means only the subsets on the page are downloaded.
+import '@fontsource-variable/inter/opsz.css'
+import '@fontsource/poppins/latin-500.css'
+import '@fontsource/poppins/latin-600.css'
+import '@fontsource/poppins/latin-700.css'
 import './styles/global.scss'
 import './styles/boardui/index.css'
 

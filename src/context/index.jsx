@@ -984,24 +984,29 @@ export function AuthProvider({ children }) {
   const setLastActivity = useCallback((t = Date.now()) => { lastActivityRef.current = t }, [])
   const [idleLeft, setIdleLeft] = useState(null) // seconds shown in the warning; null = hidden
 
-  async function loadProfile(id) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle()
-    if (error || !data) return null
-    // The DNI is private (profile_private): the person sees their own
-    const [profile] = withDni([mapProfile(data)], await fetchDnis(supabase))
-    return profile
+  // The person's profile, the employee list and the DNIs do not depend on each other: asked for
+  // together, signing in and restoring a session wait for one round trip to Supabase instead of
+  // three in a row before the first page can load.
+  async function loadSessionData(id) {
+    const [own, all, dnis] = await Promise.all([
+      supabase.from('profiles').select('*').eq('id', id).maybeSingle(),
+      supabase.from('profiles').select('*').order('name'),
+      // The DNI is private (profile_private): the person sees their own, admins every one
+      fetchDnis(supabase),
+    ])
+    if (all.error) console.error('employees:', all.error)
+    return {
+      profile: own.error || !own.data ? null : withDni([mapProfile(own.data)], dnis)[0],
+      employees: all.error ? null : withDni(all.data.map(mapProfile), dnis),
+    }
   }
 
   // Signed in: show the app (or the first-access password page)
-  async function startSession(profile) {
+  async function startSession(profile, employees) {
     setUser(profile)
     const tabId = sessionStorage.getItem('margube_tabId') || 'tab_main'
     localStorage.setItem('margube_session', JSON.stringify({ id: profile.id, tabId, lastActivity: Date.now() }))
-    await loadAllEmployees()
+    if (employees) setEmployeesState(employees)
     const pending = pendingPathRef.current
     pendingPathRef.current = null
     navigate(isFirstAccess(profile) ? '/changePassword' : pending || '/dashboard')
@@ -1051,9 +1056,9 @@ export function AuthProvider({ children }) {
           await clearSession()
           return
         }
-        const profile = await loadProfile(session.user.id)
+        const { profile, employees } = await loadSessionData(session.user.id)
         if (disposed) return
-        if (profile) await startSession(profile)
+        if (profile) await startSession(profile, employees)
         else await clearSession()
       } catch (e) {
         if (disposed) return
@@ -1202,13 +1207,13 @@ export function AuthProvider({ children }) {
     const res = await signIn(supabase, email, pass)
     if (!res.ok) return res
 
-    const profile = await loadProfile(res.userId)
+    const { profile, employees } = await loadSessionData(res.userId)
     if (!profile) {
       await supabase.auth.signOut({ scope: 'local' })
       return { ok: false, msg: 'Tu cuenta no tiene ficha de empleado. Contacta con RRHH.' }
     }
     setLastActivity(Date.now())
-    await startSession(profile)
+    await startSession(profile, employees)
     return { ok: true }
   }
 

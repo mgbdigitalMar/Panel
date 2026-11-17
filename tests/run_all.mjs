@@ -14,6 +14,9 @@ import { runEnterpriseQualityTests } from './13_enterprise_quality.test.mjs';
 import { runNotificationSystemTests } from './14_notification_system.test.mjs';
 import { runAssistantTests } from './15_assistant.test.mjs';
 import { runDockGestureTests } from './16_dock_gestures.test.mjs';
+import { runSheetGestureTests } from './19_sheet_gestures.test.mjs';
+import { runWebPerformanceTests } from './20_web_performance.test.mjs';
+import { runAppGlassConsistencyTests } from './21_app_glass_consistency.test.mjs';
 import { runAssistantClientTests } from './17_assistant_client.test.mjs';
 
 // Suites 2 and 3 read and write the real Supabase project (suite 3 creates and
@@ -43,6 +46,9 @@ async function main() {
     { name: 'Sistema de Notificaciones', fn: runNotificationSystemTests },
     { name: 'Asistente y Permisos', fn: runAssistantTests },
     { name: 'Gestos del dock', fn: runDockGestureTests },
+    { name: 'Gestos de las hojas', fn: runSheetGestureTests },
+    { name: 'Rendimiento de la web', fn: runWebPerformanceTests },
+    { name: 'Cristal coherente en la app', fn: runAppGlassConsistencyTests },
     { name: 'Cliente asistente web y app', fn: runAssistantClientTests },
   ];
 

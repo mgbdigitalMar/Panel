@@ -105,7 +105,7 @@ export default function AssistantWidget() {
                   {ASSISTANT_EXAMPLES.map((example) => (
                     <HapticPressable key={example} accessibilityRole="button" disabled={chat.busy}
                       onPress={() => { chat.setInput(example); input.current?.focus(); }}
-                      style={({ pressed }) => [styles.chip, { backgroundColor: colors.inputBg, borderColor: pressed ? colors.accentBorder : colors.divider }]}>
+                      style={({ pressed }) => [styles.chip, { backgroundColor: colors.glassStrong, borderColor: pressed ? colors.accentBorder : colors.divider }]}>
                       <T size={14.5} color={colors.text}>{example}</T>
                     </HapticPressable>
                   ))}
@@ -122,7 +122,7 @@ export default function AssistantWidget() {
               return (
                 <View key={index} style={[styles.bubble, mine
                   ? { alignSelf: 'flex-end', backgroundColor: BRAND.blue, borderBottomRightRadius: 6 }
-                  : { alignSelf: 'flex-start', backgroundColor: colors.inputBg, borderColor: colors.divider, borderWidth: StyleSheet.hairlineWidth, borderBottomLeftRadius: 6 }]}>
+                  : { alignSelf: 'flex-start', backgroundColor: colors.glassStrong, borderColor: colors.divider, borderWidth: StyleSheet.hairlineWidth, borderBottomLeftRadius: 6 }]}>
                   <T selectable size={15.5} color={mine ? '#FFFFFF' : colors.text} style={{ lineHeight: 22 }}
                     accessibilityLabel={`${mine ? 'Tú' : 'Asistente'}: ${message.content}`}>{message.content}</T>
                 </View>
@@ -131,13 +131,13 @@ export default function AssistantWidget() {
 
             {chat.busy && (
               <View accessibilityLiveRegion="polite" accessibilityLabel={chat.proposal ? 'Comprobando y ejecutando la acción' : 'Preparando la respuesta'}
-                style={[styles.bubble, { alignSelf: 'flex-start', backgroundColor: colors.inputBg, borderColor: colors.divider, borderWidth: StyleSheet.hairlineWidth, borderBottomLeftRadius: 6, paddingVertical: 14 }]}>
+                style={[styles.bubble, { alignSelf: 'flex-start', backgroundColor: colors.glassStrong, borderColor: colors.divider, borderWidth: StyleSheet.hairlineWidth, borderBottomLeftRadius: 6, paddingVertical: 14 }]}>
                 <TypingDots color={colors.muted} />
               </View>
             )}
 
             {chat.proposal && (
-              <View style={[styles.card, { backgroundColor: colors.inputBg, borderColor: danger ? colors.dangerBorder : colors.accentBorder }]}>
+              <View style={[styles.card, { backgroundColor: colors.glassStrong, borderColor: danger ? colors.dangerBorder : colors.accentBorder }]}>
                 <T size={12} weight="semibold" color={danger ? colors.dangerFg : colors.accentFg}>Propuesta sin ejecutar</T>
                 <T size={16} weight="semibold" color={colors.text}>{chat.proposal.prepared.title}</T>
                 <View style={{ gap: 3 }}>
@@ -164,7 +164,7 @@ export default function AssistantWidget() {
           </ScrollView>
 
           <View style={[styles.composer, { borderTopColor: colors.divider }]}>
-            <View style={[styles.field, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, opacity: chat.blocked ? 0.65 : 1 }]}>
+            <View style={[styles.field, { backgroundColor: colors.glassStrong, borderColor: colors.inputBorder, opacity: chat.blocked ? 0.65 : 1 }]}>
               <TextInput ref={input} accessibilityLabel="Tu mensaje"
                 placeholder={chat.proposal ? 'Confirma o descarta la propuesta' : 'Escribe tu consulta…'} placeholderTextColor={colors.muted}
                 value={chat.input} onChangeText={chat.setInput} editable={!chat.blocked} multiline maxLength={3000}

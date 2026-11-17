@@ -126,22 +126,22 @@
   &:active { transform: scale(0.96); }
 }
 
-.brandFull {
-  height: 26px;
-  width: auto;
+.brand picture { display: contents; }
 
-  @media (max-width: 1366px) { display: none; }
-}
-
-/* The leaf PNG has transparent padding around the tile: the negative margin trims it so
-   the visible tile is 38 px (34 px on phones) */
-.brandIcon {
+/* Phones and tablets: the leaf. The PNG has transparent padding around the tile: the negative
+   margin trims it so the visible tile is 38 px (34 px on phones). Computers (1367 px and up,
+   the <source> in GlassChrome.jsx): the logo with the name, 26 px tall. */
+.brandMark {
   width: 62px;
   height: 62px;
   max-width: none;
   margin: -12px;
 
-  @media (min-width: 1367px) { display: none; }
+  @media (min-width: 1367px) {
+    width: auto;
+    height: 26px;
+    margin: 0;
+  }
 
   @media (max-width: 479px) {
     width: 56px;
