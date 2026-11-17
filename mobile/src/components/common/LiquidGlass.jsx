@@ -38,11 +38,6 @@ export function GlassGroup({ spacing, style, children }) {
   return <View style={style}>{children}</View>;
 }
 
-/** True while the user has iOS "Reduce transparency" on (always false on Android). */
-export function useReduceTransparency() {
-  return useTheme().reduceTransparency;
-}
-
 /**
  * True inside a surface that is already glass (GlassCard, the bottom sheet). Glass cannot sample
  * other glass, so what sits inside one takes the dense row surface instead (ListFill).

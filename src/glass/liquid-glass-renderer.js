@@ -494,53 +494,11 @@ export function normalizeGlassOutline(outline) {
     && point.every(value=>Number.isFinite(value)&&value>=0&&value<=1)) ? outline : undefined;
 }
 
-function radialOutline(count, inner = 1, offset = 0) {
-  const points = Array.from({length:count},(_,i)=>{
-    const angle = (i+offset)*2*Math.PI/count-Math.PI/2;
-    const radius = i%2 ? inner : 1;
-    return [Math.cos(angle)*radius,Math.sin(angle)*radius];
-  });
-  return normalizeOutlineBounds(points);
-}
-
-function normalizeOutlineBounds(points) {
-  const minimum = [0,1].map(axis=>Math.min(...points.map(point=>point[axis])));
-  const maximum = [0,1].map(axis=>Math.max(...points.map(point=>point[axis])));
-  return points.map(point=>point.map((value,axis)=>(value-minimum[axis])/(maximum[axis]-minimum[axis])));
-}
-
-const glassShapeOutlines = {
-  triangle: [[.5,0],[1,1],[0,1]],
-  diamond: [[.5,0],[1,.5],[.5,1],[0,.5]],
-  hexagon: radialOutline(6,1,.5),
-  octagon: radialOutline(8,1,.5),
-  star: radialOutline(10,.45),
-  heart: normalizeOutlineBounds(Array.from({length:48},(_,i)=>{
-    const angle = i*2*Math.PI/48;
-    return [16*Math.sin(angle)**3,-(13*Math.cos(angle)-5*Math.cos(2*angle)-2*Math.cos(3*angle)-Math.cos(4*angle))];
-  }))
-};
-
-export function getGlassShapeOutline(shape, outline) {
-  return normalizeGlassOutline(outline) ?? (Object.hasOwn(glassShapeOutlines,shape) ? glassShapeOutlines[shape] : undefined);
-}
-
 export function normalizeGlassRotation(value) {
   if (!Number.isFinite(value)) return 0;
   const rounded = Math.round((value%360)*10)/10;
   const angle = ((rounded+540)%360)-180;
   return angle===-180 && rounded>0 ? 180 : Math.round(angle*10)/10;
-}
-
-export function measureGlassButton(button, rect = button.getBoundingClientRect()) {
-  const x = rect.left+rect.width/2, y = rect.top+rect.height/2;
-  if (!button.glassRotation) return {x,y,width:rect.width,height:rect.height};
-  const style = button.ownerDocument.defaultView.getComputedStyle(button);
-  return {x,y,width:parseFloat(style.width),height:parseFloat(style.height)};
-}
-
-export function glassOutlineClip(outline) {
-  return `polygon(evenodd, ${outline.map(([x,y])=>`${x*100}% ${y*100}%`).join(', ')})`;
 }
 
 export class GlassScene {

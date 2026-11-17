@@ -7,7 +7,6 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { SHEET_DRAG_THRESHOLD, SHEET_SPRING, sheetDragOffset, shouldDismissSheet } from '@shared/config/sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check, Inbox, X, Info, AlertTriangle, ArrowRight } from 'lucide-react-native';
-import Svg, { Circle } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../context/ThemeContext';
 import { tone as toneOf, BRAND } from '../../theme/tokens';
@@ -238,30 +237,6 @@ export function CountTabs({ options, value, onChange, style }) {
         );
       })}
     </ScrollView>
-  );
-}
-
-/** `value` 0–100; children sit in the middle. */
-export function Ring({ value = 0, size = 44, stroke = 3.5, color, track, children, accessibilityLabel }) {
-  const { colors } = useTheme();
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  const pct = Math.max(0, Math.min(100, Number(value) || 0));
-  return (
-    <View
-      accessible={!!accessibilityLabel}
-      accessibilityLabel={accessibilityLabel}
-      style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}
-    >
-      <Svg width={size} height={size} style={{ position: 'absolute', transform: [{ rotate: '-90deg' }] }}>
-        <Circle cx={size / 2} cy={size / 2} r={r} stroke={track || colors.ringTrack} strokeWidth={stroke} fill="none" />
-        {pct > 0 ? (
-          <Circle cx={size / 2} cy={size / 2} r={r} stroke={color || colors.accent} strokeWidth={stroke} fill="none"
-            strokeLinecap="round" strokeDasharray={`${(c * pct) / 100} ${c}`} />
-        ) : null}
-      </Svg>
-      {children}
-    </View>
   );
 }
 
@@ -640,11 +615,6 @@ export function Sheet({ visible, onClose, title, children, footer }) {
       </GestureHandlerRootView>
     </Modal>
   );
-}
-
-export function Divider({ inset = 0 }) {
-  const { colors } = useTheme();
-  return <View style={{ height: 1, marginLeft: inset, backgroundColor: colors.divider }} />;
 }
 
 export function InfoLine({ label, value, mono, last }) {

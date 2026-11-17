@@ -59,9 +59,6 @@ export function haptic(kind = 'light') {
   }
 }
 
-/** Kept for existing callers: a light tap. */
-export const hapticTap = () => haptic('light')
-
 /** Listen once for finger taps on any control, so every button in the app buzzes without per-file wiring. */
 export function installHaptics() {
   if (!hasWindow || (!canVibrate && !canSwitch)) return

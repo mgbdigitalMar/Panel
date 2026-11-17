@@ -39,60 +39,6 @@ export function DeskHeader({ icon, eyebrow, kicker, title, desc, actions }) {
   );
 }
 
-/** Page body with a column on the left (navigation, filters, the highlight) and the work area. */
-export function DeskLayout({ side, children, sideLabel }) {
-  return (
-    <div className={styles.layout}>
-      <aside className={styles.side} aria-label={sideLabel}>{side}</aside>
-      <div className={styles.main}>{children}</div>
-    </div>
-  );
-}
-
-/**
- * Vertical navigation or filter list. Each item: icon, label, optional hint and count.
- * `asFilter` makes the items toggle buttons (aria-pressed) instead of page sections (aria-current).
- */
-export function DeskRail({ title, items, value, onChange, asFilter }) {
-  return (
-    <nav className={styles.rail} aria-label={title}>
-      {title && <p className={styles.railTitle}>{title}</p>}
-      <IndicatorGroup>
-      <ul>
-        {items.map((it) => {
-          const Icon = it.icon;
-          const on = value === it.value;
-          return (
-            <li key={it.value}>
-              <button
-                type="button"
-                className={clsx(styles.railItem, on && styles.railOn)}
-                onClick={() => onChange(it.value)}
-                aria-current={!asFilter && on ? 'page' : undefined}
-                aria-pressed={asFilter ? on : undefined}
-              >
-                {on && <ActiveIndicator className={styles.railIndicator} radius={14} />}
-                {Icon &&<span className={styles.railIcon} data-tone={it.tone} aria-hidden="true"><Icon size={16} /></span>}
-                <span className={styles.railText}>
-                  <span>{it.label}</span>
-                  {it.hint && <small>{it.hint}</small>}
-                </span>
-                {it.count != null && (
-                  <span className={clsx(styles.railCount, it.alert && styles.railAlert)}>
-                    {it.count}
-                    {it.alert && <span className={styles.srOnly}> pendientes</span>}
-                  </span>
-                )}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-      </IndicatorGroup>
-    </nav>
-  );
-}
-
 /**
  * Key figures in one glass bar. An item with `onClick` filters the page (aria-pressed, `active`),
  * so a figure and its filter are the same control.
