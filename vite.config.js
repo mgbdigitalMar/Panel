@@ -66,17 +66,14 @@ export default defineConfig({
         scope: '/',
         theme_color: '#0E0F14',
         background_color: '#101116',
+        // maskable: Android cuts it to the launcher's shape (circle, squircle...) instead of
+        // shrinking the rounded tile into a white disc. monochrome: the leaf alone, which Android
+        // tints with the wallpaper colours when the user turns on themed icons.
         icons: [
-          {
-            src: '/pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: '/pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
+          { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/pwa-maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: '/pwa-monochrome-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'monochrome' }
         ]
       }
     })
