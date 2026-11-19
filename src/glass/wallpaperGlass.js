@@ -19,20 +19,9 @@ const PANES_FROM = '(min-width: 1024px)';
 const IDLE_MS = 700;
 const MAX_SOURCE_SIDE = 2560;
 
-let webgl;
-/** WebGL2 is all the renderer needs. Checked once per page load. */
-export function supportsWebGLGlass() {
-  if (webgl !== undefined) return webgl;
-  if (typeof document === 'undefined') return false;
-  try {
-    const gl = document.createElement('canvas').getContext('webgl2');
-    webgl = Boolean(gl);
-    gl?.getExtension('WEBGL_lose_context')?.loseContext();
-  } catch {
-    webgl = false;
-  }
-  return webgl;
-}
+import { supportsWebGLGlass } from './webglSupport';
+
+export { supportsWebGLGlass };
 
 /** The room as Wallpaper.module.scss paints it: .photo filter and .veilPhoto, per theme and width. */
 function roomLook(dark) {
@@ -112,6 +101,9 @@ export function startWallpaperGlass({ host, photo, theme, panes = false, chrome 
     surfaceOnly: true,
     blur: 4,
     shadow: 0.18,
+    // «Intenso» (panes): no specular rim. Under every card it read as a bright outline; the cards
+    // keep the same CSS edge as at «Normal»
+    ...(panes ? { specular: 0 } : {}),
     merge: 0,
   });
   // The shader links in the background (GlassScene.ready): the DOM room shows until it is done

@@ -1145,9 +1145,46 @@ html { -webkit-tap-highlight-color: transparent; }
    every button, chip and table row would cost far more than it shows. Dialog scrims opt in
    with data-scrim. */
 
-:where(.app-shell) :where(*:not([data-scrim])) {
+:where(.app-shell) :where(*:not([data-scrim], .glass__warp)) {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+/* liquid-glass-react under each glass surface (src/glass/LiquidGlassLayers.jsx, Chromium).
+   The layer does the blur and the bending, so the surface itself must not blur: an element with
+   a backdrop-filter is a backdrop root, and the layer inside it would only see its tint. The
+   surface keeps its tint and border; the layer (z-index -1 inside it) bends page and tint
+   together. */
+html[data-lg-engine] [data-lg] {
+  isolation: isolate;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.lg-host {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  // Clipped to the surface's real shape: the package takes one radius, and some surfaces (the
+  // profile leaf, the rail) round each corner differently
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+
+  // The package names its box .glass, as does the intranet's glass utility (above): without this
+  // it took that utility's fill and border and washed out the surface (a blue card turned lilac).
+  // Its drop shadow would double the surface's own.
+  .glass {
+    background: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  // Scrolling or changing section: blur only, the bending returns when it stops
+  // (LiquidGlassLayers.jsx)
+  :root[data-lg-paused] & .glass__warp { filter: none !important; }
+  // Its two rim highlights blend (mix-blend-mode): the blend isolates the layer and greyed every
+  // light surface, and each surface already has its own edge
+  > span { display: none; }
 }
 
 /* Phones and tablets: panes do not blur. The wallpaper is blurred once instead (Wallpaper), so

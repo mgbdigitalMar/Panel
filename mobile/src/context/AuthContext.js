@@ -11,6 +11,7 @@ import { supabase } from '../lib/supabase';
 import { getItem, setItem, removeItem, KEYS } from '../services/storage';
 import { authenticate } from '../services/biometrics';
 import { registerForPushNotificationsAsync, unregisterPushNotificationsAsync, setBadgeCount } from '../services/pushNotifications';
+import { prefetchLists, clearPrefetch } from './bootPrefetch';
 
 const AuthCtx = createContext(null);
 
@@ -29,6 +30,8 @@ export function AuthProvider({ children }) {
   const [lastEmail, setLastEmail] = useState('');
 
   const lastActivity = useRef(0);
+  // Saved with the session so the next launch can ask for its lists before the profile arrives
+  const roleRef = useRef(null);
   const lastPersisted = useRef(0);
   const userRef = useRef(null);
   useEffect(() => { userRef.current = user; }, [user]);
@@ -37,7 +40,7 @@ export function AuthProvider({ children }) {
     const now = Date.now();
     if (!force && now - lastPersisted.current < 30000) return;
     lastPersisted.current = now;
-    await setItem(KEYS.session, { id, lastActivity: lastActivity.current });
+    await setItem(KEYS.session, { id, role: roleRef.current, lastActivity: lastActivity.current });
   }, []);
 
   const touch = useCallback(() => {
@@ -60,18 +63,30 @@ export function AuthProvider({ children }) {
     return list;
   }, []);
 
+  // Profile and DNI together: one round trip to Supabase instead of two in a row
   const fetchProfile = useCallback(async (id) => {
-    const { data, error } = await supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', id).maybeSingle();
+    const [{ data, error }, dnis] = await Promise.all([
+      supabase.from('profiles').select(PROFILE_COLUMNS).eq('id', id).maybeSingle(),
+      fetchDnis(supabase),
+    ]);
     if (error) throw error;
     if (!data) return null;
-    const [profile] = withDni([mapProfile(data)], await fetchDnis(supabase));
+    const [profile] = withDni([mapProfile(data)], dnis);
     return profile;
   }, []);
+
+  // The profile, with the lists the first screen needs asked for at the same time (bootPrefetch)
+  const fetchProfileAndLists = useCallback((id, roleGuess) => {
+    const profile = fetchProfile(id);
+    prefetchLists(id, roleGuess || profile.then((p) => p?.role));
+    return profile;
+  }, [fetchProfile]);
 
   // "Recordarme" on the login: keep the email for next time, or forget it
   const rememberEmail = useRef(true);
 
   const startSession = useCallback(async (profile) => {
+    roleRef.current = profile.role;
     lastActivity.current = Date.now();
     setUser(profile);
     setLocked(false);
@@ -88,6 +103,7 @@ export function AuthProvider({ children }) {
   }, [loadEmployees, persistSession]);
 
   const clearSession = useCallback(async () => {
+    clearPrefetch();
     await removeItem(KEYS.session);
     setUser(null);
     setEmployees([]);
@@ -97,17 +113,19 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     (async () => {
       try {
-        const [session, bio, email] = await Promise.all([
+        // The keychain and storage reads do not depend on each other
+        const [session, bio, email, auth] = await Promise.all([
           getItem(KEYS.session),
           getItem(KEYS.biometric, { enabled: false }),
           getItem(KEYS.lastEmail, ''),
+          supabase.auth.getSession().then(({ data }) => data.session),
         ]);
         setBiometric(bio || { enabled: false });
         setLastEmail(email || '');
-        const { data: { session: auth } } = await supabase.auth.getSession();
         if (session?.id && auth?.user?.id === session.id) {
-          const profile = await fetchProfile(session.id);
+          const profile = await fetchProfileAndLists(session.id, session.role);
           if (profile) {
+            roleRef.current = profile.role;
             lastActivity.current = session.lastActivity || Date.now();
             setUser(profile);
             setLocked(Date.now() - lastActivity.current > IDLE_TIMEOUT_MOBILE);
@@ -124,7 +142,7 @@ export function AuthProvider({ children }) {
         setAuthLoading(false);
       }
     })();
-  }, [fetchProfile, loadEmployees]);
+  }, [fetchProfileAndLists, loadEmployees]);
 
   useEffect(() => {
     if (!user || locked) return undefined;
@@ -180,8 +198,9 @@ export function AuthProvider({ children }) {
       // the user to set a personal one (first_login).
       const res = await signIn(supabase, email, pass);
       if (!res.ok) return res;
-      const profile = await fetchProfile(res.userId);
+      const profile = await fetchProfileAndLists(res.userId);
       if (!profile) {
+        clearPrefetch();
         await supabase.auth.signOut({ scope: 'local' });
         return { ok: false, msg: 'Tu cuenta no tiene ficha de empleado. Contacta con RRHH.' };
       }
@@ -191,7 +210,7 @@ export function AuthProvider({ children }) {
       logError('login', e);
       return { ok: false, msg: toUserMessage(e) };
     }
-  }, [fetchProfile, startSession]);
+  }, [fetchProfileAndLists, startSession]);
 
   const loginWithBiometrics = useCallback(async () => {
     if (!biometric.enabled || !biometric.userId) return { ok: false };
@@ -203,14 +222,17 @@ export function AuthProvider({ children }) {
       if (session?.user?.id !== biometric.userId) {
         return { ok: false, msg: 'Tu sesión ha caducado. Entra con tu contraseña.' };
       }
-      const profile = await fetchProfile(biometric.userId);
-      if (!profile) return { ok: false, msg: 'Tu cuenta ya no está disponible. Entra con tu contraseña.' };
+      const profile = await fetchProfileAndLists(biometric.userId);
+      if (!profile) {
+        clearPrefetch();
+        return { ok: false, msg: 'Tu cuenta ya no está disponible. Entra con tu contraseña.' };
+      }
       await startSession(profile);
       return { ok: true };
     } catch (e) {
       return { ok: false, msg: toUserMessage(e) };
     }
-  }, [biometric, fetchProfile, startSession]);
+  }, [biometric, fetchProfileAndLists, startSession]);
 
   const unlockWithBiometrics = useCallback(async () => {
     const ok = await authenticate('Desbloquear Margube');

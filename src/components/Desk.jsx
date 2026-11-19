@@ -58,12 +58,12 @@ export function DeskMetrics({ items, label }) {
           </>
         );
         return it.onClick ? (
-          <button key={it.label} type="button" className={clsx(styles.metric, styles.metricBtn, it.active && styles.metricOn)}
+          <button key={it.label} type="button" data-motion-panel className={clsx(styles.metric, styles.metricBtn, it.active && styles.metricOn)}
             onClick={it.onClick} aria-pressed={!!it.active}>
             {body}
           </button>
         ) : (
-          <div key={it.label} className={styles.metric}>{body}</div>
+          <div key={it.label} data-motion-panel className={styles.metric}>{body}</div>
         );
       })}
     </div>
@@ -107,7 +107,7 @@ export function DeskGauge({ icon: Icon, tone = 'accent', eyebrow, title, value, 
   const pct = progress == null ? null : Math.max(0, Math.min(100, progress));
   return (
     <Root type={onClick ? 'button' : undefined} onClick={onClick} aria-pressed={onClick ? !!active : undefined}
-      aria-label={label} className={clsx(styles.gauge, onClick && styles.gaugeBtn, active && styles.gaugeOn)} data-tone={tone}>
+      aria-label={label} data-motion-panel className={clsx(styles.gauge, onClick && styles.gaugeBtn, active && styles.gaugeOn)} data-tone={tone}>
       <div className={styles.gaugeHead}>
         <div>
           {eyebrow && <p className={styles.gaugeEyebrow}>{eyebrow}</p>}
@@ -165,7 +165,7 @@ export function DeskPanel({ title, sub, tools, children, className, flush, id })
 /** The one highlight of a page on the Margube brand panel (navy and blue, white type). */
 export function DeskSpotlight({ icon: Icon, label, children, actions, className }) {
   return (
-    <section className={clsx(styles.spot, className)}>
+    <section data-motion-panel className={clsx(styles.spot, className)}>
       <svg className={styles.spotLeaf} viewBox="0 0 48 48" aria-hidden="true"><path d={LEAF_PATH} /><path d={VEIN_PATH} /></svg>
       {label && <p className={styles.spotLabel}>{Icon && <Icon size={14} aria-hidden="true" />}{label}</p>}
       {children}

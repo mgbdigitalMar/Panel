@@ -1,5 +1,5 @@
 import { useAssistant } from '../context/AssistantContext';
-import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
 import { useAuth, useTheme, useNotifs, useDocuments, useRequests, useReservations, useHours, usePersonalDays, useDataSync } from '../context';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -10,20 +10,42 @@ import {
 
 import { Avatar, TopProgress, PageLoader } from './ui';
 import { Wallpaper } from './Wallpaper';
-import { GlassHeader, GlassTabBar, GlassRail } from './GlassChrome';
-import OnboardingModal from './OnboardingModal';
+import { GlassHeader, GlassTabBar, GlassRail, dockPosition } from './GlassChrome';
 import { NotificationsDropdown } from './NotificationsDropdown';
-import { PolicyModal } from './PolicyModal';
 import { LiveToastContainer } from './LiveToastContainer';
-import CommandPalette from './CommandPalette';
-import { ShortcutsSheet } from './ShortcutsSheet';
 import { ConnectionStatus } from './ConnectionStatus';
 import { IdleWarning } from './IdleWarning';
 import { todayKey } from '../utils/format';
 import { workdayProgress } from '../utils/workday';
-import { EASE, SPRING } from '../motion/tokens';
-import { LIQUID_PAUSE_EVENT } from '../glass/liquidRefraction';
+import { EASE, SPRING, DUR, TAB_SHIFT } from '../motion/tokens';
+import { LIQUID_PAUSE_EVENT, APP_READY_EVENT } from '../glass/liquidRefraction';
 import styles from './Layout.module.scss';
+
+// Shown on demand (a shortcut, a first visit, rules pending): their code downloads the first time
+// they are needed instead of with every start of the app
+const OnboardingModal = lazy(() => import('./OnboardingModal'));
+const PolicyModal = lazy(() => import('./PolicyModal').then(m => ({ default: m.PolicyModal })));
+const CommandPalette = lazy(() => import('./CommandPalette'));
+const ShortcutsSheet = lazy(() => import('./ShortcutsSheet').then(m => ({ default: m.ShortcutsSheet })));
+
+// A section's content on a section change; `custom` is { dir, reduce } (dir: -1, 0 or 1)
+const SECTION_SHIFT = {
+  enter: ({ dir }) => ({ opacity: 0, x: dir * TAB_SHIFT }),
+  // Back at x 0 the wrapper has no transform at all (Framer writes `none`), so it never traps
+  // position:fixed modals. An explicit transitionEnd `transform` would also freeze the exit's x.
+  show: ({ reduce }) => ({
+    opacity: 1, x: 0,
+    transition: { duration: reduce ? DUR.reduced : DUR.tab, ease: EASE.out },
+  }),
+  leave: ({ dir, reduce }) => ({ opacity: 0, x: -dir * TAB_SHIFT, transition: { duration: reduce ? 0.08 : 0.1, ease: EASE.out } }),
+};
+
+/** True from the first time `on` is true: a lazy overlay stays mounted so it can animate out */
+function useEverTrue(on) {
+  const [ever, setEver] = useState(false);
+  if (on && !ever) setEver(true);
+  return ever || on;
+}
 
 const navItems = [
   { id: 'dashboard',    label: 'Inicio',             icon: LayoutDashboard },
@@ -137,6 +159,8 @@ export default function Layout({ children }) {
   const { hourCompensations = [] } = useHours();
   const { personalDays = [] } = usePersonalDays() || {};
   const { loadingData = false, loadFailed = false, refresh } = useDataSync() || {};
+  // The page is on screen with its data: the glass layers may now join (ThemeProvider)
+  useEffect(() => { if (!loadingData) window.dispatchEvent(new Event(APP_READY_EVENT)); }, [loadingData]);
   const [retrying, setRetrying] = useState(false);
   const retryLoad = async () => { setRetrying(true); try { await refresh?.(); } finally { setRetrying(false); } };
 
@@ -219,6 +243,13 @@ export default function Layout({ children }) {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const closeCmd = useCallback(() => setCmdOpen(false), []);
   const openShortcuts = useCallback(() => setShortcutsOpen(true), []);
+  // Which way the content travels: towards the side of the new section's tab in the dock
+  const [tabShift, setTabShift] = useState({ page, dir: 0 });
+  if (tabShift.page !== page) setTabShift({ page, dir: Math.sign(dockPosition(page) - dockPosition(tabShift.page)) });
+  const sectionMotion = useMemo(() => ({ dir: reduceMotion ? 0 : tabShift.dir, reduce: Boolean(reduceMotion) }), [reduceMotion, tabShift.dir]);
+  const cmdMounted = useEverTrue(cmdOpen);
+  const shortcutsMounted = useEverTrue(shortcutsOpen);
+  const policyMounted = useEverTrue(Boolean(user) && user.policyAccepted !== true);
 
   useEffect(() => {
     const G_MAP = { d: 'dashboard', r: 'reservations', s: 'requests', h: 'horas', n: 'news', e: 'employees', p: 'profile', a: 'settings', m: 'admin' };
@@ -363,17 +394,20 @@ export default function Layout({ children }) {
         </GlassHeader>
 
         <main ref={panelRef} className={styles.panel} id="main-content" role="main" aria-busy={loadingData}>
-          {/* Changing section is done tens of times a day: a quick crossfade (100 ms out, 150 ms in)
-              and no slide, since sections are siblings, not a hierarchy. The page's own panels then
-              rise in their short cascade (.reference-motion [data-motion-panel], global.scss). */}
-          <AnimatePresence mode="wait" initial={false} onExitComplete={scrollToTop}>
+          {/* Changing section, as in the app's dock: the new section fades in while travelling
+              TAB_SHIFT px from the side of its tab (a tab to the right comes in from the right) and
+              the old one leaves towards its own side, so the content follows the dock's lens.
+              Reduced motion keeps only the fade. The page's own panels then rise in their short
+              cascade (.reference-motion [data-motion-panel], global.scss). */}
+          <AnimatePresence mode="wait" initial={false} custom={sectionMotion} onExitComplete={scrollToTop}>
             <motion.div
               key={page}
               className={clsx(styles.panelInner, 'reference-motion')}
-              initial={{ opacity: 0 }}
-              // A lingering transform would trap position:fixed modals inside this wrapper
-              animate={{ opacity: 1, transition: { duration: reduceMotion ? 0.1 : 0.15, ease: EASE.out }, transitionEnd: { transform: 'none' } }}
-              exit={{ opacity: 0, transition: { duration: reduceMotion ? 0.08 : 0.1, ease: EASE.out } }}
+              custom={sectionMotion}
+              variants={SECTION_SHIFT}
+              initial="enter"
+              animate="show"
+              exit="leave"
             >
               {meta && (
                 <div className={clsx(styles.pageIntro, meta.touch && styles.pageIntroTouchOwn, meta.desk && styles.pageIntroDeskOwn, meta.own && styles.pageIntroOwn, meta.coverOwn && styles.pageIntroCoverOwn)} style={meta.width ? { maxWidth: meta.width, marginInline: 'auto' } : undefined}>
@@ -417,25 +451,37 @@ export default function Layout({ children }) {
 
       <LiveToastContainer liveNotifs={liveNotifs} />
 
-      <CommandPalette open={cmdOpen} onClose={closeCmd} onShowShortcuts={openShortcuts} />
-      <ShortcutsSheet open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} isAdmin={user?.role === 'admin'} />
+      {cmdMounted && (
+        <Suspense fallback={null}>
+          <CommandPalette open={cmdOpen} onClose={closeCmd} onShowShortcuts={openShortcuts} />
+        </Suspense>
+      )}
+      {shortcutsMounted && (
+        <Suspense fallback={null}>
+          <ShortcutsSheet open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} isAdmin={user?.role === 'admin'} />
+        </Suspense>
+      )}
       <ConnectionStatus />
       <IdleWarning />
 
       <AnimatePresence>
-        {needsOnboarding && <OnboardingModal />}
+        {needsOnboarding && <Suspense key="onboarding" fallback={null}><OnboardingModal /></Suspense>}
       </AnimatePresence>
 
       {/* Blocks the app until the internal rules are read and signed */}
-      <PolicyModal
-        user={user}
-        policyAccepted={user?.policyAccepted}
-        policyTimer={policyTimer}
-        policyRead={policyRead}
-        setPolicyRead={setPolicyRead}
-        onboardingDocUrl={onboardingDocUrl}
-        onSigned={() => { patchUser({ policyAccepted: true }); refreshEmployees(); }}
-      />
+      {policyMounted && (
+        <Suspense fallback={null}>
+          <PolicyModal
+            user={user}
+            policyAccepted={user?.policyAccepted}
+            policyTimer={policyTimer}
+            policyRead={policyRead}
+            setPolicyRead={setPolicyRead}
+            onboardingDocUrl={onboardingDocUrl}
+            onSigned={() => { patchUser({ policyAccepted: true }); refreshEmployees(); }}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

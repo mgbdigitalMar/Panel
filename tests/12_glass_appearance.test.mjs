@@ -200,7 +200,7 @@ export async function runGlassAppearanceTests() {
     && !ctx.includes('meta[name="theme-color"]'));
 
   assert('Adaptive Glass: solo desenfocan los paneles y las barras; el resto de la interfaz no',
-    globalCss.includes(":where(.app-shell) :where(*:not([data-scrim])) {") && patterns.includes('@mixin pane-blur {')
+    globalCss.includes(":where(.app-shell) :where(*:not([data-scrim], .glass__warp)) {") && patterns.includes('@mixin pane-blur {')
     && /@mixin surface \{\s*@include glass;\s*@include pane-blur;/.test(patterns)
     && read('src', 'components', 'ui', 'Card', 'Card.module.scss').includes('@include p.pane-blur;'));
   assert('Adaptive Glass: en móvil y tablet se desenfoca la sala una vez, no cada tarjeta',
@@ -223,5 +223,30 @@ export async function runGlassAppearanceTests() {
     assert(`Intensidad creciente y acotada (${dark ? 'oscuro' : 'claro'})`, materials.every((m, i) => m.strength >= 0 && m.strength <= 1 && m.blur <= 32 && (!i || m.blur > materials[i - 1].blur)));
   }
   assert('Web restaura la intensidad antes del primer pintado', indexHtml.includes("localStorage.getItem('margube-glass-intensity')") && indexHtml.includes('dataset.glassIntensity'));
+  // Same glass on every page and at every level
+  const glassChrome = read('src', 'components', 'GlassChrome.jsx');
+  assert('El logo solo es cristal donde tiene cápsula (sin recuadro de fondo en móvil)', glassChrome.includes("data-liquid={crumbsGlass ? '' : undefined}") && glassChrome.includes("const CRUMBS_CAPSULE = '(min-width: 1367px)'"));
+  assert('La refracción sigue los cambios de data-liquid', read('src', 'glass', 'liquidRefraction.js').includes("attributeFilter: ['data-liquid']"));
+  const desk = read('src', 'components', 'Desk.jsx');
+  assert('Métricas, indicadores y destacados de escritorio son paneles (misma refracción en todas las páginas)',
+    (desk.match(/data-motion-panel/g) || []).length >= 5);
+  assert('Tiempo a compensar marca sus tarjetas como paneles', (read('src', 'pages', 'HorasDesk.jsx').match(/data-motion-panel/g) || []).length >= 4);
+  // liquid-glass-react on every glass surface, tuned by the glass level of Ajustes
+  const pkg = JSON.parse(read('package.json'));
+  const layers = read('src', 'glass', 'LiquidGlassLayers.jsx');
+  const themeCtx = read('src', 'context', 'index.jsx');
+  assert('liquid-glass-react instalado', Boolean(pkg.dependencies['liquid-glass-react']));
+  assert('Las capas se cargan bajo demanda y solo con el cristal activo en Chromium',
+    themeCtx.includes("lazy(() => import('../glass/LiquidGlassLayers'))")
+    && /glassSettled && glassIntensity !== 'off' && !plainGlass && supportsLiquidRefraction\(\)/.test(themeCtx));
+  assert('Las capas esperan a que la primera pantalla esté lista', themeCtx.includes('APP_READY_EVENT') && read('src', 'components', 'Layout.jsx').includes('new Event(APP_READY_EVENT)'));
+  const lvl = (name) => Number((layers.match(new RegExp(`${name}: \\{ displacementScale: (\\d+)`)) || [])[1]);
+  assert('Cada nivel de cristal ajusta el paquete (más distorsión a más intensidad)', lvl('soft') > 0 && lvl('soft') < lvl('normal') && lvl('normal') < lvl('strong'));
+  assert('Cabecera, dock, botones y tarjetas reciben la capa; menús y diálogos no',
+    layers.includes(`:not(html)[data-liquid]:not([data-liquid="dense"])`) && layers.includes("const PANES = '[data-motion-panel]'"));
+  assert('La capa no hereda la utilidad .glass de la intranet', /\.glass \{\s*background: none !important;/.test(globalCss));
+  assert('Al hacer scroll o cambiar de sección se pausa la distorsión', globalCss.includes(':root[data-lg-paused] & .glass__warp { filter: none !important; }') && layers.includes("addEventListener('scroll', onScroll"));
+  assert('Las capas son estáticas (no se desalinean de su superficie)', layers.includes('elasticity={0}'));
+  assert('Las tarjetas del inicio en móvil usan el material de tarjeta', !read('src', 'components', 'MobileHome.module.scss').includes('@include p.liquid'));
   return { passed, failed };
 }

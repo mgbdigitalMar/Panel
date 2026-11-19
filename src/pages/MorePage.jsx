@@ -66,7 +66,7 @@ export default function MorePage() {
       </section>
 
       <section aria-label="Ajustes y sesión">
-        <div className={styles.list}>
+        <div data-motion-panel className={styles.list}>
           <button type="button" className={styles.link} onClick={() => navigate('/settings')}>
             <LeafIcon icon={SlidersHorizontal} tone="neutral" size={36} />
             <span className={styles.linkText}><strong>Ajustes</strong><span>Apariencia, notificaciones y sonidos</span></span>

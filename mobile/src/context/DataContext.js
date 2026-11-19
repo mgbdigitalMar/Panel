@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { setBadgeCount } from '../services/pushNotifications';
+import { takePrefetched } from './bootPrefetch';
 import { todayISO, initials } from '../utils/format';
 
 const DataCtx = createContext(null);
@@ -57,20 +58,27 @@ export function DataProvider({ children }) {
     const me = userRef.current;
     return me?.role === 'admin' ? {} : { employeeId: me?.id };
   };
+  // A list asked for at launch or sign-in (bootPrefetch) is taken from there the first time; every
+  // later load asks the database again
+  const viaBoot = async (name, load) => {
+    const early = takePrefetched(name, userRef.current);
+    const data = early ? await early : undefined;
+    return data === undefined ? load() : data;
+  };
   const loadRequests = useCallback(async () => {
     if (!userRef.current?.id) return setRequests([]);
-    keep(setRequests)(await svc.fetchRequests(supabase, ownScope()));
+    keep(setRequests)(await viaBoot('requests', () => svc.fetchRequests(supabase, ownScope())));
   }, []);
-  const loadReservations = useCallback(async () => keep(setReservations)(await svc.fetchReservations(supabase)), []);
-  const loadRooms = useCallback(async () => keep(setRooms)(await svc.fetchRooms(supabase)), []);
-  const loadVehicles = useCallback(async () => keep(setVehicles)(await svc.fetchVehicles(supabase)), []);
-  const loadDocuments = useCallback(async () => keep(setDocuments)(await svc.fetchDocuments(supabase)), []);
-  const loadHours = useCallback(async () => keep(setHours)(await svc.fetchHourCompensations(supabase)), []);
+  const loadReservations = useCallback(async () => keep(setReservations)(await viaBoot('reservations', () => svc.fetchReservations(supabase))), []);
+  const loadRooms = useCallback(async () => keep(setRooms)(await viaBoot('rooms', () => svc.fetchRooms(supabase))), []);
+  const loadVehicles = useCallback(async () => keep(setVehicles)(await viaBoot('vehicles', () => svc.fetchVehicles(supabase))), []);
+  const loadDocuments = useCallback(async () => keep(setDocuments)(await viaBoot('documents', () => svc.fetchDocuments(supabase))), []);
+  const loadHours = useCallback(async () => keep(setHours)(await viaBoot('hours', () => svc.fetchHourCompensations(supabase))), []);
   const loadPersonalDays = useCallback(async () => {
     if (!userRef.current?.id) return setPersonalDays([]);
-    keep(setPersonalDays)(await svc.fetchPersonalDays(supabase, ownScope()));
+    keep(setPersonalDays)(await viaBoot('personalDays', () => svc.fetchPersonalDays(supabase, ownScope())));
   }, []);
-  const loadNews = useCallback(async () => keep(setNews)(await svc.fetchNews(supabase)), []);
+  const loadNews = useCallback(async () => keep(setNews)(await viaBoot('news', () => svc.fetchNews(supabase))), []);
   // The database is the source of truth: runs on sync, on reconnecting and back from background.
   // Older pages opened in the history stay until the next login.
   const loadNotifications = useCallback(async () => {
@@ -80,7 +88,7 @@ export function DataProvider({ children }) {
       setUnreadTotal(0);
       return;
     }
-    const [rows, unread] = await Promise.all([svc.fetchNotifications(supabase, id), svc.fetchUnreadCount(supabase, id)]);
+    const [rows, unread] = await viaBoot('notifications', () => Promise.all([svc.fetchNotifications(supabase, id), svc.fetchUnreadCount(supabase, id)]));
     if (unread !== null) setUnreadTotal(unread);
     keep((data) => setNotifications((prev) => {
       const fresh = new Set(data.map((n) => n.id));

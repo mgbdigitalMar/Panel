@@ -23,7 +23,8 @@
   &::-webkit-scrollbar { display: none; }
 }
 .booking {
-  @include p.liquid;
+  // Card material like every other card on the screen (p.liquid is for floating controls)
+  @include p.glass;
   // Full width, edge to edge like the news cards; with more than one booking they swipe
   // sideways (one per snap) and the dots below say how many there are
   flex: 0 0 100%; scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; align-items: flex-start;
@@ -52,7 +53,8 @@
 }
 .overview { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .summary {
-  @include p.liquid;
+  // Card material like every other card on the screen (p.liquid is for floating controls)
+  @include p.glass;
   position: relative; display: flex; flex-direction: column; gap: 10px; padding: 16px; min-width: 0;
   border-radius: 20px; text-align: left; color: var(--text); font: inherit;
   > span { display: flex; align-items: center; gap: 7px; font-size: 12px; svg { color: var(--accent); flex: none; } }
@@ -63,7 +65,8 @@
 .summaryArrow { position: absolute; right: 14px; bottom: 14px; color: var(--text-sec); }
 .progress { height: 5px; background: var(--accent-bg-2); overflow: hidden; border-radius: 4px; i { display: block; height: 100%; border-radius: inherit; background: var(--accent); } }
 .register {
-  @include p.liquid;
+  // Card material like every other card on the screen (p.liquid is for floating controls)
+  @include p.glass;
   display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 10px; padding: 12px 16px;
   min-height: 50px; border-radius: 16px; color: var(--text); font: 500 13px var(--font-body); cursor: pointer;
   > span { flex: 1; text-align: left; } > svg { color: var(--accent); flex: none; }

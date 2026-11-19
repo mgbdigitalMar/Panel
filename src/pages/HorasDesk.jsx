@@ -109,7 +109,7 @@ function BalanceHero({ records, balance, creditHours, debtHours, pendingHours, f
     : balance > 0 ? 'A tu favor' : 'Debes a la empresa';
 
   return (
-    <section className={styles.hero} aria-label="Saldo de horas">
+    <section data-motion-panel className={styles.hero} aria-label="Saldo de horas">
       <svg className={styles.heroLeaf} viewBox="0 0 48 48" aria-hidden="true">
         <path d="M9.5 39.5C9.5 22 14.5 10 25 9.2L39.5 8.8V24C39.5 34 33 39.5 24 39.5Z" />
         <path d="M10.5 38.5C12.5 31 16.5 26.8 22 24" />
@@ -218,7 +218,7 @@ function Movements({ records, from, to, setFrom, setTo }) {
   const clear = () => { setType('all'); setOnlyPending(false); setQ(''); setFrom(''); setTo(''); };
 
   return (
-    <section className={styles.movements} aria-labelledby="horas-movs">
+    <section data-motion-panel className={styles.movements} aria-labelledby="horas-movs">
       <div className={styles.movHead}>
         <div>
           <h2 id="horas-movs" className={styles.cardTitle}>Movimientos</h2>
@@ -331,7 +331,7 @@ function Composer({ composer, focus, onFocused }) {
   const canSend = form.date && form.reason.trim() && form.hours && !hoursError && !dateError && !loading;
 
   return (
-    <section ref={ref} className={styles.composer} aria-labelledby="horas-new">
+    <section ref={ref} data-motion-panel className={styles.composer} aria-labelledby="horas-new">
       <h2 id="horas-new" className={styles.cardTitle}>Registrar horas</h2>
       <p className={styles.cardSub}>Elige qué quieres hacer con ellas.</p>
 
@@ -476,7 +476,7 @@ function MonthSummary({ records, balance }) {
           badge={`≈ ${(Math.abs(balance) / 8).toLocaleString('es-ES', { maximumFractionDigits: 1 })} jornadas`} />
       </div>
 
-      <section className={styles.monthly} aria-labelledby="horas-monthly">
+      <section data-motion-panel className={styles.monthly} aria-labelledby="horas-monthly">
         <div className={styles.monthlyHead}>
           <div>
             <h2 id="horas-monthly">Balance mensual</h2>

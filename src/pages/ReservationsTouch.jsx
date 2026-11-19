@@ -208,7 +208,7 @@ export default function ReservationsTouch({
               { value: 'vehicle', icon: Car, label: 'Vehículos', free: freeVehicles, total: vehicles.length },
             ].map((k) => (
               <button key={k.value} type="button" aria-pressed={kind === k.value}
-                className={clsx(styles.kind, kind === k.value && styles.kindOn)} onClick={() => { setKind(k.value); setQuery(''); }}>
+                data-motion-panel className={clsx(styles.kind, kind === k.value && styles.kindOn)} onClick={() => { setKind(k.value); setQuery(''); }}>
                 <LeafIcon icon={k.icon} tone={k.value === 'vehicle' ? 'info' : 'accent'} size={38} />
                 <span>
                   <strong>{k.label}</strong>
@@ -231,7 +231,7 @@ export default function ReservationsTouch({
           ) : (
             <div className={styles.resources}>
               {shown.map((res) => (
-                <article key={`${res.type}-${res.id}`} className={styles.resource}>
+                <article key={`${res.type}-${res.id}`} data-motion-panel className={styles.resource}>
                   <div className={styles.resHead}>
                     <div className={styles.resName}>
                       <h3>{res.name}</h3>

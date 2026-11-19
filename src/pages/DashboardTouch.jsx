@@ -193,7 +193,7 @@ export default function DashboardTouch({ d }) {
           {lead && (
             <section className={styles.pinned} aria-labelledby="touch-pinned">
               <span id="touch-pinned"><BlockHead title="Destacado" action="Noticias" onAction={() => navigate('/news')} /></span>
-              <article className={styles.story}>
+              <article data-motion-panel className={styles.story}>
                 <div className={styles.storyTags}>
                   <span className={styles.storyPin}><Pin size={11} aria-hidden="true" /> Fijada</span>
                   <span>{lead.type === 'event' ? 'Evento' : 'Noticia'}</span>
@@ -351,7 +351,7 @@ export default function DashboardTouch({ d }) {
       </div>
 
       {/* Help, as a line at the end */}
-      <aside className={styles.help}>
+      <aside data-motion-panel className={styles.help}>
         <LeafIcon icon={LifeBuoy} tone="neutral" size={38} />
         <span className={styles.helpText}>
           <strong>¿Necesitas ayuda?</strong>

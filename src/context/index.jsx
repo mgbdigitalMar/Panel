@@ -1,6 +1,6 @@
 import { notificationPresentation } from '../../shared/services/notificationPresentation.js';
 import { GLASS_STORAGE_KEY, normalizeGlass } from '../../shared/config/glass.js';
-import { createContext, useContext, useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react'
 import { flushSync } from 'react-dom'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
@@ -25,10 +25,12 @@ import {
 } from '../../shared/services/notifications.js'
 import { safeFileUrl } from '../../shared/utils/urls.js'
 import { toUserMessage } from '../../shared/utils/errors.js'
-import { startLiquidRefraction } from '../glass/liquidRefraction'
-import { supportsWebGLGlass } from '../glass/wallpaperGlass'
+import { supportsLiquidRefraction, APP_READY_EVENT } from '../glass/liquidRefraction'
 
 export const ThemeCtx = createContext()
+
+// liquid-glass-react on every glass surface (Chromium; downloaded only while the glass is on)
+const LiquidGlassLayers = lazy(() => import('../glass/LiquidGlassLayers'))
 
 function resolveTheme(mode) {
   if (mode === 'system') {
@@ -51,24 +53,41 @@ export function ThemeProvider({ children }) {
   }, [glassIntensity]);
   const setGlassIntensity = (value) => setGlassState(normalizeGlass(value));
 
+  // The glass layers need the browser to bend what is behind an element (Chromium) and the person
+  // not to have asked the system for less transparency
+  const [plainGlass, setPlainGlass] = useState(() => matchMedia('(prefers-reduced-transparency: reduce), (forced-colors: active)').matches)
   useEffect(() => {
-    if (glassIntensity === 'off') return undefined;
-    const options = glassIntensity === 'strong'
-      ? (supportsWebGLGlass() ? { only: '[data-liquid]' } : undefined)
-      : {
-        only: glassIntensity === 'normal' ? '[data-liquid]' : '[data-liquid="dock"]',
-        strength: glassIntensity === 'normal' ? 0.72 : 0.4,
-      };
-    const reduced = window.matchMedia('(prefers-reduced-transparency: reduce), (forced-colors: active)');
-    let stop = () => {};
-    const sync = () => {
-      stop();
-      stop = reduced.matches ? () => {} : startLiquidRefraction(options);
-    };
-    sync();
-    reduced.addEventListener?.('change', sync);
-    return () => { reduced.removeEventListener?.('change', sync); stop(); };
-  }, [glassIntensity]);
+    const mq = matchMedia('(prefers-reduced-transparency: reduce), (forced-colors: active)')
+    const sync = () => setPlainGlass(mq.matches)
+    mq.addEventListener?.('change', sync)
+    return () => mq.removeEventListener?.('change', sync)
+  }, [])
+  // The layers join once the first screen is on display (APP_READY_EVENT: the dashboard with its
+  // data, or the login) and the browser is free: mounted with that screen they tripled its
+  // blocking time on a throttled phone. Until then every surface shows its plain CSS glass, so
+  // only the bending arrives a moment later. Without the signal they join after 6 s anyway.
+  const [glassSettled, setGlassSettled] = useState(false)
+  useEffect(() => {
+    let timer = 0
+    let handle = 0
+    const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1))
+    const cancelIdle = window.cancelIdleCallback || clearTimeout
+    const settle = () => {
+      window.removeEventListener(APP_READY_EVENT, onReady)
+      handle = idle(() => setGlassSettled(true), { timeout: 2000 })
+    }
+    const onReady = () => { clearTimeout(timer); timer = setTimeout(settle, 400) }
+    window.addEventListener(APP_READY_EVENT, onReady)
+    timer = setTimeout(settle, 6000)
+    return () => { window.removeEventListener(APP_READY_EVENT, onReady); clearTimeout(timer); cancelIdle(handle) }
+  }, [])
+  const reactGlass = glassSettled && glassIntensity !== 'off' && !plainGlass && supportsLiquidRefraction()
+  // «Normal» and «Intenso» tune the tints for bent glass (_glass-intensity.scss, data-liquid=refract)
+  useEffect(() => {
+    if (!reactGlass || glassIntensity === 'soft') return undefined
+    document.documentElement.dataset.liquid = 'refract'
+    return () => { delete document.documentElement.dataset.liquid }
+  }, [reactGlass, glassIntensity])
 
   const applyMode = (m) => {
     const resolved = resolveTheme(m);
@@ -121,7 +140,12 @@ export function ThemeProvider({ children }) {
   };
   const theme = resolveTheme(mode);
 
-  return <ThemeCtx.Provider value={{ theme, mode, setMode, glassIntensity, setGlassIntensity }}>{children}</ThemeCtx.Provider>
+  return (
+    <ThemeCtx.Provider value={{ theme, mode, setMode, glassIntensity, setGlassIntensity }}>
+      {children}
+      {reactGlass && <Suspense fallback={null}><LiquidGlassLayers intensity={glassIntensity} /></Suspense>}
+    </ThemeCtx.Provider>
+  )
 }
 export function useTheme() { return useContext(ThemeCtx) }
 
@@ -134,6 +158,244 @@ export const PersonalDaysCtx = createContext()
 export const NewsCtx = createContext()
 export const NotifsCtx = createContext()
 export const DataSyncCtx = createContext()
+
+// ── Lists ───────────────────────────────────────────────────────────────────────────────────────
+// The queries behind DataProvider, at module level so the start-up prefetch can run them before
+// React has drawn anything. Each resolves to the rows ready for the screen, or null on failure.
+
+async function loadDocuments() {
+  const { data, error } = await supabase
+    .from('documents')
+    .select(`
+      id, title, description, file_url, status, created_at, updated_at,
+      sender_id, recipient_id,
+      sender:profiles!documents_sender_id_fkey(name),
+      recipient:profiles!documents_recipient_id_fkey(name)
+    `)
+    .order('created_at', { ascending: false })
+  if (error || !data) {
+    if (error) console.error('documents:', error)
+    return null
+  }
+  return data.map(d => ({
+    id: d.id,
+    title: d.title,
+    description: d.description,
+    fileUrl: safeFileUrl(d.file_url),
+    status: d.status,
+    createdAt: d.created_at,
+    updatedAt: d.updated_at,
+    senderId: d.sender_id,
+    senderName: d.sender?.name || null,
+    recipientId: d.recipient_id,
+    recipientName: d.recipient?.name || null,
+  }))
+}
+
+async function loadHourCompensations() {
+  const { data, error } = await supabase
+    .from('hour_compensations')
+    .select(`
+      id, date, reason, hours, type, status, created_at, reviewed_at,
+      employee_id, reviewed_by,
+      employee:profiles!hour_compensations_employee_id_fkey(name),
+      reviewer:profiles!hour_compensations_reviewed_by_fkey(name)
+    `)
+    .order('created_at', { ascending: false })
+  if (error || !data) {
+    if (error) console.error('hour_compensations:', error)
+    return null
+  }
+  return data.map(h => ({
+    id: h.id,
+    employeeId: h.employee_id,
+    employeeName: h.employee?.name || null,
+    reviewerId: h.reviewed_by,
+    reviewerName: h.reviewer?.name || null,
+    date: h.date,
+    reason: h.reason,
+    hours: parseFloat(h.hours),
+    type: h.type,
+    status: h.status,
+    reviewedAt: h.reviewed_at,
+    createdAt: h.created_at,
+  }))
+}
+
+// Employees load only their own personal days; admins load everyone's
+async function loadPersonalDays(user) {
+  let query = supabase
+    .from('personal_days')
+    .select(`
+      id, date, reason, file_url, status, created_at, reviewed_at,
+      employee_id, reviewed_by,
+      employee:profiles!personal_days_employee_id_fkey(name),
+      reviewer:profiles!personal_days_reviewed_by_fkey(name)
+    `)
+    .order('created_at', { ascending: false })
+  if (user.role !== 'admin') query = query.eq('employee_id', user.id)
+  const { data, error } = await query
+  if (error || !data) {
+    if (error) console.error('personal_days:', error)
+    return null
+  }
+  return data.map(p => ({
+    id: p.id,
+    employeeId: p.employee_id,
+    employeeName: p.employee?.name || null,
+    reviewerId: p.reviewed_by,
+    reviewerName: p.reviewer?.name || null,
+    date: p.date,
+    reason: p.reason,
+    fileUrl: safeFileUrl(p.file_url),
+    status: p.status,
+    reviewedAt: p.reviewed_at,
+    createdAt: p.created_at,
+  }))
+}
+
+async function loadNews() {
+  const { data, error } = await supabase
+    .from('news')
+    .select('*, author:profiles!news_author_id_fkey(name, avatar_initials)')
+    .order('published_at', { ascending: false })
+  if (error || !data) {
+    if (error) console.error('news:', error)
+    return null
+  }
+  return data.map(n => ({
+    id: n.id,
+    type: n.type,
+    title: n.title,
+    content: n.content,
+    authorId: n.author_id,
+    authorName: n.author?.name || 'Usuario eliminado',
+    authorAvatar: n.author?.avatar_initials || '??',
+    date: n.published_at,
+    pinned: n.pinned,
+    category: n.category,
+    isActive: n.is_active,
+    createdAt: n.created_at
+  }))
+}
+
+// Same queries as the app (shared/services): requests carry who reviewed them, and rooms and
+// vehicles whether they can be booked (an admin can hide one from the app or the web). The
+// reservations_full view has no employee_id. Employees load only their own requests.
+const LIST_LOADERS = {
+  requests: (user) => fetchRequestsSvc(supabase, user.role === 'admin' ? {} : { employeeId: user.id }),
+  reservations: () => fetchReservationsSvc(supabase),
+  rooms: async () => (await fetchRoomsSvc(supabase))?.map(r => ({ ...r, equipment: r.equipment || [] })) ?? null,
+  vehicles: () => fetchVehiclesSvc(supabase),
+  documents: loadDocuments,
+  hours: loadHourCompensations,
+  personalDays: loadPersonalDays,
+  news: loadNews,
+}
+// What these return depends on the person's role
+const ROLE_BOUND = new Set(['requests', 'personalDays'])
+
+const loadNotifications = (userId) => Promise.all([
+  fetchNotificationsSvc(supabase, userId),
+  fetchUnreadCount(supabase, userId),
+])
+
+// ── Start-up prefetch ───────────────────────────────────────────────────────────────────────────
+// Restoring a session or signing in, the lists are asked for together with the person's profile,
+// not after the app has drawn its frame: the first screen waits one round trip less. DataProvider
+// takes each one once (takeBoot); anything later asks the database again.
+// After this long without activity the session is closed (AuthProvider)
+const IDLE_TIMEOUT = 60 * 1000
+const BOOT_TTL = 20 * 1000
+let boot = null // { userId, at, lists: { name: Promise<{ data, role? } | null> } }
+let restoreBoot = null // { userId, sessionData: Promise }
+
+/** `role` may be a promise (signing in: it arrives with the profile) */
+function prefetchUserData(userId, role) {
+  const roleReady = Promise.resolve(role).catch(() => null)
+  const lists = {}
+  for (const [name, load] of Object.entries(LIST_LOADERS)) {
+    const pending = ROLE_BOUND.has(name)
+      ? roleReady.then(r => (r ? load({ id: userId, role: r }).then(data => ({ data, role: r })) : null))
+      : load().then(data => ({ data }))
+    // A prefetch that throws is simply asked for again by DataProvider
+    lists[name] = pending.catch(() => null)
+  }
+  lists.notifications = loadNotifications(userId).then(data => ({ data })).catch(() => null)
+  boot = { userId, at: Date.now(), lists }
+}
+
+/** The prefetched rows of `name` for `user`, once; null when there is nothing to take */
+function takeBoot(name, user) {
+  if (!boot || !user?.id || boot.userId !== user.id || Date.now() - boot.at > BOOT_TTL) return null
+  const pending = boot.lists[name]
+  if (!pending) return null
+  delete boot.lists[name]
+  // undefined = ask again (the prefetch threw, or the role turned out different)
+  return pending.then(res => (res && (!res.role || res.role === user.role) ? res.data : undefined))
+}
+
+/**
+ * Resolves when the prefetched lists of `userId` have arrived, or after `ms` at most. Showing the
+ * app only then, its first frame already holds the page: otherwise the whole shell is drawn once
+ * around a loader and again a moment later with the page, which on a mid-range phone cost ~300 ms.
+ */
+function bootSettled(userId, ms = 1500) {
+  if (!boot || boot.userId !== userId) return Promise.resolve()
+  return Promise.race([
+    Promise.all(Object.values(boot.lists)),
+    new Promise(resolve => setTimeout(resolve, ms)),
+  ])
+}
+
+function clearBoot() {
+  boot = null
+  restoreBoot = null
+}
+
+/**
+ * Called as the app's code starts (App.tsx), before anything is drawn. A browser that was active
+ * in the last minute will restore its session (AuthProvider), so its profile and lists are asked
+ * for now; AuthProvider and DataProvider then pick them up.
+ */
+export function startBootPrefetch() {
+  let stored = null
+  try { stored = JSON.parse(localStorage.getItem('margube_session') || 'null') } catch { /* corrupt entry */ }
+  if (!stored?.id || Date.now() - stored.lastActivity > IDLE_TIMEOUT) return
+  const session = supabase.auth.getSession()
+    .then(({ data }) => (data?.session?.user?.id === stored.id ? data.session : null))
+    .catch(() => null)
+  const sessionData = session.then(s => (s ? loadSessionData(s.user.id) : null)).catch(() => null)
+  restoreBoot = { userId: stored.id, sessionData }
+  session.then(s => {
+    // The role saved with the session is a guess: a list that depends on it is asked for again
+    // when the profile says otherwise (takeBoot)
+    if (s) prefetchUserData(s.user.id, stored.role || sessionData.then(d => d?.profile?.role))
+  })
+}
+
+function takeRestoreBoot(userId) {
+  const pending = restoreBoot?.userId === userId ? restoreBoot.sessionData : null
+  restoreBoot = null
+  return pending
+}
+
+// The person's profile, the employee list and the DNIs do not depend on each other: asked for
+// together, signing in and restoring a session wait for one round trip to Supabase instead of
+// three in a row before the first page can load.
+async function loadSessionData(id) {
+  const [own, all, dnis] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', id).maybeSingle(),
+    supabase.from('profiles').select('*').order('name'),
+    // The DNI is private (profile_private): the person sees their own, admins every one
+    fetchDnis(supabase),
+  ])
+  if (all.error) console.error('employees:', all.error)
+  return {
+    profile: own.error || !own.data ? null : withDni([mapProfile(own.data)], dnis)[0],
+    employees: all.error ? null : withDni(all.data.map(mapProfile), dnis),
+  }
+}
 
 export function DataProvider({ children }) {
   const [requests, setRequestsState]         = useState([])
@@ -179,14 +441,20 @@ const [readIds, setReadIds] = useState(() => {
     }
   }
 
+  // A list asked for at start-up (startBootPrefetch / login) is taken from there the first time;
+  // every later load (retry, reconnect, sync event) asks the database again
+  const loadList = async (name) => {
+    const early = takeBoot(name, user)
+    const data = early ? await early : undefined
+    return data === undefined ? LIST_LOADERS[name](user) : data
+  }
+
   // The database is the source of truth: this runs on login, on reconnecting and on sync events.
   // Older pages the person opened in the history stay until the next login.
   const fetchNotifications = async (userId) => {
     if (!userId) return
-    const [rows, unread] = await Promise.all([
-      fetchNotificationsSvc(supabase, userId),
-      fetchUnreadCount(supabase, userId),
-    ])
+    const early = userId === user?.id ? takeBoot('notifications', user) : null
+    const [rows, unread] = (early && await early) || await loadNotifications(userId)
     if (unread !== null) setUnreadCount(unread)
     if (!rows) return
     setNotifications(prev => {
@@ -226,147 +494,56 @@ const [readIds, setReadIds] = useState(() => {
     await markAllNotifsReadSvc(supabase, userId)
   }
 
-  // Employees load only their own requests and personal days; admins load everyone's.
-  const ownRowsOnly = (query) => (user?.role === 'admin' ? query : query.eq('employee_id', user?.id))
-
-  // Same queries as the app (shared/services): requests carry who reviewed them, and rooms and
-  // vehicles whether they can be booked (an admin can hide one from the app or the web)
+  // The queries live in LIST_LOADERS (shared with the start-up prefetch). A list that could not be
+  // loaded keeps what is on screen (showing sample data would look real) and offers a retry.
   async function fetchRequests() {
     if (!user?.id) { setRequestsState([]); return }
-    const data = await fetchRequestsSvc(supabase, user.role === 'admin' ? {} : { employeeId: user.id })
+    const data = await loadList('requests')
     if (data) setRequestsState(data)
     else setLoadFailed(true)
   }
 
-  // Same query as the app: the reservations_full view has no employee_id
   async function fetchReservations() {
-    const data = await fetchReservationsSvc(supabase)
+    const data = await loadList('reservations')
     if (data) setReservationsState(data)
     else setLoadFailed(true)
   }
 
   async function fetchRooms() {
-    const data = await fetchRoomsSvc(supabase)
-    if (data) setRooms(data.map(r => ({ ...r, equipment: r.equipment || [] })))
+    const data = await loadList('rooms')
+    if (data) setRooms(data)
     else setLoadFailed(true)
   }
 
   async function fetchVehicles() {
-    const data = await fetchVehiclesSvc(supabase)
+    const data = await loadList('vehicles')
     if (data) setVehicles(data)
     else setLoadFailed(true)
   }
 
   async function fetchDocuments() {
-    const { data, error } = await supabase
-      .from('documents')
-      .select(`
-        id, title, description, file_url, status, created_at, updated_at,
-        sender_id, recipient_id,
-        sender:profiles!documents_sender_id_fkey(name),
-        recipient:profiles!documents_recipient_id_fkey(name)
-      `)
-      .order('created_at', { ascending: false })
-    // On error keep what is on screen: showing sample data would look real
-    if (error || !data) {
-      if (error) { console.error('documents:', error); setLoadFailed(true) }
-      return
-    }
-    setDocuments(data.map(d => ({
-      id: d.id,
-      title: d.title,
-      description: d.description,
-      fileUrl: safeFileUrl(d.file_url),
-      status: d.status,
-      createdAt: d.created_at,
-      updatedAt: d.updated_at,
-      senderId: d.sender_id,
-      senderName: d.sender?.name || null,
-      recipientId: d.recipient_id,
-      recipientName: d.recipient?.name || null,
-    })))
+    const data = await loadList('documents')
+    if (data) setDocuments(data)
+    else setLoadFailed(true)
   }
 
   async function fetchHourCompensations() {
-    const { data, error } = await supabase
-      .from('hour_compensations')
-      .select(`
-        id, date, reason, hours, type, status, created_at, reviewed_at,
-        employee_id, reviewed_by,
-        employee:profiles!hour_compensations_employee_id_fkey(name),
-        reviewer:profiles!hour_compensations_reviewed_by_fkey(name)
-      `)
-      .order('created_at', { ascending: false })
-    if (error || !data) {
-      if (error) { console.error('hour_compensations:', error); setLoadFailed(true) }
-      return
-    }
-    setHourCompensations(data.map(h => ({
-      id: h.id,
-      employeeId: h.employee_id,
-      employeeName: h.employee?.name || null,
-      reviewerId: h.reviewed_by,
-      reviewerName: h.reviewer?.name || null,
-      date: h.date,
-      reason: h.reason,
-      hours: parseFloat(h.hours),
-      type: h.type,
-      status: h.status,
-      reviewedAt: h.reviewed_at,
-      createdAt: h.created_at,
-    })))
+    const data = await loadList('hours')
+    if (data) setHourCompensations(data)
+    else setLoadFailed(true)
   }
 
   async function fetchPersonalDays() {
     if (!user?.id) { setPersonalDays([]); return }
-    const { data, error } = await ownRowsOnly(supabase
-      .from('personal_days')
-      .select(`
-        id, date, reason, file_url, status, created_at, reviewed_at,
-        employee_id, reviewed_by,
-        employee:profiles!personal_days_employee_id_fkey(name),
-        reviewer:profiles!personal_days_reviewed_by_fkey(name)
-      `)
-      .order('created_at', { ascending: false }))
-    if (error || !data) {
-      if (error) { console.error('personal_days:', error); setLoadFailed(true) }
-      return
-    }
-    setPersonalDays(data.map(p => ({
-      id: p.id,
-      employeeId: p.employee_id,
-      employeeName: p.employee?.name || null,
-      reviewerId: p.reviewed_by,
-      reviewerName: p.reviewer?.name || null,
-      date: p.date,
-      reason: p.reason,
-      fileUrl: safeFileUrl(p.file_url),
-      status: p.status,
-      reviewedAt: p.reviewed_at,
-      createdAt: p.created_at,
-    })))
+    const data = await loadList('personalDays')
+    if (data) setPersonalDays(data)
+    else setLoadFailed(true)
   }
 
   async function fetchNews() {
-    const { data, error } = await supabase
-      .from('news')
-      .select('*, author:profiles!news_author_id_fkey(name, avatar_initials)')
-      .order('published_at', { ascending: false })
-    if (error) { console.error('news:', error); setLoadFailed(true); return }
-    setNews(data.map(n => ({
-      id: n.id,
-      type: n.type,
-      title: n.title,
-      content: n.content,
-      authorId: n.author_id,
-      authorName: n.author?.name || 'Usuario eliminado',
-      authorAvatar: n.author?.avatar_initials || '??',
-      date: n.published_at,
-      pinned: n.pinned,
-      category: n.category,
-      isActive: n.is_active,
-      createdAt: n.created_at
-    })))
+    const data = await loadList('news')
+    if (data) setNews(data)
+    else setLoadFailed(true)
   }
 
   const auth = useContext(AuthCtx)
@@ -967,7 +1144,6 @@ export function AuthProvider({ children }) {
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
   const [authLoading, setAuthLoading]       = useState(true)
 
-  const IDLE_TIMEOUT = 60 * 1000
   // The idle logout is announced this long before, so whatever is being typed can be kept
   const IDLE_WARNING = 15 * 1000
   // A ref, not state: activity events fire on every mouse move and must not re-render the app
@@ -981,28 +1157,12 @@ export function AuthProvider({ children }) {
   const setLastActivity = useCallback((t = Date.now()) => { lastActivityRef.current = t }, [])
   const [idleLeft, setIdleLeft] = useState(null) // seconds shown in the warning; null = hidden
 
-  // The person's profile, the employee list and the DNIs do not depend on each other: asked for
-  // together, signing in and restoring a session wait for one round trip to Supabase instead of
-  // three in a row before the first page can load.
-  async function loadSessionData(id) {
-    const [own, all, dnis] = await Promise.all([
-      supabase.from('profiles').select('*').eq('id', id).maybeSingle(),
-      supabase.from('profiles').select('*').order('name'),
-      // The DNI is private (profile_private): the person sees their own, admins every one
-      fetchDnis(supabase),
-    ])
-    if (all.error) console.error('employees:', all.error)
-    return {
-      profile: own.error || !own.data ? null : withDni([mapProfile(own.data)], dnis)[0],
-      employees: all.error ? null : withDni(all.data.map(mapProfile), dnis),
-    }
-  }
-
   // Signed in: show the app (or the first-access password page)
   async function startSession(profile, employees) {
     setUser(profile)
     const tabId = sessionStorage.getItem('margube_tabId') || 'tab_main'
-    localStorage.setItem('margube_session', JSON.stringify({ id: profile.id, tabId, lastActivity: Date.now() }))
+    // The role lets the next visit ask for its lists before the profile arrives (startBootPrefetch)
+    localStorage.setItem('margube_session', JSON.stringify({ id: profile.id, role: profile.role, tabId, lastActivity: Date.now() }))
     if (employees) setEmployeesState(employees)
     const pending = pendingPathRef.current
     pendingPathRef.current = null
@@ -1053,7 +1213,11 @@ export function AuthProvider({ children }) {
           await clearSession()
           return
         }
-        const { profile, employees } = await loadSessionData(session.user.id)
+        // Usually already on its way (startBootPrefetch, as the code loaded)
+        const early = takeRestoreBoot(session.user.id)
+        const { profile, employees } = (early && await early) || await loadSessionData(session.user.id)
+        if (disposed) return
+        if (profile) await bootSettled(profile.id)
         if (disposed) return
         if (profile) await startSession(profile, employees)
         else await clearSession()
@@ -1067,6 +1231,7 @@ export function AuthProvider({ children }) {
     }
 
     const clearSession = async () => {
+      clearBoot()
       localStorage.removeItem('margube_session')
       sessionStorage.removeItem('margube_tabId')
       broadcastLogout()
@@ -1204,11 +1369,16 @@ export function AuthProvider({ children }) {
     const res = await signIn(supabase, email, pass)
     if (!res.ok) return res
 
-    const { profile, employees } = await loadSessionData(res.userId)
+    // The lists go out with the profile instead of after the first page has been drawn
+    const sessionData = loadSessionData(res.userId)
+    prefetchUserData(res.userId, sessionData.then(d => d.profile?.role))
+    const { profile, employees } = await sessionData
     if (!profile) {
+      clearBoot()
       await supabase.auth.signOut({ scope: 'local' })
       return { ok: false, msg: 'Tu cuenta no tiene ficha de empleado. Contacta con RRHH.' }
     }
+    await bootSettled(profile.id)
     setLastActivity(Date.now())
     await startSession(profile, employees)
     return { ok: true }
@@ -1218,6 +1388,7 @@ export function AuthProvider({ children }) {
     // Unregister this browser's pushes first: the call needs the session
     if (!keepDevice) await disablePush({ keepBrowserSubscription: true }).catch(() => {})
     supabase.auth.signOut({ scope: 'local' })
+    clearBoot()
     localStorage.removeItem('margube_session')
     localStorage.removeItem('margube_tabId')
     sessionStorage.removeItem('margube_tabId')

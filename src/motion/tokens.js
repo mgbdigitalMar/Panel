@@ -28,7 +28,12 @@ export const DUR = {
   enter: 0.42, // --dur-enter: a page's sections rising in
   exit: 0.16, // most exits
   reduced: 0.12, // the opacity-only fade that replaces movement under reduced motion
+  tab: 0.22, // switching section from the dock (the app's DUR.tab)
 };
+
+/** Distance a section's content travels as it fades in, from the side of its tab in the dock (the
+ * app's TAB_SHIFT, mobile/src/theme/motion.js) */
+export const TAB_SHIFT = 12;
 
 export const STAGGER = 0.045; // --stagger
 

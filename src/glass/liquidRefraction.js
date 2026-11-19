@@ -6,6 +6,9 @@ const TARGETS = '[data-liquid], [data-motion-panel]';
 const PANES_FROM = '(min-width: 1024px)';
 /** Fire on window when a page transition starts: the cards drop to their plain blur until it ends. */
 export const LIQUID_PAUSE_EVENT = 'liquid-glass-pause';
+/** The first screen is on display (the dashboard with its data, or the login): ThemeProvider
+ * waits for it before adding the liquid-glass-react layers */
+export const APP_READY_EVENT = 'margube-app-ready';
 
 /** Chromium (Chrome, Edge, Android browsers on Blink) is the only engine that applies url() filters in backdrop-filter. */
 export function supportsLiquidRefraction() {
@@ -278,11 +281,19 @@ export function startLiquidRefraction({
 
   const mutations = new MutationObserver((list) => {
     list.forEach((m) => {
+      // An element that becomes glass, or stops being glass, without being remounted (the logo's
+      // capsule only exists on wide screens, GlassChrome.jsx)
+      if (m.type === 'attributes') {
+        const el = m.target;
+        if (el.matches(targets)) track(el);
+        else if (tracked.has(el)) untrack(el);
+        return;
+      }
       m.addedNodes.forEach(scan);
       m.removedNodes.forEach(scanOut);
     });
   });
-  mutations.observe(document.body, { childList: true, subtree: true });
+  mutations.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-liquid'] });
   scan(document.body);
   if (!only || only === '[data-liquid]') document.documentElement.dataset.liquid = 'refract';
 

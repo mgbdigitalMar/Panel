@@ -81,7 +81,7 @@ export function Masthead({ icon: Icon, eyebrow, title, desc, aside, className })
 export function Ledger({ items, label, className }) {
   return (
     <div className={clsx(styles.ledgerWrap, className)}>
-    <dl className={styles.ledger} aria-label={label} data-n={items.length}>
+    <dl data-motion-panel className={styles.ledger} aria-label={label} data-n={items.length}>
       {items.map((it) => {
         const body = (
           <>
@@ -275,7 +275,7 @@ export function FeedGroup({ title, meta, children, className }) {
           {meta && <span>{meta}</span>}
         </div>
       )}
-      <ul className={styles.feed}>{children}</ul>
+      <ul data-motion-panel className={styles.feed}>{children}</ul>
     </section>
   );
 }
@@ -351,7 +351,7 @@ export function Fold({ icon, tone, title, meta, defaultOpen = false, children, c
   const [open, setOpen] = useState(defaultOpen);
   const bodyId = useId();
   return (
-    <section className={clsx(styles.fold, open && styles.foldOpen, className)}>
+    <section data-motion-panel className={clsx(styles.fold, open && styles.foldOpen, className)}>
       <button type="button" className={styles.foldHead} onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-controls={bodyId}>
         {icon && <LeafIcon icon={icon} tone={tone} size={36} />}
         <span className={styles.foldText}>
@@ -391,7 +391,7 @@ export function BlockHead({ title, meta, action, onAction }) {
 /** Designed empty state: the leaf outline around the icon, a title, a line and the way forward. */
 export function TouchEmpty({ icon: Icon, title, text, action, compact }) {
   return (
-    <div className={clsx(styles.empty, compact && styles.emptyCompact)} role="status">
+    <div data-motion-panel className={clsx(styles.empty, compact && styles.emptyCompact)} role="status">
       <span className={styles.emptyMark} aria-hidden="true">
         <svg viewBox="0 0 48 48"><path d={LEAF_PATH} /></svg>
         {Icon && <Icon size={20} />}

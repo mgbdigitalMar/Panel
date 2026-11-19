@@ -27,7 +27,7 @@ export function MobileHome({ d }) {
           {myUpcoming.length ? myUpcoming.map((r, i) => {
             const Icon = r.type === 'vehicle' ? Car : DoorOpen;
             return (
-              <button type="button" key={r.id} className={styles.booking} data-featured={i === 0 || undefined} onClick={() => navigate('/reservations?mias=1')}>
+              <button type="button" key={r.id} data-motion-panel className={styles.booking} data-featured={i === 0 || undefined} onClick={() => navigate('/reservations?mias=1')}>
                 <span className={styles.bookingDate}>{r.date === todayStr ? 'Hoy' : fmtDayShort(r.date)}<ArrowUpRight size={17} aria-hidden="true" /></span>
                 <strong>{r.timeStart} – {r.timeEnd}</strong>
                 <span className={styles.resource}><Icon size={19} aria-hidden="true" /><span>{r.resourceName}</span></span>
@@ -35,7 +35,7 @@ export function MobileHome({ d }) {
               </button>
             );
           }) : (
-            <button type="button" className={styles.emptyBooking} onClick={() => navigate('/reservations?nueva=1')}>
+            <button type="button" data-motion-panel className={styles.emptyBooking} onClick={() => navigate('/reservations?nueva=1')}>
               <Calendar size={24} aria-hidden="true" />
               <span><strong>Tu próxima reserva empieza aquí</strong><small>Encuentra una sala o un vehículo disponible.</small></span>
               <Plus size={20} aria-hidden="true" />
@@ -59,20 +59,20 @@ export function MobileOverview({ d }) {
     <section aria-labelledby="mobile-overview">
       <div className={styles.sectionHead}><h2 id="mobile-overview">Tu resumen de hoy</h2></div>
       <div className={styles.overview}>
-        <div className={styles.summary}>
+        <div data-motion-panel className={styles.summary}>
           <span><Calendar size={16} aria-hidden="true" />Tu jornada</span>
           <strong>{Math.round(progress)}<small>%</small></strong>
           <div className={styles.progress} role="progressbar" aria-label="Jornada de hoy" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${Math.max(0, Math.min(100, progress))}%` }} /></div>
           <small>De tu horario de hoy</small>
         </div>
-        <button type="button" className={styles.summary} onClick={() => navigate('/horas')}>
+        <button type="button" data-motion-panel className={styles.summary} onClick={() => navigate('/horas')}>
           <span><Timer size={16} aria-hidden="true" />Bolsa de horas</span>
           <strong>{formatted}<small>h</small></strong>
           <small>{hours.pending ? `${hours.pending.toLocaleString('es-ES')} h por aprobar` : hours.balance < 0 ? 'Saldo deudor' : 'Saldo a tu favor'}</small>
           <ArrowUpRight size={17} className={styles.summaryArrow} aria-hidden="true" />
         </button>
       </div>
-      <button type="button" className={styles.register} onClick={() => navigate('/horas?nueva=1')}><Timer size={18} aria-hidden="true" /><span>Registrar tiempo a compensar</span><Plus size={18} aria-hidden="true" /></button>
+      <button type="button" data-motion-panel className={styles.register} onClick={() => navigate('/horas?nueva=1')}><Timer size={18} aria-hidden="true" /><span>Registrar tiempo a compensar</span><Plus size={18} aria-hidden="true" /></button>
     </section>
   );
 }

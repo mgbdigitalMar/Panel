@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import clsx from 'clsx';
 import { LEAF_PATH, VEIN_PATH } from './ui/Loader/Loader';
 import { useTheme } from '../context';
-import { startWallpaperGlass } from '../glass/wallpaperGlass';
 import { supportsLiquidRefraction } from '../glass/liquidRefraction';
 import styles from './Wallpaper.module.scss';
 
@@ -52,14 +51,20 @@ function useWallpaperGlass(ref, photo) {
   useEffect(() => {
     if (!photo || !photoImage || plain || glassIntensity === 'off') return undefined;
     const svg = supportsLiquidRefraction();
-    const strong = glassIntensity === 'strong';
-    return startWallpaperGlass({
-      host: ref.current,
-      photo: photoImage,
-      theme,
-      panes: strong,
-      chrome: svg ? null : glassIntensity !== 'soft' ? '[data-liquid]:not([data-liquid="dense"])' : '[data-liquid="dock"]',
-    });
+    // Chromium: the cards' glass is liquid-glass-react (LiquidGlassLayers), not this canvas
+    const strong = glassIntensity === 'strong' && !svg;
+    const chrome = svg ? null : glassIntensity !== 'soft' ? '[data-liquid]:not([data-liquid="dense"])' : '[data-liquid="dock"]';
+    // Nothing to draw (Chromium, whose glass is the React layers): the WebGL renderer is not even downloaded
+    if (!strong && !chrome) return undefined;
+    // The renderer (~40 kB) is fetched here rather than with the app: the DOM room shows meanwhile,
+    // as it does while the shader links
+    let stop = null;
+    let cancelled = false;
+    import('../glass/wallpaperGlass').then(({ startWallpaperGlass }) => {
+      if (cancelled || !ref.current) return;
+      stop = startWallpaperGlass({ host: ref.current, photo: photoImage, theme, panes: strong, chrome });
+    }).catch(() => { /* offline before it was cached: the plain glass stays */ });
+    return () => { cancelled = true; stop?.(); };
   }, [ref, photo, theme, glassIntensity, plain]);
 }
 

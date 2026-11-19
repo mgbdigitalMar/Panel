@@ -27,5 +27,13 @@ export async function runDockGestureTests() {
   check('web and app share action size', DOCK_WEB_VARIABLES['--dock-action-size'] === `${DOCK_STYLE.actionSize}px`);
   check('off material is opaque', dockTint(0) === 'rgba(17,24,34,1)');
   check('intense material uses the same tint', dockTint(1) === 'rgba(17,24,34,0.72)');
+  // Changing section from the dock moves the content like the app (forTabShift, BottomTabs.jsx)
+  const fs = await import('node:fs');
+  const layout = fs.readFileSync(new URL('../src/components/Layout.jsx', import.meta.url), 'utf8');
+  const tokens = fs.readFileSync(new URL('../src/motion/tokens.js', import.meta.url), 'utf8');
+  const appMotion = fs.readFileSync(new URL('../mobile/src/theme/motion.js', import.meta.url), 'utf8');
+  check('web uses the app tab shift', /TAB_SHIFT = 12/.test(tokens) && /TAB_SHIFT = 12/.test(appMotion));
+  check('web uses the app tab duration', /tab: 0\.22/.test(tokens) && /tab: 220/.test(appMotion));
+  check('content enters from the side of its tab', layout.includes('x: dir * TAB_SHIFT') && layout.includes('x: -dir * TAB_SHIFT') && layout.includes('dockPosition(page) - dockPosition(tabShift.page)'));
   return { passed, failed };
 }

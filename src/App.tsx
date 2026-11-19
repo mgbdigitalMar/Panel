@@ -1,41 +1,40 @@
-import { Suspense, lazy } from 'react'
-import { ThemeProvider, AuthProvider, AuthCtx, AppCtx, DataProvider } from './context'
+import { Suspense, lazy, useState } from 'react'
+import { ThemeProvider, AuthProvider, AuthCtx, AppCtx, DataProvider, startBootPrefetch } from './context'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AnimatePresence, MotionConfig } from 'framer-motion'
 import Layout from './components/Layout'
 import { AssistantProvider } from './context/AssistantContext'
 import { BootLoader } from './components/ui'
 
-// Each page's code, loaded when its route is first shown
-const pages = {
-  login:          () => import('./pages/LoginPage'),
-  changePassword: () => import('./pages/ChangePasswordPage'),
-  dashboard:      () => import('./pages/DashboardPage'),
-  reservations:   () => import('./pages/ReservationsPage'),
-  requests:       () => import('./pages/RequestsPage'),
-  news:           () => import('./pages/NewsPage'),
-  admin:          () => import('./pages/AdminPage'),
-  employees:      () => import('./pages/EmployeesPage'),
-  profile:        () => import('./pages/ProfilePage'),
-  horas:          () => import('./pages/HorasPage'),
-  settings:       () => import('./pages/SettingsPage'),
-  mas:            () => import('./pages/MorePage'),
-  assistant:      () => import('./pages/AssistantPage'),
+import { loadPage, readyPage, hasPage } from './pageLoaders'
+
+/**
+ * A route's page, loaded when first shown. A page whose code is already here (preloaded at start-up
+ * or while signing in) is drawn at once: through lazy() it would still suspend for a moment, and
+ * React keeps a fallback on screen for ~300 ms before revealing what replaces it.
+ */
+function page(name: string) {
+  const Lazy = lazy(() => loadPage(name))
+  return function Page(props: Record<string, unknown>) {
+    // Decided once per mount: switching from Lazy to the loaded component would remount the page
+    const [Ready] = useState(() => readyPage(name))
+    return Ready ? <Ready {...props} /> : <Lazy {...props} />
+  }
 }
 
-const LoginPage          = lazy(pages.login)
-const ChangePasswordPage = lazy(pages.changePassword)
-const DashboardPage      = lazy(pages.dashboard)
-const ReservationsPage   = lazy(pages.reservations)
-const RequestsPage       = lazy(pages.requests)
-const NewsPage           = lazy(pages.news)
-const AdminPage          = lazy(pages.admin)
-const EmployeesPage      = lazy(pages.employees)
-const ProfilePage        = lazy(pages.profile)
-const HorasPage          = lazy(pages.horas)
-const SettingsPage       = lazy(pages.settings)
-const MorePage           = lazy(pages.mas)
-const AssistantPage      = lazy(pages.assistant)
+const LoginPage          = page('login')
+const ChangePasswordPage = page('changePassword')
+const DashboardPage      = page('dashboard')
+const ReservationsPage   = page('reservations')
+const RequestsPage       = page('requests')
+const NewsPage           = page('news')
+const AdminPage          = page('admin')
+const EmployeesPage      = page('employees')
+const ProfilePage        = page('profile')
+const HorasPage          = page('horas')
+const SettingsPage       = page('settings')
+const MorePage           = page('mas')
+const AssistantPage      = page('assistant')
 
 /**
  * The first screen's code starts downloading now, while the session is checked, instead of after:
@@ -50,12 +49,14 @@ function preloadFirstPage() {
     const stored = JSON.parse(localStorage.getItem('margube_session') || 'null')
     active = Boolean(stored?.id) && Date.now() - stored.lastActivity <= 60 * 1000
   } catch { /* private mode or a corrupt entry: treat as signed out */ }
-  const route = window.location.pathname.slice(1) as keyof typeof pages
+  const route = window.location.pathname.slice(1)
   const notif = new URLSearchParams(window.location.search).has('notif')
-  const load = !active ? pages.login : notif && pages[route] ? pages[route] : pages.dashboard
-  load().catch(() => { /* the route's own lazy() retries and shows the error */ })
+  const name = !active ? 'login' : notif && hasPage(route) ? route : 'dashboard'
+  loadPage(name).catch(() => { /* the route's own lazy() retries and shows the error */ })
 }
 preloadFirstPage()
+// The profile and lists of a session about to be restored, in parallel with the code above
+startBootPrefetch()
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return (

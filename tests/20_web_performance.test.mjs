@@ -34,5 +34,20 @@ export async function runWebPerformanceTests() {
   const vite = read('vite.config.js');
   check('fuentes en caché tras el primer uso', vite.includes("request.destination === 'font'") && vite.includes("handler: 'CacheFirst'"));
   check('imágenes en caché y renovadas en segundo plano', vite.includes("request.destination === 'image'") && vite.includes("handler: 'StaleWhileRevalidate'"));
+
+  // Start-up: the lists travel with the profile, and the first page is drawn once, complete
+  const appTsx = read('src/App.tsx');
+  check('las listas se piden junto al perfil al restaurar la sesión', appTsx.includes('startBootPrefetch()') && ctx.includes('export function startBootPrefetch'));
+  check('al entrar, las listas salen junto al perfil', /const sessionData = loadSessionData\(res\.userId\)\s*prefetchUserData\(res\.userId/.test(ctx));
+  check('la app se muestra con los datos ya llegados (sin un segundo pintado)', (ctx.match(/await bootSettled\(/g) || []).length >= 2);
+  check('una página ya descargada se pinta sin suspender', appTsx.includes('readyPage(name)') && read('src/pageLoaders.js').includes('export function loadPage'));
+  check('el login descarga el panel al primer gesto, no al cargar', /\['pointerdown', 'keydown', 'input'\]/.test(read('src/pages/LoginPage.jsx')) && read('src/pages/LoginPage.jsx').includes("loadPage('dashboard')"));
+  const layout = read('src/components/Layout.jsx');
+  check('paleta, atajos, política y bienvenida se cargan bajo demanda', ["import('./CommandPalette')", "import('./ShortcutsSheet')", "import('./PolicyModal')", "import('./OnboardingModal')"].every((s) => layout.includes(s)));
+  check('el renderizador WebGL no viaja con el arranque', read('src/components/Wallpaper.jsx').includes("import('../glass/wallpaperGlass')") && !ctx.includes("from '../glass/wallpaperGlass'"));
+  // App: same idea
+  const appAuth = read('mobile/src/context/AuthContext.js');
+  check('app: perfil y DNI a la vez', /Promise\.all\(\[\s*supabase\.from\('profiles'\)\.select\(PROFILE_COLUMNS\)/.test(appAuth));
+  check('app: las listas salen junto al perfil', appAuth.includes('prefetchLists(id,') && read('mobile/src/context/DataContext.js').includes("viaBoot('requests'"));
   return { passed, failed };
 }

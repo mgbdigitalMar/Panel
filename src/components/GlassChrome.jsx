@@ -47,16 +47,22 @@ function usePopover() {
  * Tablets: logo, search button, the section pill in the middle and the same tools.
  * Phones: logo, search and bell; the sections go to the bottom dock.
  */
+// Same width as the .crumbs capsule in GlassChrome.module.scss
+const CRUMBS_CAPSULE = '(min-width: 1367px)';
+
 export function GlassHeader({
   items, page, badges, onNavigate, onSearch, clockStr, bell, avatar, section,
   user, workday, upcomingCount = 0, openRequests = 0, onLogout, isDark, onToggleTheme, children,
 }) {
   const SectionIcon = section?.icon;
+  // The logo sits in a glass capsule only on computers (.crumbs). On phones and tablets it stands
+  // alone, so it must not be glass: refracting a bare box drew a square of wallpaper behind the leaf
+  const crumbsGlass = useMediaQuery(CRUMBS_CAPSULE);
   return (
     <header className={styles.header} role="banner">
       <div className={styles.left}>
         {/* Computer: the logo with the name · phones and tablets: just the leaf. Both go home. */}
-        <div className={styles.crumbs} data-liquid>
+        <div className={styles.crumbs} data-liquid={crumbsGlass ? '' : undefined}>
           <button type="button" className={styles.brand} onClick={() => onNavigate('dashboard')} aria-label="Margube, ir al inicio" title="Inicio">
             {/* One image, chosen by width: the hidden one of two <img>s was downloaded as well */}
             <picture>
@@ -329,6 +335,12 @@ export function GlassRail({ items, page, badges, onNavigate, onLogout }) {
 
 // Phones: the app's tab bar — four sections and "Más" (the rest, profile and preferences)
 const DOCK_IDS = ['dashboard', 'reservations', 'requests', 'horas'];
+
+/** Position of a section in the dock: any section without a tab of its own lives under «Más», last */
+export function dockPosition(page) {
+  const index = DOCK_IDS.indexOf(page);
+  return index >= 0 ? index : DOCK_IDS.length;
+}
 const DOCK_ICONS = { dashboard: Home, reservations: CalendarDays };
 
 /** One tab of the dock: icon (with its pending count) and short name. Rendered twice: as the real
