@@ -36,7 +36,8 @@ function usePhoto() {
 /**
  * Starts the WebGL Liquid Glass over the room when the glass level asks for it: «Intenso» gives
  * every card its glass (and the chrome too in browsers without the SVG refraction, which Chromium
- * draws for the chrome itself, liquidRefraction.js); «Suave» and «Normal» only the dock there;
+ * draws for the chrome itself, liquidRefraction.js). In browsers without the SVG filter,
+ * «Normal» also bends the wallpaper behind the chrome and «Suave» does so only at the dock.
  * «Sin efecto», "reduce transparency" and forced colours none.
  */
 function useWallpaperGlass(ref, photo) {
@@ -57,7 +58,7 @@ function useWallpaperGlass(ref, photo) {
       photo: photoImage,
       theme,
       panes: strong,
-      chrome: svg ? null : strong ? '[data-liquid]:not([data-liquid="dense"])' : '[data-liquid="dock"]',
+      chrome: svg ? null : glassIntensity !== 'soft' ? '[data-liquid]:not([data-liquid="dense"])' : '[data-liquid="dock"]',
     });
   }, [ref, photo, theme, glassIntensity, plain]);
 }

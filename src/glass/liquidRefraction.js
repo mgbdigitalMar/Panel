@@ -1,23 +1,5 @@
-/**
- * Real Liquid Glass for the «Intenso» glass level: what is behind a piece of chrome is bent at its
- * rim like the edge of a thick lens (refraction), the three colour channels bend by slightly
- * different amounts (dispersion), and the centre stays clear instead of uniformly blurred.
- *
- * Which elements: the floating chrome, marked `data-liquid` (rail, top bar capsules, dock, menus,
- * dialogs, toasts), and the cards, which already carry `data-motion-panel` (Card, StatCard, the Desk
- * and Touch panels). Cards only from 1024 px: phones and tablets never blur panes, so long pages
- * scroll smoothly (see the blur budget in global.scss).
- *
- * How: every such element gets its own SVG filter, used through
- * `backdrop-filter: url(#…)`. The filter's displacement map is drawn for that element's size and
- * corner radius (a rounded-rect lens profile), so a 44 px round button and a 72 × 800 px rail both
- * get a rim of the right thickness. Maps are cached by size and redrawn when an element resizes.
- *
- * Only Chromium renders SVG filters inside backdrop-filter. Elsewhere this does nothing and the
- * «Intenso» level keeps its frosted blur. The edge light (rim highlights) is CSS, in
- * _glass-intensity.scss, so it shows in every browser.
- */
-
+// Chromium can bend the live DOM backdrop with an SVG displacement map. The map is
+// sized to the control so the curved rim bends the background and the centre stays flat.
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const MAX_FILTERS = 64;
 const TARGETS = '[data-liquid], [data-motion-panel]';
@@ -76,7 +58,7 @@ function drawMap(w, h, r, bezel) {
       if (inset >= 0 && inset < bezel) {
         // Steep at the rim, flat where the top of the lens starts
         const t = 1 - inset / bezel;
-        const mag = t * t * (3 - 2 * t) * t;
+        const mag = t * t * (3 - 2 * t);
         dx = -nx * mag;
         dy = -ny * mag;
       }
@@ -91,13 +73,6 @@ function drawMap(w, h, r, bezel) {
   return canvas.toDataURL('image/png');
 }
 
-function channelMatrix(channel) {
-  const rows = ['0 0 0 0 0', '0 0 0 0 0', '0 0 0 0 0'];
-  rows[channel] = channel === 0 ? '1 0 0 0 0' : channel === 1 ? '0 1 0 0 0' : '0 0 1 0 0';
-  return `${rows.join(' ')} 0 0 0 1 0`;
-}
-
-/** Builds the <filter>: three displacements (red bends least, blue most) recombined with screen. */
 function buildFilter(id, w, h, map, scale) {
   const filter = document.createElementNS(SVG_NS, 'filter');
   filter.setAttribute('id', id);
@@ -118,35 +93,13 @@ function buildFilter(id, w, h, map, scale) {
   image.setAttribute('result', 'map');
   filter.appendChild(image);
 
-  const spread = [1, 1.12, 1.24];
-  spread.forEach((k, channel) => {
-    const disp = document.createElementNS(SVG_NS, 'feDisplacementMap');
-    disp.setAttribute('in', 'SourceGraphic');
-    disp.setAttribute('in2', 'map');
-    disp.setAttribute('scale', String(Math.round(scale * k * 10) / 10));
-    disp.setAttribute('xChannelSelector', 'R');
-    disp.setAttribute('yChannelSelector', 'G');
-    disp.setAttribute('result', `d${channel}`);
-    filter.appendChild(disp);
-    const only = document.createElementNS(SVG_NS, 'feColorMatrix');
-    only.setAttribute('in', `d${channel}`);
-    only.setAttribute('type', 'matrix');
-    only.setAttribute('values', channelMatrix(channel));
-    only.setAttribute('result', `c${channel}`);
-    filter.appendChild(only);
-  });
-
-  const rg = document.createElementNS(SVG_NS, 'feBlend');
-  rg.setAttribute('in', 'c0');
-  rg.setAttribute('in2', 'c1');
-  rg.setAttribute('mode', 'screen');
-  rg.setAttribute('result', 'rg');
-  filter.appendChild(rg);
-  const rgb = document.createElementNS(SVG_NS, 'feBlend');
-  rgb.setAttribute('in', 'rg');
-  rgb.setAttribute('in2', 'c2');
-  rgb.setAttribute('mode', 'screen');
-  filter.appendChild(rgb);
+  const displacement = document.createElementNS(SVG_NS, 'feDisplacementMap');
+  displacement.setAttribute('in', 'SourceGraphic');
+  displacement.setAttribute('in2', 'map');
+  displacement.setAttribute('scale', String(scale));
+  displacement.setAttribute('xChannelSelector', 'R');
+  displacement.setAttribute('yChannelSelector', 'G');
+  filter.appendChild(displacement);
   return filter;
 }
 
@@ -157,10 +110,11 @@ function buildFilter(id, w, h, map, scale) {
  * `denseFinish` replaces it on `data-liquid="dense"` surfaces.
  */
 export function startLiquidRefraction({
-  finish = 'blur(2px) saturate(165%)',
-  denseFinish = 'blur(16px) saturate(160%)',
+  finish = 'blur(5px) saturate(125%)',
+  denseFinish = 'blur(20px) saturate(120%)',
   paneFinish = 'blur(10px) saturate(170%)',
-  dockFinish = 'blur(5px) saturate(180%)',
+  dockFinish = 'blur(6px) saturate(135%)',
+  strength = 1,
   only,
 } = {}) {
   if (!supportsLiquidRefraction()) return () => {};
@@ -229,8 +183,8 @@ export function startLiquidRefraction({
     if (w < 8 || h < 8) { clear(el); return; }
     const style = getComputedStyle(el);
     const r = Math.min(parseFloat(style.borderTopLeftRadius) || 0, w / 2, h / 2);
-    const bezel = Math.max(6, Math.min(26, Math.min(w, h) * 0.42));
-    const scale = Math.min(56, bezel * 1.9);
+    const bezel = Math.max(6, Math.min(18, Math.min(w, h) * 0.26));
+    const scale = Math.round(bezel * 2.2 * strength);
     const key = `${w}x${h}r${Math.round(r)}`;
     if (applied.get(el) === key) return;
     if (applied.has(el)) release(applied.get(el));

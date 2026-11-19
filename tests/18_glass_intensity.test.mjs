@@ -26,7 +26,7 @@ function renderGlass(platform, native, dark, level, props = {}) {
     },
   };
   const mocks = {
-    react: { memo: (component) => component },
+    react: { createContext: (value) => ({ value }), memo: (component) => component },
     'react-native': { Platform: { OS: platform }, View: 'View' },
     'expo-glass-effect': {
       GlassView: 'GlassView', GlassContainer: 'GlassContainer',
@@ -37,6 +37,7 @@ function renderGlass(platform, native, dark, level, props = {}) {
     '../../context/ThemeContext': { useTheme: () => theme },
     './Brand': { FILL: { position: 'absolute', inset: 0 } },
     './BlurTarget': { ANDROID_BLUR: true, useBlurTarget: () => ({ current: 'wallpaper' }) },
+    '../../theme/tokens': { rowSurface: () => ({}) },
     'react/jsx-runtime': nativeRequire('react/jsx-runtime'),
   };
   const module = { exports: {} };
@@ -70,6 +71,10 @@ export async function runGlassIntensityTests() {
     }
     const originalControl = renderGlass('ios', true, dark, 'strong', { interactive: true });
     check('strong restores clear interactive glass', originalControl.props.glassEffectStyle === 'clear' && originalControl.props.isInteractive && originalControl.props.tintColor === undefined);
+    const dock = renderGlass('ios', true, dark, 'normal', { systemMaterial: true, nativeTint: null, tint: normal.chrome });
+    check('normal dock uses untinted regular system glass', dock.props.glassEffectStyle === 'regular' && dock.props.tintColor === undefined);
+    const softControl = renderGlass('ios', true, dark, 'soft', { interactive: true });
+    check('soft controls retain the denser tint', softControl.props.glassEffectStyle === 'regular' && alpha(softControl.props.tintColor) === 0.64);
     const androidNormal = renderGlass('android', false, dark, 'normal');
     const androidStrong = renderGlass('android', false, dark, 'strong');
     check('Android restores full-strength blur and original tint', androidNormal.props.children[0].props.intensity === 45

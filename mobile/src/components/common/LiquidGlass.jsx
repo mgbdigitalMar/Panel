@@ -75,7 +75,7 @@ const Sheen = memo(function Sheen({ round, opacity }) {
  * glass without a live blur, for surfaces repeated down a list (one blur per row would cost every
  * frame of a scroll); iOS draws the system glass either way.
  */
-export const GlassFill = memo(function GlassFill({ radius = 22, corners, tint, nativeTint, sheen = true, edgeColor, rimColor, target, interactive, blur = true }) {
+export const GlassFill = memo(function GlassFill({ radius = 22, corners, tint, nativeTint, sheen = true, edgeColor, rimColor, target, interactive, systemMaterial = false, blur = true }) {
   const { colors, theme, effectiveGlass, material } = useTheme();
   // Android: blur the wallpaper of the screen this sits in, or `target` for chrome that floats over
   // every screen (the dock passes the screen in front)
@@ -103,6 +103,8 @@ export const GlassFill = memo(function GlassFill({ radius = 22, corners, tint, n
   // takes the touch and answers it natively (press, bounce, shimmer); the control's content must
   // let touches through (pointerEvents="none") so they reach the glass.
   if (NATIVE_GLASS) {
+    const usesSystemTint = (systemMaterial || interactive) && effectiveGlass !== 'soft';
+    const customTint = nativeTint === null ? material.nativeTint : tint || material.nativeTint;
     return (
       <GlassView
         pointerEvents={interactive ? 'auto' : 'none'}
@@ -110,7 +112,7 @@ export const GlassFill = memo(function GlassFill({ radius = 22, corners, tint, n
         style={shape}
         glassEffectStyle={effectiveGlass === 'strong' && interactive ? 'clear' : material.nativeStyle}
         colorScheme={theme}
-        tintColor={nativeTint === null ? material.nativeTint : nativeTint || tint || material.nativeTint}
+        tintColor={nativeTint ?? (usesSystemTint ? undefined : customTint)}
       />
     );
   }

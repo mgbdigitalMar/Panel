@@ -1,5 +1,24 @@
 @use '../styles/patterns' as p;
 
+@mixin glass-light {
+  background-image:
+    radial-gradient(ellipse at top left, rgba(255, 255, 255, var(--chrome-highlight, 0.24)), transparent 58%),
+    radial-gradient(ellipse at bottom right, rgba(255, 255, 255, var(--chrome-reflection, 0.14)), transparent 52%);
+}
+
+@media (prefers-reduced-transparency: no-preference) and (forced-colors: none) {
+  :global(html[data-glass-intensity]:not([data-glass-intensity='off'])) {
+    [data-liquid]:is(.crumbs, .round, .nav, .searchBar, .clock, .rail, .tabBar, .dockPlus) {
+      @include glass-light;
+    }
+  }
+
+  :global(html[data-theme='dark']) {
+    --chrome-highlight: 0.14;
+    --chrome-reflection: 0.1;
+  }
+}
+
 /* Chrome of the glass appearance. Every surface here is frosted (real backdrop blur):
    they float over the wallpaper and the page scrolling underneath. */
 @mixin frosted {

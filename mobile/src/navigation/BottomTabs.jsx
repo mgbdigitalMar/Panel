@@ -166,7 +166,7 @@ function TabBar({ state, navigation, badges }) {
             <TabFace tab={TABS.find((t) => t.name === route.name)} focused={state.index === index} badge={badges[route.name]} />
           </View>
         ))}
-        backdrop={<GlassFill radius={TAB_BAR_HEIGHT / 2} tint={glass} nativeTint={effectiveGlass === 'off' ? undefined : null} edgeColor={palette.edge} rimColor={palette.rim} target={blurTarget} />}
+        backdrop={<GlassFill radius={TAB_BAR_HEIGHT / 2} tint={glass} nativeTint={null} systemMaterial edgeColor={palette.edge} rimColor={palette.rim} target={blurTarget} />}
         onSelect={(index) => {
           const route = state.routes[index];
           const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
@@ -214,7 +214,7 @@ function TabBar({ state, navigation, badges }) {
         style={{ width: DOCK_STYLE.actionSize, height: DOCK_STYLE.actionSize, borderRadius: DOCK_STYLE.actionSize / 2, alignItems: 'center', justifyContent: 'center' }}
       >
         {/* The same glass as the bar, its plus in the theme's accent */}
-        <GlassFill radius={DOCK_STYLE.actionSize / 2} tint={glass} nativeTint={effectiveGlass === 'off' ? undefined : null} edgeColor={palette.edge} rimColor={palette.rim} target={blurTarget} interactive />
+        <GlassFill radius={DOCK_STYLE.actionSize / 2} tint={glass} nativeTint={null} systemMaterial edgeColor={palette.edge} rimColor={palette.rim} target={blurTarget} interactive />
         <View pointerEvents="none"><Plus size={24} color={palette.action} strokeWidth={2} /></View>
       </PressScale>
       </DockGlassGroup>
