@@ -1,4 +1,4 @@
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { TimerReset } from 'lucide-react';
 import { useIdle } from '../context';
 import { Portal } from './ui';

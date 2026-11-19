@@ -200,7 +200,7 @@ export async function runGlassAppearanceTests() {
     && !ctx.includes('meta[name="theme-color"]'));
 
   assert('Adaptive Glass: solo desenfocan los paneles y las barras; el resto de la interfaz no',
-    globalCss.includes(":where(.app-shell) :where(*:not([data-scrim], .glass__warp)) {") && patterns.includes('@mixin pane-blur {')
+    globalCss.includes(":where(.app-shell) :where(*:not([data-scrim])) {") && patterns.includes('@mixin pane-blur {')
     && /@mixin surface \{\s*@include glass;\s*@include pane-blur;/.test(patterns)
     && read('src', 'components', 'ui', 'Card', 'Card.module.scss').includes('@include p.pane-blur;'));
   assert('Adaptive Glass: en móvil y tablet se desenfoca la sala una vez, no cada tarjeta',
@@ -231,22 +231,24 @@ export async function runGlassAppearanceTests() {
   assert('Métricas, indicadores y destacados de escritorio son paneles (misma refracción en todas las páginas)',
     (desk.match(/data-motion-panel/g) || []).length >= 5);
   assert('Tiempo a compensar marca sus tarjetas como paneles', (read('src', 'pages', 'HorasDesk.jsx').match(/data-motion-panel/g) || []).length >= 4);
-  // liquid-glass-react on every glass surface, tuned by the glass level of Ajustes
-  const pkg = JSON.parse(read('package.json'));
-  const layers = read('src', 'glass', 'LiquidGlassLayers.jsx');
+  // Fluid glass: the refraction engine, with no per-surface layers and no pause while scrolling
   const themeCtx = read('src', 'context', 'index.jsx');
-  assert('liquid-glass-react instalado', Boolean(pkg.dependencies['liquid-glass-react']));
-  assert('Las capas se cargan bajo demanda y solo con el cristal activo en Chromium',
-    themeCtx.includes("lazy(() => import('../glass/LiquidGlassLayers'))")
-    && /glassSettled && glassIntensity !== 'off' && !plainGlass && supportsLiquidRefraction\(\)/.test(themeCtx));
-  assert('Las capas esperan a que la primera pantalla esté lista', themeCtx.includes('APP_READY_EVENT') && read('src', 'components', 'Layout.jsx').includes('new Event(APP_READY_EVENT)'));
-  const lvl = (name) => Number((layers.match(new RegExp(`${name}: \\{ displacementScale: (\\d+)`)) || [])[1]);
-  assert('Cada nivel de cristal ajusta el paquete (más distorsión a más intensidad)', lvl('soft') > 0 && lvl('soft') < lvl('normal') && lvl('normal') < lvl('strong'));
-  assert('Cabecera, dock, botones y tarjetas reciben la capa; menús y diálogos no',
-    layers.includes(`:not(html)[data-liquid]:not([data-liquid="dense"])`) && layers.includes("const PANES = '[data-motion-panel]'"));
-  assert('La capa no hereda la utilidad .glass de la intranet', /\.glass \{\s*background: none !important;/.test(globalCss));
-  assert('Al hacer scroll o cambiar de sección se pausa la distorsión', globalCss.includes(':root[data-lg-paused] & .glass__warp { filter: none !important; }') && layers.includes("addEventListener('scroll', onScroll"));
-  assert('Las capas son estáticas (no se desalinean de su superficie)', layers.includes('elasticity={0}'));
+  assert('El cristal usa el motor de refracción compuesto (sin capas liquid-glass-react)',
+    themeCtx.includes('startLiquidRefraction(options)') && !themeCtx.includes('LiquidGlassLayers')
+    && !fs.existsSync(path.join(root, 'src', 'glass', 'LiquidGlassLayers.jsx')));
+  assert('El cristal no se pausa ni cambia al hacer scroll', !globalCss.includes('lg-paused') && !globalCss.includes('.lg-host'));
+  // «Intenso» is its own material (clear liquid glass), not a slightly clearer «Normal»
+  const intensity = read('src', 'styles', '_glass-intensity.scss');
+  assert('«Intenso» es cristal claro en todos los navegadores (no depende de data-liquid)',
+    intensity.includes("html[data-appearance='glass'][data-glass-intensity='strong'],\n") && !intensity.includes("[data-glass-intensity='strong'][data-liquid='refract']"));
+  assert('«Intenso» es mucho más transparente y vivo que «Normal»',
+    intensity.includes('--lg-fill: rgba(var(--material-rgb), 0.3);') && intensity.includes('--lg-blur: blur(16px) saturate(200%);'));
+  assert('«Intenso» curva el borde más del doble que «Normal»', themeCtx.includes("strength: 1.6") && themeCtx.includes("strength: glassIntensity === 'normal' ? 0.72 : 0.4"));
+  // Theme switch: a reveal from the press, no rebuild of the WebGL glass
+  assert('Cambiar de tema actualiza el cristal WebGL sin reconstruirlo', read('src', 'glass', 'wallpaperGlass.js').includes('stop.setTheme = (next) =>')
+    && read('src', 'components', 'Wallpaper.jsx').includes('sceneRef.current?.setTheme?.(theme)') && !/\[ref, photo, theme, glassIntensity, plain\]/.test(read('src', 'components', 'Wallpaper.jsx')));
+  assert('El nuevo tema se abre en círculo desde el clic y el anterior se aleja', globalCss.includes('animation: theme-reveal 520ms cubic-bezier(0.22, 1, 0.36, 1);') && globalCss.includes('@keyframes theme-recede'));
+  assert('Con movimiento reducido el tema cambia con un fundido corto', /prefers-reduced-motion: reduce\) \{\s*::view-transition-new\(root\) \{ animation: theme-fade 180ms/.test(globalCss));
   assert('Las tarjetas del inicio en móvil usan el material de tarjeta', !read('src', 'components', 'MobileHome.module.scss').includes('@include p.liquid'));
   return { passed, failed };
 }

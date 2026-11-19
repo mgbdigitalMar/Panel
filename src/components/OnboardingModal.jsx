@@ -4,7 +4,7 @@ import { Sparkles, CalendarCheck, BellRing, Rocket, UsersRound } from 'lucide-re
 import { Button } from './ui';
 import styles from './OnboardingModal.module.scss';
 import clsx from 'clsx';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 const SLIDES = [
   {

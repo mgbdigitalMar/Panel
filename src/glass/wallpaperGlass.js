@@ -85,7 +85,7 @@ function radiusOf(el, width, height) {
  */
 export function startWallpaperGlass({ host, photo, theme, panes = false, chrome = null }) {
   if (!host || !photo?.naturalWidth || (!panes && !chrome) || !supportsWebGLGlass()) return () => {};
-  const dark = theme === 'dark';
+  let dark = theme === 'dark';
 
   const canvas = document.createElement('canvas');
   Object.assign(canvas.style, {
@@ -228,9 +228,30 @@ export function startWallpaperGlass({ host, photo, theme, panes = false, chrome 
     else stop();
   });
 
+  // A theme change updates the running scene instead of rebuilding it: a new canvas, a relinked
+  // shader and a repainted room froze the page for ~0.9 s at every switch. The material follows at
+  // once; the room (a blurred repaint of the photo) waits until the theme's reveal has played.
+  let themeTimer = 0;
+  let themeIdle = 0;
+  const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1));
+  const cancelIdle = window.cancelIdleCallback || clearTimeout;
+  stop.setTheme = (next) => {
+    const nextDark = next === 'dark';
+    if (stopped || nextDark === dark) return;
+    dark = nextDark;
+    scene.setMaterial({ appearance: dark ? 'dark' : 'light' });
+    last = null;
+    wake();
+    clearTimeout(themeTimer);
+    cancelIdle(themeIdle);
+    themeTimer = setTimeout(() => { themeIdle = idle(setRoom, { timeout: 1000 }); }, 650);
+  };
+
   function stop() {
     if (stopped) return;
     stopped = true;
+    clearTimeout(themeTimer);
+    cancelIdle(themeIdle);
     cancelAnimationFrame(frame);
     clearTimeout(resizeTimer);
     mutations.disconnect();

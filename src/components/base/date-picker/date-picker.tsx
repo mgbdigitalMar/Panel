@@ -7,7 +7,7 @@ import type { RefObject } from "react";
 import { Calendar, Dialog, Popover, useLocale } from "react-aria-components";
 import type { CalendarDate } from "@internationalized/date";
 import { RiCalendarLine } from "@remixicon/react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { Button } from "@/components/base/buttons/button";
 import {
   DateChipInput,

@@ -1,7 +1,7 @@
 import { Suspense, lazy, useState } from 'react'
 import { ThemeProvider, AuthProvider, AuthCtx, AppCtx, DataProvider, startBootPrefetch } from './context'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AnimatePresence, MotionConfig } from 'framer-motion'
+import { AnimatePresence, MotionConfig } from 'motion/react'
 import Layout from './components/Layout'
 import { AssistantProvider } from './context/AssistantContext'
 import { BootLoader } from './components/ui'

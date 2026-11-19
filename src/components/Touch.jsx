@@ -1,11 +1,12 @@
 import { useId, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import clsx from 'clsx';
 import { ChevronDown, ArrowUpRight, SlidersHorizontal, Check, X } from 'lucide-react';
 import { useMediaQuery, TOUCH_QUERY } from '../hooks/useMediaQuery';
 import { LEAF_PATH, VEIN_PATH } from './ui/Loader/Loader';
 import { ActiveIndicator, IndicatorGroup } from '../motion/ActiveIndicator';
-import { EASE as EASE_TOKENS } from '../motion/tokens';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
+import { EASE as EASE_TOKENS, LIST_MOTION } from '../motion/tokens';
 import styles from './Touch.module.scss';
 
 /**
@@ -267,6 +268,8 @@ export function ToolButton({ icon: Icon, label, onClick }) {
 
 /** A labelled run of items (a day, a month): the heading above, the items in one glass sheet. */
 export function FeedGroup({ title, meta, children, className }) {
+  // Items a filter, a search or a review adds, removes or reorders move instead of jumping
+  const [feed] = useAutoAnimate(LIST_MOTION);
   return (
     <section data-motion-panel className={clsx(styles.group, className)}>
       {(title || meta) && (
@@ -275,7 +278,7 @@ export function FeedGroup({ title, meta, children, className }) {
           {meta && <span>{meta}</span>}
         </div>
       )}
-      <ul data-motion-panel className={styles.feed}>{children}</ul>
+      <ul ref={feed} className={styles.feed}>{children}</ul>
     </section>
   );
 }

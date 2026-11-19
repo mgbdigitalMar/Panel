@@ -1,0 +1,131 @@
+@use '../../../styles/patterns' as p;
+
+/* The closed field: the same box as every input (Input.module.scss .input), with its value and a
+   chevron that turns as the list opens */
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  // Open: the field stays lit while its list is on screen
+  &[aria-expanded='true'] {
+    border-color: var(--accent);
+    box-shadow: var(--accent-glow);
+  }
+  &:focus-visible {
+    border-color: var(--accent);
+    box-shadow: var(--accent-glow);
+    outline: none;
+  }
+  &[data-disabled] {
+    opacity: 0.42;
+    cursor: not-allowed;
+  }
+}
+
+.value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &[data-placeholder] { color: var(--text-mut); }
+}
+
+.chevron {
+  flex: none;
+  color: var(--text-mut);
+  transition: transform var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+
+  .trigger[aria-expanded='true'] & {
+    transform: rotate(180deg);
+    color: var(--accent);
+  }
+}
+
+/* Computer pages: the compact filter beside a table (DeskSelect) */
+.pillField { display: inline-flex; }
+
+.pill {
+  height: 38px;
+  padding: 0 12px 0 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--lg-edge);
+  background: rgba(var(--text-rgb), 0.05);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not([data-disabled]) { background: rgba(var(--text-rgb), 0.08); }
+  }
+}
+
+/* The open list: the menus' glass, anchored under the field and as wide as it at least */
+.popover {
+  @include p.glass-chrome;
+  min-width: var(--trigger-width);
+  max-width: min(360px, calc(100vw - 24px));
+  border-radius: 18px;
+  box-shadow: var(--shadow-xl), var(--glass-highlight-sm);
+  overflow: hidden;
+  // Inside a dialog too (the intranet's dialogs sit at 200)
+  z-index: 300;
+}
+
+.list {
+  max-height: min(320px, 50vh);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  outline: none;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 120ms var(--ease-out), color 120ms var(--ease-out);
+
+  &[data-focused],
+  &[data-hovered] { background: rgba(var(--text-rgb), 0.07); }
+  &[data-focus-visible] { box-shadow: inset 0 0 0 2px var(--accent); }
+  &[data-pressed] { background: rgba(var(--text-rgb), 0.11); }
+  &[data-selected] { color: var(--accent); font-weight: 600; }
+  &[data-disabled] { opacity: 0.4; cursor: not-allowed; }
+}
+
+.optionLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+// The tick of the chosen option settles in with a little spring
+.check {
+  flex: none;
+  opacity: 0;
+  scale: 0.6;
+  transition: opacity var(--dur-fast) var(--ease-out), scale var(--dur-fast) var(--ease-bounce);
+
+  .option[data-selected] & {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron, .check { transition: none; }
+}

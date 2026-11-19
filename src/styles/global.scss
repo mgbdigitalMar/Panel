@@ -1082,6 +1082,67 @@ input[type=number] { -moz-appearance: textfield; }
 /* Caret and tap highlight use the palette */
 
 input, textarea, [contenteditable] { caret-color: var(--accent); }
+
+/* Checkboxes a page leaves native (Administración, Noticias): the brand's own box, a rounded
+   square that fills with the accent while its tick settles in with a small spring. Pages that draw
+   their own box (the login, the rules dialog, Solicitudes) hide the input and keep theirs.
+   :where() keeps every rule here at zero specificity, so a page's own size or colour wins. */
+:where(input[type='checkbox']) {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border: 1.5px solid var(--border-2);
+  border-radius: 6px;
+  background: var(--glass-input, transparent);
+  vertical-align: middle;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    scale var(--dur-press) var(--ease-out);
+}
+:where(input[type='checkbox'])::after {
+  content: '';
+  width: 5px;
+  height: 9px;
+  margin-top: -2px;
+  border: solid #FFFFFF;
+  border-width: 0 2px 2px 0;
+  rotate: 45deg;
+  opacity: 0;
+  scale: 0.4;
+  transition: opacity 140ms var(--ease-out), scale var(--dur-fast) var(--ease-bounce);
+}
+:where(input[type='checkbox']:checked) {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+:where(input[type='checkbox']:checked)::after {
+  opacity: 1;
+  scale: 1;
+}
+:where(input[type='checkbox']:focus-visible) {
+  outline: none;
+  box-shadow: var(--accent-glow);
+}
+:where(input[type='checkbox']:active:not(:disabled)) { scale: 0.9; }
+:where(input[type='checkbox']:disabled) {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+@media (hover: hover) and (pointer: fine) {
+  :where(input[type='checkbox']:not(:checked):not(:disabled)):hover { border-color: var(--accent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(input[type='checkbox']) { transition: background-color 120ms, border-color 120ms; }
+  :where(input[type='checkbox'])::after { transition: opacity 120ms; scale: 1; }
+}
 html { -webkit-tap-highlight-color: transparent; }
 
 /* Theme switch: the new theme opens as a circle from the pointer (View Transitions API, see ThemeProvider) */
@@ -1092,13 +1153,33 @@ html { -webkit-tap-highlight-color: transparent; }
   mix-blend-mode: normal;
 }
 
+/* The new theme spreads from the press as a circle, fast at first so it answers the click at
+   once (strong ease-out), while the old one sinks back a touch (a scale of the snapshot, which the
+   GPU does alone). Reduced motion: a short crossfade. */
 ::view-transition-new(root) {
-  animation: theme-reveal 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+  animation: theme-reveal 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(root) {
+  animation: theme-recede 520ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes theme-reveal {
   from { clip-path: circle(0 at var(--vt-x, 50%) var(--vt-y, 50%)); }
   to   { clip-path: circle(var(--vt-r, 150vmax) at var(--vt-x, 50%) var(--vt-y, 50%)); }
+}
+
+@keyframes theme-recede {
+  to { transform: scale(0.985); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(root) { animation: theme-fade 180ms ease-out; }
+  ::view-transition-old(root) { animation: none; }
+}
+
+@keyframes theme-fade {
+  from { opacity: 0; }
 }
 
 /* List entrance with a capped stagger */
@@ -1145,46 +1226,9 @@ html { -webkit-tap-highlight-color: transparent; }
    every button, chip and table row would cost far more than it shows. Dialog scrims opt in
    with data-scrim. */
 
-:where(.app-shell) :where(*:not([data-scrim], .glass__warp)) {
+:where(.app-shell) :where(*:not([data-scrim])) {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-}
-
-/* liquid-glass-react under each glass surface (src/glass/LiquidGlassLayers.jsx, Chromium).
-   The layer does the blur and the bending, so the surface itself must not blur: an element with
-   a backdrop-filter is a backdrop root, and the layer inside it would only see its tint. The
-   surface keeps its tint and border; the layer (z-index -1 inside it) bends page and tint
-   together. */
-html[data-lg-engine] [data-lg] {
-  isolation: isolate;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-
-.lg-host {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  // Clipped to the surface's real shape: the package takes one radius, and some surfaces (the
-  // profile leaf, the rail) round each corner differently
-  border-radius: inherit;
-  overflow: hidden;
-  pointer-events: none;
-
-  // The package names its box .glass, as does the intranet's glass utility (above): without this
-  // it took that utility's fill and border and washed out the surface (a blue card turned lilac).
-  // Its drop shadow would double the surface's own.
-  .glass {
-    background: none !important;
-    border: 0 !important;
-    box-shadow: none !important;
-  }
-  // Scrolling or changing section: blur only, the bending returns when it stops
-  // (LiquidGlassLayers.jsx)
-  :root[data-lg-paused] & .glass__warp { filter: none !important; }
-  // Its two rim highlights blend (mix-blend-mode): the blend isolates the layer and greyed every
-  // light surface, and each surface already has its own edge
-  > span { display: none; }
 }
 
 /* Phones and tablets: panes do not blur. The wallpaper is blurred once instead (Wallpaper), so

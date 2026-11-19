@@ -80,6 +80,9 @@ textarea.input {
 .hasError {
   border-color: var(--danger) !important;
   background-color: rgba(var(--danger-rgb), 0.03) !important;
+  // The field nudges once when its error appears, so the eye finds which one it is
+  animation: field-nudge 320ms var(--ease-out);
+  @media (prefers-reduced-motion: reduce) { animation: none; }
 
   &:focus {
     box-shadow: 0 0 0 1px var(--danger), 0 0 0 3px rgba(var(--danger-rgb), 0.18) !important;
@@ -197,4 +200,11 @@ textarea.input {
     border-color: var(--accent);
     box-shadow: var(--accent-glow);
   }
+}
+
+@keyframes field-nudge {
+  20% { translate: -4px 0; }
+  45% { translate: 4px 0; }
+  70% { translate: -2px 0; }
+  100% { translate: 0 0; }
 }

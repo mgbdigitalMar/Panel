@@ -108,7 +108,8 @@ export default defineConfig({
           // clsx and react-is are shared with recharts: left unassigned, the bundler put clsx in the
           // charts chunk and every first load then downloaded all of it to get a 1 kB helper
           if (/[\\/]node_modules[\\/](react|react-dom|scheduler|react-router|react-router-dom|@tanstack|clsx|react-is)[\\/]/.test(id)) return 'vendor-react';
-          if (/framer-motion|motion-dom|motion-utils/.test(id)) return 'vendor-framer';
+          // Motion: `motion/react` is framer-motion inside, with motion-dom and motion-utils
+          if (/[\\/]node_modules[\\/](motion|framer-motion|motion-dom|motion-utils)[\\/]/.test(id)) return 'vendor-motion';
           if (/@supabase|supabase-js/.test(id)) return 'vendor-supabase';
           // Charts load on demand (components/charts/Recharts.jsx) with everything they pull in
           if (/recharts|[\\/]d3-|victory-vendor|es-toolkit|[\\/]immer[\\/]|decimal\.js|@reduxjs|[\\/]redux|reselect|eventemitter3/.test(id)) return 'vendor-recharts';

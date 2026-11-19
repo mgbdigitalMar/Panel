@@ -5,7 +5,7 @@ import {
   PartyPopper, CalendarPlus, FilePlus2, Mail, FileText, TrendingUp, TrendingDown, Clock, BarChart3, Megaphone,
 } from 'lucide-react';
 import clsx from 'clsx';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'motion/react';
 import { Avatar, Badge, StatCard, Card, Button, AnimatedNumber } from '../components/ui';
 import { TodayPanel } from '../components/TodayPanel';
 import { fmtDate, fmtDayShort, fmtRange } from '../utils/format';

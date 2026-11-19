@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useReservations } from '../context';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Building, Car, ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './ReservationsCalendar.module.scss';
 import clsx from 'clsx';

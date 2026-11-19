@@ -1,6 +1,6 @@
 import { notificationPresentation } from '../../shared/services/notificationPresentation.js';
 import { GLASS_STORAGE_KEY, normalizeGlass } from '../../shared/config/glass.js';
-import { createContext, useContext, useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { flushSync } from 'react-dom'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
@@ -25,12 +25,10 @@ import {
 } from '../../shared/services/notifications.js'
 import { safeFileUrl } from '../../shared/utils/urls.js'
 import { toUserMessage } from '../../shared/utils/errors.js'
-import { supportsLiquidRefraction, APP_READY_EVENT } from '../glass/liquidRefraction'
+import { startLiquidRefraction } from '../glass/liquidRefraction'
+import { supportsWebGLGlass } from '../glass/webglSupport'
 
 export const ThemeCtx = createContext()
-
-// liquid-glass-react on every glass surface (Chromium; downloaded only while the glass is on)
-const LiquidGlassLayers = lazy(() => import('../glass/LiquidGlassLayers'))
 
 function resolveTheme(mode) {
   if (mode === 'system') {
@@ -53,41 +51,31 @@ export function ThemeProvider({ children }) {
   }, [glassIntensity]);
   const setGlassIntensity = (value) => setGlassState(normalizeGlass(value));
 
-  // The glass layers need the browser to bend what is behind an element (Chromium) and the person
-  // not to have asked the system for less transparency
-  const [plainGlass, setPlainGlass] = useState(() => matchMedia('(prefers-reduced-transparency: reduce), (forced-colors: active)').matches)
+  // The refraction engine (glass/liquidRefraction.js): the chrome (header buttons, dock, rail) bends
+  // what is behind it with a composited backdrop-filter, all the time, scroll included. «Intenso»
+  // adds the WebGL glass under the cards (Wallpaper.jsx). liquid-glass-react was tried as a layer
+  // under every surface and removed: its filter was redrawn on the main thread on every frame
+  // something moved behind it, and on a desktop GPU (Brave, RTX 3050) hovering the cards fell to
+  // ~20 fps and changing section to ~25 fps, against ~140 fps with this engine.
   useEffect(() => {
-    const mq = matchMedia('(prefers-reduced-transparency: reduce), (forced-colors: active)')
-    const sync = () => setPlainGlass(mq.matches)
-    mq.addEventListener?.('change', sync)
-    return () => mq.removeEventListener?.('change', sync)
-  }, [])
-  // The layers join once the first screen is on display (APP_READY_EVENT: the dashboard with its
-  // data, or the login) and the browser is free: mounted with that screen they tripled its
-  // blocking time on a throttled phone. Until then every surface shows its plain CSS glass, so
-  // only the bending arrives a moment later. Without the signal they join after 6 s anyway.
-  const [glassSettled, setGlassSettled] = useState(false)
-  useEffect(() => {
-    let timer = 0
-    let handle = 0
-    const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1))
-    const cancelIdle = window.cancelIdleCallback || clearTimeout
-    const settle = () => {
-      window.removeEventListener(APP_READY_EVENT, onReady)
-      handle = idle(() => setGlassSettled(true), { timeout: 2000 })
-    }
-    const onReady = () => { clearTimeout(timer); timer = setTimeout(settle, 400) }
-    window.addEventListener(APP_READY_EVENT, onReady)
-    timer = setTimeout(settle, 6000)
-    return () => { window.removeEventListener(APP_READY_EVENT, onReady); clearTimeout(timer); cancelIdle(handle) }
-  }, [])
-  const reactGlass = glassSettled && glassIntensity !== 'off' && !plainGlass && supportsLiquidRefraction()
-  // «Normal» and «Intenso» tune the tints for bent glass (_glass-intensity.scss, data-liquid=refract)
-  useEffect(() => {
-    if (!reactGlass || glassIntensity === 'soft') return undefined
-    document.documentElement.dataset.liquid = 'refract'
-    return () => { delete document.documentElement.dataset.liquid }
-  }, [reactGlass, glassIntensity])
+    if (glassIntensity === 'off') return undefined;
+    // «Intenso» bends the chrome's rim more than twice as much as «Normal» (1.6 against 0.72)
+    const options = glassIntensity === 'strong'
+      ? (supportsWebGLGlass() ? { only: '[data-liquid]', strength: 1.6 } : { strength: 1.6 })
+      : {
+        only: glassIntensity === 'normal' ? '[data-liquid]' : '[data-liquid="dock"]',
+        strength: glassIntensity === 'normal' ? 0.72 : 0.4,
+      };
+    const reduced = window.matchMedia('(prefers-reduced-transparency: reduce), (forced-colors: active)');
+    let stop = () => {};
+    const sync = () => {
+      stop();
+      stop = reduced.matches ? () => {} : startLiquidRefraction(options);
+    };
+    sync();
+    reduced.addEventListener?.('change', sync);
+    return () => { reduced.removeEventListener?.('change', sync); stop(); };
+  }, [glassIntensity]);
 
   const applyMode = (m) => {
     const resolved = resolveTheme(m);
@@ -121,10 +109,12 @@ export function ThemeProvider({ children }) {
     return () => window.removeEventListener('pointerdown', track);
   }, []);
 
-  // Theme changes that alter the resolved theme play a circular reveal
+  // Theme changes that alter the resolved theme play a circular reveal (a short crossfade under
+  // reduced motion, global.scss)
+  // React renders the new theme inside the transition (flushSync): deferring it to after the
+  // capture saved nothing at the start and put a ~150 ms frame in the middle of the reveal
   const withThemeTransition = (update) => {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!document.startViewTransition || reduce) { update(); return; }
+    if (!document.startViewTransition) { update(); return; }
     const root = document.documentElement;
     // Colour transitions would make the new snapshot start from the old palette
     root.classList.add('theme-switching');
@@ -140,12 +130,7 @@ export function ThemeProvider({ children }) {
   };
   const theme = resolveTheme(mode);
 
-  return (
-    <ThemeCtx.Provider value={{ theme, mode, setMode, glassIntensity, setGlassIntensity }}>
-      {children}
-      {reactGlass && <Suspense fallback={null}><LiquidGlassLayers intensity={glassIntensity} /></Suspense>}
-    </ThemeCtx.Provider>
-  )
+  return <ThemeCtx.Provider value={{ theme, mode, setMode, glassIntensity, setGlassIntensity }}>{children}</ThemeCtx.Provider>
 }
 export function useTheme() { return useContext(ThemeCtx) }
 

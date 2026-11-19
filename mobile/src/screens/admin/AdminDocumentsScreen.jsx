@@ -16,7 +16,7 @@ import { GlassButton } from '../../components/common/GlassButton';
 import { FileField } from '../../components/common/FileField';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { T } from '../../components/common/Text';
-import { Avatar, ChipRail, EmptyState, Sheet } from '../../components/common/UI';
+import { Avatar, ChipRail, EmptyState, ListItem, Sheet } from '../../components/common/UI';
 import { uploadPickedFile } from '../../services/files';
 import { fmtDate } from '../../utils/format';
 
@@ -84,7 +84,7 @@ export default function AdminDocumentsScreen() {
           const r = recipient(d);
           const name = r?.name || d.recipientName || '—';
           return (
-            <GlassCard key={d.id} padding={14} style={{ gap: 10 }}>
+            <ListItem key={d.id}><GlassCard padding={14} style={{ gap: 10 }}>
               <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
                 <Avatar name={name} initials={r?.avatar} size={36} />
                 <View style={{ flex: 1, gap: 2 }}>
@@ -98,7 +98,7 @@ export default function AdminDocumentsScreen() {
                 {d.fileUrl ? <GlassButton title="Ver" icon={Eye} variant="glass" size="sm" onPress={() => navigation.navigate('DocumentViewer', { url: d.fileUrl, title: d.title })} /> : null}
                 <GlassButton icon={Trash2} variant="danger" size="sm" accessibilityLabel="Eliminar documento" onPress={() => remove(d)} />
               </View>
-            </GlassCard>
+            </GlassCard></ListItem>
           );
         })}
       </View>

@@ -5,7 +5,7 @@ import { Edit2, Trash2, Pin, Plus, Newspaper } from 'lucide-react';
 import { ActiveIndicator, IndicatorGroup } from '../motion/ActiveIndicator';
 import styles from './NewsPage.module.scss';
 import clsx from 'clsx';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { fmtDate, toDate } from '../utils/format';
 import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
 import { EASE } from '../motion/tokens';

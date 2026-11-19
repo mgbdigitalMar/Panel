@@ -12,7 +12,7 @@ import { Header } from '../components/common/Header';
 import { GlassButton } from '../components/common/GlassButton';
 import { PressScale } from '../components/common/Pressable';
 import { T, Label } from '../components/common/Text';
-import { EmptyState, IconTile, Segmented } from '../components/common/UI';
+import { EmptyState, IconTile, ListItem, Segmented } from '../components/common/UI';
 import { openNotificationTarget } from '../navigation/notificationTarget';
 import { dayBucket, fmtRelative } from '../utils/format';
 import { ListFill } from '../components/common/LiquidGlass';
@@ -83,8 +83,8 @@ export default function NotificationsScreen() {
           {items.map((n) => {
             const tone = n.type === 'success' ? 'green' : n.type === 'error' ? 'rose' : n.entity_type === 'document' ? 'teal' : n.entity_type === 'hour_compensation' ? 'amber' : 'accent';
             return (
+              <ListItem key={n.id}>
               <PressScale
-                key={n.id}
                 onPress={() => open(n)}
                 accessibilityRole="button"
                 accessibilityLabel={`${n.read ? '' : 'Sin leer. '}${clean(n.title)}. ${notificationPresentation(n, user?.name).body}`}
@@ -104,6 +104,7 @@ export default function NotificationsScreen() {
                 </View>
                 {!n.read ? <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent, marginTop: 6 }} /> : null}
               </PressScale>
+              </ListItem>
             );
           })}
         </View>

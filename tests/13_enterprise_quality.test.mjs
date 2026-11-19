@@ -118,9 +118,14 @@ export async function runEnterpriseQualityTests() {
   const input = read('src/components/ui/Input/Input.jsx');
   const textarea = read('src/components/ui/Textarea/Textarea.jsx');
   const select = read('src/components/ui/Select/Select.jsx');
-  assert('Input, Textarea y Select asocian su etiqueta aunque no reciban id', [input, textarea, select].every((s) => /useId\(\)/.test(s) && /htmlFor=\{id\}/.test(s)));
-  assert('Textarea y Select reciben el id que nombra la etiqueta', /<textarea\s+id=\{id\}/.test(textarea) && /<select\s+id=\{id\}/.test(select));
-  assert('Campos obligatorios anunciados (aria-required)', [input, textarea, select].every((s) => /aria-required=\{required \|\| undefined\}/.test(s)));
+  const selectMenu = read('src/components/ui/Select/SelectMenu.jsx');
+  assert('Input y Textarea asocian su etiqueta aunque no reciban id', [input, textarea].every((s) => /useId\(\)/.test(s) && /htmlFor=\{id\}/.test(s)));
+  // Select is react-aria's: <Label> names the trigger button (aria-labelledby) by itself
+  assert('Select asocia su etiqueta aunque no reciba id', /useId\(\)/.test(select) && selectMenu.includes('<Label className={inputStyles.label}>') && selectMenu.includes("aria-label={label ? undefined : ariaLabel}"));
+  assert('Textarea recibe el id que nombra la etiqueta', /<textarea\s+id=\{id\}/.test(textarea));
+  assert('Campos obligatorios anunciados (aria-required, o «obligatorio» en la etiqueta del desplegable)',
+    [input, textarea].every((s) => /aria-required=\{required \|\| undefined\}/.test(s))
+    && selectMenu.includes('isRequired={required}') && selectMenu.includes('<span className="sr-only"> (obligatorio)</span>'));
   const modal = read('src/components/ui/Modal/Modal.jsx');
   assert('Modal: el foco entra al abrir y vuelve a quien lo abrió al cerrar', /panel\.focus\(\{ preventScroll: true \}\)/.test(modal) && /opener\.focus\(\{ preventScroll: true \}\)/.test(modal));
   assert('Modal: Escape cierra solo el diálogo de arriba', /openStack\[openStack\.length - 1\] !== tokenRef\.current/.test(modal));

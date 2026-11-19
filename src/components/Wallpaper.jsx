@@ -48,13 +48,16 @@ function useWallpaperGlass(ref, photo) {
     mq.addEventListener?.('change', sync);
     return () => mq.removeEventListener?.('change', sync);
   }, []);
+  // The scene is built once per glass level; a theme change only updates it (setTheme below)
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
+  const sceneRef = useRef(null);
   useEffect(() => {
     if (!photo || !photoImage || plain || glassIntensity === 'off') return undefined;
     const svg = supportsLiquidRefraction();
-    // Chromium: the cards' glass is liquid-glass-react (LiquidGlassLayers), not this canvas
-    const strong = glassIntensity === 'strong' && !svg;
+    const strong = glassIntensity === 'strong';
     const chrome = svg ? null : glassIntensity !== 'soft' ? '[data-liquid]:not([data-liquid="dense"])' : '[data-liquid="dock"]';
-    // Nothing to draw (Chromium, whose glass is the React layers): the WebGL renderer is not even downloaded
+    // Nothing to draw (Chromium below «Intenso»): the WebGL renderer is not even downloaded
     if (!strong && !chrome) return undefined;
     // The renderer (~40 kB) is fetched here rather than with the app: the DOM room shows meanwhile,
     // as it does while the shader links
@@ -62,10 +65,12 @@ function useWallpaperGlass(ref, photo) {
     let cancelled = false;
     import('../glass/wallpaperGlass').then(({ startWallpaperGlass }) => {
       if (cancelled || !ref.current) return;
-      stop = startWallpaperGlass({ host: ref.current, photo: photoImage, theme, panes: strong, chrome });
+      stop = startWallpaperGlass({ host: ref.current, photo: photoImage, theme: themeRef.current, panes: strong, chrome });
+      sceneRef.current = stop;
     }).catch(() => { /* offline before it was cached: the plain glass stays */ });
-    return () => { cancelled = true; stop?.(); };
-  }, [ref, photo, theme, glassIntensity, plain]);
+    return () => { cancelled = true; stop?.(); sceneRef.current = null; };
+  }, [ref, photo, glassIntensity, plain]);
+  useEffect(() => { sceneRef.current?.setTheme?.(theme); }, [theme]);
 }
 
 /** Backdrop of the glass appearance (app and login): the room photograph under a veil, or the

@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Image, Modal, ScrollView, StyleSheet, Switch, View, useWindowDimensions } from 'react-native';
 import { GestureDetector, GestureHandlerRootView, usePanGesture } from 'react-native-gesture-handler';
-import Reanimated, { cancelAnimation, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import Reanimated, { Easing, FadeIn, FadeOut, LayoutAnimationConfig, LinearTransition, cancelAnimation, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import { SHEET_DRAG_THRESHOLD, SHEET_SPRING, sheetDragOffset, shouldDismissSheet } from '@shared/config/sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,7 +16,7 @@ import { T } from './Text';
 import { GradientFill, leafRadii } from './Brand';
 import { GlassFill, InsideGlassContext, ListFill } from './LiquidGlass';
 import { useReduceMotion } from './AuthBackdrop';
-import { DUR } from '../../theme/motion';
+import { DUR, EASE_POINTS } from '../../theme/motion';
 
 /** A shared/config/sheet.js spring for Reanimated (duration in ms), optionally with a start velocity */
 const sheetSpring = ({ dampingRatio, duration }, velocity = 0) => {
@@ -268,6 +268,22 @@ export function Pill({ label, mono, tone }) {
 }
 
 /** List row: [left] title/subtitle [right]. Use `first`/`last` to build grouped lists. */
+/**
+ * A row joining or leaving a list (a filter, an approval, a refresh, data arriving after the
+ * skeleton) fades, and the rows around it slide into their new place, on the UI thread. Rows
+ * already there when a screen or sheet opens do not animate (LayoutAnimationConfig skipEntering in
+ * Screen and Sheet). Reanimated drops these under the system's reduce-motion setting. Same timing
+ * as the web's lists (LIST_MOTION, src/motion/tokens.js).
+ */
+const ROW_ENTER = FadeIn.duration(DUR.fast);
+const ROW_EXIT = FadeOut.duration(DUR.exit);
+const ROW_MOVE = LinearTransition.duration(DUR.base).easing(Easing.bezier(...EASE_POINTS.inOut));
+
+/** The same motion for an item of a list that is not built from Row (a card, an expandable row) */
+export function ListItem({ children, style }) {
+  return <Reanimated.View entering={ROW_ENTER} exiting={ROW_EXIT} layout={ROW_MOVE} style={style}>{children}</Reanimated.View>;
+}
+
 export function Row({ left, title, subtitle, right, onPress, first = true, last = true, style, titleWeight = 'semibold', subtitleLines = 2, accessibilityLabel }) {
   const { colors } = useTheme();
   const radius = { tl: first ? 24 : 8, bl: last ? 24 : 8 };
@@ -287,12 +303,13 @@ export function Row({ left, title, subtitle, right, onPress, first = true, last 
     flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 13, paddingHorizontal: 14, minHeight: 64,
     borderTopLeftRadius: radius.tl, borderTopRightRadius: radius.tl, borderBottomLeftRadius: radius.bl, borderBottomRightRadius: radius.bl,
   }, style];
-  if (onPress) {
-    return (
-      <PressScale onPress={onPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel} scaleTo={0.985} style={s}>{content}</PressScale>
-    );
-  }
-  return <View style={s}>{content}</View>;
+  return (
+    <Reanimated.View entering={ROW_ENTER} exiting={ROW_EXIT} layout={ROW_MOVE}>
+      {onPress ? (
+        <PressScale onPress={onPress} accessibilityRole="button" accessibilityLabel={accessibilityLabel} scaleTo={0.985} style={s}>{content}</PressScale>
+      ) : <View style={s}>{content}</View>}
+    </Reanimated.View>
+  );
 }
 
 /** Section heading that sits on the screen, above its cards (web: SectionHead + "Ver todo →"). */
@@ -607,7 +624,7 @@ export function Sheet({ visible, onClose, title, children, footer }) {
           </GestureDetector>
             <InsideGlassContext.Provider value>
             <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 12, gap: 16 }}>
-              {children}
+              <LayoutAnimationConfig skipEntering>{children}</LayoutAnimationConfig>
             </ScrollView>
             {footer ? <View style={{ paddingHorizontal: 20, gap: 10 }}>{footer}</View> : null}
           </InsideGlassContext.Provider>

@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { LayoutGroup, motion } from 'framer-motion';
+import { LayoutGroup, motion } from 'motion/react';
 import { SPRING } from './tokens';
 
 /**

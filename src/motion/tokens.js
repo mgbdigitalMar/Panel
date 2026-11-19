@@ -31,6 +31,15 @@ export const DUR = {
   tab: 0.22, // switching section from the dock (the app's DUR.tab)
 };
 
+/**
+ * Rows joining, leaving or reordering in a list (a filter, a search, an approval, a sort):
+ * AutoAnimate fades them in and out and slides the rest into place. Lists change tens of times a
+ * day, so it stays quick, and on-screen movement takes the strong ease-in-out. AutoAnimate turns
+ * itself off under prefers-reduced-motion. Rows already there when a list first renders do not
+ * animate.
+ */
+export const LIST_MOTION = { duration: 200, easing: 'cubic-bezier(0.77, 0, 0.175, 1)' };
+
 /** Distance a section's content travels as it fades in, from the side of its tab in the dock (the
  * app's TAB_SHIFT, mobile/src/theme/motion.js) */
 export const TAB_SHIFT = 12;

@@ -2,7 +2,7 @@ import { useAssistant } from '../context/AssistantContext';
 import { useState, useRef, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
 import { useAuth, useTheme, useNotifs, useDocuments, useRequests, useReservations, useHours, usePersonalDays, useDataSync } from '../context';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import clsx from 'clsx';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, Bell, UsersRound, Timer, AlertTriangle, UserRound, SlidersHorizontal, LayoutGrid, ShieldCheck, MessageSquareText
@@ -18,7 +18,8 @@ import { IdleWarning } from './IdleWarning';
 import { todayKey } from '../utils/format';
 import { workdayProgress } from '../utils/workday';
 import { EASE, SPRING, DUR, TAB_SHIFT } from '../motion/tokens';
-import { LIQUID_PAUSE_EVENT, APP_READY_EVENT } from '../glass/liquidRefraction';
+import { LIQUID_PAUSE_EVENT } from '../glass/liquidRefraction';
+import { loadPage } from '../pageLoaders';
 import styles from './Layout.module.scss';
 
 // Shown on demand (a shortcut, a first visit, rules pending): their code downloads the first time
@@ -159,8 +160,34 @@ export default function Layout({ children }) {
   const { hourCompensations = [] } = useHours();
   const { personalDays = [] } = usePersonalDays() || {};
   const { loadingData = false, loadFailed = false, refresh } = useDataSync() || {};
-  // The page is on screen with its data: the glass layers may now join (ThemeProvider)
-  useEffect(() => { if (!loadingData) window.dispatchEvent(new Event(APP_READY_EVENT)); }, [loadingData]);
+
+  // The sections of the navigation, downloaded one by one while the browser is idle once the first
+  // page is up: a section opened for the first time otherwise showed a blank frame (~175 ms on a
+  // throttled phone) between the old page leaving and the new one arriving. A page already here is
+  // drawn at once (App.tsx). Not on a connection that asked to save data.
+  const prefetched = useRef(false);
+  useEffect(() => {
+    if (loadingData || prefetched.current || navigator.connection?.saveData) return undefined;
+    prefetched.current = true;
+    const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 200));
+    const cancel = window.cancelIdleCallback || clearTimeout;
+    // The dropdowns' react-aria goes first: evaluated the first time a page showed a dropdown, it
+    // blocked that page's first frame for ~300 ms
+    const queue = [
+      () => import('./ui/Select/SelectMenu'),
+      () => import('./ui/TimeInput/TimeInput'),
+      ...['reservations', 'requests', 'horas', 'mas', 'news', 'employees', 'profile', 'settings'].map((name) => () => loadPage(name)),
+    ];
+    let handle = 0;
+    let stopped = false;
+    const next = () => {
+      const load = queue.shift();
+      if (!load || stopped) return;
+      handle = idle(() => { load().catch(() => {}).finally(next); }, { timeout: 4000 });
+    };
+    next();
+    return () => { stopped = true; cancel(handle); };
+  }, [loadingData]);
   const [retrying, setRetrying] = useState(false);
   const retryLoad = async () => { setRetrying(true); try { await refresh?.(); } finally { setRetrying(false); } };
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion, useMotionValue, useTransform, animate } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion, useMotionValue, useTransform, animate } from 'motion/react';
 import clsx from 'clsx';
 import {
   Search, UserRound, SlidersHorizontal, LogOut, Clock, LayoutGrid, Plus, Calendar, Inbox,

@@ -1,5 +1,5 @@
 import { notificationPresentation } from '../../shared/services/notificationPresentation.js';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import clsx from 'clsx';
 import { Bell, CheckCircle, XCircle, CheckCheck, Clock, ChevronRight } from 'lucide-react';
 import { notificationWebPath } from '../../shared/config/constants.js';

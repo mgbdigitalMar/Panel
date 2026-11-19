@@ -15,7 +15,7 @@ import { GlassButton, IconButton } from '../../components/common/GlassButton';
 import { DateField } from '../../components/common/GlassInput';
 import { PressScale } from '../../components/common/Pressable';
 import { T } from '../../components/common/Text';
-import { Avatar, ChipRail, EmptyState, Segmented } from '../../components/common/UI';
+import { Avatar, ChipRail, EmptyState, ListItem, Segmented } from '../../components/common/UI';
 import { HourRow, exportHoursCsv } from '../HorasScreen';
 import { FONTS } from '../../theme/tokens';
 import { ListFill } from '../../components/common/LiquidGlass';
@@ -104,7 +104,7 @@ export default function AdminHoursScreen() {
           </View>
           <View style={{ gap: 8 }}>
             {bolsa.length === 0 ? <EmptyState icon={Timer} title="No hay solicitudes de bolsa" message="Prueba con otros filtros." /> : bolsa.map((h) => (
-              <View key={h.id} style={{ gap: 6 }}>
+              <ListItem key={h.id} style={{ gap: 6 }}>
                 <HourRow h={h} showEmployee />
                 <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
                   {h.status === 'pending' ? (
@@ -115,7 +115,7 @@ export default function AdminHoursScreen() {
                   ) : null}
                   <GlassButton icon={Trash2} variant="glass" size="sm" accessibilityLabel="Eliminar registro" onPress={() => remove(h)} />
                 </View>
-              </View>
+              </ListItem>
             ))}
           </View>
         </>

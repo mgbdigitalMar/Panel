@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Recharts } from '../components/charts/Recharts';
 import {
   Download, Search, CheckCircle, Inbox, TrendingDown, TrendingUp, X, CheckCheck, CalendarRange, Timer, UsersRound, Wallet,

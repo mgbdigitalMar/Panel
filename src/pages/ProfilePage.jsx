@@ -484,7 +484,7 @@ export default function ProfilePage() {
               </div>
             ) : (
             <Select
-              label=""
+              aria-label="Modo de trabajo"
               value={workMode}
               onChange={handleWorkModeChange}
               options={Object.entries(WORK_MODES).map(([k, m]) => ({

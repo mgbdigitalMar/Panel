@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTouch } from '../components/Touch';
 import styles from './SettingsPage.module.scss';
 import clsx from 'clsx';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { ActiveIndicator, IndicatorGroup } from '../motion/ActiveIndicator';
 import {
   PREF_NOTIFS, notificationsSupported, notificationsEnabled, needsIosInstall,

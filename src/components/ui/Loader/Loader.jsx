@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import styles from './Loader.module.scss';
 
 /* Leaf geometry — traced from the Margube mark (48×48 box) */

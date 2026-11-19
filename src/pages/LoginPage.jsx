@@ -7,13 +7,12 @@ import {
   CalendarDays, Car, DoorOpen, Home, Users, FileText,
 } from 'lucide-react';
 import styles from './LoginPage.module.scss';
-import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig } from 'motion/react';
 import { LEAF_PATH, VEIN_PATH } from '../components/ui/Loader/Loader';
 import { LeafField } from '../components/ui';
 import { Wallpaper } from '../components/Wallpaper';
 import LoginPhone, { readRemembered } from './LoginPhone';
 import { loadPage } from '../pageLoaders';
-import { APP_READY_EVENT } from '../glass/liquidRefraction';
 
 const EASE = [0.22, 1, 0.36, 1];
 const DRAW_EASE = [0.65, 0, 0.35, 1];
@@ -92,9 +91,6 @@ export default function LoginPage() {
   // «Entrar» then waits only for Supabase, not for that page's code as well. Started by the first
   // touch, key or autofill, not on arrival: loading it then (its styles included) slowed the
   // login's own first paint by ~400 ms on a throttled phone.
-  // The login is the first screen: the glass layers may join (ThemeProvider)
-  useEffect(() => { window.dispatchEvent(new Event(APP_READY_EVENT)); }, []);
-
   useEffect(() => {
     const events = ['pointerdown', 'keydown', 'input'];
     const warm = () => {

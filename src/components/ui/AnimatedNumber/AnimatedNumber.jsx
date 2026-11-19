@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
-import { animate, useReducedMotion } from 'framer-motion';
+import { animate, useReducedMotion } from 'motion/react';
 
 import { EASE } from '../../../motion/tokens';
 

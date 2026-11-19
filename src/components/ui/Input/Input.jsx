@@ -1,12 +1,14 @@
 import { useId } from 'react';
 import clsx from 'clsx';
 import styles from './Input.module.scss';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Check, X } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 
 // The BoardUI date picker (react-aria + @internationalized/date) loads only for date fields
 const DateInput = lazy(() => import('../DateInput/DateInput').then((m) => ({ default: m.DateInput })));
+// The time picker (react-aria) loads only for time fields
+const TimeInput = lazy(() => import('../TimeInput/TimeInput').then((m) => ({ default: m.TimeInput })));
 
 export function Input({
   label,
@@ -58,6 +60,28 @@ export function Input({
             onChange={onChange}
             min={props.min}
             max={props.max}
+            disabled={disabled}
+            placeholder={placeholder}
+            aria-labelledby={label ? `${id}-label ${id}` : undefined}
+            aria-label={label ? undefined : props['aria-label']}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+            triggerClassName={clsx(styles.input, styles.dateTrigger, {
+              [styles.hasError]: !!error,
+              [styles.hasSuccess]: !!success && !error,
+              [styles.withRight]: shouldShowRightElement,
+              [styles.withLeft]: !!leftElement,
+            })}
+          />
+          </Suspense>
+        ) : type === 'time' ? (
+          // Two scrolling columns in a glass popover, in the intranet's field style (the native
+          // time input looks different in every browser)
+          <Suspense fallback={<span className={clsx(styles.input, styles.dateTrigger)} aria-hidden="true">{value || placeholder || ''}</span>}>
+          <TimeInput
+            id={id}
+            value={value}
+            onChange={onChange}
             disabled={disabled}
             placeholder={placeholder}
             aria-labelledby={label ? `${id}-label ${id}` : undefined}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, X } from 'lucide-react';
 import logoIcon from '../assets/logos/logo-icon-186.png';
 import { Wallpaper } from '../components/Wallpaper';

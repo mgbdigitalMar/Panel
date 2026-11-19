@@ -1,0 +1,125 @@
+@use '../../../styles/patterns' as p;
+
+/* The closed field: the same box as every input (Input.module.scss .input + .dateTrigger) */
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  -webkit-tap-highlight-color: transparent;
+
+  &[data-empty] { color: var(--text-mut); }
+  &[aria-expanded='true'],
+  &[data-focus-visible] {
+    border-color: var(--accent);
+    box-shadow: var(--accent-glow);
+    outline: none;
+  }
+  &[data-disabled] {
+    opacity: 0.42;
+    cursor: not-allowed;
+  }
+}
+
+.icon {
+  flex: none;
+  color: var(--text-mut);
+  transition: color var(--dur-fast) var(--ease-out);
+
+  .trigger[aria-expanded='true'] & { color: var(--accent); }
+}
+
+.value {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The open picker: the menus' glass, under the field */
+.popover {
+  @include p.glass-chrome;
+  border-radius: 22px;
+  box-shadow: var(--shadow-xl), var(--glass-highlight-sm);
+  // Inside a dialog too (the intranet's dialogs sit at 200)
+  z-index: 300;
+}
+
+.dialog { outline: none; }
+
+.columns {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  padding: 10px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.head {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-mut);
+}
+
+.colon {
+  align-self: center;
+  margin-top: 18px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-mut);
+}
+
+/* A column scrolls on its own and snaps to whole rows; its ends fade out so it reads as a wheel */
+.list {
+  position: relative; // the cells' offsetTop is measured from the column (TimeInput.jsx)
+  width: 64px;
+  height: 216px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y proximity;
+  scrollbar-width: none;
+  padding: 72px 0;
+  outline: none;
+  mask-image: linear-gradient(to bottom, transparent, #000 26%, #000 74%, transparent);
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.cell {
+  display: grid;
+  place-items: center;
+  height: 40px;
+  margin: 0 4px;
+  border-radius: 12px;
+  color: var(--text-sec);
+  font-size: 17px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  scroll-snap-align: center;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 120ms var(--ease-out), color 120ms var(--ease-out), scale var(--dur-press) var(--ease-out);
+
+  &[data-hovered],
+  &[data-focused] { background: rgba(var(--text-rgb), 0.07); color: var(--text); }
+  &[data-focus-visible] { box-shadow: inset 0 0 0 2px var(--accent); }
+  &[data-pressed] { scale: 0.94; }
+  // The chosen value: an accent pill
+  &[data-selected] {
+    background: var(--accent);
+    color: #FFFFFF;
+    font-weight: 600;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell { transition: background-color 120ms, color 120ms; }
+}

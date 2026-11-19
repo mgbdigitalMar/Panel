@@ -1,4 +1,4 @@
-import { motion, AnimatePresence, animate, useMotionValue, useReducedMotion, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, animate, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
 import { X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import styles from './Modal.module.scss';

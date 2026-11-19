@@ -1,4 +1,4 @@
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import clsx from 'clsx';
 import styles from './Button.module.scss';
 import { Spinner } from '../Loader/Loader';

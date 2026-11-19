@@ -402,34 +402,6 @@
 
 .segIndicator { @include p.tab-indicator; }
 
-.select {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  color: var(--text-mut);
-
-  select {
-    @extend %focus;
-    appearance: none;
-    height: 38px;
-    padding: 0 32px 0 14px;
-    border-radius: var(--radius-full);
-    border: 1px solid var(--lg-edge);
-    background: rgba(var(--text-rgb), 0.05);
-    color: var(--text);
-    font: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-
-  svg {
-    position: absolute;
-    right: 12px;
-    pointer-events: none;
-  }
-}
-
 /* Status pill: a dot and a word ------------------------------------------------------- */
 .pill {
   @include tones;

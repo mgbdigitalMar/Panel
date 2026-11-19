@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useMotionValue } from 'framer-motion';
+import { useMotionValue } from 'motion/react';
 import { DOCK_HOLD_MS, dockCellWidth, dockIndexAt, dockIndicatorX, dockPointInside } from '../../shared/config/dock';
 import { haptic } from '../utils/haptics';
 

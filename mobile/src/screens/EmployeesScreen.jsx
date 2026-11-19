@@ -11,7 +11,7 @@ import { Header } from '../components/common/Header';
 import { GlassCard } from '../components/common/GlassCard';
 import { PressScale } from '../components/common/Pressable';
 import { T } from '../components/common/Text';
-import { Avatar, ChipRail, EmptyState, Segmented } from '../components/common/UI';
+import { Avatar, ChipRail, EmptyState, ListItem, Segmented } from '../components/common/UI';
 import { TeamWeek } from '../components/TeamWeek';
 import { FONTS } from '../theme/tokens';
 import { ListFill } from '../components/common/LiquidGlass';
@@ -114,7 +114,7 @@ export default function EmployeesScreen() {
             const empDept = shortDept(e.dept);
 
             return (
-              <GlassCard key={e.id} padding={12} style={{ gap: 10 }}>
+              <ListItem key={e.id}><GlassCard padding={12} style={{ gap: 10 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                   <PressScale
                     onPress={() => navigation.navigate('EmployeeDetail', { id: e.id })}
@@ -211,7 +211,7 @@ export default function EmployeesScreen() {
                     </T>
                   ) : null}
                 </PressScale>
-              </GlassCard>
+              </GlassCard></ListItem>
             );
           })
         )}

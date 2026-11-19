@@ -8,6 +8,7 @@ import { onTabScreenScroll } from '../../navigation/tabBarScroll';
 import { GlassFill } from './LiquidGlass';
 import { Wallpaper } from './Wallpaper';
 import { BlurTargetView } from 'expo-blur';
+import { LayoutAnimationConfig } from 'react-native-reanimated';
 import { ANDROID_BLUR, BlurTargetContext, useRegisterBlurTarget } from './BlurTarget';
 
 // Content column: phones use the full width; tablets and landscape get a readable measure.
@@ -102,7 +103,9 @@ export function Screen({
       {backdrop ?? <Wallpaper targetRef={blurTarget} />}
       {glow && !backdrop ? <Glow variant={glowVariant} /> : null}
       <BlurTargetContext.Provider value={backdrop ? null : blurTarget}>
-      {content}
+      {/* What is on the screen when it opens arrives with the screen transition; only rows that
+          join later animate (Row, UI.jsx) */}
+      <LayoutAnimationConfig skipEntering>{content}</LayoutAnimationConfig>
       {fab}
       {footer ? (
         <View style={{

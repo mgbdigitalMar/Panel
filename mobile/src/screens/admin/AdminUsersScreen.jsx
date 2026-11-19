@@ -21,7 +21,7 @@ import { GlassInput } from '../../components/common/GlassInput';
 import { PressScale } from '../../components/common/Pressable';
 import { Tag } from '../../components/common/StatusBadge';
 import { T } from '../../components/common/Text';
-import { Avatar, ChipRail, EmptyState, Sheet, Banner, InfoLine } from '../../components/common/UI';
+import { Avatar, ChipRail, EmptyState, ListItem, Sheet, Banner, InfoLine } from '../../components/common/UI';
 import { FONTS, rowSurface } from '../../theme/tokens';
 import { ListFill } from '../../components/common/LiquidGlass';
 import { MIN_PASSWORD } from '../ChangePasswordScreen';
@@ -156,7 +156,7 @@ Entra con tu email (${reset.emp.email}) y te pedirá crear una contraseña nueva
           const open = expanded === e.id;
           const first = e.firstLogin === true || e.firstLogin === 'true';
           return (
-            <View key={e.id} style={{ borderRadius: 20, overflow: 'hidden' }}>
+            <ListItem key={e.id} style={{ borderRadius: 20, overflow: 'hidden' }}>
               <ListFill radius={20} edgeColor={open ? colors.accentBorder : undefined} />
               <PressScale onPress={() => setExpanded(open ? null : e.id)} scaleTo={0.985} accessibilityRole="button" accessibilityState={{ expanded: open }}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12 }}>
@@ -195,7 +195,7 @@ Entra con tu email (${reset.emp.email}) y te pedirá crear una contraseña nueva
                   <GlassButton title="Firma de las normas" icon={PenLine} variant="glass" size="sm" onPress={() => setPolicyId(e.id)} />
                 </View>
               ) : null}
-            </View>
+            </ListItem>
           );
         })}
       </View>

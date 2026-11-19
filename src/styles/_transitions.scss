@@ -84,6 +84,38 @@
   .t-tt-aria { transition: none !important; }
 }
 
+/* ── Dropdowns: react-aria Popover (ui/Select, the date picker) ──────────────────────────────
+   They grow out of their field: from the trigger's anchor point, a few pixels short of their
+   place and slightly smaller, in the same 180 ms as the menus (--dur-fast); they leave faster and
+   on the same path. react-aria keeps them mounted while data-exiting runs. Reduced motion: a
+   plain fade. */
+.t-pop-aria {
+  transform-origin: var(--trigger-anchor-point, 50% 0);
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    translate var(--dur-fast) var(--ease-out),
+    scale var(--dur-fast) var(--ease-out);
+}
+.t-pop-aria[data-entering] {
+  opacity: 0;
+  translate: 0 -6px;
+  scale: 0.97;
+}
+.t-pop-aria[data-exiting] {
+  opacity: 0;
+  translate: 0 -4px;
+  scale: 0.98;
+  transition-duration: 120ms;
+}
+// Opened upwards (no room below): it comes down from the field instead
+.t-pop-aria[data-placement='top'][data-entering],
+.t-pop-aria[data-placement='top'][data-exiting] { translate: 0 6px; }
+@media (prefers-reduced-motion: reduce) {
+  .t-pop-aria,
+  .t-pop-aria[data-entering],
+  .t-pop-aria[data-exiting] { translate: none; scale: none; }
+}
+
 /* ── 28 Thinking states ─────────────────────────────────────────────────────────────────── */
 /* Set your type on .t-think: the sizer only reports the right
    width if it is set in the same font as the line. */

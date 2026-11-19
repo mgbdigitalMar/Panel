@@ -1,8 +1,11 @@
 import { useId } from 'react';
 import clsx from 'clsx';
-import { Search, X, ChevronDown } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { LEAF_PATH, VEIN_PATH } from './ui/Loader/Loader';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { ActiveIndicator, IndicatorGroup } from '../motion/ActiveIndicator';
+import { LIST_MOTION } from '../motion/tokens';
+import { Select } from './ui/Select/Select';
 import styles from './Desk.module.scss';
 
 /**
@@ -223,15 +226,7 @@ export function DeskSegmented({ value, onChange, options, label }) {
 
 /** Compact select for a toolbar filter. */
 export function DeskSelect({ value, onChange, options, label }) {
-  return (
-    <label className={styles.select}>
-      <span className={styles.srOnly}>{label}</span>
-      <select value={value} onChange={(e) => onChange(e.target.value)}>
-        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
-      <ChevronDown size={14} aria-hidden="true" />
-    </label>
-  );
+  return <Select variant="pill" aria-label={label} value={value} onChange={onChange} options={options} />;
 }
 
 /** State of a record: a dot and a word (never colour alone). */
@@ -292,13 +287,15 @@ export const optionalCol = styles.optional;
 
 /** Dense table for a panel: sticky head, hover rows, horizontal scroll if it ever needs it. */
 export function DeskTable({ head, children, label }) {
+  // Rows that a filter, a search or a review adds, removes or reorders move instead of jumping
+  const [body] = useAutoAnimate(LIST_MOTION);
   return (
     <div className={styles.tableWrap}>
       <table className={styles.table} aria-label={label}>
         <thead>
           <tr>{head.map((h) => <th key={h.key || h.label} scope="col" className={clsx(h.end && styles.thEnd, h.optional && styles.optional)}>{h.label}</th>)}</tr>
         </thead>
-        <tbody>{children}</tbody>
+        <tbody ref={body}>{children}</tbody>
       </table>
     </div>
   );

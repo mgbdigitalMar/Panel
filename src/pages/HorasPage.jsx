@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuth, useHours } from '../context';
 import { Card, Button, Input, Modal, Avatar, Section } from '../components/ui';
 import { Clock, Inbox, CheckCircle, XCircle, Download, PenTool, TrendingDown, Search, Zap, Info, AlertTriangle, CheckCheck } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import clsx from 'clsx';
 import styles from './HorasPage.module.scss';
 import { todayKey } from '../utils/format';
