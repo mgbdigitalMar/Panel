@@ -27,6 +27,8 @@ export function mapProfile(profile) {
     policyAccepted: profile.policy_accepted ?? profile.policyAccepted,
     teleworkDays:   profile.telework_days || profile.teleworkDays || [],
     teleworkAppliedOn: profile.telework_applied_on ?? profile.teleworkAppliedOn ?? null,
+    // Horario asignado (work_schedules); null = el predeterminado
+    workScheduleId: profile.work_schedule_id ?? profile.workScheduleId ?? null,
   };
 }
 

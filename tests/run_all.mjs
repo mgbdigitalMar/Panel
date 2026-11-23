@@ -18,6 +18,10 @@ import { runSheetGestureTests } from './19_sheet_gestures.test.mjs';
 import { runWebPerformanceTests } from './20_web_performance.test.mjs';
 import { runAppGlassConsistencyTests } from './21_app_glass_consistency.test.mjs';
 import { runAssistantClientTests } from './17_assistant_client.test.mjs';
+import { runPrivateDocumentsTests } from './22_private_documents.test.mjs';
+import { runHrFoundationsTests } from './23_hr_foundations.test.mjs';
+import { runRlsLiveTests } from './24_rls_live.test.mjs';
+import { runTimeTrackingTests } from './25_time_tracking.test.mjs';
 
 // Suites 2 and 3 read and write the real Supabase project (suite 3 creates and
 // deletes rows): they only run when asked, e.g. against a staging project.
@@ -50,6 +54,10 @@ async function main() {
     { name: 'Rendimiento de la web', fn: runWebPerformanceTests },
     { name: 'Cristal coherente en la app', fn: runAppGlassConsistencyTests },
     { name: 'Cliente asistente web y app', fn: runAssistantClientTests },
+    { name: 'Documentos privados', fn: runPrivateDocumentsTests },
+    { name: 'Base de RR. HH.', fn: runHrFoundationsTests },
+    { name: 'Registro de jornada', fn: runTimeTrackingTests },
+    { name: 'Permisos reales en staging', fn: runRlsLiveTests, live: true },
   ];
 
   let totalPassed = 0;

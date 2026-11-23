@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
-  Building2, Car, Timer, CalendarDays, Inbox, ShieldCheck, Pin, ChevronRight, Gift, Newspaper, CalendarCheck, Hourglass,
+  Building2, Car, Timer, CalendarDays, Inbox, ShieldCheck, Pin, ChevronRight, Gift, Newspaper, CalendarCheck, Hourglass, Clock,
 } from 'lucide-react-native';
+import { GlassButton } from '../components/common/GlassButton';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -216,6 +217,8 @@ export default function DashboardScreen() {
         </View>
         <ProgressBar value={progress} height={5} accessibilityLabel="Progreso de jornada laboral" />
         <T size={12} color={colors.text2}>{workdayText}</T>
+        {/* Clocking in is the day's first task: one tap from Inicio */}
+        <GlassButton title="Fichaje" icon={Clock} onPress={() => navigation.navigate('Fichaje')} accessibilityLabel="Abrir fichaje: entrada, descansos y salida" />
         <HapticPressable onPress={() => navigation.navigate('Requests')} accessibilityRole="button"
           style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 44, borderTopWidth: 1, borderTopColor: colors.divider, paddingTop: 8 }}>
           <T size={13} color={colors.text2}>{myPending.length ? `${myPending.length} en revisi?n` : 'Nada pendiente'}</T>

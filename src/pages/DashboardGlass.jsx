@@ -185,6 +185,7 @@ export default function DashboardGlass({ d }) {
           <p className={styles.meta}><span className={styles.metaDate}>{dateLine}.</span> {motivation}</p>
         </div>
         <div className={styles.heroActions}>
+          <Button variant="secondary" icon={Clock} onClick={() => navigate('/fichaje')}>Fichaje</Button>
           <Button variant="secondary" icon={FilePlus2} onClick={() => navigate('/requests?nueva=1')}>Nueva solicitud</Button>
           <Button variant="primary" icon={CalendarPlus} onClick={() => navigate('/reservations?nueva=1')}>Nueva reserva</Button>
         </div>

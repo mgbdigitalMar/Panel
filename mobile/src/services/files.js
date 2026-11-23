@@ -82,7 +82,10 @@ function checkSize(file) {
   return file;
 }
 
-/** Upload a picked file to Storage. Resolves to the public URL. */
+/**
+ * Upload a picked file to the private bucket. Resolves to the reference saved in file_url
+ * (the lists sign it for whoever may open it; it is not a public link).
+ */
 export async function uploadPickedFile(picked) {
   if (!picked) return null;
   const bytes = await new File(picked.uri).bytes();
@@ -126,7 +129,7 @@ function decodeBase64(b64) {
   return out.slice(0, o);
 }
 
-/** Download a document (public URL or legacy base64 data URL) and open the share sheet. */
+/** Download a document (signed URL or legacy base64 data URL) and open the share sheet. */
 export async function downloadAndShare(url, title = 'documento') {
   if (!url) return;
   const dir = new Directory(Paths.cache, `dl-${Date.now()}`);

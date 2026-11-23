@@ -31,6 +31,7 @@ export const ENTITY_NAV_MAP = {
   request: 'requests',
   document: 'profile',
   hour_compensation: 'horas',
+  time_correction: 'fichaje',
   reservation: 'reservations',
   personal_day: 'requests',
   news: 'news',

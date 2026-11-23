@@ -20,6 +20,9 @@ export function openNotificationTarget(navigation, notif, user) {
     case 'horas':
       navigation.navigate('Main', { screen: 'Horas' });
       return;
+    case 'fichaje':
+      navigation.navigate('Fichaje');
+      return;
     case 'admin':
       navigation.navigate(type === 'hour_compensation' ? 'AdminHours' : 'Admin');
       return;

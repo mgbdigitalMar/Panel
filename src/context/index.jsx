@@ -24,6 +24,10 @@ import {
   NOTIFICATIONS_PAGE_SIZE,
 } from '../../shared/services/notifications.js'
 import { safeFileUrl } from '../../shared/utils/urls.js'
+import {
+  signFileUrls, storageRefUrl, removeStorageFile as removeStorageFileSvc,
+  DOCUMENTS_BUCKET, SIGNED_URL_REFRESH_MS,
+} from '../../shared/services/storageFiles.js'
 import { toUserMessage } from '../../shared/utils/errors.js'
 import { startLiquidRefraction } from '../glass/liquidRefraction'
 import { supportsWebGLGlass } from '../glass/webglSupport'
@@ -162,7 +166,8 @@ async function loadDocuments() {
     if (error) console.error('documents:', error)
     return null
   }
-  return data.map(d => ({
+  // Private bucket: each file gets a signed URL for this person (fileRef keeps the reference)
+  return signFileUrls(supabase, data.map(d => ({
     id: d.id,
     title: d.title,
     description: d.description,
@@ -174,7 +179,7 @@ async function loadDocuments() {
     senderName: d.sender?.name || null,
     recipientId: d.recipient_id,
     recipientName: d.recipient?.name || null,
-  }))
+  })))
 }
 
 async function loadHourCompensations() {
@@ -224,7 +229,7 @@ async function loadPersonalDays(user) {
     if (error) console.error('personal_days:', error)
     return null
   }
-  return data.map(p => ({
+  return signFileUrls(supabase, data.map(p => ({
     id: p.id,
     employeeId: p.employee_id,
     employeeName: p.employee?.name || null,
@@ -236,7 +241,7 @@ async function loadPersonalDays(user) {
     status: p.status,
     reviewedAt: p.reviewed_at,
     createdAt: p.created_at,
-  }))
+  })))
 }
 
 async function loadNews() {
@@ -406,25 +411,8 @@ const [readIds, setReadIds] = useState(() => {
 })
   const [liveNotifs, setLiveNotifs]        = useState([])  // Real-time toasts
 
-  // Removes the file behind a public Storage URL from the documents bucket
-  const removeStorageFile = async (fileUrl) => {
-    if (!fileUrl || !fileUrl.includes('/storage/v1/object/public/documents/')) return
-    try {
-      // URL format: .../storage/v1/object/public/documents/<path>
-      const marker = '/storage/v1/object/public/documents/'
-      const idx = fileUrl.indexOf(marker)
-      if (idx === -1) return
-      let path = fileUrl.substring(idx + marker.length)
-      // Remove any query params (e.g. ?t=123)
-      const qIdx = path.indexOf('?')
-      if (qIdx !== -1) path = path.substring(0, qIdx)
-      if (!path) return
-      const { error } = await supabase.storage.from('documents').remove([decodeURIComponent(path)])
-      if (error) console.warn('Storage delete error:', error.message)
-    } catch (e) {
-      console.warn('removeStorageFile error:', e)
-    }
-  }
+  // Removes the object behind a row's file (its stored reference, or the signed URL) from the bucket
+  const removeStorageFile = (row) => removeStorageFileSvc(supabase, row?.fileRef || row?.fileUrl)
 
   // A list asked for at start-up (startBootPrefetch / login) is taken from there the first time;
   // every later load (retry, reconnect, sync event) asks the database again
@@ -713,7 +701,14 @@ const [readIds, setReadIds] = useState(() => {
     }
     window.addEventListener('online', handleOnline)
 
+    // Signed file URLs expire (storageFiles.js): the lists holding them are signed again before
+    const resignTimer = setInterval(() => {
+      fetchDocuments()
+      fetchPersonalDays()
+    }, SIGNED_URL_REFRESH_MS)
+
     return () => {
+      clearInterval(resignTimer)
       document.removeEventListener('visibilitychange', handleVisibility)
       window.removeEventListener('online', handleOnline)
       supabase.removeChannel(requestChannel)
@@ -789,7 +784,7 @@ const [readIds, setReadIds] = useState(() => {
   const deleteRequest = async (id, type) => {
     if (type === 'asuntos_propios') {
       const p = personalDays.find(d => String(d.id) === String(id));
-      await removeStorageFile(p?.fileUrl)
+      await removeStorageFile(p)
       const { error } = await supabase.from('personal_days').delete().eq('id', id);
       if (error) { console.error('deleteRequest (personal_day):', error); return reportError(error) }
       await fetchPersonalDays();
@@ -916,7 +911,8 @@ const [readIds, setReadIds] = useState(() => {
     return { data }
   }
 
-  // Upload a File object → first tries Supabase Storage, falls back to base64 data URL
+  // Upload a File object to the private bucket → the reference to save in file_url (the lists sign
+  // it for each person). Without Storage it falls back to a base64 data URL, as before.
   const uploadDocumentFile = async (file) => {
     if (!file) return { url: null }
 
@@ -928,24 +924,14 @@ const [readIds, setReadIds] = useState(() => {
       const ext  = file.name.split('.').pop()
       const path = `docs/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
       const { error: upErr } = await supabase.storage
-        .from('documents')
+        .from(DOCUMENTS_BUCKET)
         .upload(path, file, { cacheControl: '3600', upsert: false })
-        
-      if (!upErr) {
-        const { data: { publicUrl } } = supabase.storage.from('documents').getPublicUrl(path)
-        return { url: publicUrl }
-      }
-      
+
+      if (!upErr) return { url: storageRefUrl(supabase, path) }
+
       console.warn('Supabase Storage no disponible:', upErr.message)
-      
-      if (file.size > 15 * 1024 * 1024) {
-        return { error: `Error en Storage: ${upErr.message}. Crea el bucket 'documents' como público en Supabase.` }
-      }
     } catch (e) {
       console.warn('Storage error:', e)
-      if (file.size > 15 * 1024 * 1024) {
-        return { error: 'Error en Storage. Crea el bucket "documents" en Supabase.' }
-      }
     }
 
     // Fallback without a bucket: a base64 data URL
@@ -969,7 +955,7 @@ const [readIds, setReadIds] = useState(() => {
 
   const deleteDocument = async (id) => {
     const doc = documents.find(d => String(d.id) === String(id));
-    await removeStorageFile(doc?.fileUrl)
+    await removeStorageFile(doc)
     const { error } = await supabase.from('documents').delete().eq('id', id)
     if (error) { console.error('deleteDocument:', error); return reportError(error) }
     await fetchDocuments()
@@ -1033,11 +1019,11 @@ const [readIds, setReadIds] = useState(() => {
   const deleteEmployeeData = async (employeeId) => {
     const empDocs = documents.filter(d => String(d.senderId) === String(employeeId) || String(d.recipientId) === String(employeeId));
     for (const doc of empDocs) {
-      await removeStorageFile(doc.fileUrl)
+      await removeStorageFile(doc)
     }
     const empDays = personalDays.filter(p => String(p.employeeId) === String(employeeId));
     for (const p of empDays) {
-      await removeStorageFile(p.fileUrl)
+      await removeStorageFile(p)
     }
   }
 

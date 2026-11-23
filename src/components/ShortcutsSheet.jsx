@@ -17,6 +17,7 @@ const GROUPS = [
     title: 'Ir a… (pulsa G y después la letra)',
     rows: [
       { keys: ['G', 'D'], label: 'Dashboard' },
+      { keys: ['G', 'F'], label: 'Fichaje' },
       { keys: ['G', 'R'], label: 'Reservas' },
       { keys: ['G', 'S'], label: 'Solicitudes' },
       { keys: ['G', 'H'], label: 'Tiempo a compensar' },

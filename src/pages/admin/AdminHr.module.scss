@@ -1,0 +1,166 @@
+/* Departamentos and Historial (admin/DepartmentsPanel.jsx, admin/AuditPanel.jsx), in the
+   computer table (components/Desk) and the touch list (components/Touch) */
+
+.nowrap { white-space: nowrap; }
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 140px;
+  padding: 24px;
+  color: var(--text-sec);
+  font-size: 14px;
+}
+
+/* Touch: what the section holds, and its one way to add something */
+.sectionBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  min-height: 44px;
+  margin: 4px 2px 0;
+
+  p {
+    flex: 1 1 160px;
+    min-width: 0;
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.4;
+    color: var(--text-sec);
+  }
+}
+
+/* Department form */
+.form {
+  display: grid;
+  gap: 18px;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Date filters, same pill as the hours bank filters */
+.date {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 6px 0 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--lg-edge, var(--border));
+  background: rgba(var(--text-rgb), 0.05);
+  color: var(--text-mut);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus-within {
+    border-color: rgba(var(--accent-rgb), 0.5);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.18);
+  }
+
+  input {
+    height: 30px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    color-scheme: light dark;
+  }
+}
+
+/* Touch: the two dates share a row and stretch, with targets of at least 44 px */
+.dateRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+
+  .date {
+    height: 44px;
+    justify-content: space-between;
+
+    input { height: 40px; min-width: 0; }
+  }
+}
+
+/* Audit: each changed field on its line, before struck through and after in bold */
+.changes {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-sec);
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 6px;
+    min-width: 0;
+
+    > span:first-child {
+      color: var(--text-mut);
+      font-weight: 600;
+
+      &::after { content: ':'; }
+    }
+  }
+
+  s {
+    color: var(--text-mut);
+    text-decoration-thickness: 1px;
+    overflow-wrap: anywhere;
+  }
+
+  em {
+    font-style: normal;
+    color: var(--text-mut);
+  }
+
+  strong {
+    color: var(--text);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+}
+
+.more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px;
+}
+
+.errorText {
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .date { transition: none; }
+}

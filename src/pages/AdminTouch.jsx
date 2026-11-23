@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   UsersRound, Building, Car, FileText, Timer, Search, Plus, Send, Upload, Download, Edit2, Trash2,
-  ShieldCheck, Check, X, KeyRound,
+  ShieldCheck, Check, X, KeyRound, Layers, History, ChevronRight, ArrowLeft,
 } from 'lucide-react';
 import { Avatar } from '../components/ui';
 import {
@@ -57,7 +57,7 @@ export default function AdminTouch({
   onNewEmployee, onEditEmployee, onDeleteEmployee, onResetPassword, onOpenPolicy, onExportSignatures,
   onNewResource, onEditResource, onDeleteResource,
   onSendDocument, onUpdateOnboarding, onDeleteDocument,
-  onApproveHours, onRejectHours, onDeleteHours, onExportHours, hoursBusy,
+  onApproveHours, onRejectHours, onDeleteHours, onExportHours, hoursBusy, hrPanels = {},
 }) {
   const [query, setQuery] = useState('');
   const [dept, setDept] = useState('all');
@@ -280,6 +280,32 @@ export default function AdminTouch({
                 })}
               </FeedGroup>
             )}
+            {/* Departments and the change log open from here: a sixth and seventh tab would not fit on a phone */}
+            <FeedGroup title="Organización">
+              <FeedItem
+                lead={<LeafIcon icon={Layers} tone="accent" />}
+                title="Departamentos"
+                meta="Crear, renombrar u ocultar departamentos"
+                trailing={<ChevronRight size={17} className={styles.rowGo} aria-hidden="true" />}
+                onClick={() => setTab('departments')}
+              />
+              <FeedItem
+                lead={<LeafIcon icon={History} tone="purple" />}
+                title="Historial de cambios"
+                meta="Quién cambió qué y cuándo en fichas, documentos y solicitudes"
+                trailing={<ChevronRight size={17} className={styles.rowGo} aria-hidden="true" />}
+                onClick={() => setTab('audit')}
+              />
+            </FeedGroup>
+          </>
+        )}
+
+        {(tab === 'departments' || tab === 'audit') && (
+          <>
+            <div className={styles.sectionBar}>
+              <TouchButton icon={ArrowLeft} onClick={() => setTab('employees')}>Empleados</TouchButton>
+            </div>
+            {tab === 'departments' ? hrPanels.departments : hrPanels.audit}
           </>
         )}
 

@@ -12,6 +12,7 @@ const FACTORIES = {
   employees:      () => import('./pages/EmployeesPage'),
   profile:        () => import('./pages/ProfilePage'),
   horas:          () => import('./pages/HorasPage'),
+  fichaje:        () => import('./pages/FichajePage'),
   settings:       () => import('./pages/SettingsPage'),
   mas:            () => import('./pages/MorePage'),
   assistant:      () => import('./pages/AssistantPage'),

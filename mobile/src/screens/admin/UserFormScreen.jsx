@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { DEPARTMENTS } from '@shared/config/constants.js';
+import { fetchDepartments, departmentOptions } from '@shared/services/departments.js';
 import { toUserMessage } from '@shared/utils/errors.js';
 import { TELEWORK_WEEKDAYS, formatTeleworkDays } from '@shared/services/workMode.js';
 import { fetchPolicySignatures, latestSignatureByUser, policyStatus, formatSignedAt, PLATFORM_LABELS, POLICY_TITLE } from '@shared/services/policy.js';
@@ -53,6 +53,11 @@ export default function UserFormScreen() {
     fetchPolicySignatures(supabase).then((list) => setSignature(list ? latestSignatureByUser(list)[existing.id] || false : null));
   }, [existing?.id]);
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
+  // Departments managed by RR. HH. (public.departments): the active ones plus the person's current one
+  const [departments, setDepartments] = useState(null);
+  useEffect(() => {
+    fetchDepartments(supabase).then((list) => { if (list) setDepartments(list); });
+  }, []);
 
   const emailTaken = employees.some((e) => e.id !== existing?.id && e.email?.toLowerCase() === form.email.trim().toLowerCase());
   const errors = {
@@ -90,7 +95,7 @@ export default function UserFormScreen() {
         hint={existing ? 'Si la cambias, deberá crear una propia en su próximo acceso.' : 'Generada automáticamente. Puedes cambiarla.'}
       />
       <T size={13} weight="medium">Departamento</T>
-      <ChipRail value={form.dept} onChange={set('dept')} options={DEPARTMENTS.map((d) => ({ value: d.value, label: d.label }))} />
+      <ChipRail value={form.dept} onChange={set('dept')} options={departmentOptions(departments, existing?.dept)} />
       <GlassInput label="Cargo / posición" value={form.position} onChangeText={set('position')} />
       <GlassInput label="DNI" value={form.phone} onChangeText={set('phone')} autoCapitalize="characters" />
       <DateField label="Fecha de nacimiento" value={form.birthdate} onChange={set('birthdate')} maximumDate={new Date()} />

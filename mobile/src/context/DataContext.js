@@ -155,7 +155,14 @@ export function DataProvider({ children }) {
       if (state === 'active') refetchAll();
     });
 
+    // Signed file URLs expire (shared/services/storageFiles.js): sign the lists again before
+    const resignTimer = setInterval(() => {
+      loadDocuments();
+      loadPersonalDays();
+    }, svc.SIGNED_URL_REFRESH_MS);
+
     return () => {
+      clearInterval(resignTimer);
       sub.remove();
       channels.forEach((c) => supabase.removeChannel(c));
       closeNotifChannel();
@@ -238,7 +245,7 @@ export function DataProvider({ children }) {
     },
     deleteRequest: async (item) => {
       const res = item.type === 'asuntos_propios'
-        ? await svc.deletePersonalDay(supabase, item.id, item.fileUrl)
+        ? await svc.deletePersonalDay(supabase, item.id, item.fileRef || item.fileUrl)
         : await svc.deleteRequest(supabase, item.id);
       await (item.type === 'asuntos_propios' ? loadPersonalDays() : loadRequests());
       return res;
@@ -287,7 +294,7 @@ export function DataProvider({ children }) {
       return res;
     },
     deleteDocument: async (doc) => {
-      const res = await svc.deleteDocument(supabase, doc.id, doc.fileUrl);
+      const res = await svc.deleteDocument(supabase, doc.id, doc.fileRef || doc.fileUrl);
       await loadDocuments();
       return res || { error: null };
     },
@@ -396,10 +403,10 @@ export function DataProvider({ children }) {
       const { error } = await supabase.from('profiles').delete().eq('id', employeeId);
       if (!error) {
         for (const d of documents.filter((x) => String(x.senderId) === String(employeeId) || String(x.recipientId) === String(employeeId))) {
-          await svc.removeStorageFile(supabase, d.fileUrl);
+          await svc.removeStorageFile(supabase, d.fileRef || d.fileUrl);
         }
         for (const p of personalDays.filter((x) => String(x.employeeId) === String(employeeId))) {
-          await svc.removeStorageFile(supabase, p.fileUrl);
+          await svc.removeStorageFile(supabase, p.fileRef || p.fileUrl);
         }
       }
       await Promise.all([refreshEmployees(), refetchAll()]);

@@ -14,6 +14,9 @@ import { TELEWORK_WEEKDAYS, teleworkScheduleUpdate, formatTeleworkDays, localISO
 import { useTouch } from '../components/Touch';
 import AdminTouch from './AdminTouch';
 import AdminDesk from './AdminDesk';
+import DepartmentsPanel from './admin/DepartmentsPanel';
+import AuditPanel from './admin/AuditPanel';
+import { fetchDepartments, departmentOptions } from '../../shared/services/departments.js';
 
 // Temporary password: 12 characters from an alphabet without look-alikes (0/O, 1/l/I), random from the browser's CSPRNG
 const TEMP_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
@@ -24,20 +27,8 @@ function tempPassword() {
   return `${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8)}`;
 }
 
-const DEPARTMENTS = [
-  { value: 'Administración - RRHH', label: 'Administración - RRHH' },
-  { value: 'Comercial - HEF', label: 'Comercial - HEF' },
-  { value: 'Formación', label: 'Formación' },
-  { value: 'Verificación (CAE)', label: 'Verificación (CAE)' },
-  { value: 'Planificación', label: 'Planificación' },
-  { value: 'Técnico', label: 'Técnico' },
-  { value: 'Comunicación - marketing', label: 'Comunicación - marketing' },
-  { value: 'Marketing - diseño', label: 'Marketing - diseño' },
-  { value: 'Sin asignar', label: 'Sin asignar' },
-];
-
 export default function AdminPage() {
-  const { user, employees, setEmployees } = useAuth();
+  const { user, employees, setEmployees, refreshEmployees } = useAuth();
   const { rooms, vehicles, reservations = [], deleteResource } = useReservations();
   const { documents, sendDocument, uploadDocumentFile, deleteDocument, deleteEmployeeData } = useDocuments();
   const { hourCompensations = [], updateHourCompensationStatus, deleteHourCompensation } = useHours();
@@ -164,6 +155,13 @@ export default function AdminPage() {
   };
 
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'employee', dept: 'Sin asignar', position: '', phone: '', birthdate: '', workMode: 'Office', teleworkDays: [], policyAccepted: false });
+  // Departments offered in the employee form (public.departments; the fixed list before the migration),
+  // asked again each time the form opens so a department created or hidden a moment ago shows as it is
+  const [departments, setDepartments] = useState(null);
+  useEffect(() => {
+    if (!showModal) return;
+    fetchDepartments(supabase).then((list) => { if (list) setDepartments(list); });
+  }, [showModal]);
   const [resForm, setResForm] = useState({ id: null, name: '', capacity: '', floor: '', equipment: '', model: '', plate: '', year: '', type: 'Turismo' });
   const [editingRes, setEditingRes] = useState(false);
   const [resSaving, setResSaving] = useState(false);
@@ -537,6 +535,11 @@ export default function AdminPage() {
   const touch = useTouch();
   const sentDocs = (documents || []).filter(d => d.title !== '__ONBOARDING_DOC__');
   const bolsaHours = (hourCompensations || []).filter(h => h.type === 'bolsa');
+  // Departamentos and Historial load their own data only when opened (the log is never preloaded)
+  const hrPanels = {
+    departments: <DepartmentsPanel touch={touch} employees={employees} onEmployeesChanged={refreshEmployees} announce={announce} />,
+    audit: <AuditPanel touch={touch} employees={employees} />,
+  };
 
   return (
     <div className={styles.container}>
@@ -551,7 +554,7 @@ export default function AdminPage() {
           onNewResource={openNewResource} onEditResource={openEditResource} onDeleteResource={confirmDeleteResource}
           onSendDocument={() => setShowDocModal(true)} onUpdateOnboarding={() => setShowOnboardingModal(true)} onDeleteDocument={confirmDeleteDocument}
           onApproveHours={(h) => reviewHours(h, 'approved')} onRejectHours={confirmRejectHours} onDeleteHours={confirmDeleteHours}
-          onExportHours={exportHoursCSV} hoursBusy={hoursBusy}
+          onExportHours={exportHoursCSV} hoursBusy={hoursBusy} hrPanels={hrPanels}
         />
       ) : (
         <AdminDesk
@@ -564,7 +567,7 @@ export default function AdminPage() {
           onNewResource={openNewResource} onEditResource={openEditResource} onDeleteResource={confirmDeleteResource}
           onSendDocument={() => setShowDocModal(true)} onUpdateOnboarding={() => setShowOnboardingModal(true)} onDeleteDocument={confirmDeleteDocument}
           onApproveHours={(h) => reviewHours(h, 'approved')} onRejectHours={confirmRejectHours} onDeleteHours={confirmDeleteHours}
-          onExportHours={exportHoursCSV} hoursBusy={hoursBusy}
+          onExportHours={exportHoursCSV} hoursBusy={hoursBusy} hrPanels={hrPanels}
         />
       )}
 
@@ -617,7 +620,7 @@ export default function AdminPage() {
             label="Departamento" 
             value={form.dept} 
             onChange={v => setForm({ ...form, dept: v })}
-            options={DEPARTMENTS} 
+            options={departmentOptions(departments, editEmp?.dept)}
           />
           <Input label="Cargo / Posición" value={form.position} onChange={v => setForm({ ...form, position: v })} />
           <Input label="DNI" value={form.phone} onChange={v => setForm({ ...form, phone: v })} />

@@ -32,6 +32,7 @@ const AdminPage          = page('admin')
 const EmployeesPage      = page('employees')
 const ProfilePage        = page('profile')
 const HorasPage          = page('horas')
+const FichajePage        = page('fichaje')
 const SettingsPage       = page('settings')
 const MorePage           = page('mas')
 const AssistantPage      = page('assistant')
@@ -112,6 +113,7 @@ function AppShell() {
                       <Route path="/reservations" element={<ProtectedRoute><ReservationsPage /></ProtectedRoute>} />
                       <Route path="/requests" element={<ProtectedRoute><RequestsPage /></ProtectedRoute>} />
                       <Route path="/horas" element={<ProtectedRoute><HorasPage /></ProtectedRoute>} />
+                      <Route path="/fichaje" element={<ProtectedRoute><FichajePage /></ProtectedRoute>} />
                       <Route path="/news" element={<ProtectedRoute><NewsPage /></ProtectedRoute>} />
                       <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                       <Route path="/employees" element={<ProtectedRoute><EmployeesPage /></ProtectedRoute>} />

@@ -36,6 +36,7 @@ import SendDocumentScreen from '../screens/admin/SendDocumentScreen';
 import AdminHoursScreen from '../screens/admin/AdminHoursScreen';
 import HoursUserHistoryScreen from '../screens/admin/HoursUserHistoryScreen';
 import SearchScreen from '../screens/SearchScreen';
+import FichajeScreen from '../screens/FichajeScreen';
 
 const Stack = createNativeStackNavigator();
 export const navigationRef = createNavigationContainerRef();
@@ -48,6 +49,7 @@ const linking = {
       Notifications: 'notificaciones/:id?',
       Documents: 'documentos',
       News: 'noticias',
+      Fichaje: 'fichaje',
     },
   },
 };
@@ -124,6 +126,7 @@ export default function RootNavigator({ onReady }) {
           <>
             <Stack.Screen name="Main" component={BottomTabs} options={{ animation: 'fade' }} />
             <Stack.Screen name="Notifications" component={NotificationsScreen} />
+            <Stack.Screen name="Fichaje" component={FichajeScreen} />
             <Stack.Screen name="Search" component={SearchScreen} options={{ animation: 'fade' }} />
             <Stack.Screen name="ResourceCalendar" component={ResourceCalendarScreen} />
             <Stack.Screen name="MyReservations" component={MyReservationsScreen} />

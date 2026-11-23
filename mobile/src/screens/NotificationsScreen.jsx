@@ -23,6 +23,7 @@ const ENTITY_ICON = {
   personal_day: CalendarDays,
   document: FileText,
   hour_compensation: Clock,
+  time_correction: Clock,
   news: Newspaper,
   system: TriangleAlert,
 };

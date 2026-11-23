@@ -1,4 +1,4 @@
-import { removeStorageFile } from './documents.js';
+import { removeStorageFile, signFileUrls } from './storageFiles.js';
 import { safeFileUrl } from '../utils/urls.js';
 
 /** Pass `employeeId` for an employee: they only get their own (admins get all). */
@@ -19,7 +19,8 @@ export async function fetchPersonalDays(supabase, { employeeId } = {}) {
     // null (not []) on failure: the caller keeps what it already shows
     return error ? null : [];
   }
-  return data.map(p => ({
+  // The justificante gets a signed fileUrl for the person signed in; fileRef keeps the reference
+  return signFileUrls(supabase, data.map(p => ({
     id: p.id,
     employeeId: p.employee_id,
     employeeName: p.employee?.name || null,
@@ -31,7 +32,7 @@ export async function fetchPersonalDays(supabase, { employeeId } = {}) {
     status: p.status,
     reviewedAt: p.reviewed_at,
     createdAt: p.created_at,
-  }));
+  })));
 }
 
 export async function createPersonalDay(supabase, { employeeId, date, reason, fileUrl }) {
@@ -63,9 +64,9 @@ export async function updatePersonalDayStatus(supabase, id, status, reviewedBy) 
   return { error: null };
 }
 
-/** Also removes the attached file. */
-export async function deletePersonalDay(supabase, id, fileUrl) {
-  await removeStorageFile(supabase, fileUrl);
+/** Also removes the attached file (`fileRef`, the stored reference; the signed URL also works). */
+export async function deletePersonalDay(supabase, id, fileRef) {
+  await removeStorageFile(supabase, fileRef);
   const { error } = await supabase.from('personal_days').delete().eq('id', id);
   if (error) console.error('deletePersonalDay:', error);
   return { error };

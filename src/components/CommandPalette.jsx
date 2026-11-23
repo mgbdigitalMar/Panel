@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   LayoutDashboard, Calendar, Inbox, Newspaper, SlidersHorizontal,
   User, UsersRound, Timer, Search, ChevronRight, LogOut,
-  CalendarPlus, FilePlus2, SunMoon, Keyboard, ShieldCheck, MessageSquareText
+  CalendarPlus, FilePlus2, SunMoon, Keyboard, ShieldCheck, MessageSquareText, Clock
 } from 'lucide-react';
 import { useAuth, useTheme } from '../context';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +14,7 @@ import styles from './CommandPalette.module.scss';
 const PAGES = [
   { id: 'assistant', label: 'Asistente', icon: MessageSquareText, desc: 'Chat para consultar y gestionar trámites' },
   { id: 'dashboard',    label: 'Dashboard',          icon: LayoutDashboard, desc: 'Vista general de la empresa',        keys: 'D' },
+  { id: 'fichaje',      label: 'Fichaje',            icon: Clock,           desc: 'Entrada, descansos y salida',        keys: 'F' },
   { id: 'reservations', label: 'Reservas',           icon: Calendar,        desc: 'Salas y vehículos',                  keys: 'R' },
   { id: 'requests',     label: 'Solicitudes',        icon: Inbox,           desc: 'Asuntos propios, remoto, compras',   keys: 'S' },
   { id: 'horas',        label: 'Tiempo a compensar', icon: Timer,           desc: 'Bolsa de horas',                     keys: 'H' },

@@ -48,6 +48,21 @@ Las consultas están acotadas a 60 solicitudes, 60 asuntos propios, 100 reservas
 
 Las pruebas del asistente usan servicios simulados y verifican permisos, fechas, solapamientos, identidad del actor y errores; no demuestran una conversación real con el proveedor. Tras configurar la clave, verifica en un entorno de prueba una consulta, una creación confirmada y un rechazo de permisos con cuentas de empleado y administrador.
 
+## RR. HH.: documentos privados, departamentos e historial
+
+Migraciones (aplicar en orden, primero en staging, y publicar a la vez la web y una versión nueva de la app):
+
+1. `supabase/migrations/20261123120000_private_documents.sql`: el bucket `documents` (nóminas, contratos, justificantes, normas) pasa a **privado**. La base de datos guarda una referencia (`/object/authenticated/…`) y la web y la app muestran URLs firmadas que caducan en una hora y se renuevan solas (`shared/services/storageFiles.js`). Un archivo solo se puede leer desde una fila que lo referencia si quien la creó es también quien lo subió, o un admin. Las versiones anteriores de la web y la app dejan de poder abrir archivos.
+2. `supabase/migrations/20261123130000_hr_foundations.sql`: tabla `departments` (Administración → Departamentos) y `hr_audit_logs`, el historial de cambios de fichas, DNI, departamentos, documentos, solicitudes, asuntos propios y bolsa de horas (Administración → Historial). Solo lo leen los admins y nadie lo puede modificar desde la API. El valor del DNI nunca se guarda en el historial. `purge_hr_audit_logs(días)` aplica el plazo de conservación (mínimo 365 días).
+
+3. `supabase/migrations/20261124120000_time_tracking.sql`: **fichaje** (registro diario de jornada, art. 34.9 ET). Entrada, descansos y salida con la hora del servidor (`clock_event`), que también comprueba el orden. Nadie puede editar ni borrar un fichaje: un olvido o un error se corrige con una solicitud (`request_time_correction`) que RR. HH. aprueba; la corrección añade un fichaje nuevo y deja el original anulado, no borrado. Incluye horarios (`work_schedules`, con «Jornada general»: L-J 08:00-17:00 con 1 h de pausa y V 08:00-14:30, **a revisar por RR. HH.**). Una ficha con fichajes ya no se puede eliminar, porque hay que conservarlos cuatro años.
+
+Fichaje en la web: `/fichaje` (menú lateral, Inicio, «Más» en el móvil y atajo G F). RR. HH. tiene además las vistas Equipo (quién trabaja, quién no ha fichado, incidencias, correcciones e informe mensual en CSV) y Horarios. En la app: botón «Fichaje» en la tarjeta «Tu jornada» de Inicio y el enlace `margube://fichaje`.
+
+Los roles no cambian: `admin` es RR. HH./administración y `employee` el resto.
+
+Permisos reales en staging (suite 24): con `RUN_LIVE_DB_TESTS=1` y las variables `STAGING_SUPABASE_URL`, `STAGING_SUPABASE_PUBLISHABLE_KEY`, `STAGING_ADMIN_EMAIL/PASSWORD`, `STAGING_EMPLOYEE_A_EMAIL/PASSWORD` y `STAGING_EMPLOYEE_B_EMAIL/PASSWORD`, `npm test` entra con tres cuentas reales y comprueba que un empleado no puede leer los archivos, documentos, asuntos propios ni el DNI de otro, ni el historial de RR. HH. La suite se niega a ejecutarse contra el proyecto de producción.
+
 [![Vite](https://img.shields.io/badge/Vite-646cff?style=flat&logo=vite)](https://vite.dev/)
 [![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react)](https://react.dev/)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase)](https://supabase.com/)

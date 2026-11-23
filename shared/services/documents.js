@@ -1,6 +1,10 @@
 import { MAX_FILE_SIZE_BYTES } from '../config/constants.js';
 import { safeFileUrl } from '../utils/urls.js';
+import { DOCUMENTS_BUCKET, removeStorageFile, signFileUrls, storageRefUrl } from './storageFiles.js';
 
+export { removeStorageFile };
+
+/** Documents with a signed `fileUrl` for the person signed in and the stored reference in `fileRef`. */
 export async function fetchDocuments(supabase) {
   const { data, error } = await supabase
     .from('documents')
@@ -16,7 +20,7 @@ export async function fetchDocuments(supabase) {
     // null (not []) on failure: the caller keeps what it already shows
     return error ? null : [];
   }
-  return data.map(d => ({
+  return signFileUrls(supabase, data.map(d => ({
     id: d.id,
     title: d.title,
     description: d.description,
@@ -28,7 +32,7 @@ export async function fetchDocuments(supabase) {
     senderName: d.sender?.name || null,
     recipientId: d.recipient_id,
     recipientName: d.recipient?.name || null,
-  }));
+  })));
 }
 
 export async function sendDocument(supabase, { title, description, fileUrl, senderId, recipientId }) {
@@ -57,32 +61,17 @@ export async function updateDocumentStatus(supabase, id, status) {
   return { error };
 }
 
-export async function deleteDocument(supabase, id, fileUrl) {
-  await removeStorageFile(supabase, fileUrl);
+/** `fileRef` is the stored reference of the row (its signed fileUrl also works). */
+export async function deleteDocument(supabase, id, fileRef) {
+  await removeStorageFile(supabase, fileRef);
   const { error } = await supabase.from('documents').delete().eq('id', id);
   if (error) console.error('deleteDocument:', error);
   return { error };
 }
 
-export async function removeStorageFile(supabase, fileUrl) {
-  if (!fileUrl || !fileUrl.includes('/storage/v1/object/public/documents/')) return;
-  try {
-    const marker = '/storage/v1/object/public/documents/';
-    const idx = fileUrl.indexOf(marker);
-    if (idx === -1) return;
-    let path = fileUrl.substring(idx + marker.length);
-    const qIdx = path.indexOf('?');
-    if (qIdx !== -1) path = path.substring(0, qIdx);
-    if (!path) return;
-    const { error } = await supabase.storage.from('documents').remove([decodeURIComponent(path)]);
-    if (error) console.warn('Storage delete error:', error.message);
-  } catch (e) {
-    console.warn('removeStorageFile error:', e);
-  }
-}
-
 /**
- * Upload a file to Supabase Storage.
+ * Upload a file to the private bucket. Resolves to `{ url }`, the reference to save in
+ * file_url (not a link anyone can open: the lists sign it for each person).
  * @param {Blob|ArrayBuffer|Uint8Array} file - file body
  * @param {string} [contentType] - MIME type; required when `file` is raw bytes
  *   (React Native), otherwise Storage serves it as text/plain.
@@ -98,13 +87,10 @@ export async function uploadDocumentFile(supabase, file, fileName, fileSize, con
     const ext = fileName.split('.').pop();
     const path = `docs/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
     const { error: upErr } = await supabase.storage
-      .from('documents')
+      .from(DOCUMENTS_BUCKET)
       .upload(path, file, { cacheControl: '3600', upsert: false, ...(contentType ? { contentType } : {}) });
 
-    if (!upErr) {
-      const { data: { publicUrl } } = supabase.storage.from('documents').getPublicUrl(path);
-      return { url: publicUrl };
-    }
+    if (!upErr) return { url: storageRefUrl(supabase, path) };
 
     console.warn('Storage upload error:', upErr.message);
     return { error: `Error de Storage: ${upErr.message}` };

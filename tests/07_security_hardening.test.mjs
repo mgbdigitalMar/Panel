@@ -45,7 +45,9 @@ export async function runSecurityHardeningTests() {
     },
   });
   const docs = await fetchDocuments(fake([{ id: 1, file_url: 'javascript:alert(1)' }, { id: 2, file_url: storage }]));
-  assert('fetchDocuments descarta enlaces javascript:', docs[0].fileUrl === null && docs[1].fileUrl === storage);
+  // The bucket is private (suite 22): a stored reference is kept in fileRef and only reaches the
+  // screen signed; this fake client has no Storage, so nothing is signed and nothing is shown
+  assert('fetchDocuments descarta enlaces javascript:', docs[0].fileUrl === null && docs[1].fileRef === storage && docs[1].fileUrl !== storage);
   const days = await fetchPersonalDays(fake([{ id: 1, file_url: 'javascript:alert(1)' }]));
   assert('fetchPersonalDays descarta enlaces javascript:', days[0].fileUrl === null);
 

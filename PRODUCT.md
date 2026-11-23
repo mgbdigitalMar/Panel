@@ -37,13 +37,15 @@ Toda esta funcionalidad debe conservarse en cualquier cambio de interfaz:
 - **Inicio:** saludo, progreso de la jornada, panel «Hoy», gráficas por semana, mes y año, indicadores, noticias fijadas, cumpleaños, fuera de la oficina hoy.
 - **Reservas:** salas y vehículos, disponibilidad en directo, agenda, calendario, añadir al calendario (.ics), exportar; el admin aprueba, rechaza o cancela.
 - **Solicitudes:** asuntos propios, trabajo en remoto, trabajo externo y compras, con justificante; registro de quién revisó y cuándo.
+- **Fichaje:** entrada, descansos y salida con la hora del servidor; día, semana y mes frente al horario; correcciones revisadas por RR. HH. sin borrar el original; vista del equipo, horarios e informe mensual para RR. HH.
 - **Tiempo a compensar:** registro de horas y saldo de la bolsa de horas.
 - **Noticias y eventos:** comunicados, fijadas, editor para admins.
 - **Equipo:** directorio y dónde trabaja cada persona, hoy y durante la semana.
 - **Mi perfil:** datos, modo de trabajo, contraseña, documentos.
 - **Ajustes:** tema y notificaciones.
 - **Asistente web:** chat escrito para consultar y preparar solicitudes, asuntos propios y reservas, con confirmación antes de ejecutar. Las cuentas admin también revisan y gestionan trámites del equipo. La función `/api/assistant` se despliega con la web en Vercel; necesita una clave de Groq en las variables privadas del servidor.
-- **Administración:** empleados (incluido restablecer la contraseña), salas, vehículos, documentos, bolsa de horas, exportación CSV de firmas de normas.
+- **Administración:** empleados (incluido restablecer la contraseña), departamentos, salas, vehículos, documentos, bolsa de horas, historial de cambios de RR. HH. (con exportación CSV), exportación CSV de firmas de normas.
+- **Documentos privados:** nóminas, contratos y justificantes en un bucket privado; cada persona los abre con URLs firmadas que caducan.
 - **Transversal:** notificaciones en tiempo real y push, buscador (Ctrl+K), atajos («?»), firma de las normas internas, PWA, tema claro y oscuro, cuatro estados en cada vista (carga, vacío, error, contenido).
 
 Restricciones técnicas: SCSS Modules en la web (Tailwind instalado pero sin usar); Expo SDK 58 en la app; la lógica de negocio vive en `shared/services` y no se toca para cambiar la interfaz; `npm test` comprueba reglas de funcionamiento y UX.

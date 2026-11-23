@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   Calendar, Car, DoorOpen, Timer, FilePlus2, CalendarPlus, Pin, ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight,
-  PartyPopper, Newspaper, BarChart3, Building, Mail, FileText, Home, Briefcase, ShoppingCart, Sun, LifeBuoy, LayoutDashboard,
+  PartyPopper, Newspaper, BarChart3, Building, Mail, FileText, Home, Briefcase, ShoppingCart, Sun, LifeBuoy, LayoutDashboard, Clock,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { Avatar } from '../components/ui';
@@ -135,6 +135,8 @@ export default function DashboardTouch({ d }) {
 
       {/* Phones already have "Nueva solicitud" in the dock's "+" */}
       <ActionTiles className={styles.tiles} items={[
+        // Clocking in is the most frequent task of the day: first, one tap from Inicio
+        { icon: Clock, label: 'Fichaje', hint: 'Entrada, descansos y salida', tone: 'success', onClick: () => navigate('/fichaje') },
         ...(phone ? [] : [{ icon: FilePlus2, label: 'Nueva solicitud', hint: 'Días, remoto o compras', primary: true, onClick: () => navigate('/requests?nueva=1') }]),
         { icon: DoorOpen, label: 'Reservar sala', hint: 'Elige sala y horario', primary: phone, onClick: () => navigate('/reservations?nueva=1') },
         { icon: Car, label: 'Reservar vehículo', tone: 'info', hint: 'Coches y furgonetas', onClick: () => navigate('/reservations?nueva=1&tipo=vehicle') },

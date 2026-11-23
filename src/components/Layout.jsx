@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import clsx from 'clsx';
 import {
-  LayoutDashboard, Calendar, Inbox, Newspaper, Bell, UsersRound, Timer, AlertTriangle, UserRound, SlidersHorizontal, LayoutGrid, ShieldCheck, MessageSquareText
+  LayoutDashboard, Calendar, Inbox, Newspaper, Bell, UsersRound, Timer, AlertTriangle, UserRound, SlidersHorizontal, LayoutGrid, ShieldCheck, MessageSquareText, Clock
 } from 'lucide-react';
 
 import { Avatar, TopProgress, PageLoader } from './ui';
@@ -50,6 +50,7 @@ function useEverTrue(on) {
 
 const navItems = [
   { id: 'dashboard',    label: 'Inicio',             icon: LayoutDashboard },
+  { id: 'fichaje',      label: 'Fichaje',            icon: Clock },
   { id: 'reservations', label: 'Reservas',           icon: Calendar,    badgeKey: 'reservations' },
   { id: 'requests',     label: 'Solicitudes',        icon: Inbox,       badgeKey: 'requests' },
   { id: 'horas',        label: 'Tiempo a compensar', icon: Timer },
@@ -73,6 +74,7 @@ const PAGE_META = {
   reservations: { title: 'Reservas',           desc: 'Salas y vehículos de empresa: mira qué está libre y reserva en segundos.', touch: true, desk: true, icon: Calendar },
   requests:     { title: 'Solicitudes',        desc: 'Asuntos propios, trabajo en remoto o externo y compras.', touch: true, desk: true, icon: Inbox },
   horas:        { title: 'Tiempo a compensar', desc: 'Registra tus horas y consulta tu saldo con la empresa.', own: true, icon: Timer },
+  fichaje:      { title: 'Fichaje',            desc: 'Registro de jornada: entrada, descansos y salida.', touch: true, desk: true, icon: Clock },
   mas:          { title: 'Más',                desc: 'Tu cuenta, el resto de secciones y tus preferencias.', own: true, icon: LayoutGrid },
   news:         { title: 'Noticias y Eventos', desc: 'Comunicados, novedades y próximos eventos de Margube.', icon: Newspaper, kicker: 'Comunicación interna' },
   employees:    { title: 'Equipo',             desc: 'Directorio del equipo y dónde trabaja cada persona, hoy y durante la semana.', touch: true, desk: true, icon: UsersRound },
@@ -176,7 +178,7 @@ export default function Layout({ children }) {
     const queue = [
       () => import('./ui/Select/SelectMenu'),
       () => import('./ui/TimeInput/TimeInput'),
-      ...['reservations', 'requests', 'horas', 'mas', 'news', 'employees', 'profile', 'settings'].map((name) => () => loadPage(name)),
+      ...['reservations', 'requests', 'horas', 'mas', 'fichaje', 'news', 'employees', 'profile', 'settings'].map((name) => () => loadPage(name)),
     ];
     let handle = 0;
     let stopped = false;
@@ -279,7 +281,7 @@ export default function Layout({ children }) {
   const policyMounted = useEverTrue(Boolean(user) && user.policyAccepted !== true);
 
   useEffect(() => {
-    const G_MAP = { d: 'dashboard', r: 'reservations', s: 'requests', h: 'horas', n: 'news', e: 'employees', p: 'profile', a: 'settings', m: 'admin' };
+    const G_MAP = { d: 'dashboard', f: 'fichaje', r: 'reservations', s: 'requests', h: 'horas', n: 'news', e: 'employees', p: 'profile', a: 'settings', m: 'admin' };
     const isTyping = (el) => el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
     let gPending = false;
     let gTimer;

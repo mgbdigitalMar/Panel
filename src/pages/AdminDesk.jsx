@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import clsx from 'clsx';
 import {
   UsersRound, Building, Car, FileText, Timer, Plus, Send, Upload, Download, Pencil, Trash2,
-  Check, X, Clock, PenLine, ClipboardCheck, KeyRound, Layers, ShieldCheck
+  Check, X, Clock, PenLine, ClipboardCheck, KeyRound, Layers, ShieldCheck, History
 } from 'lucide-react';
 import { Avatar, Button } from '../components/ui';
 import {
@@ -57,7 +57,7 @@ export default function AdminDesk({
   onNewEmployee, onEditEmployee, onDeleteEmployee, onResetPassword, onOpenPolicy, onExportSignatures,
   onNewResource, onEditResource, onDeleteResource,
   onSendDocument, onUpdateOnboarding, onDeleteDocument,
-  onApproveHours, onRejectHours, onDeleteHours, onExportHours, hoursBusy,
+  onApproveHours, onRejectHours, onDeleteHours, onExportHours, hoursBusy, hrPanels = {},
 }) {
   const pendingHours = hours.filter((h) => h.status === 'pending').length;
   const firstAccess = employees.filter(isFirstAccess).length;
@@ -136,7 +136,7 @@ export default function AdminDesk({
   return (
     <div className={styles.page}>
       <DeskHeader icon={ShieldCheck} kicker="Gestión de RRHH" title="Administración"
-        desc="Empleados, salas, vehículos, documentos y bolsa de horas: todo lo que gestiona RRHH, en un sitio."
+        desc="Empleados, departamentos, salas, vehículos, documentos, bolsa de horas e historial de cambios: todo lo que gestiona RRHH, en un sitio."
         actions={actions} />
 
       {/* Sections as tabs (a dot when hours wait for a decision) */}
@@ -146,6 +146,8 @@ export default function AdminDesk({
         { value: 'vehicles', label: 'Vehículos', icon: Car, count: vehicles.length },
         { value: 'documents', label: 'Documentos', icon: FileText, count: documents.length },
         { value: 'bolsahoras', label: 'Bolsa de horas', icon: Timer, count: pendingHours, alert: pendingHours > 0 },
+        { value: 'departments', label: 'Departamentos', icon: Layers },
+        { value: 'audit', label: 'Historial', icon: History },
       ]} />
 
       {/* What waits for RRHH, one click from any section */}
@@ -251,6 +253,9 @@ export default function AdminDesk({
             </DeskPanel>
           </>
         )}
+
+        {tab === 'departments' && hrPanels.departments}
+        {tab === 'audit' && hrPanels.audit}
 
         {tab === 'rooms' && (
           <DeskPanel flush title="Salas" sub={`${plural(rooms.length, 'sala', 'salas')} · espacios que el equipo puede reservar`}>
